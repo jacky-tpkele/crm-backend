@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>XHON CRM — Sign In</title>
+<style>
+:root{--bg:#0B1120;--card:#111827;--green:#00C46A;--green-bg:rgba(0,196,106,0.12);--text:#f1f5f9;--muted:#64748b;--muted2:#94a3b8;--border:rgba(255,255,255,0.08);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:"Segoe UI",-apple-system,sans-serif;background:var(--bg);color:var(--text);overflow:hidden;}
+.page{display:flex;height:100vh;}
+
+/* LEFT */
+.left{flex:1.5;position:relative;overflow:hidden;background:linear-gradient(135deg,#050e1d 0%,#091526 50%,#050e1d 100%);}
+#mapCanvas{position:absolute;inset:0;width:100%;height:100%;}
+.left-ui{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;padding:28px;}
+.gc-bar{display:flex;align-items:center;gap:10px;}
+.gc-dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:blink 2s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+.gc-txt{font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:rgba(255,255,255,.65);}
+.region{position:absolute;z-index:2;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.18);font-weight:700;pointer-events:none;line-height:1.6;}
+
+/* Overview card */
+.ov{position:absolute;z-index:3;top:64px;right:28px;background:rgba(8,18,34,.88);border:1px solid rgba(0,196,106,.22);border-radius:16px;padding:16px 18px;width:248px;backdrop-filter:blur(14px);}
+.ov-ttl{font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted2);margin-bottom:12px;font-weight:700;}
+.ov-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.ov-row:last-child{border-bottom:none;padding-bottom:0;}
+.ov-ico{width:30px;height:30px;border-radius:8px;background:rgba(0,196,106,.12);border:1px solid rgba(0,196,106,.18);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.ov-info{flex:1;}
+.ov-name{font-size:10px;color:var(--muted2);}
+.ov-val{font-size:16px;font-weight:700;line-height:1.3;}
+.ov-chg{font-size:10px;font-weight:700;color:var(--green);}
+
+/* Bottom mini panels */
+.bot{position:absolute;z-index:3;bottom:22px;left:28px;right:28px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.mini{background:rgba(8,18,34,.88);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:13px 14px;backdrop-filter:blur(14px);}
+.mini-ttl{font-size:8.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;font-weight:700;}
+.trend-svg{width:100%;height:44px;}
+.xl{display:flex;justify-content:space-between;margin-top:3px;}
+.xl span{font-size:8.5px;color:var(--muted);}
+.d-row{display:flex;align-items:center;gap:10px;}
+.d-leg{font-size:9px;line-height:1.95;color:var(--muted2);}
+.d-leg i{display:inline-block;width:5px;height:5px;border-radius:50%;margin-right:4px;vertical-align:middle;}
+.c-row{display:flex;align-items:center;gap:6px;margin-bottom:5px;}
+.c-n{font-size:9px;color:var(--muted2);width:52px;flex-shrink:0;}
+.c-bg{flex:1;height:3px;background:rgba(255,255,255,.07);border-radius:99px;}
+.c-bar{height:100%;background:var(--green);border-radius:99px;}
+.c-p{font-size:9px;color:var(--text);width:24px;text-align:right;flex-shrink:0;}
+
+/* RIGHT */
+.right{width:400px;flex-shrink:0;background:#09111f;border-left:1px solid rgba(0,196,106,.12);display:flex;flex-direction:column;justify-content:space-between;padding:40px 42px;overflow-y:auto;}
+.brand-row{display:flex;align-items:center;gap:14px;margin-bottom:6px;}
+.brand-icon{width:50px;height:50px;border-radius:15px;background:linear-gradient(135deg,#00C46A,#009952);box-shadow:0 0 28px rgba(0,196,106,.4);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;flex-shrink:0;}
+.brand-name{font-size:18px;font-weight:800;line-height:1.2;}
+.brand-desc{font-size:12px;color:var(--muted2);line-height:1.55;margin-top:10px;margin-bottom:28px;}
+.f-group{margin-bottom:15px;}
+.f-label{display:block;font-size:13px;color:#b0bac8;font-weight:500;margin-bottom:7px;}
+.f-wrap{position:relative;}
+.f-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px;pointer-events:none;}
+.f-input{width:100%;padding:12px 13px 12px 42px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:11px;color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:.2s;}
+.f-input::placeholder{color:#3d4d5c;}
+.f-input:focus{border-color:rgba(0,196,106,.55);background:rgba(0,196,106,.06);box-shadow:0 0 0 3px rgba(0,196,106,.1);}
+.pw-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:15px;padding:0;}
+.pw-eye:hover{color:var(--text);}
+.f-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+.f-check{display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;color:var(--muted2);}
+.f-check input{accent-color:var(--green);}
+.forgot{font-size:13px;color:var(--green);text-decoration:none;}
+.forgot:hover{text-decoration:underline;}
+.err{color:#f87171;font-size:12px;min-height:16px;margin-bottom:10px;text-align:center;}
+.sign-btn{width:100%;padding:13px;background:linear-gradient(135deg,#00C46A,#009952);border:none;border-radius:11px;color:#fff;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;letter-spacing:.5px;box-shadow:0 6px 22px rgba(0,196,106,.35);transition:.2s;}
+.sign-btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,196,106,.45);}
+.sign-btn:active{transform:translateY(0);}
+.sign-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+.lang-row{display:flex;justify-content:center;gap:8px;margin-top:16px;}
+.lb{padding:5px 15px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid rgba(255,255,255,.1);background:none;color:var(--muted2);cursor:pointer;font-family:inherit;transition:.18s;}
+.lb.on{border-color:rgba(0,196,106,.45);background:rgba(0,196,106,.1);color:var(--green);}
+.footer{text-align:center;margin-top:28px;}
+.footer-ic{display:flex;justify-content:center;gap:16px;margin-bottom:8px;}
+.footer-ic span{font-size:11px;color:var(--muted);}
+.footer-copy{font-size:10.5px;color:rgba(255,255,255,.18);}
+@media(max-width:860px){.left{display:none;}.right{width:100%;border-left:none;}html,body{overflow:auto;}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="left">
+    <canvas id="mapCanvas"></canvas>
+    <div class="left-ui">
+      <div class="gc-bar"><div class="gc-dot"></div><span class="gc-txt">Global Connections</span></div>
+    </div>
+    <span class="region" style="top:32%;left:10%">North<br>America</span>
+    <span class="region" style="top:60%;left:16%">South<br>America</span>
+    <span class="region" style="top:25%;left:42%">Europe</span>
+    <span class="region" style="top:50%;left:40%">Africa</span>
+    <span class="region" style="top:24%;left:64%">Asia</span>
+    <span class="region" style="top:62%;left:72%">Oceania</span>
+    <div class="ov">
+      <div class="ov-ttl">Today's Overview</div>
+      <div class="ov-row"><div class="ov-ico">👥</div><div class="ov-info"><div class="ov-name">Customers</div><div class="ov-val">1,289</div></div><div class="ov-chg">▲ 12.5%</div></div>
+      <div class="ov-row"><div class="ov-ico">📦</div><div class="ov-info"><div class="ov-name">Orders</div><div class="ov-val">2,356</div></div><div class="ov-chg">▲ 8.7%</div></div>
+      <div class="ov-row"><div class="ov-ico">📋</div><div class="ov-info"><div class="ov-name">Quotations</div><div class="ov-val">1,846</div></div><div class="ov-chg">▲ 15.3%</div></div>
+      <div class="ov-row"><div class="ov-ico">💵</div><div class="ov-info"><div class="ov-name">Sales (USD)</div><div class="ov-val">$2.45M</div></div><div class="ov-chg">▲ 11.3%</div></div>
+    </div>
+    <div class="bot">
+      <div class="mini">
+        <div class="mini-ttl">Sales Trend (USD)</div>
+        <svg class="trend-svg" viewBox="0 0 200 44" preserveAspectRatio="none">
+          <defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00C46A" stop-opacity=".28"/><stop offset="100%" stop-color="#00C46A" stop-opacity="0"/></linearGradient></defs>
+          <path d="M0 38 L28 33 L56 30 L84 25 L112 19 L140 14 L168 9 L196 5 L200 5 L200 44 L0 44Z" fill="url(#tg)"/>
+          <path d="M0 38 L28 33 L56 30 L84 25 L112 19 L140 14 L168 9 L196 5" fill="none" stroke="#00C46A" stroke-width="1.5"/>
+          <circle cx="196" cy="5" r="3" fill="#00C46A"/><text x="186" y="4" font-size="6.5" fill="#00C46A">2.45M</text>
+        </svg>
+        <div class="xl"><span>Jan</span><span>Mar</span><span>Jun</span></div>
+      </div>
+      <div class="mini">
+        <div class="mini-ttl">Order Status</div>
+        <div class="d-row">
+          <svg width="50" height="50" viewBox="0 0 50 50">
+            <circle cx="25" cy="25" r="18" fill="none" stroke="#00C46A" stroke-width="9" stroke-dasharray="50.9 82.1" stroke-dashoffset="0"/>
+            <circle cx="25" cy="25" r="18" fill="none" stroke="#22d3ee" stroke-width="9" stroke-dasharray="33.9 99.1" stroke-dashoffset="-50.9"/>
+            <circle cx="25" cy="25" r="18" fill="none" stroke="#a78bfa" stroke-width="9" stroke-dasharray="16.9 116.1" stroke-dashoffset="-84.8"/>
+            <circle cx="25" cy="25" r="18" fill="none" stroke="#f87171" stroke-width="9" stroke-dasharray="11.3 121.7" stroke-dashoffset="-101.7"/>
+          </svg>
+          <div class="d-leg">
+            <div><i style="background:#00C46A"></i>Done 45%</div>
+            <div><i style="background:#22d3ee"></i>Active 30%</div>
+            <div><i style="background:#a78bfa"></i>Pending 15%</div>
+            <div><i style="background:#f87171"></i>Cancel 10%</div>
+          </div>
+        </div>
+      </div>
+      <div class="mini">
+        <div class="mini-ttl">Top Countries</div>
+        <div class="c-row"><span class="c-n">India</span><div class="c-bg"><div class="c-bar" style="width:72%"></div></div><span class="c-p">18%</span></div>
+        <div class="c-row"><span class="c-n">USA</span><div class="c-bg"><div class="c-bar" style="width:64%"></div></div><span class="c-p">16%</span></div>
+        <div class="c-row"><span class="c-n">Indonesia</span><div class="c-bg"><div class="c-bar" style="width:48%"></div></div><span class="c-p">12%</span></div>
+        <div class="c-row"><span class="c-n">Philippines</span><div class="c-bg"><div class="c-bar" style="width:40%"></div></div><span class="c-p">10%</span></div>
+        <div class="c-row"><span class="c-n">Turkey</span><div class="c-bg"><div class="c-bar" style="width:32%"></div></div><span class="c-p">8%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="right">
+    <div>
+      <div class="brand-row">
+        <div class="brand-icon">XH</div>
+        <div class="brand-name">XHON CRM<br>SYSTEM</div>
+      </div>
+      <p class="brand-desc">Manage Customers, Orders & Documents Efficiently<br>Built for Global Trade Exporters</p>
+      <form id="loginForm" onsubmit="doLogin(event)">
+        <div class="f-group">
+          <label class="f-label" id="lbl-a">账号</label>
+          <div class="f-wrap">
+            <span class="f-icon">👤</span>
+            <input type="text" class="f-input" id="inp-account" placeholder="TPKELE" required autocomplete="username"/>
+          </div>
+        </div>
+        <div class="f-group">
+          <label class="f-label" id="lbl-p">密码</label>
+          <div class="f-wrap">
+            <span class="f-icon">🔒</span>
+            <input type="password" class="f-input" id="inp-pw" placeholder="••••••••" required autocomplete="current-password"/>
+            <button type="button" class="pw-eye" onclick="togglePw()">👁</button>
+          </div>
+        </div>
+        <div class="f-row">
+          <label class="f-check"><input type="checkbox"/><span id="lbl-rem">记住我</span></label>
+          <a href="#" class="forgot" id="lbl-forgot">忘记密码?</a>
+        </div>
+        <div class="err" id="errMsg"></div>
+        <button type="submit" class="sign-btn" id="signBtn"><span id="lbl-btn">登 录</span></button>
+      </form>
+      <div class="lang-row">
+        <button class="lb on" id="lp-zh" onclick="setLang('zh')">中文</button>
+        <button class="lb" id="lp-en" onclick="setLang('en')">English</button>
+      </div>
+    </div>
+    <div class="footer">
+      <div class="footer-ic"><span>🔒 Secure</span><span>• Reliable</span><span>• Efficient</span></div>
+      <div class="footer-copy">© 2024 XHON CRM System. All rights reserved.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── Canvas World Map ── */
+const canvas=document.getElementById('mapCanvas'),ctx=canvas.getContext('2d');
+function sz(){canvas.width=canvas.parentElement.offsetWidth;canvas.height=canvas.parentElement.offsetHeight;}
+sz();window.addEventListener('resize',sz);
+const nodes=[{x:.13,y:.34,s:3.5},{x:.09,y:.28,s:2.5},{x:.07,y:.38,s:2},{x:.19,y:.60,s:2.5},{x:.42,y:.28,s:3},{x:.44,y:.26,s:2},{x:.49,y:.27,s:2},{x:.53,y:.32,s:3},{x:.54,y:.44,s:3.5},{x:.60,y:.41,s:2.5},{x:.68,y:.34,s:4},{x:.71,y:.39,s:3.5},{x:.73,y:.36,s:2.5},{x:.63,y:.53,s:2.5},{x:.76,y:.66,s:2},{x:.44,y:.50,s:3},{x:.47,y:.63,s:2}];
+const links=[[0,4],[0,11],[4,10],[4,8],[8,10],[10,11],[11,13],[6,7],[7,8],[8,9],[9,13],[4,15],[0,1],[10,12],[11,13],[4,7],[15,11],[3,0]];
+const pkts=links.map(()=>({t:Math.random(),spd:.0015+Math.random()*.0025,dir:Math.random()>.5?1:-1}));
+const conts=[[[.04,.17],[.26,.17],[.29,.28],[.25,.44],[.18,.47],[.10,.44],[.04,.33]],[[.15,.49],[.28,.49],[.30,.62],[.24,.76],[.15,.76],[.11,.60]],[[.37,.17],[.52,.17],[.54,.32],[.47,.35],[.36,.30]],[[.39,.36],[.54,.36],[.56,.54],[.50,.74],[.41,.74],[.37,.52]],[[.51,.13],[.83,.13],[.85,.36],[.77,.48],[.58,.53],[.51,.40],[.51,.27]],[[.68,.57],[.83,.57],[.85,.70],[.76,.73],[.67,.67]]];
+function gp(n){return{x:n.x*canvas.width,y:n.y*canvas.height};}
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  conts.forEach(pts=>{ctx.beginPath();ctx.moveTo(pts[0][0]*canvas.width,pts[0][1]*canvas.height);pts.slice(1).forEach(p=>ctx.lineTo(p[0]*canvas.width,p[1]*canvas.height));ctx.closePath();ctx.fillStyle='rgba(0,196,106,0.05)';ctx.fill();ctx.strokeStyle='rgba(0,196,106,0.14)';ctx.lineWidth=.9;ctx.stroke();});
+  links.forEach(([a,b])=>{const pa=gp(nodes[a]),pb=gp(nodes[b]);ctx.beginPath();ctx.moveTo(pa.x,pa.y);ctx.lineTo(pb.x,pb.y);ctx.strokeStyle='rgba(0,196,106,0.13)';ctx.lineWidth=.7;ctx.stroke();});
+  pkts.forEach((pk,i)=>{pk.t+=pk.spd*pk.dir;if(pk.t>1)pk.t=0;if(pk.t<0)pk.t=1;const[a,b]=links[i];const pa=gp(nodes[a]),pb=gp(nodes[b]);const x=pa.x+(pb.x-pa.x)*pk.t,y=pa.y+(pb.y-pa.y)*pk.t;const g=ctx.createRadialGradient(x,y,0,x,y,7);g.addColorStop(0,'rgba(0,196,106,0.5)');g.addColorStop(1,'rgba(0,196,106,0)');ctx.beginPath();ctx.arc(x,y,7,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();ctx.beginPath();ctx.arc(x,y,2,0,Math.PI*2);ctx.fillStyle='rgba(0,196,106,0.95)';ctx.fill();});
+  nodes.forEach(n=>{const{x,y}=gp(n);const g=ctx.createRadialGradient(x,y,0,x,y,n.s*5);g.addColorStop(0,'rgba(0,196,106,0.35)');g.addColorStop(1,'rgba(0,196,106,0)');ctx.beginPath();ctx.arc(x,y,n.s*5,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();ctx.beginPath();ctx.arc(x,y,n.s,0,Math.PI*2);ctx.fillStyle='#00C46A';ctx.fill();ctx.beginPath();ctx.arc(x,y,n.s+2.5,0,Math.PI*2);ctx.strokeStyle='rgba(0,196,106,0.35)';ctx.lineWidth=.8;ctx.stroke();});
+  requestAnimationFrame(draw);
+}
+draw();
+
+/* ── i18n ── */
+const T={zh:{a:'账号',p:'密码',rem:'记住我',forgot:'忘记密码?',btn:'登 录',loading:'登录中...',ef:'请填写账号和密码',er:'账号或密码错误'},en:{a:'Account',p:'Password',rem:'Remember me',forgot:'Forgot password?',btn:'Sign In',loading:'Signing in...',ef:'Please enter account and password',er:'Invalid account or password'}};
+let cl=localStorage.getItem('crm_lang')||'zh';
+function setLang(l){cl=l;localStorage.setItem('crm_lang',l);document.getElementById('lp-zh').classList.toggle('on',l==='zh');document.getElementById('lp-en').classList.toggle('on',l==='en');document.documentElement.lang=l==='zh'?'zh-CN':'en';document.getElementById('lbl-a').textContent=T[l].a;document.getElementById('lbl-p').textContent=T[l].p;document.getElementById('lbl-rem').textContent=T[l].rem;document.getElementById('lbl-forgot').textContent=T[l].forgot;document.getElementById('lbl-btn').textContent=T[l].btn;}
+function togglePw(){const i=document.getElementById('inp-pw');i.type=i.type==='password'?'text':'password';}
+
+async function doLogin(e){
+  e.preventDefault();
+  const account=document.getElementById('inp-account').value.trim();
+  const pw=document.getElementById('inp-pw').value;
+  const btn=document.getElementById('signBtn'),err=document.getElementById('errMsg');
+  if(!account||!pw){err.textContent=T[cl].ef;return;}
+  err.textContent='';btn.disabled=true;document.getElementById('lbl-btn').textContent=T[cl].loading;
+  try{
+    const res=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({account,password:pw})});
+    const data=await res.json();
+    if(!res.ok||!data.access_token)throw new Error(data.message||T[cl].er);
+    localStorage.setItem('crm_access_token',data.access_token);
+    if(data.refresh_token)localStorage.setItem('crm_refresh_token',data.refresh_token);
+    if(data.user?.email)localStorage.setItem('crm_user_email',data.user.email);
+    location.href='/dashboard.html';
+  }catch(ex){err.textContent=ex.message||T[cl].er;btn.disabled=false;document.getElementById('lbl-btn').textContent=T[cl].btn;}
+}
+setLang(cl);
+if(localStorage.getItem('crm_access_token'))location.href='/dashboard.html';
+</script>
+</body>
+</html>

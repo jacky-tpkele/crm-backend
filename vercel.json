@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/(.*)",          "destination": "/api/index.js" },
+    { "source": "/orders-full",       "destination": "/api/index.js" },
+    { "source": "/order-detail/(.*)", "destination": "/api/index.js" },
+    { "source": "/orders/(.*)",       "destination": "/api/index.js" },
+    { "source": "/delete-order/(.*)", "destination": "/api/index.js" },
+    { "source": "/suppliers",         "destination": "/api/index.js" },
+    { "source": "/suppliers/(.*)",    "destination": "/api/index.js" },
+    { "source": "/(.*)",              "destination": "/$1" }
+  ]
+}
