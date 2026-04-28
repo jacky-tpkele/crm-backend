@@ -1,328 +1,407 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>XHON CRM — Login</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg:      #0B1120;
-      --panel:   #111827;
-      --border:  rgba(255,255,255,.08);
-      --primary: #00C46A;
-      --cyan:    #22d3ee;
-      --purple:  #8b5cf6;
-      --text:    #f0f4ff;
-      --muted:   #8892a4;
-    }
-    html, body {
-      height: 100%; font-family: 'Inter', sans-serif;
-      background: var(--bg); color: var(--text); overflow: hidden;
-    }
-    .page { display: flex; height: 100vh; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>TPKELE — Sign In</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,sans-serif;background:#000;color:#fff;overflow:hidden;}
 
-    /* ── Left visual panel ── */
-    .visual {
-      flex: 1; position: relative; overflow: hidden;
-      background: linear-gradient(135deg, #0d1526 0%, #0B1120 50%, #0a1020 100%);
-      display: flex; align-items: center; justify-content: center;
-    }
-    /* animated grid */
-    .grid-bg {
-      position: absolute; inset: 0;
-      background-image:
-        linear-gradient(rgba(0,196,106,.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,196,106,.06) 1px, transparent 1px);
-      background-size: 40px 40px;
-      animation: gridShift 20s linear infinite;
-    }
-    @keyframes gridShift { to { transform: translateY(40px); } }
+#circuit{position:fixed;inset:0;z-index:0;pointer-events:none;}
 
-    /* glow orbs */
-    .orb {
-      position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none;
-    }
-    .orb-1 { width: 400px; height: 400px; background: rgba(0,196,106,.12); top: -100px; left: -100px; animation: float 8s ease-in-out infinite; }
-    .orb-2 { width: 300px; height: 300px; background: rgba(34,211,238,.10); bottom: -80px; right: 80px; animation: float 11s ease-in-out infinite reverse; }
-    .orb-3 { width: 200px; height: 200px; background: rgba(139,92,246,.10); top: 40%; right: -60px; animation: float 9s ease-in-out infinite 2s; }
-    @keyframes float {
-      0%,100% { transform: translateY(0); }
-      50%      { transform: translateY(-24px); }
-    }
+.page{
+  position:relative;z-index:1;
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:16px;
+}
 
-    /* world map dots */
-    .world-wrap { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: .18; }
-    .world-wrap svg { width: 90%; max-width: 600px; }
+/* ── Brand ── */
+.brand-wrap{display:flex;align-items:center;gap:12px;margin-bottom:2px;}
+.brand-title{font-size:22px;font-weight:700;letter-spacing:4px;color:#fff;text-transform:uppercase;}
+.sub-title{font-size:18px;font-weight:300;letter-spacing:2px;color:rgba(180,210,230,0.65);margin-bottom:20px;}
 
-    /* floating stat cards */
-    .float-cards { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 16px; }
-    .fcard {
-      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
-      border-radius: 16px; padding: 16px 22px; backdrop-filter: blur(12px);
-      display: flex; align-items: center; gap: 16px; min-width: 230px;
-      animation: slideIn .6s ease both;
-    }
-    .fcard:nth-child(1) { animation-delay: .1s; }
-    .fcard:nth-child(2) { animation-delay: .25s; }
-    .fcard:nth-child(3) { animation-delay: .4s; }
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateX(-30px); }
-      to   { opacity: 1; transform: translateX(0); }
-    }
-    .fcard-icon {
-      width: 42px; height: 42px; border-radius: 12px;
-      display: grid; place-items: center; font-size: 20px; flex-shrink: 0;
-    }
-    .fcard-icon.green  { background: rgba(0,196,106,.2); }
-    .fcard-icon.cyan   { background: rgba(34,211,238,.2); }
-    .fcard-icon.purple { background: rgba(139,92,246,.2); }
-    .fcard-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
-    .fcard-value { font-size: 22px; font-weight: 700; margin-top: 2px; }
-    .fcard-value.green  { color: var(--primary); }
-    .fcard-value.cyan   { color: var(--cyan); }
-    .fcard-value.purple { color: var(--purple); }
+/* ── Card ── */
+.card{
+  display:flex;
+  background:rgba(4,10,28,0.92);
+  border:1px solid rgba(0,200,255,0.18);
+  border-radius:8px;
+  overflow:hidden;
+  width:min(800px,97vw);
+  box-shadow:0 0 60px rgba(0,160,220,0.07),0 0 120px rgba(0,80,130,0.05);
+  backdrop-filter:blur(12px);
+}
 
-    /* brand on left */
-    .vis-brand {
-      position: absolute; top: 32px; left: 32px; z-index: 3;
-      display: flex; align-items: center; gap: 12px;
-    }
-    .vis-logo {
-      width: 40px; height: 40px; border-radius: 12px;
-      background: linear-gradient(135deg, var(--primary), var(--cyan));
-      box-shadow: 0 0 20px rgba(0,196,106,.4);
-      display: grid; place-items: center; font-size: 18px; font-weight: 800; color: #000;
-    }
-    .vis-name { font-size: 18px; font-weight: 700; letter-spacing: .5px; }
-    .vis-name span { color: var(--primary); }
+/* ── Fingerprint Panel ── */
+.fp-panel{
+  flex-shrink:0;width:286px;
+  display:flex;align-items:center;justify-content:center;
+  padding:40px 28px;
+  position:relative;
+}
 
-    .vis-tagline {
-      position: absolute; bottom: 32px; left: 32px; right: 32px; z-index: 3;
-      color: var(--muted); font-size: 13px; line-height: 1.7;
-    }
+.fp-outer{
+  width:216px;height:216px;
+  border-radius:50%;
+  border:2px solid rgba(0,220,255,0.65);
+  box-shadow:0 0 22px rgba(0,220,255,0.45),0 0 50px rgba(0,180,220,0.18),inset 0 0 22px rgba(0,220,255,0.07);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+/* Spinning arc */
+.fp-outer::before{
+  content:'';
+  position:absolute;inset:-4px;
+  border-radius:50%;
+  border:4px solid rgba(0,200,255,0.06);
+  border-top:4px solid rgba(0,229,255,0.85);
+  border-right:4px solid rgba(0,229,255,0.35);
+  animation:spin 4s linear infinite;
+}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 
-    /* ── Right login panel ── */
-    .login-panel {
-      width: 420px; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      background: var(--panel); border-left: 1px solid var(--border);
-      padding: 40px;
-    }
-    .login-box { width: 100%; }
+.fp-inner{
+  width:168px;height:168px;
+  border-radius:50%;
+  background:rgba(0,4,14,0.96);
+  border:1px solid rgba(0,200,255,0.15);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+  overflow:hidden;
+  z-index:1;
+}
 
-    .login-box h2 { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
-    .login-box p  { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+/* Scan line */
+.fp-scan{
+  position:absolute;
+  left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent 0%,rgba(0,229,255,0.65) 50%,transparent 100%);
+  animation:scan 3s ease-in-out infinite;
+  pointer-events:none;
+  z-index:2;
+}
+@keyframes scan{
+  0%{top:10%;opacity:0;}
+  10%{opacity:1;}
+  90%{opacity:1;}
+  100%{top:88%;opacity:0;}
+}
 
-    .field { margin-bottom: 20px; }
-    .field label {
-      display: block; font-size: 12px; font-weight: 500;
-      color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .5px;
-    }
-    .field input {
-      width: 100%; background: rgba(255,255,255,.04); border: 1px solid var(--border);
-      border-radius: 12px; padding: 13px 16px; color: var(--text);
-      font-size: 15px; outline: none; transition: .2s;
-    }
-    .field input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,196,106,.15); }
+.fp-svg{width:106px;height:106px;animation:fp-pulse 3s ease-in-out infinite;}
+@keyframes fp-pulse{0%,100%{opacity:0.75;}50%{opacity:1;}}
 
-    .btn-login {
-      width: 100%; padding: 14px; border-radius: 12px; border: none; cursor: pointer;
-      font-size: 15px; font-weight: 700; letter-spacing: .3px;
-      background: linear-gradient(135deg, var(--primary), #00a857);
-      color: #000; transition: .2s; margin-top: 8px;
-    }
-    .btn-login:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0,196,106,.3); }
-    .btn-login:active { transform: translateY(0); }
-    .btn-login:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+/* ── Login Panel ── */
+.login-panel{
+  flex:1;
+  padding:40px 30px;
+  border-left:1px solid rgba(0,200,255,0.1);
+  display:flex;flex-direction:column;
+  justify-content:center;
+}
 
-    .error-msg {
-      background: rgba(251,113,133,.12); border: 1px solid rgba(251,113,133,.3);
-      border-radius: 10px; padding: 11px 14px; color: #fb7185;
-      font-size: 13px; margin-top: 14px; display: none;
-    }
-    .error-msg.show { display: block; }
+/* Floating label fields */
+.field{position:relative;margin-bottom:26px;}
+.field label{
+  position:absolute;left:0;top:13px;
+  font-size:13px;color:rgba(255,255,255,0.38);
+  transition:.2s ease;pointer-events:none;
+}
+.field input{
+  width:100%;background:none;
+  border:none;border-bottom:1px solid rgba(255,255,255,0.16);
+  padding:12px 0 6px;
+  font-size:14px;color:#fff;
+  font-family:inherit;outline:none;
+  transition:.2s;
+}
+.field input:focus{border-bottom-color:#00e5ff;}
+.field input:focus ~ label,
+.field input:not(:placeholder-shown) ~ label{
+  top:-7px;font-size:10.5px;color:#00c8f0;
+}
 
-    .login-footer {
-      margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border);
-      text-align: center; color: var(--muted); font-size: 12px;
-    }
+.err{color:#f87171;font-size:11.5px;min-height:14px;margin-bottom:8px;text-align:center;}
 
-    /* spinner */
-    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(0,0,0,.3); border-top-color: #000; border-radius: 50%; animation: spin .6s linear infinite; margin-right: 8px; vertical-align: middle; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+.login-btn{
+  width:100%;padding:11px;
+  background:linear-gradient(90deg,#005f90,#008fba);
+  border:1px solid rgba(0,200,255,0.38);
+  border-radius:4px;
+  color:#fff;font-size:14px;font-weight:600;
+  font-family:inherit;cursor:pointer;letter-spacing:.5px;
+  box-shadow:0 3px 18px rgba(0,150,195,0.28);
+  transition:.2s;
+}
+.login-btn:hover{
+  background:linear-gradient(90deg,#007ab8,#00aad8);
+  box-shadow:0 4px 24px rgba(0,210,255,0.42);
+}
+.login-btn:active{transform:translateY(1px);}
+.login-btn:disabled{opacity:.48;cursor:not-allowed;transform:none;}
 
-    @media (max-width: 840px) {
-      .visual { display: none; }
-      .login-panel { width: 100%; border: none; }
-    }
-  </style>
+/* ── Footer ── */
+.status-bar{
+  margin-top:9px;
+  font-size:11px;color:rgba(255,255,255,0.28);
+  text-align:center;letter-spacing:.3px;
+}
+.status-online{color:#00e5ff;}
+.status-offline{color:#f87171;}
+
+.bottom-row{
+  display:flex;align-items:center;
+  width:min(800px,97vw);
+  margin-top:7px;padding:0 2px;
+}
+.lang-select{
+  padding:5px 12px;
+  background:rgba(0,200,255,0.06);
+  border:1px solid rgba(0,200,255,0.2);
+  border-radius:4px;color:#c8d8e8;
+  font-size:11.5px;font-family:inherit;
+  cursor:pointer;outline:none;
+}
+.lang-select option{background:#060f22;}
+.legal-link{
+  margin-left:auto;
+  font-size:11px;color:rgba(255,255,255,0.28);
+  text-decoration:none;
+}
+.legal-link:hover{color:rgba(255,255,255,0.55);}
+
+@media(max-width:600px){
+  .fp-panel{display:none;}
+  html,body{overflow:auto;}
+  .page{padding:12px;}
+}
+</style>
 </head>
 <body>
+<canvas id="circuit"></canvas>
+
 <div class="page">
 
-  <!-- ── Left Visual ── -->
-  <div class="visual">
-    <div class="grid-bg"></div>
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="orb orb-3"></div>
-
-    <div class="world-wrap">
-      <svg viewBox="0 0 1000 500" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- simplified continent dots pattern -->
-        <g fill="rgba(0,196,106,1)" opacity=".7">
-          <!-- North America -->
-          <rect x="120" y="80"  width="6" height="6" rx="1"/><rect x="140" y="90"  width="5" height="5" rx="1"/><rect x="160" y="100" width="6" height="6" rx="1"/><rect x="170" y="115" width="5" height="5" rx="1"/><rect x="150" y="120" width="6" height="6" rx="1"/><rect x="130" y="110" width="5" height="5" rx="1"/><rect x="185" y="130" width="6" height="6" rx="1"/><rect x="200" y="145" width="5" height="5" rx="1"/><rect x="180" y="155" width="6" height="6" rx="1"/><rect x="165" y="165" width="5" height="5" rx="1"/>
-          <!-- South America -->
-          <rect x="210" y="220" width="6" height="6" rx="1"/><rect x="225" y="235" width="5" height="5" rx="1"/><rect x="215" y="250" width="6" height="6" rx="1"/><rect x="230" y="265" width="5" height="5" rx="1"/><rect x="220" y="280" width="6" height="6" rx="1"/><rect x="210" y="295" width="5" height="5" rx="1"/>
-          <!-- Europe -->
-          <rect x="450" y="80"  width="5" height="5" rx="1"/><rect x="465" y="70"  width="6" height="6" rx="1"/><rect x="480" y="80"  width="5" height="5" rx="1"/><rect x="470" y="95"  width="6" height="6" rx="1"/><rect x="455" y="100" width="5" height="5" rx="1"/><rect x="490" y="90"  width="6" height="6" rx="1"/>
-          <!-- Africa -->
-          <rect x="460" y="180" width="6" height="6" rx="1"/><rect x="475" y="195" width="5" height="5" rx="1"/><rect x="465" y="210" width="6" height="6" rx="1"/><rect x="480" y="225" width="5" height="5" rx="1"/><rect x="470" y="240" width="6" height="6" rx="1"/><rect x="460" y="255" width="5" height="5" rx="1"/><rect x="475" y="270" width="6" height="6" rx="1"/>
-          <!-- Asia -->
-          <rect x="580" y="80"  width="6" height="6" rx="1"/><rect x="600" y="70"  width="5" height="5" rx="1"/><rect x="620" y="80"  width="6" height="6" rx="1"/><rect x="640" y="90"  width="5" height="5" rx="1"/><rect x="660" y="100" width="6" height="6" rx="1"/><rect x="680" y="110" width="5" height="5" rx="1"/><rect x="620" y="110" width="6" height="6" rx="1"/><rect x="600" y="125" width="5" height="5" rx="1"/><rect x="640" y="130" width="6" height="6" rx="1"/><rect x="700" y="120" width="5" height="5" rx="1"/><rect x="720" y="130" width="6" height="6" rx="1"/><rect x="710" y="145" width="5" height="5" rx="1"/><rect x="730" y="155" width="6" height="6" rx="1"/>
-          <!-- China area -->
-          <rect x="660" y="140" width="6" height="6" rx="1"/><rect x="680" y="150" width="5" height="5" rx="1"/><rect x="670" y="165" width="6" height="6" rx="1"/><rect x="690" y="160" width="5" height="5" rx="1"/><rect x="700" y="175" width="6" height="6" rx="1"/>
-          <!-- Australia -->
-          <rect x="740" y="300" width="6" height="6" rx="1"/><rect x="760" y="290" width="5" height="5" rx="1"/><rect x="780" y="300" width="6" height="6" rx="1"/><rect x="770" y="315" width="5" height="5" rx="1"/><rect x="750" y="320" width="6" height="6" rx="1"/><rect x="760" y="330" width="5" height="5" rx="1"/>
-        </g>
-        <!-- connection arcs -->
-        <g stroke="rgba(0,196,106,.25)" stroke-width="1" fill="none">
-          <path d="M 165 130 Q 350 20  660 150"/>
-          <path d="M 220 240 Q 400 180 470 200"/>
-          <path d="M 475 200 Q 580 160 680 155"/>
-          <path d="M 690 165 Q 720 220 755 305"/>
-        </g>
-        <!-- pulsing dots on arcs -->
-        <circle cx="400" cy="55"  r="3" fill="var(--primary)" opacity=".9"><animate attributeName="opacity" values="0.9;0.2;0.9" dur="2.5s" repeatCount="indefinite"/></circle>
-        <circle cx="580" cy="190" r="3" fill="#22d3ee" opacity=".9"><animate attributeName="opacity" values="0.9;0.2;0.9" dur="3s" repeatCount="indefinite" begin=".5s"/></circle>
-        <circle cx="720" cy="235" r="3" fill="#8b5cf6" opacity=".9"><animate attributeName="opacity" values="0.9;0.2;0.9" dur="2s" repeatCount="indefinite" begin="1s"/></circle>
-      </svg>
-    </div>
-
-    <div class="vis-brand">
-      <div class="vis-logo">X</div>
-      <div class="vis-name">XHON <span>CRM</span></div>
-    </div>
-
-    <div class="float-cards">
-      <div class="fcard">
-        <div class="fcard-icon green">📦</div>
-        <div>
-          <div class="fcard-label">Monthly Orders</div>
-          <div class="fcard-value green" id="vc-orders">—</div>
-        </div>
-      </div>
-      <div class="fcard">
-        <div class="fcard-icon cyan">💰</div>
-        <div>
-          <div class="fcard-label">Monthly Sales</div>
-          <div class="fcard-value cyan" id="vc-sales">—</div>
-        </div>
-      </div>
-      <div class="fcard">
-        <div class="fcard-icon purple">📈</div>
-        <div>
-          <div class="fcard-label">Monthly Profit</div>
-          <div class="fcard-value purple" id="vc-profit">—</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="vis-tagline">
-      Professional Foreign Trade Management System<br>
-      专业外贸订单管理系统
-    </div>
+  <!-- Brand -->
+  <div class="brand-wrap">
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+      <polygon points="22,2 42,12 42,32 22,42 2,32 2,12"
+        stroke="rgba(0,220,255,0.55)" stroke-width="1.2" fill="rgba(0,200,255,0.04)"/>
+      <polygon points="22,8 36,16 36,28 22,36 8,28 8,16"
+        stroke="rgba(0,220,255,0.22)" stroke-width="0.7" fill="none"/>
+      <line x1="13" y1="16" x2="31" y2="16" stroke="#00e5ff" stroke-width="2.6" stroke-linecap="round"/>
+      <line x1="22" y1="16" x2="22" y2="31" stroke="#00e5ff" stroke-width="2.6" stroke-linecap="round"/>
+    </svg>
+    <span class="brand-title">TPKELE</span>
   </div>
 
-  <!-- ── Right Login Panel ── -->
-  <div class="login-panel">
-    <div class="login-box">
-      <div style="margin-bottom:32px">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-          <div class="vis-logo" style="width:36px;height:36px;font-size:16px">X</div>
-          <span style="font-size:16px;font-weight:600;color:var(--muted)">XHON CRM</span>
-        </div>
-        <h2>Welcome back</h2>
-        <p>Sign in to your dashboard</p>
-      </div>
+  <div class="card">
 
-      <form id="loginForm" autocomplete="off">
-        <div class="field">
-          <label>Username</label>
-          <input type="text" id="username" placeholder="Enter username" autocomplete="username" required>
+    <!-- Fingerprint panel -->
+    <div class="fp-panel">
+      <div class="fp-outer">
+        <div class="fp-inner">
+          <div class="fp-scan"></div>
+          <svg class="fp-svg" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <filter id="fg" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="1.2" result="b"/>
+                <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <g filter="url(#fg)" stroke="#00e5ff" stroke-linecap="round">
+              <circle cx="55" cy="55" r="2.8" fill="#00e5ff" stroke="none"/>
+              <ellipse cx="55" cy="55" rx="7"  ry="5.5"  stroke-width="1.4" stroke-dasharray="10 3 7 3"  stroke-dashoffset="0"/>
+              <ellipse cx="55" cy="55" rx="13" ry="10"   stroke-width="1.4" stroke-dasharray="15 4 9 4"  stroke-dashoffset="3"/>
+              <ellipse cx="55" cy="55" rx="19" ry="15"   stroke-width="1.4" stroke-dasharray="22 5 11 5" stroke-dashoffset="5"/>
+              <ellipse cx="55" cy="55" rx="25" ry="20.5" stroke-width="1.4" stroke-dasharray="30 6 14 6" stroke-dashoffset="7"/>
+              <ellipse cx="55" cy="55" rx="31" ry="26"   stroke-width="1.4" stroke-dasharray="38 7 16 7" stroke-dashoffset="9"/>
+              <ellipse cx="55" cy="55" rx="37" ry="31"   stroke-width="1.4" stroke-dasharray="47 8 18 8" stroke-dashoffset="11"/>
+              <ellipse cx="55" cy="55" rx="43" ry="36"   stroke-width="1.4" stroke-dasharray="56 9 20 9" stroke-dashoffset="13"/>
+              <ellipse cx="55" cy="55" rx="49" ry="41"   stroke-width="1.4" stroke-dasharray="65 10 22 10" stroke-dashoffset="15"/>
+              <ellipse cx="55" cy="55" rx="53" ry="46"   stroke-width="1.4" stroke-dasharray="73 11 24 11" stroke-dashoffset="17"/>
+            </g>
+          </svg>
         </div>
-        <div class="field">
-          <label>Password</label>
-          <input type="password" id="password" placeholder="Enter password" autocomplete="current-password" required>
-        </div>
-        <button type="submit" class="btn-login" id="loginBtn">Sign In</button>
-        <div class="error-msg" id="errorMsg"></div>
-      </form>
-
-      <div class="login-footer">
-        XHON Foreign Trade CRM &nbsp;·&nbsp; Single User Mode<br>
-        <span style="color:rgba(255,255,255,.25)">v2.0 — 2025</span>
       </div>
     </div>
+
+    <!-- Login panel -->
+    <div class="login-panel">
+      <form id="loginForm" onsubmit="doLogin(event)">
+        <div class="field">
+          <input type="text" id="inp-account" placeholder=" " required autocomplete="username"/>
+          <label id="lbl-a">Username</label>
+        </div>
+        <div class="field">
+          <input type="password" id="inp-pw" placeholder=" " required autocomplete="current-password"/>
+          <label id="lbl-p">Password</label>
+        </div>
+
+        <div class="err" id="errMsg"></div>
+
+        <button type="submit" class="login-btn" id="signBtn">
+          <span id="lbl-btn">Login</span>
+        </button>
+      </form>
+    </div>
+
+  </div>
+
+  <div class="status-bar">
+    Status: <span id="s-dot" class="status-offline">offline</span>
+    &nbsp;|&nbsp;IP: <span id="s-ip">--</span>
+    &nbsp;|&nbsp;MAC: <span id="s-mac">--</span>
+  </div>
+
+  <div class="bottom-row">
+    <select class="lang-select" id="langSel" onchange="setLang(this.value)">
+      <option value="en">English</option>
+      <option value="zh">中文</option>
+    </select>
+    <a href="#" class="legal-link">Legal Notice</a>
   </div>
 
 </div>
 
 <script>
-  // If already logged in, redirect
-  if (localStorage.getItem('crm_token')) {
-    location.href = '/dashboard.html';
+/* ── Circuit Board Canvas ── */
+const cvs = document.getElementById('circuit');
+const cx  = cvs.getContext('2d');
+const CELL = 56;
+let W, H, traces = [], nodes = [], particles = [];
+
+function init() {
+  W = cvs.width  = window.innerWidth;
+  H = cvs.height = window.innerHeight;
+  buildBoard();
+}
+
+function buildBoard() {
+  traces = []; nodes = []; particles = [];
+  const cols = Math.ceil(W / CELL) + 2;
+  const rows = Math.ceil(H / CELL) + 2;
+  const nodeSet = new Set();
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const x = c * CELL, y = r * CELL;
+      if (c < cols - 1 && Math.random() > 0.52) {
+        traces.push([x, y, x + CELL, y]);
+        nodeSet.add(`${x},${y}`); nodeSet.add(`${x+CELL},${y}`);
+      }
+      if (r < rows - 1 && Math.random() > 0.52) {
+        traces.push([x, y, x, y + CELL]);
+        nodeSet.add(`${x},${y}`); nodeSet.add(`${x},${y+CELL}`);
+      }
+    }
   }
 
-  document.getElementById('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const btn = document.getElementById('loginBtn');
-    const err = document.getElementById('errorMsg');
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value;
-
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span>Signing in...';
-    err.classList.remove('show');
-
-    try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Login failed');
-      localStorage.setItem('crm_token', data.token);
-      localStorage.setItem('crm_username', data.username);
-      location.href = '/dashboard.html';
-    } catch (error) {
-      err.textContent = error.message;
-      err.classList.add('show');
-      btn.disabled = false;
-      btn.innerHTML = 'Sign In';
+  nodeSet.forEach(k => {
+    if (Math.random() > 0.66) {
+      const [nx, ny] = k.split(',').map(Number);
+      nodes.push({ x: nx, y: ny, r: 1 + Math.random() * 1.8 });
     }
   });
 
-  // Load preview stats (no auth needed for public stats)
-  (async () => {
-    try {
-      const token = localStorage.getItem('crm_token');
-      if (!token) return;
-      const res = await fetch('/api/dashboard/stats', {
-        headers: { Authorization: 'Bearer ' + token }
-      });
-      if (!res.ok) return;
-      const d = await res.json();
-      const fmt = n => '$' + Number(n||0).toLocaleString(undefined, {maximumFractionDigits:0});
-      document.getElementById('vc-orders').textContent  = d.month_orders  || 0;
-      document.getElementById('vc-sales').textContent   = fmt(d.month_sales);
-      document.getElementById('vc-profit').textContent  = fmt(d.month_profit);
-    } catch {}
-  })();
+  const pick = Math.min(traces.length, 90);
+  for (let i = 0; i < pick; i++) {
+    const idx = Math.floor(Math.random() * traces.length);
+    particles.push({
+      idx, t: Math.random(),
+      spd: (0.003 + Math.random() * 0.006) * (Math.random() > .5 ? 1 : -1)
+    });
+  }
+}
+
+function drawBoard() {
+  cx.clearRect(0, 0, W, H);
+
+  cx.strokeStyle = 'rgba(0,180,220,0.1)';
+  cx.lineWidth = 0.8;
+  traces.forEach(([x1,y1,x2,y2]) => {
+    cx.beginPath(); cx.moveTo(x1,y1); cx.lineTo(x2,y2); cx.stroke();
+  });
+
+  nodes.forEach(n => {
+    cx.beginPath(); cx.arc(n.x, n.y, n.r, 0, Math.PI*2);
+    cx.fillStyle = 'rgba(0,210,255,0.28)'; cx.fill();
+    cx.beginPath(); cx.arc(n.x, n.y, n.r + 3, 0, Math.PI*2);
+    cx.strokeStyle = 'rgba(0,210,255,0.1)'; cx.lineWidth = 0.5; cx.stroke();
+  });
+
+  particles.forEach(p => {
+    p.t += p.spd;
+    if (p.t > 1) p.t = 0;
+    if (p.t < 0) p.t = 1;
+    const [x1,y1,x2,y2] = traces[p.idx];
+    const px = x1+(x2-x1)*p.t, py = y1+(y2-y1)*p.t;
+    const g = cx.createRadialGradient(px,py,0,px,py,5);
+    g.addColorStop(0,'rgba(0,229,255,0.55)');
+    g.addColorStop(1,'rgba(0,229,255,0)');
+    cx.beginPath(); cx.arc(px,py,5,0,Math.PI*2);
+    cx.fillStyle = g; cx.fill();
+    cx.beginPath(); cx.arc(px,py,1.6,0,Math.PI*2);
+    cx.fillStyle = 'rgba(0,229,255,0.9)'; cx.fill();
+  });
+
+  requestAnimationFrame(drawBoard);
+}
+
+init();
+window.addEventListener('resize', init);
+drawBoard();
+
+/* ── i18n ── */
+const T = {
+  en: { a:'Username', p:'Password', btn:'Login',   loading:'Signing in...',
+        ef:'Please enter credentials', er:'Invalid account or password' },
+  zh: { a:'账号',    p:'密码',     btn:'登 录', loading:'登录中...',
+        ef:'请填写账号和密码',        er:'账号或密码错误' }
+};
+let cl = localStorage.getItem('crm_lang') || 'en';
+
+function setLang(l) {
+  cl = l;
+  localStorage.setItem('crm_lang', l);
+  document.getElementById('langSel').value = l;
+  document.getElementById('lbl-a').textContent = T[l].a;
+  document.getElementById('lbl-p').textContent = T[l].p;
+  document.getElementById('lbl-btn').textContent = T[l].btn;
+}
+async function doLogin(e) {
+  e.preventDefault();
+  const account = document.getElementById('inp-account').value.trim();
+  const pw      = document.getElementById('inp-pw').value;
+  const btn     = document.getElementById('signBtn');
+  const err     = document.getElementById('errMsg');
+  if (!account || !pw) { err.textContent = T[cl].ef; return; }
+  err.textContent = '';
+  btn.disabled = true;
+  document.getElementById('lbl-btn').textContent = T[cl].loading;
+  try {
+    const res = await fetch('/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ account, password: pw })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.access_token) throw new Error(data.message || T[cl].er);
+    localStorage.setItem('crm_access_token', data.access_token);
+    if (data.refresh_token) localStorage.setItem('crm_refresh_token', data.refresh_token);
+    if (data.user?.email)   localStorage.setItem('crm_user_email', data.user.email);
+    location.href = '/dashboard.html';
+  } catch (ex) {
+    err.textContent = ex.message || T[cl].er;
+    btn.disabled = false;
+    document.getElementById('lbl-btn').textContent = T[cl].btn;
+  }
+}
+
+setLang(cl);
+if (localStorage.getItem('crm_access_token')) location.href = '/dashboard.html';
 </script>
 </body>
 </html>
