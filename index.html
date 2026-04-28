@@ -382,16 +382,15 @@ async function doLogin(e) {
   btn.disabled = true;
   document.getElementById('lbl-btn').textContent = T[cl].loading;
   try {
-    const res = await fetch('/login', {
+    const res = await fetch('/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ account, password: pw })
+      body: JSON.stringify({ username: account, password: pw })
     });
     const data = await res.json();
-    if (!res.ok || !data.access_token) throw new Error(data.message || T[cl].er);
-    localStorage.setItem('crm_access_token', data.access_token);
-    if (data.refresh_token) localStorage.setItem('crm_refresh_token', data.refresh_token);
-    if (data.user?.email)   localStorage.setItem('crm_user_email', data.user.email);
+    if (!res.ok || !data.token) throw new Error(data.message || T[cl].er);
+    localStorage.setItem('crm_token', data.token);
+    if (data.username) localStorage.setItem('crm_username', data.username);
     location.href = '/dashboard.html';
   } catch (ex) {
     err.textContent = ex.message || T[cl].er;
@@ -401,7 +400,7 @@ async function doLogin(e) {
 }
 
 setLang(cl);
-if (localStorage.getItem('crm_access_token')) location.href = '/dashboard.html';
+if (localStorage.getItem('crm_token')) location.href = '/dashboard.html';
 </script>
 </body>
 </html>
