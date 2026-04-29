@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TPKELE CRM Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -685,8 +686,14 @@ tr:last-child td{border-bottom:none}
         </div>
       </div>
       <div class="card" id="docPreviewCard" style="display:none">
-        <div class="card-head"><h2 data-i18n="docPreviewTitle">Document Preview</h2><button class="btn" data-i18n="btnPrint" onclick="window.print()">🖨️ Print / Save PDF</button></div>
-        <div id="docPreview" style="background:#fff;color:#000;padding:24px;border-radius:10px;font-size:13px;line-height:1.6"></div>
+        <div class="card-head">
+          <h2 data-i18n="docPreviewTitle">Document Preview</h2>
+          <div style="display:flex;gap:8px">
+            <button class="btn" id="docEditBtn" onclick="toggleDocEdit()">✏️ 编辑</button>
+            <button class="btn btn-primary" onclick="downloadDocPDF()">⬇️ 下载 PDF</button>
+          </div>
+        </div>
+        <div id="docPreview" style="background:#fff;color:#000;padding:24px;border-radius:10px;font-size:13px;line-height:1.6;outline:none"></div>
       </div>
     </section>
 
@@ -2145,6 +2152,33 @@ async function deleteOrder(id) {
 // ══════════════════════════════
 // DOCUMENTS & EXPORT
 // ══════════════════════════════
+function toggleDocEdit() {
+  const el  = document.getElementById('docPreview');
+  const btn = document.getElementById('docEditBtn');
+  const editing = el.contentEditable === 'true';
+  el.contentEditable = editing ? 'false' : 'true';
+  el.style.outline   = editing ? 'none' : '2px dashed rgba(0,190,255,0.6)';
+  el.style.cursor    = editing ? '' : 'text';
+  btn.textContent    = editing ? '✏️ 编辑' : '✅ 完成';
+  btn.classList.toggle('btn-cyan', !editing);
+}
+
+async function downloadDocPDF() {
+  const el      = document.getElementById('docPreview');
+  const docType = document.getElementById('doc-type').value || 'doc';
+  const orderId = document.getElementById('doc-order').value;
+  const order   = S.orders.find(o=>o.id===orderId);
+  const name    = order ? `${docType.toUpperCase()}-${(order.customer_name||'').replace(/\s+/g,'-')}-${order.order_date||''}` : 'document';
+  const opt = {
+    margin:     [8, 8, 8, 8],
+    filename:   name + '.pdf',
+    image:      { type: 'jpeg', quality: 0.98 },
+    html2canvas:{ scale: 2, useCORS: true },
+    jsPDF:      { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  html2pdf().set(opt).from(el).save();
+}
+
 async function generateDocument(format) {
   const orderId = document.getElementById('doc-order').value;
   const docType = document.getElementById('doc-type').value;
@@ -2184,21 +2218,21 @@ function buildDocHTML(order, docType, lang) {
     const invNo = `INV-${(order.id||'').slice(0,6).toUpperCase()}`;
     const piRows = items.map(it => `
       <tr>
-        <td style="border:1px solid #999;padding:5px 8px">${esc(it.product_name_en||it.product_name_cn||'')}</td>
-        <td style="border:1px solid #999;padding:5px 8px">${esc(it.specification||'')}</td>
-        <td style="border:1px solid #999;padding:5px 8px;text-align:center">${it.quantity||''}</td>
-        <td style="border:1px solid #999;padding:5px 8px;text-align:right">${it.sales_price?'$'+Number(it.sales_price).toFixed(2):''}</td>
-        <td style="border:1px solid #999;padding:5px 8px;text-align:right">${it.sales_total?'$'+Number(it.sales_total).toFixed(2):''}</td>
+        <td style="border:1px solid #000;padding:5px 8px">${esc(it.product_name_en||it.product_name_cn||'')}</td>
+        <td style="border:1px solid #000;padding:5px 8px">${esc(it.specification||'')}</td>
+        <td style="border:1px solid #000;padding:5px 8px;text-align:center">${it.quantity||''}</td>
+        <td style="border:1px solid #000;padding:5px 8px;text-align:right">${it.sales_price?'$'+Number(it.sales_price).toFixed(2):''}</td>
+        <td style="border:1px solid #000;padding:5px 8px;text-align:right">${it.sales_total?'$'+Number(it.sales_total).toFixed(2):''}</td>
       </tr>`).join('');
     // 补空行至少 6 行
     const emptyCount = Math.max(0, 6 - items.length);
     const emptyRows  = Array(emptyCount).fill(`
       <tr>
-        <td style="border:1px solid #999;padding:5px 8px;height:24px">&nbsp;</td>
-        <td style="border:1px solid #999;padding:5px 8px">&nbsp;</td>
-        <td style="border:1px solid #999;padding:5px 8px">&nbsp;</td>
-        <td style="border:1px solid #999;padding:5px 8px">&nbsp;</td>
-        <td style="border:1px solid #999;padding:5px 8px">&nbsp;</td>
+        <td style="border:1px solid #000;padding:5px 8px;height:24px">&nbsp;</td>
+        <td style="border:1px solid #000;padding:5px 8px">&nbsp;</td>
+        <td style="border:1px solid #000;padding:5px 8px">&nbsp;</td>
+        <td style="border:1px solid #000;padding:5px 8px">&nbsp;</td>
+        <td style="border:1px solid #000;padding:5px 8px">&nbsp;</td>
       </tr>`).join('');
     const total = Number(order.sales_total||0).toFixed(2);
     const customer = S.customers?.find(c=>c.id===order.customer_id)||{};
@@ -2253,7 +2287,7 @@ function buildDocHTML(order, docType, lang) {
         </tfoot>
       </table>
       <!-- 税务说明 -->
-      <div style="text-align:center;padding:5px 4px;font-size:11px;border:1px solid #ccc;border-top:none">
+      <div style="text-align:center;padding:5px 4px;font-size:11px;border:1px solid #000;border-top:none">
         Taxes and Duties: All Taxes, duties, license and bank charges payable should be borne by you.
       </div>
       <div style="text-align:center;padding:4px;font-size:11px">
@@ -2261,38 +2295,38 @@ function buildDocHTML(order, docType, lang) {
       </div>
       <!-- 银行信息（固定） -->
       <table style="width:100%;border-collapse:collapse;font-size:11.5px">
-        <tr><td colspan="2" style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:4px 8px">BANK INFORMATION:</td></tr>
+        <tr><td colspan="2" style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:4px 8px">BANK INFORMATION:</td></tr>
         <tr>
-          <td style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:3px 8px;width:28%">Account Name</td>
-          <td style="border:1px solid #999;padding:3px 8px">Wenzhou Hetao Electric Co., Ltd.</td>
+          <td style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:3px 8px;width:28%">Account Name</td>
+          <td style="border:1px solid #000;padding:3px 8px">Wenzhou Hetao Electric Co., Ltd.</td>
         </tr>
         <tr>
-          <td style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:3px 8px">Account No.</td>
-          <td style="border:1px solid #999;padding:3px 8px">330501202010000008156</td>
+          <td style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:3px 8px">Account No.</td>
+          <td style="border:1px solid #000;padding:3px 8px">330501202010000008156</td>
         </tr>
         <tr>
-          <td style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:3px 8px">Bank</td>
-          <td style="border:1px solid #999;padding:3px 8px">ZHEJIANG TAILONG COMMERCIAL BANK</td>
+          <td style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:3px 8px">Bank</td>
+          <td style="border:1px solid #000;padding:3px 8px">ZHEJIANG TAILONG COMMERCIAL BANK</td>
         </tr>
         <tr>
-          <td style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:3px 8px">Country/Region</td>
-          <td style="border:1px solid #999;padding:3px 8px">China</td>
+          <td style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:3px 8px">Country/Region</td>
+          <td style="border:1px solid #000;padding:3px 8px">China</td>
         </tr>
         <tr>
-          <td style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:3px 8px">Bank Address</td>
-          <td style="border:1px solid #999;padding:3px 8px">188 NANGUAN ROAD, LUQIAO DISTRICT, TAIZHOU, ZHEJIANG PROVINCE</td>
+          <td style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:3px 8px">Bank Address</td>
+          <td style="border:1px solid #000;padding:3px 8px">188 NANGUAN ROAD, LUQIAO DISTRICT, TAIZHOU, ZHEJIANG PROVINCE</td>
         </tr>
         <tr>
-          <td style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:3px 8px">SWIFT</td>
-          <td style="border:1px solid #999;padding:3px 8px">ZJTLCNBHXXX</td>
+          <td style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:3px 8px">SWIFT</td>
+          <td style="border:1px solid #000;padding:3px 8px">ZJTLCNBHXXX</td>
         </tr>
         <tr>
-          <td style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:3px 8px">Clearing system</td>
-          <td style="border:1px solid #999;padding:3px 8px">SWIFT</td>
+          <td style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:3px 8px">Clearing system</td>
+          <td style="border:1px solid #000;padding:3px 8px">SWIFT</td>
         </tr>
         <tr>
-          <td style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:3px 8px">Payment and delivery methods</td>
-          <td style="border:1px solid #999;padding:3px 8px">Delivery within 3-5 working days after 100% payment</td>
+          <td style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:3px 8px">Payment and delivery methods</td>
+          <td style="border:1px solid #000;padding:3px 8px">Delivery within 3-5 working days after 100% payment</td>
         </tr>
       </table>
     </div>`;
