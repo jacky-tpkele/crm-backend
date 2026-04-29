@@ -46,8 +46,10 @@ button,input,select,textarea{font:inherit}
 .logo-text span{color:var(--primary)}
 
 .sb-nav{flex:1;overflow-y:auto;overflow-x:hidden;padding:10px 0}
+
+/* ── 层级 L1：一级导航项 ── */
 .nav-item{
-  display:flex;align-items:center;gap:12px;padding:10px 16px;
+  display:flex;align-items:center;gap:12px;padding:11px 16px;
   cursor:pointer;transition:.2s;white-space:nowrap;
   position:relative;color:var(--muted2);font-size:15px;font-weight:500;
   border-left:3px solid transparent;
@@ -56,27 +58,36 @@ button,input,select,textarea{font:inherit}
 .nav-item.active{
   background:rgba(0,200,240,0.08);color:var(--primary);
   border-left-color:var(--primary);
-  font-size:17px;font-weight:600;
+  font-size:17px;font-weight:700;letter-spacing:.2px;
 }
 .nav-item.active .nav-icon{font-size:20px}
 .nav-icon{font-size:18px;flex-shrink:0;width:24px;text-align:center;transition:.2s}
-.nav-label{overflow:hidden;transition:font-size .2s, font-weight .2s}
+.nav-label{overflow:hidden;transition:font-size .2s,font-weight .2s}
 .nav-group{padding:8px 16px 4px;font-size:10px;font-weight:600;color:rgba(0,200,255,0.22);text-transform:uppercase;letter-spacing:.8px;white-space:nowrap;overflow:hidden}
-.sub-nav{padding-left:8px}
-.sub-nav .nav-item{font-size:14px;padding:8px 14px}
-.sub-nav .nav-item.active{font-size:16px}
-/* 折叠分组 */
+
+/* ── 层级 L2：折叠分组标题（分隔标签，视觉比 L1 小）── */
 .nav-collapse-hd{
-  display:flex;align-items:center;padding:10px 16px 8px;
-  font-size:13px;font-weight:600;color:rgba(0,200,255,0.45);
-  letter-spacing:.5px;
+  display:flex;align-items:center;padding:12px 16px 6px;
+  font-size:10px;font-weight:700;
+  color:rgba(0,200,255,0.35);
+  text-transform:uppercase;letter-spacing:1.2px;
   cursor:pointer;user-select:none;transition:.15s;
   border-left:3px solid transparent;
 }
-.nav-collapse-hd:hover{color:var(--primary);background:rgba(0,200,255,0.04)}
-.nav-collapse-arrow{margin-left:auto;font-size:11px;transition:transform .25s;display:inline-block;color:rgba(0,200,255,0.4)}
+.nav-collapse-hd:hover{color:rgba(0,200,255,0.7);background:rgba(0,200,255,0.03)}
+.nav-collapse-arrow{margin-left:auto;font-size:9px;transition:transform .25s;display:inline-block;color:rgba(0,200,255,0.35)}
 .nav-collapse-body{overflow:hidden;max-height:500px;transition:max-height .35s ease}
 .nav-collapse-body.closed{max-height:0}
+
+/* ── 层级 L2：折叠分组内的一级项（与主导航相同大小）── */
+.nav-collapse-body > .nav-item{font-size:15px}
+.nav-collapse-body > .nav-item.active{font-size:17px}
+
+/* ── 层级 L3：二级子项（比 L1 小一档）── */
+.sub-nav{padding-left:8px}
+.sub-nav .nav-item{font-size:13.5px;padding:8px 14px;color:var(--muted)}
+.sub-nav .nav-item:hover{color:var(--muted2)}
+.sub-nav .nav-item.active{font-size:15px;font-weight:600;color:var(--primary)}
 
 .sb-bottom{padding:12px;border-top:1px solid var(--border);flex-shrink:0}
 .sb-toggle{
@@ -158,8 +169,8 @@ button,input,select,textarea{font:inherit}
 .workspace{flex:1;overflow-y:auto;overflow-x:hidden;padding:24px 22px;position:relative}
 .section{display:none}
 .section.active{display:block}
-.section-title{font-size:20px;font-weight:700;margin-bottom:4px}
-.section-sub{color:var(--muted);font-size:13px;margin-bottom:20px}
+.section-title{font-size:22px;font-weight:700;margin-bottom:4px}   /* H1 */
+.section-sub{color:var(--muted);font-size:14px;margin-bottom:20px} /* 副标题 */
 
 /* ── KPI Grid ── */
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:22px}
@@ -200,7 +211,7 @@ button,input,select,textarea{font:inherit}
 /* ── Cards ── */
 .card{background:linear-gradient(180deg,rgba(0,180,255,0.05),rgba(0,100,180,0.02));border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px}
 .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
-.card-head h2{font-size:15px;font-weight:600}
+.card-head h2{font-size:16px;font-weight:600}  /* H2 卡片标题 */
 
 /* ── Filter bar ── */
 .filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
@@ -214,8 +225,8 @@ button,input,select,textarea{font:inherit}
 /* ── Table ── */
 .tbl-wrap{overflow:auto;border-radius:10px;border:1px solid var(--border)}
 table{width:100%;border-collapse:collapse;min-width:600px}
-th,td{padding:11px 13px;text-align:left;border-bottom:1px solid rgba(0,180,255,0.06);font-size:13px;vertical-align:middle}
-th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;background:rgba(0,150,200,0.04)}
+th,td{padding:11px 13px;text-align:left;border-bottom:1px solid rgba(0,180,255,0.06);font-size:14px;vertical-align:middle}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.5px;background:rgba(0,150,200,0.04)}
 tr:hover td{background:rgba(0,180,255,0.03)}
 tr:last-child td{border-bottom:none}
 .actions-cell{display:flex;gap:6px;flex-wrap:wrap}
@@ -385,7 +396,7 @@ tr:last-child td{border-bottom:none}
 
     <!-- 文件 折叠分组 -->
     <div class="nav-collapse-hd" onclick="toggleGroup('docGroup')">
-      <span>📁 文件</span>
+      <span>文件</span>
       <span class="nav-collapse-arrow" id="arrow-docGroup" style="transform:rotate(-90deg)">▼</span>
     </div>
     <div class="nav-collapse-body closed" id="docGroup">
@@ -407,7 +418,7 @@ tr:last-child td{border-bottom:none}
 
     <!-- 工具 折叠分组 -->
     <div class="nav-collapse-hd" onclick="toggleGroup('toolGroup')">
-      <span>🔧 工具</span>
+      <span>工具</span>
       <span class="nav-collapse-arrow" id="arrow-toolGroup" style="transform:rotate(-90deg)">▼</span>
     </div>
     <div class="nav-collapse-body closed" id="toolGroup">
