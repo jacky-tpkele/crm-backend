@@ -55,20 +55,21 @@ button,input,select,textarea{font:inherit}
 .nav-item:hover{background:rgba(0,200,255,0.05);color:var(--text)}
 .nav-item.active{background:rgba(0,200,240,0.08);color:var(--primary);border-left-color:var(--primary)}
 .nav-icon{font-size:17px;flex-shrink:0;width:22px;text-align:center}
-.nav-label{flex:1;overflow:hidden;text-align-last:justify}
+.nav-label{overflow:hidden}
 .nav-group{padding:8px 16px 4px;font-size:10px;font-weight:600;color:rgba(0,200,255,0.22);text-transform:uppercase;letter-spacing:.8px;white-space:nowrap;overflow:hidden}
-.sub-nav{padding-left:12px}
+.sub-nav{padding-left:8px}
 .sub-nav .nav-item{font-size:13px;padding:8px 14px}
 /* 折叠分组 */
 .nav-collapse-hd{
-  display:flex;align-items:center;padding:8px 16px 4px;
-  font-size:10px;font-weight:600;color:rgba(0,200,255,0.22);
-  text-transform:uppercase;letter-spacing:.8px;
+  display:flex;align-items:center;padding:10px 16px 8px;
+  font-size:12px;font-weight:600;color:rgba(0,200,255,0.45);
+  letter-spacing:.5px;
   cursor:pointer;user-select:none;transition:.15s;
+  border-left:3px solid transparent;
 }
-.nav-collapse-hd:hover{color:rgba(0,200,255,0.5)}
-.nav-collapse-arrow{margin-left:auto;font-size:10px;transition:transform .25s;display:inline-block}
-.nav-collapse-body{overflow:hidden;max-height:500px;transition:max-height .3s ease}
+.nav-collapse-hd:hover{color:var(--primary);background:rgba(0,200,255,0.04)}
+.nav-collapse-arrow{margin-left:auto;font-size:11px;transition:transform .25s;display:inline-block;color:rgba(0,200,255,0.4)}
+.nav-collapse-body{overflow:hidden;max-height:500px;transition:max-height .35s ease}
 .nav-collapse-body.closed{max-height:0}
 
 .sb-bottom{padding:12px;border-top:1px solid var(--border);flex-shrink:0}
@@ -378,10 +379,10 @@ tr:last-child td{border-bottom:none}
 
     <!-- 文件 折叠分组 -->
     <div class="nav-collapse-hd" onclick="toggleGroup('docGroup')">
-      <span>文件</span>
-      <span class="nav-collapse-arrow" id="arrow-docGroup">▼</span>
+      <span>📁 文件</span>
+      <span class="nav-collapse-arrow" id="arrow-docGroup" style="transform:rotate(-90deg)">▼</span>
     </div>
-    <div class="nav-collapse-body" id="docGroup">
+    <div class="nav-collapse-body closed" id="docGroup">
       <div class="nav-item" data-sec="documents">
         <span class="nav-icon">📄</span><span class="nav-label" data-i18n="navDocuments">文件</span>
       </div>
@@ -400,10 +401,10 @@ tr:last-child td{border-bottom:none}
 
     <!-- 工具 折叠分组 -->
     <div class="nav-collapse-hd" onclick="toggleGroup('toolGroup')">
-      <span>工具</span>
-      <span class="nav-collapse-arrow" id="arrow-toolGroup">▼</span>
+      <span>🔧 工具</span>
+      <span class="nav-collapse-arrow" id="arrow-toolGroup" style="transform:rotate(-90deg)">▼</span>
     </div>
-    <div class="nav-collapse-body" id="toolGroup">
+    <div class="nav-collapse-body closed" id="toolGroup">
       <div class="nav-item" data-sec="ai">
         <span class="nav-icon">🤖</span><span class="nav-label" data-i18n="navAI">AI 助手</span>
       </div>
