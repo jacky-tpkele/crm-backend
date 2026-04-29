@@ -749,7 +749,17 @@ tr:last-child td{border-bottom:none}
             <div class="field"><label data-i18n="lblCompanyName">Company Name</label><input type="text" id="set-company" data-i18n-ph="phCompanyName" placeholder="Your company name"></div>
             <div class="field"><label data-i18n="lblCompanyAddr">Company Address</label><input type="text" id="set-address" data-i18n-ph="phAddr" placeholder="Address"></div>
             <div class="field"><label data-i18n="lblContactEmail">Contact Email</label><input type="email" id="set-email" placeholder="email@company.com"></div>
-            <div class="field"><label data-i18n="lblBankInfo">Bank Info</label><input type="text" id="set-bank" data-i18n-ph="phBank" placeholder="Bank account for PI"></div>
+          </div>
+          <h3 style="margin-top:18px;font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">银行信息（Invoice 用）</h3>
+          <div class="form-grid">
+            <div class="field"><label>账户名称 Account Name</label><input type="text" id="set-bank-acct-name" placeholder="Company Name (for bank)"></div>
+            <div class="field"><label>账号 Account No.</label><input type="text" id="set-bank-acct-no" placeholder="Bank account number"></div>
+            <div class="field"><label>开户行 Bank Name</label><input type="text" id="set-bank-name" placeholder="Bank name"></div>
+            <div class="field"><label>国家 Country/Region</label><input type="text" id="set-bank-country" placeholder="China"></div>
+            <div class="field form-full"><label>银行地址 Bank Address</label><input type="text" id="set-bank-address" placeholder="Bank address"></div>
+            <div class="field"><label>SWIFT Code</label><input type="text" id="set-bank-swift" placeholder="SWIFT/BIC code"></div>
+            <div class="field"><label>清算方式 Clearing System</label><input type="text" id="set-bank-clearing" placeholder="SWIFT"></div>
+            <div class="field form-full"><label>付款交货方式 Payment &amp; Delivery</label><input type="text" id="set-bank-payment" placeholder="e.g. Delivery within 3-5 working days after 100% payment"></div>
           </div>
           <button class="btn btn-primary" data-i18n="btnSaveSettings" onclick="saveSettings()">Save Settings</button>
         </div>
@@ -1516,20 +1526,34 @@ function setLang(l) {
 // ── Settings ──
 function saveSettings() {
   S.settings = {
-    company: document.getElementById('set-company').value,
-    address: document.getElementById('set-address').value,
-    email:   document.getElementById('set-email').value,
-    bank:    document.getElementById('set-bank').value,
+    company:          document.getElementById('set-company').value,
+    address:          document.getElementById('set-address').value,
+    email:            document.getElementById('set-email').value,
+    bank_acct_name:   document.getElementById('set-bank-acct-name').value,
+    bank_acct_no:     document.getElementById('set-bank-acct-no').value,
+    bank_name:        document.getElementById('set-bank-name').value,
+    bank_country:     document.getElementById('set-bank-country').value,
+    bank_address:     document.getElementById('set-bank-address').value,
+    bank_swift:       document.getElementById('set-bank-swift').value,
+    bank_clearing:    document.getElementById('set-bank-clearing').value,
+    bank_payment:     document.getElementById('set-bank-payment').value,
   };
   localStorage.setItem('crm_settings', JSON.stringify(S.settings));
   toast('Settings saved');
 }
 function loadSettings() {
   const s = S.settings;
-  if (s.company) document.getElementById('set-company').value = s.company;
-  if (s.address) document.getElementById('set-address').value = s.address;
-  if (s.email)   document.getElementById('set-email').value   = s.email;
-  if (s.bank)    document.getElementById('set-bank').value    = s.bank;
+  if (s.company)        document.getElementById('set-company').value         = s.company;
+  if (s.address)        document.getElementById('set-address').value         = s.address;
+  if (s.email)          document.getElementById('set-email').value           = s.email;
+  if (s.bank_acct_name) document.getElementById('set-bank-acct-name').value = s.bank_acct_name;
+  if (s.bank_acct_no)   document.getElementById('set-bank-acct-no').value   = s.bank_acct_no;
+  if (s.bank_name)      document.getElementById('set-bank-name').value      = s.bank_name;
+  if (s.bank_country)   document.getElementById('set-bank-country').value   = s.bank_country;
+  if (s.bank_address)   document.getElementById('set-bank-address').value   = s.bank_address;
+  if (s.bank_swift)     document.getElementById('set-bank-swift').value     = s.bank_swift;
+  if (s.bank_clearing)  document.getElementById('set-bank-clearing').value  = s.bank_clearing;
+  if (s.bank_payment)   document.getElementById('set-bank-payment').value   = s.bank_payment;
   const un = localStorage.getItem('crm_username') || 'TPKELE';
   document.getElementById('setUsername').textContent = un;
   document.getElementById('userNameDisplay').textContent = un;
@@ -2179,12 +2203,135 @@ function qeExport(docType) {
 }
 
 function buildDocHTML(order, docType, lang) {
-  const co = S.settings;
-  const isZh = lang === 'zh';
+  const co    = S.settings;
+  const isZh  = lang === 'zh';
   const items = order.items || [];
+
+  // ── PI 专用模板（匹配 CI China 格式）──
+  if (docType === 'pi') {
+    const d = new Date(order.order_date || Date.now());
+    const dateStr = `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+    const invNo = `INV-${(order.id||'').slice(0,6).toUpperCase()}`;
+    const piRows = items.map(it => `
+      <tr>
+        <td style="border:1px solid #999;padding:5px 8px">${esc(it.product_name_en||it.product_name_cn||'')}</td>
+        <td style="border:1px solid #999;padding:5px 8px">${esc(it.specification||'')}</td>
+        <td style="border:1px solid #999;padding:5px 8px;text-align:center">${it.quantity||''}</td>
+        <td style="border:1px solid #999;padding:5px 8px;text-align:right">${it.sales_price?'$'+Number(it.sales_price).toFixed(2):''}</td>
+        <td style="border:1px solid #999;padding:5px 8px;text-align:right">${it.sales_total?'$'+Number(it.sales_total).toFixed(2):''}</td>
+      </tr>`).join('');
+    // 补空行至少 6 行
+    const emptyCount = Math.max(0, 6 - items.length);
+    const emptyRows  = Array(emptyCount).fill(`
+      <tr>
+        <td style="border:1px solid #999;padding:5px 8px;height:24px">&nbsp;</td>
+        <td style="border:1px solid #999;padding:5px 8px">&nbsp;</td>
+        <td style="border:1px solid #999;padding:5px 8px">&nbsp;</td>
+        <td style="border:1px solid #999;padding:5px 8px">&nbsp;</td>
+        <td style="border:1px solid #999;padding:5px 8px">&nbsp;</td>
+      </tr>`).join('');
+    const total = Number(order.sales_total||0).toFixed(2);
+    const customer = S.customers?.find(c=>c.id===order.customer_id)||{};
+    return `
+    <div style="font-family:Arial,sans-serif;max-width:780px;margin:0 auto;color:#000;font-size:12px">
+      <!-- 公司名称 -->
+      <div style="text-align:center;margin-bottom:6px">
+        <div style="font-size:22px;font-weight:bold">${esc(co.company||'Company Name')}</div>
+        <div style="font-size:10.5px;color:#333;margin-top:2px">${esc(co.address||'')}</div>
+      </div>
+      <!-- Invoice 标题 -->
+      <div style="text-align:center;font-size:15px;font-weight:bold;border:1px solid #000;padding:4px 0;margin-bottom:0">Invoice</div>
+      <!-- 客户信息 -->
+      <table style="width:100%;border-collapse:collapse;border-left:1px solid #000;border-right:1px solid #000">
+        <tr>
+          <td style="border:1px solid #000;padding:5px 8px;width:14%;font-weight:600">To:</td>
+          <td style="border:1px solid #000;padding:5px 8px;width:52%">${esc(order.customer_name||'')}</td>
+          <td style="border:1px solid #000;padding:5px 8px;width:14%;font-weight:600;text-align:right">DATE:</td>
+          <td style="border:1px solid #000;padding:5px 8px;width:20%">${dateStr}</td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000;padding:5px 8px;font-weight:600">ATTN:</td>
+          <td colspan="3" style="border:1px solid #000;padding:5px 8px">&nbsp;</td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Address:</td>
+          <td colspan="3" style="border:1px solid #000;padding:5px 8px">${esc(customer.shipping_address||order.shipping_address||'')}</td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Tel:</td>
+          <td style="border:1px solid #000;padding:5px 8px">${esc(customer.whatsapp||'')}</td>
+          <td colspan="2" style="border:1px solid #000;padding:5px 8px;text-align:right;font-weight:600">Commercial Invoice No：${invNo}</td>
+        </tr>
+      </table>
+      <!-- 产品表格 -->
+      <table style="width:100%;border-collapse:collapse;margin-top:0">
+        <thead>
+          <tr style="text-align:center;font-weight:bold;font-size:12px">
+            <th style="border:1px solid #000;padding:6px;width:24%">Product Name</th>
+            <th style="border:1px solid #000;padding:6px;width:34%">Description</th>
+            <th style="border:1px solid #000;padding:6px;width:12%">Quantity(pcs)</th>
+            <th style="border:1px solid #000;padding:6px;width:15%">UNIT PRICE</th>
+            <th style="border:1px solid #000;padding:6px;width:15%">AMOUNT</th>
+          </tr>
+        </thead>
+        <tbody>${piRows}${emptyRows}</tbody>
+        <tfoot>
+          <tr>
+            <td colspan="4" style="border:1px solid #000;padding:6px;text-align:center;font-weight:bold">TOTAL:</td>
+            <td style="border:1px solid #000;padding:6px;background:#f4b942;font-weight:bold;text-align:center">US$${total}</td>
+          </tr>
+        </tfoot>
+      </table>
+      <!-- 税务说明 -->
+      <div style="text-align:center;padding:5px 4px;font-size:11px;border:1px solid #ccc;border-top:none">
+        Taxes and Duties: All Taxes, duties, license and bank charges payable should be borne by you.
+      </div>
+      <div style="text-align:center;padding:4px;font-size:11px">
+        You can tt the money to our company account :
+      </div>
+      <!-- 银行信息 -->
+      <table style="width:100%;border-collapse:collapse;font-size:11.5px">
+        <tr><td colspan="2" style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:4px 8px">BANK INFORMATION:</td></tr>
+        <tr>
+          <td style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:3px 8px;width:28%">Account Name</td>
+          <td style="border:1px solid #999;padding:3px 8px">${esc(co.bank_acct_name||co.company||'')}</td>
+        </tr>
+        <tr>
+          <td style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:3px 8px">Account No.</td>
+          <td style="border:1px solid #999;padding:3px 8px">${esc(co.bank_acct_no||'')}</td>
+        </tr>
+        <tr>
+          <td style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:3px 8px">Bank</td>
+          <td style="border:1px solid #999;padding:3px 8px">${esc(co.bank_name||'')}</td>
+        </tr>
+        <tr>
+          <td style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:3px 8px">Country/Region</td>
+          <td style="border:1px solid #999;padding:3px 8px">${esc(co.bank_country||'China')}</td>
+        </tr>
+        <tr>
+          <td style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:3px 8px">Bank Address</td>
+          <td style="border:1px solid #999;padding:3px 8px">${esc(co.bank_address||'')}</td>
+        </tr>
+        <tr>
+          <td style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:3px 8px">SWIFT</td>
+          <td style="border:1px solid #999;padding:3px 8px">${esc(co.bank_swift||'')}</td>
+        </tr>
+        <tr>
+          <td style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:3px 8px">Clearing system</td>
+          <td style="border:1px solid #999;padding:3px 8px">${esc(co.bank_clearing||'SWIFT')}</td>
+        </tr>
+        <tr>
+          <td style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:3px 8px">Payment and delivery methods</td>
+          <td style="border:1px solid #999;padding:3px 8px">${esc(co.bank_payment||'')}</td>
+        </tr>
+      </table>
+    </div>`;
+  }
+
+  // ── 其他文件类型（报价单 / 装箱单）保持原有逻辑 ──
+  const isZh = lang === 'zh';
   const titles = {
     quotation: isZh ? '报 价 单' : 'QUOTATION',
-    pi:        isZh ? '形式发票' : 'PROFORMA INVOICE',
     packing:   isZh ? '装 箱 单' : 'PACKING LIST',
   };
   const rows = items.map((it,i) => {
@@ -2214,7 +2361,6 @@ function buildDocHTML(order, docType, lang) {
       </div>
       <div style="margin-bottom:20px;padding:12px;background:#f9f9f9;border-radius:6px;font-size:13px">
         <strong>${isZh?'买方':'Bill To'}:</strong> ${order.customer_name||''}
-        ${docType==='pi'&&co.bank?`<br><strong>${isZh?'银行信息':'Bank'}</strong>: ${co.bank}`:''}
       </div>
       <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px">
         <thead>${colHeaders}</thead>
