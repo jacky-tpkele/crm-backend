@@ -197,6 +197,31 @@ button,input,select,textarea{font:inherit}
 .email-item:hover .ei-check,.email-item.selected .ei-check{opacity:1}
 .email-item.selected{background:rgba(0,200,240,.06)}
 
+/* ── Fullscreen compose ── */
+.detail-panel.fullscreen{position:fixed;inset:0;z-index:200}
+.btn-fs{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-size:15px;display:grid;place-items:center;transition:.15s;flex-shrink:0}
+.btn-fs:hover{border-color:rgba(0,200,255,.4);color:var(--primary)}
+
+/* ── Table insert dialog ── */
+.tbl-dlg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:500;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);display:none;flex-direction:column;gap:14px;min-width:220px}
+.tbl-dlg.open{display:flex}
+.tbl-dlg-title{font-size:14px;font-weight:600}
+.tbl-row{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;color:var(--muted2)}
+.tbl-num{width:70px;background:var(--panel2);border:1px solid var(--border);border-radius:7px;padding:7px 10px;color:var(--text);font-size:15px;outline:none;text-align:center;font-weight:600}
+.tbl-num:focus{border-color:var(--primary)}
+.tbl-dlg-btns{display:flex;gap:8px;justify-content:flex-end}
+.btn-tbl-ok{padding:6px 18px;border-radius:7px;border:none;background:var(--primary);color:#000;font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+.btn-tbl-ok:hover{background:#00e5ff}
+.btn-tbl-cancel{padding:6px 14px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:13px;cursor:pointer;transition:.15s}
+.btn-tbl-cancel:hover{color:var(--text)}
+.tbl-dlg-overlay{position:fixed;inset:0;z-index:499;display:none}
+.tbl-dlg-overlay.open{display:block}
+
+/* ── Table styles in editor & reader ── */
+.reader-html table,.ql-editor table{border-collapse:collapse;width:auto;margin:10px 0;font-size:13px}
+.reader-html th,.reader-html td,.ql-editor th,.ql-editor td{border:1px solid rgba(0,200,255,0.3);padding:6px 12px;min-width:60px;vertical-align:top}
+.reader-html th,.ql-editor th{background:rgba(0,200,255,0.08);font-weight:600;color:var(--primary)}
+
 /* ── Toast ── */
 .toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:13px;color:var(--text);display:none;align-items:center;gap:10px;box-shadow:var(--shadow)}
 .toast.show{display:flex}
@@ -355,6 +380,18 @@ button,input,select,textarea{font:inherit}
       <span class="modal-status" id="modalStatus"></span>
       <button class="btn-modal-save" onclick="saveAccount()">保存</button>
     </div>
+  </div>
+</div>
+
+<!-- Table insert dialog -->
+<div class="tbl-dlg-overlay" id="tblOverlay" onclick="closeTableDialog()"></div>
+<div class="tbl-dlg" id="tblDlg">
+  <div class="tbl-dlg-title">⊞ 插入表格</div>
+  <div class="tbl-row"><span>行数</span><input class="tbl-num" id="tblRows" type="number" min="1" max="20" value="3" onkeydown="if(event.key==='Enter')confirmInsertTable()"></div>
+  <div class="tbl-row"><span>列数</span><input class="tbl-num" id="tblCols" type="number" min="1" max="15" value="3" onkeydown="if(event.key==='Enter')confirmInsertTable()"></div>
+  <div class="tbl-dlg-btns">
+    <button class="btn-tbl-cancel" onclick="closeTableDialog()">取消</button>
+    <button class="btn-tbl-ok" onclick="confirmInsertTable()">插入</button>
   </div>
 </div>
 
@@ -718,13 +755,19 @@ function openCompose(opts = {}) {
     <div class="compose">
       <div class="compose-header">
         <span class="compose-title">✏️ ${opts.title||'写邮件'}</span>
-        <button class="btn-close" onclick="showPlaceholder()">✕</button>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="btn-fs" id="btnFullscreen" onclick="toggleComposeFullscreen()" title="全屏">⛶</button>
+          <button class="btn-close" onclick="showPlaceholder()">✕</button>
+        </div>
       </div>
       <div class="compose-form">
         <div class="field-row"><span class="field-label">收件人</span><input class="field-input" id="cTo" placeholder="example@domain.com" value="${opts.to||''}"></div>
         <div class="field-row"><span class="field-label">抄送</span><input class="field-input" id="cCc" placeholder="可选"></div>
         <div class="field-row"><span class="field-label">主题</span><input class="field-input" id="cSubject" placeholder="邮件主题" value="${opts.subject||''}"></div>
         <div class="compose-editor" id="quillWrap"></div>
+        <div style="padding:4px 0;flex-shrink:0">
+          <button class="attach-btn" onclick="openTableDialog()">⊞ 插入表格</button>
+        </div>
         <div class="attach-area" id="attachArea">
           <button class="attach-btn" onclick="document.getElementById('fileInput').click()">📎 添加附件</button>
           <input type="file" id="fileInput" style="display:none" multiple onchange="addFiles(this)">
@@ -810,6 +853,42 @@ async function deleteEmail(id) {
     await apiFetch(`/api/emails/${id}`, { method:'DELETE' });
     showToast('邮件已删除'); showPlaceholder(); loadEmails(currentFolder);
   } catch (e) { showToast('删除失败：'+e.message,'err'); }
+}
+
+// ── Fullscreen compose ──
+function toggleComposeFullscreen() {
+  const panel = document.getElementById('detailPanel');
+  const btn   = document.getElementById('btnFullscreen');
+  if (!panel || !btn) return;
+  const isFs = panel.classList.toggle('fullscreen');
+  btn.textContent = isFs ? '⊡' : '⛶';
+  btn.title       = isFs ? '退出全屏' : '全屏';
+}
+
+// ── Table insert ──
+function openTableDialog() {
+  if (!quillEditor) return;
+  document.getElementById('tblOverlay').classList.add('open');
+  document.getElementById('tblDlg').classList.add('open');
+  setTimeout(() => document.getElementById('tblRows').focus(), 50);
+}
+
+function closeTableDialog() {
+  document.getElementById('tblOverlay').classList.remove('open');
+  document.getElementById('tblDlg').classList.remove('open');
+}
+
+function confirmInsertTable() {
+  const rows = Math.max(1, Math.min(20, parseInt(document.getElementById('tblRows').value) || 3));
+  const cols = Math.max(1, Math.min(15, parseInt(document.getElementById('tblCols').value) || 3));
+  closeTableDialog();
+  if (!quillEditor) return;
+  const th   = Array(cols).fill('<th style="padding:6px 12px;border:1px solid #1a4a6a;background:rgba(0,200,255,0.1);font-weight:600;min-width:80px">&nbsp;</th>').join('');
+  const td   = Array(cols).fill('<td style="padding:6px 12px;border:1px solid #1a4a6a;min-width:80px">&nbsp;</td>').join('');
+  const body = Array(Math.max(0, rows - 1)).fill(`<tr>${td}</tr>`).join('');
+  const html = `<table style="border-collapse:collapse;width:auto;margin:8px 0"><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table><p><br></p>`;
+  const range = quillEditor.getSelection(true);
+  quillEditor.clipboard.dangerouslyPasteHTML(range ? range.index : quillEditor.getLength(), html);
 }
 
 // ── Init ──
