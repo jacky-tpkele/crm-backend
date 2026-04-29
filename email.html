@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TPKELE CRM - 邮件</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#000509;--panel:#060f20;--panel2:#0a1628;
+  --border:rgba(0,190,255,0.12);--border-h:rgba(0,220,255,0.38);
+  --text:#ddf0ff;--muted:#4d7390;--muted2:#7aa4c0;
+  --primary:#00c8f0;--primary-dim:rgba(0,200,240,0.08);
+  --cyan:#22d3ee;--purple:#8b5cf6;
+  --danger:#fb7185;--warn:#fbbf24;--success:#4ade80;
+  --shadow:0 20px 60px rgba(0,0,0,.7);--radius:14px;--sb:220px;
+}
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(0,200,255,0.15);border-radius:4px}
+
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* ── Left sidebar (CRM nav) ── */
+.sidebar{
+  width:var(--sb);flex-shrink:0;height:100%;
+  background:linear-gradient(180deg,rgba(3,8,20,0.99),rgba(2,5,13,0.99));
+  border-right:1px solid var(--border);display:flex;flex-direction:column;
+  overflow:hidden;position:relative;z-index:20;
+}
+.sb-logo{
+  display:flex;align-items:center;gap:12px;padding:18px 16px;
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.logo-icon{width:36px;height:36px;flex-shrink:0;display:grid;place-items:center}
+.logo-text{font-size:15px;font-weight:700;white-space:nowrap;letter-spacing:1px}
+.logo-text span{color:var(--primary)}
+.sb-nav{flex:1;overflow-y:auto;padding:10px 0}
+.nav-item{
+  display:flex;align-items:center;gap:12px;padding:10px 16px;
+  cursor:pointer;transition:.15s;white-space:nowrap;
+  color:var(--muted2);font-size:13.5px;font-weight:500;
+  border-left:3px solid transparent;
+}
+.nav-item:hover{background:rgba(0,200,255,0.05);color:var(--text)}
+.nav-item.active{background:rgba(0,200,240,0.08);color:var(--primary);border-left-color:var(--primary)}
+.nav-icon{font-size:17px;flex-shrink:0;width:22px;text-align:center}
+.nav-group{padding:8px 16px 4px;font-size:10px;font-weight:600;color:rgba(0,200,255,0.22);text-transform:uppercase;letter-spacing:.8px}
+
+/* ── Email layout ── */
+.email-shell{flex:1;display:flex;overflow:hidden}
+
+/* ── Folder panel ── */
+.folder-panel{
+  width:170px;flex-shrink:0;border-right:1px solid var(--border);
+  display:flex;flex-direction:column;background:var(--panel);
+}
+.folder-header{
+  padding:16px;border-bottom:1px solid var(--border);
+}
+.btn-compose{
+  width:100%;padding:9px 14px;border-radius:8px;border:none;
+  background:var(--primary);color:#000;font-size:13px;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:.15s;
+}
+.btn-compose:hover{background:#00e5ff}
+.folder-list{flex:1;overflow-y:auto;padding:8px 0}
+.folder-item{
+  display:flex;align-items:center;gap:10px;padding:9px 14px;
+  cursor:pointer;font-size:13px;color:var(--muted2);transition:.15s;
+  border-radius:6px;margin:1px 6px;
+}
+.folder-item:hover{background:rgba(0,200,255,0.06);color:var(--text)}
+.folder-item.active{background:rgba(0,200,240,0.1);color:var(--primary)}
+.folder-item .badge{
+  margin-left:auto;background:var(--primary);color:#000;
+  font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;min-width:18px;text-align:center;
+}
+.folder-sync{
+  padding:10px 8px;border-top:1px solid var(--border);
+}
+.btn-sync{
+  width:100%;padding:7px;border-radius:6px;border:1px solid var(--border);
+  background:transparent;color:var(--muted2);font-size:12px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:6px;transition:.2s;
+}
+.btn-sync:hover{border-color:var(--primary);color:var(--primary)}
+.btn-sync.syncing{opacity:.6;pointer-events:none}
+
+/* ── Email list panel ── */
+.list-panel{
+  width:300px;flex-shrink:0;border-right:1px solid var(--border);
+  display:flex;flex-direction:column;background:var(--panel);
+}
+.list-header{
+  padding:12px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.list-title{font-size:14px;font-weight:600}
+.list-count{font-size:11px;color:var(--muted)}
+.list-body{flex:1;overflow-y:auto}
+.email-item{
+  padding:12px 16px;border-bottom:1px solid rgba(0,190,255,0.06);
+  cursor:pointer;transition:.15s;
+}
+.email-item:hover{background:rgba(0,200,255,0.04)}
+.email-item.active{background:rgba(0,200,240,0.08);border-left:3px solid var(--primary)}
+.email-item.unread .ei-subject{font-weight:600;color:var(--text)}
+.email-item.unread .ei-from{color:var(--primary)}
+.ei-from{font-size:12.5px;font-weight:500;color:var(--muted2);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ei-subject{font-size:12.5px;color:var(--muted2);margin-top:3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ei-date{font-size:11px;color:var(--muted);margin-top:4px}
+.unread-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--primary);
+  display:inline-block;margin-right:6px;flex-shrink:0;
+}
+.ei-row{display:flex;align-items:center}
+.list-empty{padding:40px 16px;text-align:center;color:var(--muted);font-size:13px}
+.list-loading{padding:30px;text-align:center;color:var(--muted);font-size:13px}
+
+/* ── Detail / Compose panel ── */
+.detail-panel{
+  flex:1;display:flex;flex-direction:column;background:var(--bg);min-width:0;
+}
+.detail-placeholder{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:var(--muted);gap:12px;
+}
+.detail-placeholder svg{opacity:.25}
+
+/* Email reader */
+.reader{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.reader-header{
+  padding:18px 24px 14px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.reader-subject{font-size:18px;font-weight:600;margin-bottom:10px}
+.reader-meta{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:12.5px;color:var(--muted2)}
+.reader-meta strong{color:var(--text)}
+.reader-actions{display:flex;gap:8px;margin-top:14px}
+.btn-action{
+  padding:6px 14px;border-radius:6px;border:1px solid var(--border);
+  background:transparent;color:var(--muted2);font-size:12px;cursor:pointer;
+  display:flex;align-items:center;gap:5px;transition:.2s;
+}
+.btn-action:hover{border-color:var(--primary);color:var(--primary)}
+.btn-action.danger:hover{border-color:var(--danger);color:var(--danger)}
+.reader-body{flex:1;overflow-y:auto;padding:20px 24px}
+.reader-html{color:var(--text);font-size:14px;line-height:1.7;max-width:720px}
+.reader-html a{color:var(--primary)}
+.reader-html img{max-width:100%}
+.reader-text{
+  white-space:pre-wrap;font-size:13.5px;line-height:1.8;color:var(--muted2);
+  font-family:'Inter',monospace;max-width:720px;
+}
+
+/* Compose */
+.compose{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.compose-header{
+  padding:14px 24px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.compose-title{font-size:14px;font-weight:600}
+.btn-close{
+  width:28px;height:28px;border-radius:6px;border:1px solid var(--border);
+  background:transparent;color:var(--muted2);cursor:pointer;font-size:16px;
+  display:grid;place-items:center;transition:.15s;
+}
+.btn-close:hover{border-color:var(--danger);color:var(--danger)}
+.compose-form{flex:1;display:flex;flex-direction:column;padding:16px 24px;gap:10px;overflow-y:auto}
+.field-row{display:flex;align-items:center;border-bottom:1px solid var(--border);padding-bottom:8px}
+.field-label{font-size:12px;color:var(--muted);width:50px;flex-shrink:0}
+.field-input{
+  flex:1;background:transparent;border:none;outline:none;color:var(--text);
+  font-size:13.5px;padding:2px 0;
+}
+.field-input::placeholder{color:var(--muted)}
+.compose-body{
+  flex:1;background:transparent;border:none;outline:none;resize:none;
+  color:var(--text);font-size:13.5px;line-height:1.8;padding:8px 0;
+  min-height:200px;
+}
+.compose-body::placeholder{color:var(--muted)}
+.compose-footer{
+  padding:12px 24px;border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+}
+.btn-send{
+  padding:8px 22px;border-radius:7px;border:none;
+  background:var(--primary);color:#000;font-size:13px;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;gap:6px;transition:.15s;
+}
+.btn-send:hover{background:#00e5ff}
+.btn-send:disabled{opacity:.5;pointer-events:none}
+.send-status{font-size:12px;color:var(--muted)}
+.send-status.ok{color:var(--success)}
+.send-status.err{color:var(--danger)}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:24px;right:24px;z-index:9999;
+  background:var(--panel2);border:1px solid var(--border);border-radius:10px;
+  padding:12px 18px;font-size:13px;color:var(--text);
+  display:none;align-items:center;gap:10px;
+  box-shadow:var(--shadow);
+}
+.toast.show{display:flex}
+.toast.ok{border-color:rgba(74,222,128,.35)}
+.toast.err{border-color:rgba(251,113,133,.35)}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- CRM Sidebar Nav -->
+  <div class="sidebar">
+    <div class="sb-logo">
+      <div class="logo-icon">
+        <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
+          <rect width="36" height="36" rx="9" fill="rgba(0,200,240,0.12)"/>
+          <path d="M8 18h20M18 8v20" stroke="#00c8f0" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="18" cy="18" r="4" fill="#00c8f0"/>
+        </svg>
+      </div>
+      <div class="logo-text">TP<span>KELE</span></div>
+    </div>
+    <div class="sb-nav">
+      <div class="nav-group">主菜单</div>
+      <div class="nav-item" onclick="go('dashboard.html')">
+        <span class="nav-icon">📊</span><span>仪表盘</span>
+      </div>
+      <div class="nav-item" onclick="go('index.html')">
+        <span class="nav-icon">📦</span><span>订单管理</span>
+      </div>
+      <div class="nav-item" onclick="go('index.html#customers')">
+        <span class="nav-icon">👥</span><span>客户管理</span>
+      </div>
+      <div class="nav-group">工具</div>
+      <div class="nav-item active">
+        <span class="nav-icon">✉️</span><span>邮件</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Email Shell -->
+  <div class="email-shell">
+
+    <!-- Folder Panel -->
+    <div class="folder-panel">
+      <div class="folder-header">
+        <button class="btn-compose" onclick="openCompose()">✏️ 写邮件</button>
+      </div>
+      <div class="folder-list">
+        <div class="folder-item active" data-folder="INBOX" onclick="selectFolder('INBOX',this)">
+          <span>📥</span><span>收件箱</span>
+          <span class="badge" id="badge-inbox" style="display:none"></span>
+        </div>
+        <div class="folder-item" data-folder="SENT" onclick="selectFolder('SENT',this)">
+          <span>📤</span><span>已发送</span>
+        </div>
+      </div>
+      <div class="folder-sync">
+        <button class="btn-sync" id="btnSync" onclick="syncEmails()">
+          <span id="syncIcon">🔄</span> 同步收件箱
+        </button>
+      </div>
+    </div>
+
+    <!-- List Panel -->
+    <div class="list-panel">
+      <div class="list-header">
+        <span class="list-title" id="listTitle">收件箱</span>
+        <span class="list-count" id="listCount"></span>
+      </div>
+      <div class="list-body" id="emailList">
+        <div class="list-loading">加载中…</div>
+      </div>
+    </div>
+
+    <!-- Detail / Compose Panel -->
+    <div class="detail-panel" id="detailPanel">
+      <div class="detail-placeholder" id="placeholder">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+          <rect x="2" y="4" width="20" height="16" rx="2"/>
+          <path d="M2 7l10 7 10-7"/>
+        </svg>
+        <span>选择一封邮件查看</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '';
+let token = localStorage.getItem('crm_token');
+let currentFolder = 'INBOX';
+let currentEmailId = null;
+
+if (!token) { location.href = 'login.html'; }
+
+function go(url) { location.href = url; }
+
+// ── Auth fetch ──
+async function apiFetch(path, opts = {}) {
+  const res = await fetch(API + path, {
+    ...opts,
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', ...(opts.headers||{}) },
+    body: opts.body ? (typeof opts.body === 'string' ? opts.body : JSON.stringify(opts.body)) : undefined,
+  });
+  if (res.status === 401) { localStorage.removeItem('crm_token'); location.href = 'login.html'; }
+  return res;
+}
+
+// ── Toast ──
+function showToast(msg, type = 'ok') {
+  const t = document.getElementById('toast');
+  t.textContent = (type === 'ok' ? '✓ ' : '✗ ') + msg;
+  t.className = `toast show ${type}`;
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+// ── Date format ──
+function fmtDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) {
+    return d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+  }
+  const diff = (now - d) / 86400000;
+  if (diff < 7) return ['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];
+  return `${d.getMonth()+1}/${d.getDate()}`;
+}
+
+// ── Load email list ──
+async function loadEmails(folder) {
+  const list = document.getElementById('emailList');
+  list.innerHTML = '<div class="list-loading">加载中…</div>';
+  try {
+    const res = await apiFetch(`/api/emails?folder=${folder}`);
+    const emails = await res.json();
+    renderList(emails);
+    document.getElementById('listCount').textContent = emails.length ? `${emails.length} 封` : '';
+    if (folder === 'INBOX') updateBadge(emails);
+  } catch (e) {
+    list.innerHTML = `<div class="list-empty">加载失败：${e.message}</div>`;
+  }
+}
+
+function updateBadge(emails) {
+  const unread = emails.filter(e => !e.is_read).length;
+  const b = document.getElementById('badge-inbox');
+  if (unread > 0) { b.textContent = unread; b.style.display = ''; }
+  else b.style.display = 'none';
+}
+
+function renderList(emails) {
+  const list = document.getElementById('emailList');
+  if (!emails.length) {
+    list.innerHTML = '<div class="list-empty">暂无邮件</div>';
+    return;
+  }
+  list.innerHTML = emails.map(e => `
+    <div class="email-item ${e.is_read ? '' : 'unread'} ${e.id === currentEmailId ? 'active' : ''}"
+         onclick="openEmail('${e.id}', this)">
+      <div class="ei-row">
+        ${!e.is_read ? '<span class="unread-dot"></span>' : ''}
+        <div class="ei-from" style="flex:1">${esc(e.from_name || e.from_address)}</div>
+      </div>
+      <div class="ei-subject">${esc(e.subject)}</div>
+      <div class="ei-date">${fmtDate(e.received_at)}</div>
+    </div>
+  `).join('');
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Open email ──
+async function openEmail(id, el) {
+  currentEmailId = id;
+  document.querySelectorAll('.email-item').forEach(x => x.classList.remove('active'));
+  if (el) el.classList.add('active');
+
+  const panel = document.getElementById('detailPanel');
+  panel.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">加载中…</div>';
+
+  try {
+    const res = await apiFetch(`/api/emails/${id}`);
+    const email = await res.json();
+
+    // Mark read
+    if (!email.is_read) {
+      apiFetch(`/api/emails/${id}/read`, { method: 'PATCH', body: JSON.stringify({ is_read: true }) });
+      el && el.classList.remove('unread');
+      el && el.querySelector('.unread-dot')?.remove();
+    }
+
+    panel.innerHTML = `
+      <div class="reader">
+        <div class="reader-header">
+          <div class="reader-subject">${esc(email.subject)}</div>
+          <div class="reader-meta">
+            <div><strong>发件人：</strong>${esc(email.from_name ? `${email.from_name} <${email.from_address}>` : email.from_address)}</div>
+            <div><strong>收件人：</strong>${esc(email.to_addresses)}</div>
+            ${email.cc ? `<div><strong>抄送：</strong>${esc(email.cc)}</div>` : ''}
+            <div><strong>时间：</strong>${new Date(email.received_at).toLocaleString('zh-CN')}</div>
+          </div>
+          <div class="reader-actions">
+            <button class="btn-action" onclick="replyEmail(${JSON.stringify(esc(email.from_address))}, ${JSON.stringify(esc(email.subject))})">↩ 回复</button>
+            <button class="btn-action" onclick="forwardEmail(${JSON.stringify(esc(email.subject))}, ${JSON.stringify(esc(email.body_text || ''))})">⤷ 转发</button>
+            <button class="btn-action danger" onclick="deleteEmail('${email.id}')">🗑 删除</button>
+          </div>
+        </div>
+        <div class="reader-body">
+          ${email.body_html
+            ? `<div class="reader-html">${sanitizeHtml(email.body_html)}</div>`
+            : `<div class="reader-text">${esc(email.body_text || '（无内容）')}</div>`
+          }
+        </div>
+      </div>
+    `;
+  } catch (e) {
+    panel.innerHTML = `<div style="padding:24px;color:var(--danger)">加载失败：${e.message}</div>`;
+  }
+}
+
+// Basic HTML sanitizer: strip scripts/iframes but keep layout
+function sanitizeHtml(html) {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<iframe[\s\S]*?<\/iframe>/gi, '')
+    .replace(/on\w+="[^"]*"/gi, '')
+    .replace(/on\w+='[^']*'/gi, '');
+}
+
+// ── Folder switch ──
+function selectFolder(folder, el) {
+  currentFolder = folder;
+  currentEmailId = null;
+  document.querySelectorAll('.folder-item').forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('listTitle').textContent = folder === 'INBOX' ? '收件箱' : '已发送';
+  document.getElementById('detailPanel').innerHTML = `
+    <div class="detail-placeholder" id="placeholder">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+        <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/>
+      </svg>
+      <span>选择一封邮件查看</span>
+    </div>`;
+  loadEmails(folder);
+}
+
+// ── Sync ──
+async function syncEmails() {
+  const btn = document.getElementById('btnSync');
+  const icon = document.getElementById('syncIcon');
+  btn.classList.add('syncing');
+  icon.textContent = '⏳';
+  try {
+    const res = await apiFetch('/api/emails/sync', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`同步完成，新增 ${data.synced} 封邮件`);
+      loadEmails(currentFolder);
+    } else {
+      showToast(data.message || '同步失败', 'err');
+    }
+  } catch (e) {
+    showToast('同步失败：' + e.message, 'err');
+  } finally {
+    btn.classList.remove('syncing');
+    icon.textContent = '🔄';
+  }
+}
+
+// ── Compose ──
+function openCompose(opts = {}) {
+  const panel = document.getElementById('detailPanel');
+  panel.innerHTML = `
+    <div class="compose">
+      <div class="compose-header">
+        <span class="compose-title">✏️ ${opts.title || '写邮件'}</span>
+        <button class="btn-close" onclick="closeCompose()">✕</button>
+      </div>
+      <div class="compose-form">
+        <div class="field-row">
+          <span class="field-label">收件人</span>
+          <input class="field-input" id="cTo" placeholder="example@domain.com" value="${opts.to || ''}">
+        </div>
+        <div class="field-row">
+          <span class="field-label">抄送</span>
+          <input class="field-input" id="cCc" placeholder="可选">
+        </div>
+        <div class="field-row">
+          <span class="field-label">主题</span>
+          <input class="field-input" id="cSubject" placeholder="邮件主题" value="${opts.subject || ''}">
+        </div>
+        <textarea class="compose-body" id="cBody" placeholder="在此输入邮件内容…">${opts.body || ''}</textarea>
+      </div>
+      <div class="compose-footer">
+        <button class="btn-send" id="btnSend" onclick="sendEmail()">📨 发送</button>
+        <span class="send-status" id="sendStatus"></span>
+      </div>
+    </div>
+  `;
+}
+
+function closeCompose() {
+  document.getElementById('detailPanel').innerHTML = `
+    <div class="detail-placeholder" id="placeholder">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+        <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/>
+      </svg>
+      <span>选择一封邮件查看</span>
+    </div>`;
+}
+
+function replyEmail(to, subject) {
+  openCompose({ title: '回复', to, subject: subject.startsWith('Re:') ? subject : `Re: ${subject}` });
+}
+
+function forwardEmail(subject, body) {
+  openCompose({
+    title: '转发',
+    subject: subject.startsWith('Fwd:') ? subject : `Fwd: ${subject}`,
+    body: `\n\n---------- 转发邮件 ----------\n${body}`,
+  });
+}
+
+async function sendEmail() {
+  const to = document.getElementById('cTo')?.value?.trim();
+  const cc = document.getElementById('cCc')?.value?.trim();
+  const subject = document.getElementById('cSubject')?.value?.trim();
+  const body = document.getElementById('cBody')?.value?.trim();
+  const status = document.getElementById('sendStatus');
+  const btn = document.getElementById('btnSend');
+
+  if (!to || !subject) { status.textContent = '收件人和主题不能为空'; status.className = 'send-status err'; return; }
+
+  btn.disabled = true;
+  status.textContent = '发送中…';
+  status.className = 'send-status';
+
+  try {
+    const res = await apiFetch('/api/emails/send', {
+      method: 'POST',
+      body: JSON.stringify({ to, cc, subject, body_text: body }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      status.textContent = '✓ 发送成功';
+      status.className = 'send-status ok';
+      showToast('邮件发送成功');
+      setTimeout(closeCompose, 1500);
+    } else {
+      status.textContent = data.message || '发送失败';
+      status.className = 'send-status err';
+      btn.disabled = false;
+    }
+  } catch (e) {
+    status.textContent = '发送失败：' + e.message;
+    status.className = 'send-status err';
+    btn.disabled = false;
+  }
+}
+
+// ── Delete ──
+async function deleteEmail(id) {
+  if (!confirm('确定删除这封邮件吗？')) return;
+  try {
+    await apiFetch(`/api/emails/${id}`, { method: 'DELETE' });
+    showToast('邮件已删除');
+    closeCompose();
+    loadEmails(currentFolder);
+  } catch (e) {
+    showToast('删除失败：' + e.message, 'err');
+  }
+}
+
+// ── Init ──
+loadEmails('INBOX');
+</script>
+</body>
+</html>

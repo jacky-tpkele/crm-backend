@@ -1,6 +1,9 @@
-const express = require('express');
-const fetch   = require('node-fetch');
-const jwt     = require('jsonwebtoken');
+const express    = require('express');
+const fetch      = require('node-fetch');
+const jwt        = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
+const { ImapFlow } = require('imapflow');
+const { simpleParser } = require('mailparser');
 
 const app = express();
 app.use(express.json({ limit: '20mb' }));
@@ -451,6 +454,258 @@ app.get('/api/documents', auth, async (req, res) => {
   try {
     const data = await sb('documents?select=*&order=created_at.desc');
     res.json(data);
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// ══════════════════════════════
+// EMAIL
+// ══════════════════════════════
+const EMAIL_IMAP_HOST = process.env.EMAIL_IMAP_HOST;
+const EMAIL_IMAP_PORT = parseInt(process.env.EMAIL_IMAP_PORT || '993');
+const EMAIL_SMTP_HOST = process.env.EMAIL_SMTP_HOST;
+const EMAIL_SMTP_PORT = parseInt(process.env.EMAIL_SMTP_PORT || '465');
+const EMAIL_USER      = process.env.EMAIL_USER;
+const EMAIL_PASS      = process.env.EMAIL_PASS;
+const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME || 'TPKELE';
+
+function imapClient() {
+  return new ImapFlow({
+    host: EMAIL_IMAP_HOST,
+    port: EMAIL_IMAP_PORT,
+    secure: EMAIL_IMAP_PORT === 993,
+    auth: { user: EMAIL_USER, pass: EMAIL_PASS },
+    logger: false,
+    tls: { rejectUnauthorized: false },
+  });
+}
+
+function smtpTransport() {
+  return nodemailer.createTransport({
+    host: EMAIL_SMTP_HOST,
+    port: EMAIL_SMTP_PORT,
+    secure: EMAIL_SMTP_PORT === 465,
+    auth: { user: EMAIL_USER, pass: EMAIL_PASS },
+    tls: { rejectUnauthorized: false },
+  });
+}
+
+// 同步收件箱到 Supabase
+app.post('/api/emails/sync', auth, async (req, res) => {
+  if (!EMAIL_IMAP_HOST || !EMAIL_USER || !EMAIL_PASS)
+    return res.status(503).json({ message: '未配置邮箱环境变量' });
+
+  const client = imapClient();
+  let synced = 0;
+  try {
+    await client.connect();
+    const lock = await client.getMailboxLock('INBOX');
+    try {
+      // 查询 Supabase 中已有的最大 uid
+      let lastUid = 0;
+      try {
+        const rows = await sb('emails?select=uid&folder=eq.INBOX&order=uid.desc&limit=1');
+        if (rows.length) lastUid = rows[0].uid || 0;
+      } catch {}
+
+      const searchCriteria = lastUid ? { uid: `${lastUid + 1}:*` } : { all: true };
+      const messages = [];
+      for await (const msg of client.fetch(searchCriteria, {
+        uid: true, envelope: true, bodyStructure: true, source: true,
+      }, { uid: true })) {
+        messages.push({ uid: msg.uid, source: msg.source });
+      }
+
+      for (const { uid, source } of messages) {
+        try {
+          const parsed = await simpleParser(source);
+          const from = parsed.from?.value?.[0] || {};
+          const toList = (parsed.to?.value || []).map(a => a.address).join(', ');
+          const ccList = (parsed.cc?.value || []).map(a => a.address).join(', ');
+          const msgId = parsed.messageId || `uid-${uid}-${Date.now()}`;
+
+          await sb('emails?on_conflict=message_id', {
+            method: 'POST',
+            headers: { 'Prefer': 'resolution=ignore-duplicates' },
+            body: JSON.stringify({
+              message_id:   msgId,
+              folder:       'INBOX',
+              uid:          uid,
+              from_address: from.address || '',
+              from_name:    from.name || '',
+              to_addresses: toList,
+              cc:           ccList,
+              subject:      parsed.subject || '(无主题)',
+              body_text:    parsed.text || '',
+              body_html:    parsed.html || '',
+              is_read:      false,
+              is_deleted:   false,
+              received_at:  (parsed.date || new Date()).toISOString(),
+            }),
+          });
+          synced++;
+        } catch {}
+      }
+    } finally {
+      lock.release();
+    }
+    await client.logout();
+    res.json({ success: true, synced });
+  } catch (e) {
+    try { await client.logout(); } catch {}
+    res.status(500).json({ message: e.message });
+  }
+});
+
+// 同步已发送邮件
+app.post('/api/emails/sync-sent', auth, async (req, res) => {
+  if (!EMAIL_IMAP_HOST || !EMAIL_USER || !EMAIL_PASS)
+    return res.status(503).json({ message: '未配置邮箱环境变量' });
+
+  const client = imapClient();
+  let synced = 0;
+  const sentFolders = ['Sent', 'Sent Messages', 'INBOX.Sent', '已发送'];
+  try {
+    await client.connect();
+    const list = await client.list();
+    const sentFolder = list.find(f => sentFolders.some(n => f.name === n || f.path === n));
+    if (!sentFolder) { await client.logout(); return res.json({ success: true, synced: 0, note: '未找到已发送文件夹' }); }
+
+    const lock = await client.getMailboxLock(sentFolder.path);
+    try {
+      let lastUid = 0;
+      try {
+        const rows = await sb(`emails?select=uid&folder=eq.${encodeURIComponent(sentFolder.path)}&order=uid.desc&limit=1`);
+        if (rows.length) lastUid = rows[0].uid || 0;
+      } catch {}
+
+      const searchCriteria = lastUid ? { uid: `${lastUid + 1}:*` } : { all: true };
+      const messages = [];
+      for await (const msg of client.fetch(searchCriteria, { uid: true, source: true }, { uid: true })) {
+        messages.push({ uid: msg.uid, source: msg.source });
+      }
+      for (const { uid, source } of messages) {
+        try {
+          const parsed = await simpleParser(source);
+          const from = parsed.from?.value?.[0] || {};
+          const toList = (parsed.to?.value || []).map(a => a.address).join(', ');
+          const msgId = parsed.messageId || `sent-uid-${uid}-${Date.now()}`;
+          await sb('emails?on_conflict=message_id', {
+            method: 'POST',
+            headers: { 'Prefer': 'resolution=ignore-duplicates' },
+            body: JSON.stringify({
+              message_id: msgId, folder: sentFolder.path, uid,
+              from_address: from.address || '', from_name: from.name || '',
+              to_addresses: toList, cc: '',
+              subject: parsed.subject || '(无主题)',
+              body_text: parsed.text || '', body_html: parsed.html || '',
+              is_read: true, is_deleted: false,
+              received_at: (parsed.date || new Date()).toISOString(),
+            }),
+          });
+          synced++;
+        } catch {}
+      }
+    } finally { lock.release(); }
+    await client.logout();
+    res.json({ success: true, synced });
+  } catch (e) {
+    try { await client.logout(); } catch {}
+    res.status(500).json({ message: e.message });
+  }
+});
+
+// 获取邮件列表
+app.get('/api/emails', auth, async (req, res) => {
+  try {
+    const folder = req.query.folder || 'INBOX';
+    const page   = Math.max(1, parseInt(req.query.page || '1'));
+    const limit  = 50;
+    const offset = (page - 1) * limit;
+    const folderFilter = folder === 'SENT'
+      ? 'folder=neq.INBOX&folder=neq.DRAFTS'
+      : `folder=eq.${encodeURIComponent(folder)}`;
+    const data = await sb(
+      `emails?${folderFilter}&is_deleted=eq.false&order=received_at.desc&limit=${limit}&offset=${offset}&select=id,message_id,folder,from_address,from_name,to_addresses,subject,is_read,received_at`
+    );
+    res.json(data);
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 获取单封邮件详情
+app.get('/api/emails/:id', auth, async (req, res) => {
+  try {
+    const rows = await sb(`emails?id=eq.${req.params.id}&select=*`);
+    if (!rows.length) return res.status(404).json({ message: '邮件不存在' });
+    res.json(rows[0]);
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 标记已读/未读
+app.patch('/api/emails/:id/read', auth, async (req, res) => {
+  try {
+    const { is_read } = req.body;
+    await sb(`emails?id=eq.${req.params.id}`, {
+      method: 'PATCH', body: JSON.stringify({ is_read }),
+    });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 删除邮件（软删除）
+app.delete('/api/emails/:id', auth, async (req, res) => {
+  try {
+    await sb(`emails?id=eq.${req.params.id}`, {
+      method: 'PATCH', body: JSON.stringify({ is_deleted: true }),
+    });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 发送邮件
+app.post('/api/emails/send', auth, async (req, res) => {
+  if (!EMAIL_SMTP_HOST || !EMAIL_USER || !EMAIL_PASS)
+    return res.status(503).json({ message: '未配置邮箱环境变量' });
+
+  const { to, cc, subject, body_html, body_text } = req.body;
+  if (!to || !subject) return res.status(400).json({ message: '收件人和主题不能为空' });
+
+  try {
+    const transport = smtpTransport();
+    const info = await transport.sendMail({
+      from: `"${EMAIL_FROM_NAME}" <${EMAIL_USER}>`,
+      to, cc, subject,
+      text: body_text || '',
+      html: body_html || `<p>${(body_text || '').replace(/\n/g, '<br>')}</p>`,
+    });
+
+    // 保存到已发送
+    await sb('emails', {
+      method: 'POST',
+      body: JSON.stringify({
+        message_id:   info.messageId || `sent-${Date.now()}`,
+        folder:       'SENT',
+        from_address: EMAIL_USER,
+        from_name:    EMAIL_FROM_NAME,
+        to_addresses: to,
+        cc:           cc || '',
+        subject,
+        body_text:    body_text || '',
+        body_html:    body_html || '',
+        is_read:      true,
+        is_deleted:   false,
+        received_at:  new Date().toISOString(),
+      }),
+    });
+
+    res.json({ success: true, messageId: info.messageId });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 获取未读数量
+app.get('/api/emails/unread-count', auth, async (req, res) => {
+  try {
+    const data = await sb('emails?is_read=eq.false&is_deleted=eq.false&folder=eq.INBOX&select=id');
+    res.json({ count: data.length });
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
