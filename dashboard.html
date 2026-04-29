@@ -86,6 +86,16 @@ button,input,select,textarea{font:inherit}
 }
 .search-wrap input:focus{border-color:rgba(0,200,255,0.45);background:rgba(0,180,255,0.07);}
 .search-wrap .si{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px}
+.search-dropdown{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--panel);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);z-index:500;max-height:420px;overflow-y:auto;display:none;}
+.search-dropdown.open{display:block}
+.sd-group-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;padding:8px 14px 4px;border-top:1px solid rgba(0,180,255,0.1);}
+.sd-group-label:first-child{border-top:none}
+.sd-item{padding:9px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:.15s}
+.sd-item:hover{background:rgba(0,200,255,0.07)}
+.sd-item .sd-main{flex:1;min-width:0}
+.sd-item .sd-title{font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sd-item .sd-sub{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.sd-empty{padding:18px 14px;text-align:center;color:var(--muted);font-size:13px}
 .header-right{display:flex;align-items:center;gap:10px;margin-left:auto}
 .icon-btn{
   width:34px;height:34px;border-radius:8px;border:1px solid var(--border);
@@ -391,7 +401,8 @@ tr:last-child td{border-bottom:none}
   <header class="header">
     <div class="search-wrap">
       <span class="si">🔍</span>
-      <input type="text" id="globalSearch" data-i18n-ph="phGlobalSearch" placeholder="Search orders, customers...">
+      <input type="text" id="globalSearch" data-i18n-ph="phGlobalSearch" placeholder="Search orders, customers..." autocomplete="off">
+      <div class="search-dropdown" id="searchDropdown"></div>
     </div>
     <div class="header-right">
       <button class="lang-btn" id="langBtn" onclick="toggleLang()">中/EN</button>
@@ -1929,6 +1940,74 @@ function exportCSV(order) {
   a.download = `Order_${order.customer_name}_${order.order_date}.csv`;
   a.click();
 }
+
+// ══════════════════════════════
+// GLOBAL SEARCH
+// ══════════════════════════════
+(function() {
+  const inp  = document.getElementById('globalSearch');
+  const drop = document.getElementById('searchDropdown');
+
+  inp.addEventListener('input', doGlobalSearch);
+  inp.addEventListener('keydown', e => { if (e.key === 'Escape') closeGlobalSearch(); });
+  document.addEventListener('click', e => { if (!e.target.closest('.search-wrap')) closeGlobalSearch(); });
+
+  function closeGlobalSearch() { drop.classList.remove('open'); inp.value = ''; }
+
+  function doGlobalSearch() {
+    const q = inp.value.trim().toLowerCase();
+    if (!q) { drop.classList.remove('open'); return; }
+    const zh = S.lang === 'zh';
+    const sections = [
+      { key:'orders',    icon:'🛒', label: zh?'订单':'Orders',
+        items: S.orders.filter(o => [o.customer_name, o.order_date, ...(o.items||[]).map(i=>i.product_name_cn||'')].join(' ').toLowerCase().includes(q))
+          .slice(0,4).map(o => ({ id:o.id, title:o.customer_name||'—', sub:(o.order_date||'').slice(0,10)+' · '+fmt(o.sales_total) })) },
+      { key:'customers', icon:'👥', label: zh?'客户':'Customers',
+        items: S.customers.filter(c => [c.customer_name,c.country,c.email].join(' ').toLowerCase().includes(q))
+          .slice(0,4).map(c => ({ id:c.id, title:c.customer_name||'—', sub:[c.country,c.email].filter(Boolean).join(' · ') })) },
+      { key:'products',  icon:'📦', label: zh?'产品':'Products',
+        items: S.products.filter(p => [p.product_code,p.product_name_cn,p.product_name_en,p.specification].join(' ').toLowerCase().includes(q))
+          .slice(0,4).map(p => ({ id:p.id, title:p.product_name_cn||p.product_name_en||'—', sub:[p.product_code,p.specification].filter(Boolean).join(' · ') })) },
+      { key:'suppliers', icon:'🏭', label: zh?'供应商':'Suppliers',
+        items: S.suppliers.filter(s => [s.supplier_name,s.contact_name,s.phone].join(' ').toLowerCase().includes(q))
+          .slice(0,4).map(s => ({ id:s.id, title:s.supplier_name||'—', sub:[s.contact_name,s.phone].filter(Boolean).join(' · ') })) },
+      { key:'inquiries', icon:'📋', label: zh?'询盘':'Inquiries',
+        items: S.inquiries.filter(i => [i.customer_name,i.notes].join(' ').toLowerCase().includes(q))
+          .slice(0,4).map(i => ({ id:i.id, title:i.customer_name||'—', sub:(i.inquiry_date||'').slice(0,10)+(i.notes?' · '+i.notes.slice(0,30):'') })) },
+    ].filter(s => s.items.length > 0);
+
+    if (!sections.length) {
+      drop.innerHTML = `<div class="sd-empty">${zh?'无匹配结果':'No results found'}</div>`;
+      drop.classList.add('open'); return;
+    }
+    drop.innerHTML = sections.map(sec => `
+      <div class="sd-group-label">${sec.icon} ${sec.label}</div>
+      ${sec.items.map(item => `
+        <div class="sd-item" onclick="gotoResult('${sec.key}','${item.id}')">
+          <div class="sd-main">
+            <div class="sd-title">${esc(item.title)}</div>
+            ${item.sub ? `<div class="sd-sub">${esc(item.sub)}</div>` : ''}
+          </div>
+        </div>`).join('')}`).join('');
+    drop.classList.add('open');
+  }
+
+  window.gotoResult = function(sec, id) {
+    closeGlobalSearch();
+    navigate(sec);
+    setTimeout(() => {
+      const btn = document.querySelector(`#sec-${sec} [onclick*="${id}"]`);
+      if (!btn) return;
+      const row = btn.closest('tr');
+      if (row) {
+        row.scrollIntoView({ behavior:'smooth', block:'center' });
+        row.style.transition = 'background .3s';
+        row.style.background = 'rgba(0,200,255,0.12)';
+        setTimeout(() => { row.style.background = ''; }, 1800);
+      }
+    }, 300);
+  };
+})();
 
 // ══════════════════════════════
 // INIT
