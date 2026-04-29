@@ -750,17 +750,6 @@ tr:last-child td{border-bottom:none}
             <div class="field"><label data-i18n="lblCompanyAddr">Company Address</label><input type="text" id="set-address" data-i18n-ph="phAddr" placeholder="Address"></div>
             <div class="field"><label data-i18n="lblContactEmail">Contact Email</label><input type="email" id="set-email" placeholder="email@company.com"></div>
           </div>
-          <h3 style="margin-top:18px;font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">银行信息（Invoice 用）</h3>
-          <div class="form-grid">
-            <div class="field"><label>账户名称 Account Name</label><input type="text" id="set-bank-acct-name" placeholder="Company Name (for bank)"></div>
-            <div class="field"><label>账号 Account No.</label><input type="text" id="set-bank-acct-no" placeholder="Bank account number"></div>
-            <div class="field"><label>开户行 Bank Name</label><input type="text" id="set-bank-name" placeholder="Bank name"></div>
-            <div class="field"><label>国家 Country/Region</label><input type="text" id="set-bank-country" placeholder="China"></div>
-            <div class="field form-full"><label>银行地址 Bank Address</label><input type="text" id="set-bank-address" placeholder="Bank address"></div>
-            <div class="field"><label>SWIFT Code</label><input type="text" id="set-bank-swift" placeholder="SWIFT/BIC code"></div>
-            <div class="field"><label>清算方式 Clearing System</label><input type="text" id="set-bank-clearing" placeholder="SWIFT"></div>
-            <div class="field form-full"><label>付款交货方式 Payment &amp; Delivery</label><input type="text" id="set-bank-payment" placeholder="e.g. Delivery within 3-5 working days after 100% payment"></div>
-          </div>
           <button class="btn btn-primary" data-i18n="btnSaveSettings" onclick="saveSettings()">Save Settings</button>
         </div>
         <div class="settings-section" style="margin-top:24px">
@@ -1526,34 +1515,18 @@ function setLang(l) {
 // ── Settings ──
 function saveSettings() {
   S.settings = {
-    company:          document.getElementById('set-company').value,
-    address:          document.getElementById('set-address').value,
-    email:            document.getElementById('set-email').value,
-    bank_acct_name:   document.getElementById('set-bank-acct-name').value,
-    bank_acct_no:     document.getElementById('set-bank-acct-no').value,
-    bank_name:        document.getElementById('set-bank-name').value,
-    bank_country:     document.getElementById('set-bank-country').value,
-    bank_address:     document.getElementById('set-bank-address').value,
-    bank_swift:       document.getElementById('set-bank-swift').value,
-    bank_clearing:    document.getElementById('set-bank-clearing').value,
-    bank_payment:     document.getElementById('set-bank-payment').value,
+    company: document.getElementById('set-company').value,
+    address: document.getElementById('set-address').value,
+    email:   document.getElementById('set-email').value,
   };
   localStorage.setItem('crm_settings', JSON.stringify(S.settings));
   toast('Settings saved');
 }
 function loadSettings() {
   const s = S.settings;
-  if (s.company)        document.getElementById('set-company').value         = s.company;
-  if (s.address)        document.getElementById('set-address').value         = s.address;
-  if (s.email)          document.getElementById('set-email').value           = s.email;
-  if (s.bank_acct_name) document.getElementById('set-bank-acct-name').value = s.bank_acct_name;
-  if (s.bank_acct_no)   document.getElementById('set-bank-acct-no').value   = s.bank_acct_no;
-  if (s.bank_name)      document.getElementById('set-bank-name').value      = s.bank_name;
-  if (s.bank_country)   document.getElementById('set-bank-country').value   = s.bank_country;
-  if (s.bank_address)   document.getElementById('set-bank-address').value   = s.bank_address;
-  if (s.bank_swift)     document.getElementById('set-bank-swift').value     = s.bank_swift;
-  if (s.bank_clearing)  document.getElementById('set-bank-clearing').value  = s.bank_clearing;
-  if (s.bank_payment)   document.getElementById('set-bank-payment').value   = s.bank_payment;
+  if (s.company) document.getElementById('set-company').value = s.company;
+  if (s.address) document.getElementById('set-address').value = s.address;
+  if (s.email)   document.getElementById('set-email').value   = s.email;
   const un = localStorage.getItem('crm_username') || 'TPKELE';
   document.getElementById('setUsername').textContent = un;
   document.getElementById('userNameDisplay').textContent = un;
@@ -2289,40 +2262,40 @@ function buildDocHTML(order, docType, lang) {
       <div style="text-align:center;padding:4px;font-size:11px">
         You can tt the money to our company account :
       </div>
-      <!-- 银行信息 -->
+      <!-- 银行信息（固定） -->
       <table style="width:100%;border-collapse:collapse;font-size:11.5px">
         <tr><td colspan="2" style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:4px 8px">BANK INFORMATION:</td></tr>
         <tr>
           <td style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:3px 8px;width:28%">Account Name</td>
-          <td style="border:1px solid #999;padding:3px 8px">${esc(co.bank_acct_name||co.company||'')}</td>
+          <td style="border:1px solid #999;padding:3px 8px">Wenzhou Hetao Electric Co., Ltd.</td>
         </tr>
         <tr>
           <td style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:3px 8px">Account No.</td>
-          <td style="border:1px solid #999;padding:3px 8px">${esc(co.bank_acct_no||'')}</td>
+          <td style="border:1px solid #999;padding:3px 8px">330501202010000008156</td>
         </tr>
         <tr>
           <td style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:3px 8px">Bank</td>
-          <td style="border:1px solid #999;padding:3px 8px">${esc(co.bank_name||'')}</td>
+          <td style="border:1px solid #999;padding:3px 8px">ZHEJIANG TAILONG COMMERCIAL BANK</td>
         </tr>
         <tr>
           <td style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:3px 8px">Country/Region</td>
-          <td style="border:1px solid #999;padding:3px 8px">${esc(co.bank_country||'China')}</td>
+          <td style="border:1px solid #999;padding:3px 8px">China</td>
         </tr>
         <tr>
           <td style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:3px 8px">Bank Address</td>
-          <td style="border:1px solid #999;padding:3px 8px">${esc(co.bank_address||'')}</td>
+          <td style="border:1px solid #999;padding:3px 8px">188 NANGUAN ROAD, LUQIAO DISTRICT, TAIZHOU, ZHEJIANG PROVINCE</td>
         </tr>
         <tr>
           <td style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:3px 8px">SWIFT</td>
-          <td style="border:1px solid #999;padding:3px 8px">${esc(co.bank_swift||'')}</td>
+          <td style="border:1px solid #999;padding:3px 8px">ZJTLCNBHXXX</td>
         </tr>
         <tr>
           <td style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:3px 8px">Clearing system</td>
-          <td style="border:1px solid #999;padding:3px 8px">${esc(co.bank_clearing||'SWIFT')}</td>
+          <td style="border:1px solid #999;padding:3px 8px">SWIFT</td>
         </tr>
         <tr>
           <td style="background:#b8cce4;font-weight:bold;border:1px solid #999;padding:3px 8px">Payment and delivery methods</td>
-          <td style="border:1px solid #999;padding:3px 8px">${esc(co.bank_payment||'')}</td>
+          <td style="border:1px solid #999;padding:3px 8px">Delivery within 3-5 working days after 100% payment</td>
         </tr>
       </table>
     </div>`;
