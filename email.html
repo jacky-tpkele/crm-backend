@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TPKELE CRM - 邮件</title>
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -12,8 +13,7 @@
   --border:rgba(0,190,255,0.12);--border-h:rgba(0,220,255,0.38);
   --text:#ddf0ff;--muted:#4d7390;--muted2:#7aa4c0;
   --primary:#00c8f0;--primary-dim:rgba(0,200,240,0.08);
-  --cyan:#22d3ee;--purple:#8b5cf6;
-  --danger:#fb7185;--warn:#fbbf24;--success:#4ade80;
+  --danger:#fb7185;--success:#4ade80;
   --shadow:0 20px 60px rgba(0,0,0,.7);--radius:14px;--sb:220px;
 }
 html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
@@ -25,187 +25,125 @@ button,input,select,textarea{font:inherit}
 
 .app{display:flex;height:100vh;overflow:hidden}
 
-/* ── Left sidebar (CRM nav) ── */
-.sidebar{
-  width:var(--sb);flex-shrink:0;height:100%;
-  background:linear-gradient(180deg,rgba(3,8,20,0.99),rgba(2,5,13,0.99));
-  border-right:1px solid var(--border);display:flex;flex-direction:column;
-  overflow:hidden;position:relative;z-index:20;
-}
-.sb-logo{
-  display:flex;align-items:center;gap:12px;padding:18px 16px;
-  border-bottom:1px solid var(--border);flex-shrink:0;
-}
+/* ── CRM Sidebar ── */
+.sidebar{width:var(--sb);flex-shrink:0;height:100%;background:linear-gradient(180deg,rgba(3,8,20,.99),rgba(2,5,13,.99));border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;z-index:20}
+.sb-logo{display:flex;align-items:center;gap:12px;padding:18px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
 .logo-icon{width:36px;height:36px;flex-shrink:0;display:grid;place-items:center}
 .logo-text{font-size:15px;font-weight:700;white-space:nowrap;letter-spacing:1px}
 .logo-text span{color:var(--primary)}
 .sb-nav{flex:1;overflow-y:auto;padding:10px 0}
-.nav-item{
-  display:flex;align-items:center;gap:12px;padding:10px 16px;
-  cursor:pointer;transition:.15s;white-space:nowrap;
-  color:var(--muted2);font-size:13.5px;font-weight:500;
-  border-left:3px solid transparent;
-}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;transition:.15s;white-space:nowrap;color:var(--muted2);font-size:13.5px;font-weight:500;border-left:3px solid transparent}
 .nav-item:hover{background:rgba(0,200,255,0.05);color:var(--text)}
 .nav-item.active{background:rgba(0,200,240,0.08);color:var(--primary);border-left-color:var(--primary)}
 .nav-icon{font-size:17px;flex-shrink:0;width:22px;text-align:center}
-.nav-group{padding:8px 16px 4px;font-size:10px;font-weight:600;color:rgba(0,200,255,0.22);text-transform:uppercase;letter-spacing:.8px}
+.nav-group{padding:8px 16px 4px;font-size:10px;font-weight:600;color:rgba(0,200,255,.22);text-transform:uppercase;letter-spacing:.8px}
 
 /* ── Email layout ── */
 .email-shell{flex:1;display:flex;overflow:hidden}
 
 /* ── Folder panel ── */
-.folder-panel{
-  width:170px;flex-shrink:0;border-right:1px solid var(--border);
-  display:flex;flex-direction:column;background:var(--panel);
-}
-.folder-header{
-  padding:16px;border-bottom:1px solid var(--border);
-}
-.btn-compose{
-  width:100%;padding:9px 14px;border-radius:8px;border:none;
-  background:var(--primary);color:#000;font-size:13px;font-weight:600;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
-  transition:.15s;
-}
+.folder-panel{width:185px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;background:var(--panel)}
+.folder-header{padding:14px;border-bottom:1px solid var(--border);flex-shrink:0}
+.btn-compose{width:100%;padding:9px 14px;border-radius:8px;border:none;background:var(--primary);color:#000;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:.15s}
 .btn-compose:hover{background:#00e5ff}
-.folder-list{flex:1;overflow-y:auto;padding:8px 0}
-.folder-item{
-  display:flex;align-items:center;gap:10px;padding:9px 14px;
-  cursor:pointer;font-size:13px;color:var(--muted2);transition:.15s;
-  border-radius:6px;margin:1px 6px;
-}
-.folder-item:hover{background:rgba(0,200,255,0.06);color:var(--text)}
-.folder-item.active{background:rgba(0,200,240,0.1);color:var(--primary)}
-.folder-item .badge{
-  margin-left:auto;background:var(--primary);color:#000;
-  font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;min-width:18px;text-align:center;
-}
-.folder-sync{
-  padding:10px 8px;border-top:1px solid var(--border);
-}
-.btn-sync{
-  width:100%;padding:7px;border-radius:6px;border:1px solid var(--border);
-  background:transparent;color:var(--muted2);font-size:12px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;gap:6px;transition:.2s;
-}
+
+.folder-list{padding:8px 0;border-bottom:1px solid var(--border);flex-shrink:0}
+.folder-item{display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:pointer;font-size:13px;color:var(--muted2);transition:.15s;border-radius:6px;margin:1px 6px;border-left:3px solid transparent}
+.folder-item:hover{background:rgba(0,200,255,.06);color:var(--text)}
+.folder-item.active{background:rgba(0,200,240,.1);color:var(--primary);border-left-color:var(--primary)}
+.folder-item .badge{margin-left:auto;background:var(--primary);color:#000;font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;min-width:18px;text-align:center}
+
+/* ── Accounts section ── */
+.acct-section{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.acct-hd{display:flex;align-items:center;justify-content:space-between;padding:8px 14px 4px;font-size:10px;font-weight:600;color:rgba(0,200,255,.22);text-transform:uppercase;letter-spacing:.8px;flex-shrink:0}
+.btn-add-acct{width:18px;height:18px;border-radius:4px;border:1px solid rgba(0,200,255,.2);background:transparent;color:var(--muted2);cursor:pointer;font-size:15px;display:grid;place-items:center;line-height:1;transition:.15s}
+.btn-add-acct:hover{border-color:var(--primary);color:var(--primary)}
+.acct-list{flex:1;overflow-y:auto;padding:2px 0}
+.acct-item{display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer;font-size:12.5px;color:var(--muted2);transition:.15s;border-left:3px solid transparent}
+.acct-item:hover{background:rgba(0,200,255,.04);color:var(--text)}
+.acct-item.active{background:rgba(0,200,240,.08);color:var(--primary);border-left-color:var(--primary)}
+.acct-dot{width:6px;height:6px;border-radius:50%;background:var(--muted);flex-shrink:0}
+.acct-item.active .acct-dot{background:var(--primary)}
+.acct-email{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.btn-edit-acct{width:20px;height:20px;border-radius:4px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:13px;display:none;place-items:center;transition:.15s;flex-shrink:0}
+.acct-item:hover .btn-edit-acct{display:grid}
+.btn-edit-acct:hover{color:var(--primary)}
+.acct-empty{padding:8px 14px;font-size:12px;color:var(--muted);font-style:italic}
+
+.folder-sync{padding:10px 8px;border-top:1px solid var(--border);flex-shrink:0}
+.btn-sync{width:100%;padding:7px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:.2s}
 .btn-sync:hover{border-color:var(--primary);color:var(--primary)}
 .btn-sync.syncing{opacity:.6;pointer-events:none}
 
-/* ── Email list panel ── */
-.list-panel{
-  width:300px;flex-shrink:0;border-right:1px solid var(--border);
-  display:flex;flex-direction:column;background:var(--panel);
-}
-.list-header{
-  padding:12px 16px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-}
+/* ── Email list ── */
+.list-panel{width:300px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;background:var(--panel)}
+.list-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .list-title{font-size:14px;font-weight:600}
 .list-count{font-size:11px;color:var(--muted)}
 .list-body{flex:1;overflow-y:auto}
-.email-item{
-  padding:12px 16px;border-bottom:1px solid rgba(0,190,255,0.06);
-  cursor:pointer;transition:.15s;
-}
-.email-item:hover{background:rgba(0,200,255,0.04)}
-.email-item.active{background:rgba(0,200,240,0.08);border-left:3px solid var(--primary)}
+.email-item{padding:12px 16px;border-bottom:1px solid rgba(0,190,255,.06);cursor:pointer;transition:.15s}
+.email-item:hover{background:rgba(0,200,255,.04)}
+.email-item.active{background:rgba(0,200,240,.08);border-left:3px solid var(--primary)}
 .email-item.unread .ei-subject{font-weight:600;color:var(--text)}
 .email-item.unread .ei-from{color:var(--primary)}
-.ei-from{font-size:12.5px;font-weight:500;color:var(--muted2);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ei-subject{font-size:12.5px;color:var(--muted2);margin-top:3px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ei-from{font-size:12.5px;font-weight:500;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ei-subject{font-size:12.5px;color:var(--muted2);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ei-date{font-size:11px;color:var(--muted);margin-top:4px}
-.unread-dot{
-  width:7px;height:7px;border-radius:50%;background:var(--primary);
-  display:inline-block;margin-right:6px;flex-shrink:0;
-}
+.unread-dot{width:7px;height:7px;border-radius:50%;background:var(--primary);display:inline-block;margin-right:6px;flex-shrink:0}
 .ei-row{display:flex;align-items:center}
 .list-empty{padding:40px 16px;text-align:center;color:var(--muted);font-size:13px}
 .list-loading{padding:30px;text-align:center;color:var(--muted);font-size:13px}
 
-/* ── Detail / Compose panel ── */
-.detail-panel{
-  flex:1;display:flex;flex-direction:column;background:var(--bg);min-width:0;
-}
-.detail-placeholder{
-  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  color:var(--muted);gap:12px;
-}
+/* ── Detail / Compose ── */
+.detail-panel{flex:1;display:flex;flex-direction:column;background:var(--bg);min-width:0}
+.detail-placeholder{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);gap:12px}
 .detail-placeholder svg{opacity:.25}
 
-/* Email reader */
 .reader{flex:1;display:flex;flex-direction:column;overflow:hidden}
-.reader-header{
-  padding:18px 24px 14px;border-bottom:1px solid var(--border);flex-shrink:0;
-}
+.reader-header{padding:18px 24px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
 .reader-subject{font-size:18px;font-weight:600;margin-bottom:10px}
 .reader-meta{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:12.5px;color:var(--muted2)}
 .reader-meta strong{color:var(--text)}
 .reader-actions{display:flex;gap:8px;margin-top:14px}
-.btn-action{
-  padding:6px 14px;border-radius:6px;border:1px solid var(--border);
-  background:transparent;color:var(--muted2);font-size:12px;cursor:pointer;
-  display:flex;align-items:center;gap:5px;transition:.2s;
-}
+.btn-action{padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:.2s}
 .btn-action:hover{border-color:var(--primary);color:var(--primary)}
 .btn-action.danger:hover{border-color:var(--danger);color:var(--danger)}
 .reader-body{flex:1;overflow-y:auto;padding:20px 24px}
 .reader-html{color:var(--text);font-size:14px;line-height:1.7;max-width:720px}
 .reader-html a{color:var(--primary)}
 .reader-html img{max-width:100%}
-.reader-text{
-  white-space:pre-wrap;font-size:13.5px;line-height:1.8;color:var(--muted2);
-  font-family:'Inter',monospace;max-width:720px;
-}
+.reader-text{white-space:pre-wrap;font-size:13.5px;line-height:1.8;color:var(--muted2);max-width:720px}
 
-/* Compose */
 .compose{flex:1;display:flex;flex-direction:column;overflow:hidden}
-.compose-header{
-  padding:14px 24px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
-}
+.compose-header{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .compose-title{font-size:14px;font-weight:600}
-.btn-close{
-  width:28px;height:28px;border-radius:6px;border:1px solid var(--border);
-  background:transparent;color:var(--muted2);cursor:pointer;font-size:16px;
-  display:grid;place-items:center;transition:.15s;
-}
+.btn-close{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-size:16px;display:grid;place-items:center;transition:.15s}
 .btn-close:hover{border-color:var(--danger);color:var(--danger)}
 .compose-form{flex:1;display:flex;flex-direction:column;padding:16px 24px;gap:10px;overflow-y:auto}
 .field-row{display:flex;align-items:center;border-bottom:1px solid var(--border);padding-bottom:8px}
 .field-label{font-size:12px;color:var(--muted);width:50px;flex-shrink:0}
-.field-input{
-  flex:1;background:transparent;border:none;outline:none;color:var(--text);
-  font-size:13.5px;padding:2px 0;
-}
+.field-input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:13.5px;padding:2px 0}
 .field-input::placeholder{color:var(--muted)}
-.compose-body{
-  flex:1;background:transparent;border:none;outline:none;resize:none;
-  color:var(--text);font-size:13.5px;line-height:1.8;padding:8px 0;
-  min-height:200px;
-}
-.compose-body::placeholder{color:var(--muted)}
-.compose-footer{
-  padding:12px 24px;border-top:1px solid var(--border);
-  display:flex;align-items:center;gap:10px;flex-shrink:0;
-}
-.btn-send{
-  padding:8px 22px;border-radius:7px;border:none;
-  background:var(--primary);color:#000;font-size:13px;font-weight:600;
-  cursor:pointer;display:flex;align-items:center;gap:6px;transition:.15s;
-}
+.compose-editor{flex:1;display:flex;flex-direction:column;min-height:0}
+.compose-footer{padding:12px 24px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.btn-send{padding:8px 22px;border-radius:7px;border:none;background:var(--primary);color:#000;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.15s}
 .btn-send:hover{background:#00e5ff}
 .btn-send:disabled{opacity:.5;pointer-events:none}
 .send-status{font-size:12px;color:var(--muted)}
 .send-status.ok{color:var(--success)}
 .send-status.err{color:var(--danger)}
 
-/* Quill 编辑器深色主题适配 */
+.attach-area{border:1px dashed var(--border);border-radius:8px;padding:8px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;min-height:40px;flex-shrink:0}
+.attach-btn{display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-size:12px;transition:.2s;flex-shrink:0}
+.attach-btn:hover{border-color:var(--primary);color:var(--primary)}
+.attach-chip{display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11.5px;color:var(--muted2)}
+.attach-chip .rm{cursor:pointer;color:var(--muted);font-size:14px;line-height:1;transition:.15s}
+.attach-chip .rm:hover{color:var(--danger)}
+
+/* ── Quill dark theme ── */
 .ql-toolbar.ql-snow{background:var(--panel2);border-color:var(--border)!important;border-radius:8px 8px 0 0;flex-shrink:0}
-.ql-container.ql-snow{border-color:var(--border)!important;border-radius:0 0 8px 8px;color:var(--text);flex:1;min-height:180px;display:flex;flex-direction:column}
-.ql-editor{flex:1;color:var(--text);font-size:13.5px;line-height:1.8;font-family:'Inter',sans-serif}
+.ql-container.ql-snow{border-color:var(--border)!important;border-radius:0 0 8px 8px;color:var(--text);flex:1;min-height:160px;display:flex;flex-direction:column}
+.ql-editor{flex:1;color:var(--text);font-size:13.5px;line-height:1.8}
 .ql-editor.ql-blank::before{color:var(--muted);font-style:normal}
 .ql-snow .ql-stroke{stroke:var(--muted2)}
 .ql-snow .ql-fill{fill:var(--muted2)}
@@ -218,35 +156,44 @@ button,input,select,textarea{font:inherit}
 .ql-snow .ql-picker-label:hover,.ql-snow .ql-picker.ql-expanded .ql-picker-label{color:var(--primary)!important}
 .ql-snow .ql-picker.ql-expanded .ql-picker-label .ql-stroke{stroke:var(--primary)!important}
 .ql-editor a{color:var(--primary)}
-.ql-editor table{border-collapse:collapse;width:100%}
-.ql-editor table td,.ql-editor table th{border:1px solid var(--border);padding:6px 10px}
-/* 附件区域 */
-.attach-area{border:1px dashed var(--border);border-radius:8px;padding:8px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;min-height:40px;flex-shrink:0}
-.attach-btn{display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-size:12px;transition:.2s;flex-shrink:0}
-.attach-btn:hover{border-color:var(--primary);color:var(--primary)}
-.attach-chip{display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11.5px;color:var(--muted2)}
-.attach-chip .rm{cursor:pointer;color:var(--muted);font-size:14px;line-height:1;transition:.15s}
-.attach-chip .rm:hover{color:var(--danger)}
-/* Quill editor 容器撑满剩余空间 */
-.compose-editor{flex:1;display:flex;flex-direction:column;min-height:0}
 
-.toast{
-  position:fixed;bottom:24px;right:24px;z-index:9999;
-  background:var(--panel2);border:1px solid var(--border);border-radius:10px;
-  padding:12px 18px;font-size:13px;color:var(--text);
-  display:none;align-items:center;gap:10px;
-  box-shadow:var(--shadow);
-}
+/* ── Account Modal ── */
+.modal-overlay{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);display:none;place-items:center}
+.modal-overlay.open{display:grid}
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:14px;width:520px;max-width:95vw;max-height:90vh;display:flex;flex-direction:column;box-shadow:var(--shadow)}
+.modal-header{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-title{font-size:15px;font-weight:600}
+.modal-body{padding:18px 22px;display:flex;flex-direction:column;gap:14px;overflow-y:auto}
+.modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.form-row{display:grid;grid-template-columns:1fr 90px;gap:10px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:11.5px;color:var(--muted2)}
+.form-label .req{color:var(--danger)}
+.form-ctrl{background:var(--panel2);border:1px solid var(--border);border-radius:7px;padding:8px 12px;color:var(--text);font-size:13px;outline:none;transition:.15s;width:100%}
+.form-ctrl:focus{border-color:var(--primary)}
+.form-ctrl::placeholder{color:var(--muted)}
+.form-hint{font-size:11px;color:var(--muted);margin-top:2px}
+.btn-modal-cancel{padding:7px 18px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-size:13px;transition:.15s}
+.btn-modal-cancel:hover{border-color:var(--border-h);color:var(--text)}
+.btn-modal-save{padding:7px 22px;border-radius:7px;border:none;background:var(--primary);color:#000;font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+.btn-modal-save:hover{background:#00e5ff}
+.btn-modal-delete{padding:7px 16px;border-radius:7px;border:1px solid var(--danger);background:transparent;color:var(--danger);cursor:pointer;font-size:13px;margin-right:auto;transition:.15s}
+.btn-modal-delete:hover{background:rgba(251,113,133,.1)}
+.modal-status{font-size:12px;margin-left:4px}
+.modal-status.err{color:var(--danger)}
+.modal-status.ok{color:var(--success)}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:13px;color:var(--text);display:none;align-items:center;gap:10px;box-shadow:var(--shadow)}
 .toast.show{display:flex}
 .toast.ok{border-color:rgba(74,222,128,.35)}
 .toast.err{border-color:rgba(251,113,133,.35)}
 </style>
-<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
 </head>
 <body>
 <div class="app">
 
-  <!-- CRM Sidebar Nav -->
+  <!-- CRM Sidebar -->
   <div class="sidebar">
     <div class="sb-logo">
       <div class="logo-icon">
@@ -260,19 +207,11 @@ button,input,select,textarea{font:inherit}
     </div>
     <div class="sb-nav">
       <div class="nav-group">主菜单</div>
-      <div class="nav-item" onclick="go('dashboard.html')">
-        <span class="nav-icon">📊</span><span>仪表盘</span>
-      </div>
-      <div class="nav-item" onclick="go('index.html')">
-        <span class="nav-icon">📦</span><span>订单管理</span>
-      </div>
-      <div class="nav-item" onclick="go('index.html#customers')">
-        <span class="nav-icon">👥</span><span>客户管理</span>
-      </div>
+      <div class="nav-item" onclick="location.href='dashboard.html'"><span class="nav-icon">📊</span><span>仪表盘</span></div>
+      <div class="nav-item" onclick="location.href='index.html'"><span class="nav-icon">📦</span><span>订单管理</span></div>
+      <div class="nav-item" onclick="location.href='index.html#customers'"><span class="nav-icon">👥</span><span>客户管理</span></div>
       <div class="nav-group">工具</div>
-      <div class="nav-item active">
-        <span class="nav-icon">✉️</span><span>邮件</span>
-      </div>
+      <div class="nav-item active"><span class="nav-icon">✉️</span><span>邮件</span></div>
     </div>
   </div>
 
@@ -284,15 +223,27 @@ button,input,select,textarea{font:inherit}
       <div class="folder-header">
         <button class="btn-compose" onclick="openCompose()">✏️ 写邮件</button>
       </div>
+
       <div class="folder-list">
-        <div class="folder-item active" data-folder="INBOX" onclick="selectFolder('INBOX',this)">
+        <div class="folder-item active" onclick="selectFolder('INBOX',this)">
           <span>📥</span><span>收件箱</span>
           <span class="badge" id="badge-inbox" style="display:none"></span>
         </div>
-        <div class="folder-item" data-folder="SENT" onclick="selectFolder('SENT',this)">
+        <div class="folder-item" onclick="selectFolder('SENT',this)">
           <span>📤</span><span>已发送</span>
         </div>
       </div>
+
+      <div class="acct-section">
+        <div class="acct-hd">
+          <span>邮箱账号</span>
+          <button class="btn-add-acct" onclick="openAccountModal()" title="添加邮箱">＋</button>
+        </div>
+        <div class="acct-list" id="acctList">
+          <div class="acct-empty">加载中…</div>
+        </div>
+      </div>
+
       <div class="folder-sync">
         <button class="btn-sync" id="btnSync" onclick="syncEmails()">
           <span id="syncIcon">🔄</span> 同步收件箱
@@ -300,7 +251,7 @@ button,input,select,textarea{font:inherit}
       </div>
     </div>
 
-    <!-- List Panel -->
+    <!-- Email List -->
     <div class="list-panel">
       <div class="list-header">
         <span class="list-title" id="listTitle">收件箱</span>
@@ -311,17 +262,77 @@ button,input,select,textarea{font:inherit}
       </div>
     </div>
 
-    <!-- Detail / Compose Panel -->
+    <!-- Detail / Compose -->
     <div class="detail-panel" id="detailPanel">
-      <div class="detail-placeholder" id="placeholder">
+      <div class="detail-placeholder">
         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
-          <rect x="2" y="4" width="20" height="16" rx="2"/>
-          <path d="M2 7l10 7 10-7"/>
+          <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/>
         </svg>
         <span>选择一封邮件查看</span>
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- Account Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">添加邮箱</span>
+      <button class="btn-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">显示名称 <span class="req">*</span></label>
+        <input class="form-ctrl" id="fDisplayName" placeholder="例：工作邮箱">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">邮箱地址 <span class="req">*</span></label>
+          <input class="form-ctrl" id="fEmail" placeholder="you@company.com" type="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">发件人名称</label>
+          <input class="form-ctrl" id="fFromName" placeholder="Jacky">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">收信服务器 IMAP <span class="req">*</span></label>
+          <input class="form-ctrl" id="fImapHost" placeholder="imap.hostinger.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">端口</label>
+          <input class="form-ctrl" id="fImapPort" placeholder="993" type="number">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">发信服务器 SMTP <span class="req">*</span></label>
+          <input class="form-ctrl" id="fSmtpHost" placeholder="smtp.hostinger.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">端口</label>
+          <input class="form-ctrl" id="fSmtpPort" placeholder="465" type="number">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">登录用户名（留空则用邮箱地址）</label>
+        <input class="form-ctrl" id="fUsername" placeholder="通常与邮箱地址相同">
+      </div>
+      <div class="form-group">
+        <label class="form-label">邮箱密码 <span class="req" id="passReq">*</span></label>
+        <input class="form-ctrl" id="fPassword" type="password" placeholder="邮箱密码">
+        <div class="form-hint" id="passHint" style="display:none">留空则不修改密码</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-delete" id="btnDeleteAccount" style="display:none" onclick="confirmDeleteAccount()">🗑 删除此账号</button>
+      <button class="btn-modal-cancel" onclick="closeModal()">取消</button>
+      <span class="modal-status" id="modalStatus"></span>
+      <button class="btn-modal-save" onclick="saveAccount()">保存</button>
+    </div>
   </div>
 </div>
 
@@ -331,14 +342,14 @@ button,input,select,textarea{font:inherit}
 <script>
 const API = '';
 let token = localStorage.getItem('crm_token');
-let currentFolder = 'INBOX';
-let currentEmailId = null;
-let quillEditor = null;
-let attachments = [];
+if (!token) location.href = 'login.html';
 
-if (!token) { location.href = 'login.html'; }
-
-function go(url) { location.href = url; }
+let currentFolder    = 'INBOX';
+let currentEmailId   = null;
+let currentAccountId = null; // null = 使用环境变量默认账号
+let quillEditor      = null;
+let attachments      = [];
+let editingAccountId = null;
 
 // ── Auth fetch ──
 async function apiFetch(path, opts = {}) {
@@ -352,9 +363,9 @@ async function apiFetch(path, opts = {}) {
 }
 
 // ── Toast ──
-function showToast(msg, type = 'ok') {
+function showToast(msg, type='ok') {
   const t = document.getElementById('toast');
-  t.textContent = (type === 'ok' ? '✓ ' : '✗ ') + msg;
+  t.textContent = (type==='ok'?'✓ ':'✗ ') + msg;
   t.className = `toast show ${type}`;
   setTimeout(() => t.className = 'toast', 3000);
 }
@@ -362,22 +373,137 @@ function showToast(msg, type = 'ok') {
 // ── Date format ──
 function fmtDate(iso) {
   if (!iso) return '';
-  const d = new Date(iso);
-  const now = new Date();
-  if (d.toDateString() === now.toDateString()) {
-    return d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
-  }
-  const diff = (now - d) / 86400000;
-  if (diff < 7) return ['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];
+  const d = new Date(iso), now = new Date();
+  if (d.toDateString() === now.toDateString())
+    return d.toLocaleTimeString('zh-CN', { hour:'2-digit', minute:'2-digit' });
+  if ((now - d) / 86400000 < 7) return ['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];
   return `${d.getMonth()+1}/${d.getDate()}`;
 }
 
-// ── Load email list ──
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Accounts ──
+async function loadAccounts() {
+  try {
+    const res  = await apiFetch('/api/email-accounts');
+    const list = await res.json();
+    renderAccounts(Array.isArray(list) ? list : []);
+  } catch {
+    document.getElementById('acctList').innerHTML = '<div class="acct-empty">加载失败</div>';
+  }
+}
+
+function renderAccounts(accounts) {
+  const el = document.getElementById('acctList');
+  if (!accounts.length) {
+    el.innerHTML = '<div class="acct-empty">暂无账号，点 ＋ 添加</div>';
+    return;
+  }
+  el.innerHTML = accounts.map(a => `
+    <div class="acct-item ${a.id === currentAccountId ? 'active' : ''}" onclick="selectAccount('${a.id}',this)">
+      <span class="acct-dot"></span>
+      <span class="acct-email" title="${esc(a.email)}">${esc(a.display_name || a.email)}</span>
+      <button class="btn-edit-acct" onclick="event.stopPropagation();openAccountModal(${JSON.stringify(JSON.stringify(a))})" title="编辑">✎</button>
+    </div>
+  `).join('');
+}
+
+function selectAccount(id, el) {
+  currentAccountId = id;
+  document.querySelectorAll('.acct-item').forEach(x => x.classList.remove('active'));
+  if (el) el.classList.add('active');
+  loadEmails(currentFolder);
+}
+
+// ── Account Modal ──
+function openAccountModal(accountJson = null) {
+  const a = accountJson ? JSON.parse(accountJson) : null;
+  editingAccountId = a?.id || null;
+  document.getElementById('modalTitle').textContent = a ? '编辑邮箱' : '添加邮箱';
+  document.getElementById('fDisplayName').value = a?.display_name || '';
+  document.getElementById('fEmail').value        = a?.email || '';
+  document.getElementById('fFromName').value     = a?.from_name || '';
+  document.getElementById('fImapHost').value     = a?.imap_host || '';
+  document.getElementById('fImapPort').value     = a?.imap_port || '993';
+  document.getElementById('fSmtpHost').value     = a?.smtp_host || '';
+  document.getElementById('fSmtpPort').value     = a?.smtp_port || '465';
+  document.getElementById('fUsername').value     = a?.username || '';
+  document.getElementById('fPassword').value     = '';
+  document.getElementById('fPassword').placeholder = a ? '不修改则留空' : '邮箱密码';
+  document.getElementById('passReq').style.display  = a ? 'none' : '';
+  document.getElementById('passHint').style.display  = a ? '' : 'none';
+  document.getElementById('btnDeleteAccount').style.display = a ? '' : 'none';
+  document.getElementById('modalStatus').textContent = '';
+  document.getElementById('modalStatus').className = 'modal-status';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  editingAccountId = null;
+}
+
+async function saveAccount() {
+  const display_name = document.getElementById('fDisplayName').value.trim();
+  const email        = document.getElementById('fEmail').value.trim();
+  const from_name    = document.getElementById('fFromName').value.trim();
+  const imap_host    = document.getElementById('fImapHost').value.trim();
+  const imap_port    = parseInt(document.getElementById('fImapPort').value) || 993;
+  const smtp_host    = document.getElementById('fSmtpHost').value.trim();
+  const smtp_port    = parseInt(document.getElementById('fSmtpPort').value) || 465;
+  const username     = document.getElementById('fUsername').value.trim() || email;
+  const password     = document.getElementById('fPassword').value;
+  const statusEl     = document.getElementById('modalStatus');
+
+  if (!display_name || !email || !imap_host || !smtp_host) {
+    statusEl.textContent = '请填写带 * 的必填项'; statusEl.className = 'modal-status err'; return;
+  }
+  if (!editingAccountId && !password) {
+    statusEl.textContent = '请输入邮箱密码'; statusEl.className = 'modal-status err'; return;
+  }
+
+  const data = { display_name, email, from_name, imap_host, imap_port, smtp_host, smtp_port, username, is_active: true };
+  if (password) data.password = password;
+
+  statusEl.textContent = '保存中…'; statusEl.className = 'modal-status';
+
+  try {
+    const url    = editingAccountId ? `/api/email-accounts/${editingAccountId}` : '/api/email-accounts';
+    const method = editingAccountId ? 'PUT' : 'POST';
+    const res    = await apiFetch(url, { method, body: JSON.stringify(data) });
+    const result = await res.json();
+    if (result.success || result.data) {
+      showToast(editingAccountId ? '邮箱已更新' : '邮箱已添加');
+      closeModal();
+      loadAccounts();
+    } else {
+      statusEl.textContent = result.message || '保存失败'; statusEl.className = 'modal-status err';
+    }
+  } catch (e) {
+    statusEl.textContent = '失败：' + e.message; statusEl.className = 'modal-status err';
+  }
+}
+
+async function confirmDeleteAccount() {
+  if (!confirm('确定删除这个邮箱账号吗？该账号下的邮件记录不会被删除。')) return;
+  try {
+    await apiFetch(`/api/email-accounts/${editingAccountId}`, { method: 'DELETE' });
+    showToast('账号已删除');
+    if (currentAccountId === editingAccountId) { currentAccountId = null; loadEmails(currentFolder); }
+    closeModal();
+    loadAccounts();
+  } catch (e) { showToast('删除失败：' + e.message, 'err'); }
+}
+
+// ── Email list ──
 async function loadEmails(folder) {
   const list = document.getElementById('emailList');
   list.innerHTML = '<div class="list-loading">加载中…</div>';
   try {
-    const res = await apiFetch(`/api/emails?folder=${folder}`);
+    const acct = currentAccountId ? `&account_id=${currentAccountId}` : '';
+    const res   = await apiFetch(`/api/emails?folder=${folder}${acct}`);
     const emails = await res.json();
     renderList(emails);
     document.getElementById('listCount').textContent = emails.length ? `${emails.length} 封` : '';
@@ -390,22 +516,17 @@ async function loadEmails(folder) {
 function updateBadge(emails) {
   const unread = emails.filter(e => !e.is_read).length;
   const b = document.getElementById('badge-inbox');
-  if (unread > 0) { b.textContent = unread; b.style.display = ''; }
-  else b.style.display = 'none';
+  b.textContent = unread; b.style.display = unread ? '' : 'none';
 }
 
 function renderList(emails) {
   const list = document.getElementById('emailList');
-  if (!emails.length) {
-    list.innerHTML = '<div class="list-empty">暂无邮件</div>';
-    return;
-  }
+  if (!emails.length) { list.innerHTML = '<div class="list-empty">暂无邮件</div>'; return; }
   list.innerHTML = emails.map(e => `
-    <div class="email-item ${e.is_read ? '' : 'unread'} ${e.id === currentEmailId ? 'active' : ''}"
-         onclick="openEmail('${e.id}', this)">
+    <div class="email-item ${e.is_read?'':'unread'} ${e.id===currentEmailId?'active':''}" onclick="openEmail('${e.id}',this)">
       <div class="ei-row">
-        ${!e.is_read ? '<span class="unread-dot"></span>' : ''}
-        <div class="ei-from" style="flex:1">${esc(e.from_name || e.from_address)}</div>
+        ${!e.is_read?'<span class="unread-dot"></span>':''}
+        <div class="ei-from" style="flex:1">${esc(e.from_name||e.from_address)}</div>
       </div>
       <div class="ei-subject">${esc(e.subject)}</div>
       <div class="ei-date">${fmtDate(e.received_at)}</div>
@@ -413,30 +534,21 @@ function renderList(emails) {
   `).join('');
 }
 
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
 // ── Open email ──
 async function openEmail(id, el) {
   currentEmailId = id;
   document.querySelectorAll('.email-item').forEach(x => x.classList.remove('active'));
   if (el) el.classList.add('active');
-
   const panel = document.getElementById('detailPanel');
   panel.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">加载中…</div>';
-
   try {
-    const res = await apiFetch(`/api/emails/${id}`);
+    const res   = await apiFetch(`/api/emails/${id}`);
     const email = await res.json();
-
-    // Mark read
     if (!email.is_read) {
-      apiFetch(`/api/emails/${id}/read`, { method: 'PATCH', body: JSON.stringify({ is_read: true }) });
-      el && el.classList.remove('unread');
-      el && el.querySelector('.unread-dot')?.remove();
+      apiFetch(`/api/emails/${id}/read`, { method:'PATCH', body: JSON.stringify({ is_read:true }) });
+      el?.classList.remove('unread');
+      el?.querySelector('.unread-dot')?.remove();
     }
-
     panel.innerHTML = `
       <div class="reader">
         <div class="reader-header">
@@ -444,35 +556,29 @@ async function openEmail(id, el) {
           <div class="reader-meta">
             <div><strong>发件人：</strong>${esc(email.from_name ? `${email.from_name} <${email.from_address}>` : email.from_address)}</div>
             <div><strong>收件人：</strong>${esc(email.to_addresses)}</div>
-            ${email.cc ? `<div><strong>抄送：</strong>${esc(email.cc)}</div>` : ''}
+            ${email.cc?`<div><strong>抄送：</strong>${esc(email.cc)}</div>`:''}
             <div><strong>时间：</strong>${new Date(email.received_at).toLocaleString('zh-CN')}</div>
           </div>
           <div class="reader-actions">
-            <button class="btn-action" onclick="replyEmail(${JSON.stringify(esc(email.from_address))}, ${JSON.stringify(esc(email.subject))})">↩ 回复</button>
-            <button class="btn-action" onclick="forwardEmail(${JSON.stringify(esc(email.subject))}, ${JSON.stringify(esc(email.body_text || ''))})">⤷ 转发</button>
+            <button class="btn-action" onclick="replyEmail(${JSON.stringify(esc(email.from_address))},${JSON.stringify(esc(email.subject))})">↩ 回复</button>
+            <button class="btn-action" onclick="forwardEmail(${JSON.stringify(esc(email.subject))},${JSON.stringify(esc(email.body_html||email.body_text||''))})">⤷ 转发</button>
             <button class="btn-action danger" onclick="deleteEmail('${email.id}')">🗑 删除</button>
           </div>
         </div>
         <div class="reader-body">
           ${email.body_html
             ? `<div class="reader-html">${sanitizeHtml(email.body_html)}</div>`
-            : `<div class="reader-text">${esc(email.body_text || '（无内容）')}</div>`
-          }
+            : `<div class="reader-text">${esc(email.body_text||'（无内容）')}</div>`}
         </div>
-      </div>
-    `;
+      </div>`;
   } catch (e) {
     panel.innerHTML = `<div style="padding:24px;color:var(--danger)">加载失败：${e.message}</div>`;
   }
 }
 
-// Basic HTML sanitizer: strip scripts/iframes but keep layout
 function sanitizeHtml(html) {
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
-    .replace(/<iframe[\s\S]*?<\/iframe>/gi, '')
-    .replace(/on\w+="[^"]*"/gi, '')
-    .replace(/on\w+='[^']*'/gi, '');
+  return html.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<iframe[\s\S]*?<\/iframe>/gi,'')
+    .replace(/on\w+="[^"]*"/gi,'').replace(/on\w+='[^']*'/gi,'');
 }
 
 // ── Folder switch ──
@@ -480,64 +586,49 @@ function selectFolder(folder, el) {
   currentFolder = folder;
   currentEmailId = null;
   document.querySelectorAll('.folder-item').forEach(x => x.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('listTitle').textContent = folder === 'INBOX' ? '收件箱' : '已发送';
+  if (el) el.classList.add('active');
+  document.getElementById('listTitle').textContent = folder==='INBOX'?'收件箱':'已发送';
+  showPlaceholder();
+  loadEmails(folder);
+}
+
+function showPlaceholder() {
   document.getElementById('detailPanel').innerHTML = `
-    <div class="detail-placeholder" id="placeholder">
+    <div class="detail-placeholder">
       <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
         <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/>
       </svg>
       <span>选择一封邮件查看</span>
     </div>`;
-  loadEmails(folder);
 }
 
 // ── Sync ──
 async function syncEmails() {
   const btn = document.getElementById('btnSync');
   const icon = document.getElementById('syncIcon');
-  btn.classList.add('syncing');
-  icon.textContent = '⏳';
+  btn.classList.add('syncing'); icon.textContent = '⏳';
   try {
-    const res = await apiFetch('/api/emails/sync', { method: 'POST' });
+    const res  = await apiFetch('/api/emails/sync', { method:'POST', body: JSON.stringify({ account_id: currentAccountId }) });
     const data = await res.json();
-    if (data.success) {
-      showToast(`同步完成，新增 ${data.synced} 封邮件`);
-      loadEmails(currentFolder);
-    } else {
-      showToast(data.message || '同步失败', 'err');
-    }
-  } catch (e) {
-    showToast('同步失败：' + e.message, 'err');
-  } finally {
-    btn.classList.remove('syncing');
-    icon.textContent = '🔄';
-  }
+    if (data.success) { showToast(`同步完成，新增 ${data.synced} 封`); loadEmails(currentFolder); }
+    else showToast(data.message||'同步失败','err');
+  } catch (e) { showToast('同步失败：'+e.message,'err'); }
+  finally { btn.classList.remove('syncing'); icon.textContent = '🔄'; }
 }
 
 // ── Compose ──
 function openCompose(opts = {}) {
   attachments = [];
-  const panel = document.getElementById('detailPanel');
-  panel.innerHTML = `
+  document.getElementById('detailPanel').innerHTML = `
     <div class="compose">
       <div class="compose-header">
-        <span class="compose-title">✏️ ${opts.title || '写邮件'}</span>
-        <button class="btn-close" onclick="closeCompose()">✕</button>
+        <span class="compose-title">✏️ ${opts.title||'写邮件'}</span>
+        <button class="btn-close" onclick="showPlaceholder()">✕</button>
       </div>
       <div class="compose-form">
-        <div class="field-row">
-          <span class="field-label">收件人</span>
-          <input class="field-input" id="cTo" placeholder="example@domain.com" value="${opts.to || ''}">
-        </div>
-        <div class="field-row">
-          <span class="field-label">抄送</span>
-          <input class="field-input" id="cCc" placeholder="可选">
-        </div>
-        <div class="field-row">
-          <span class="field-label">主题</span>
-          <input class="field-input" id="cSubject" placeholder="邮件主题" value="${opts.subject || ''}">
-        </div>
+        <div class="field-row"><span class="field-label">收件人</span><input class="field-input" id="cTo" placeholder="example@domain.com" value="${opts.to||''}"></div>
+        <div class="field-row"><span class="field-label">抄送</span><input class="field-input" id="cCc" placeholder="可选"></div>
+        <div class="field-row"><span class="field-label">主题</span><input class="field-input" id="cSubject" placeholder="邮件主题" value="${opts.subject||''}"></div>
         <div class="compose-editor" id="quillWrap"></div>
         <div class="attach-area" id="attachArea">
           <button class="attach-btn" onclick="document.getElementById('fileInput').click()">📎 添加附件</button>
@@ -548,19 +639,16 @@ function openCompose(opts = {}) {
         <button class="btn-send" id="btnSend" onclick="sendEmail()">📨 发送</button>
         <span class="send-status" id="sendStatus"></span>
       </div>
-    </div>
-  `;
+    </div>`;
   quillEditor = new Quill('#quillWrap', {
-    theme: 'snow',
-    placeholder: '在此输入邮件内容…',
+    theme: 'snow', placeholder: '在此输入邮件内容…',
     modules: { toolbar: [
-      [{ header: [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ color: [] }, { background: [] }],
-      [{ list: 'ordered' }, { list: 'bullet' }],
-      [{ align: [] }],
-      ['link'],
-      ['clean'],
+      [{ header:[1,2,3,false] }],
+      ['bold','italic','underline','strike'],
+      [{ color:[] },{ background:[] }],
+      [{ list:'ordered' },{ list:'bullet' }],
+      [{ align:[] }],
+      ['link'],['clean'],
     ]},
   });
   if (opts.body) quillEditor.clipboard.dangerouslyPasteHTML(opts.body);
@@ -569,10 +657,7 @@ function openCompose(opts = {}) {
 function addFiles(input) {
   Array.from(input.files).forEach(file => {
     const reader = new FileReader();
-    reader.onload = e => {
-      attachments.push({ filename: file.name, content: e.target.result.split(',')[1], contentType: file.type });
-      renderChips();
-    };
+    reader.onload = e => { attachments.push({ filename:file.name, content:e.target.result.split(',')[1], contentType:file.type }); renderChips(); };
     reader.readAsDataURL(file);
   });
   input.value = '';
@@ -583,68 +668,43 @@ function renderChips() {
   if (!area) return;
   area.innerHTML = `<button class="attach-btn" onclick="document.getElementById('fileInput').click()">📎 添加附件</button>
     <input type="file" id="fileInput" style="display:none" multiple onchange="addFiles(this)">` +
-    attachments.map((a, i) => `<div class="attach-chip">📄 ${esc(a.filename)}<span class="rm" onclick="removeFile(${i})">✕</span></div>`).join('');
+    attachments.map((a,i) => `<div class="attach-chip">📄 ${esc(a.filename)}<span class="rm" onclick="removeFile(${i})">✕</span></div>`).join('');
 }
 
-function removeFile(i) { attachments.splice(i, 1); renderChips(); }
-
-function closeCompose() {
-  document.getElementById('detailPanel').innerHTML = `
-    <div class="detail-placeholder" id="placeholder">
-      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
-        <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/>
-      </svg>
-      <span>选择一封邮件查看</span>
-    </div>`;
-}
+function removeFile(i) { attachments.splice(i,1); renderChips(); }
 
 function replyEmail(to, subject) {
-  openCompose({ title: '回复', to, subject: subject.startsWith('Re:') ? subject : `Re: ${subject}` });
+  openCompose({ title:'回复', to, subject: subject.startsWith('Re:')?subject:`Re: ${subject}` });
 }
 
 function forwardEmail(subject, body) {
-  openCompose({
-    title: '转发',
-    subject: subject.startsWith('Fwd:') ? subject : `Fwd: ${subject}`,
-    body: `<br><br><hr><p><b>---------- 转发邮件 ----------</b></p>${body}`,
-  });
+  openCompose({ title:'转发', subject: subject.startsWith('Fwd:')?subject:`Fwd: ${subject}`, body:`<br><br><hr><p><b>--- 转发邮件 ---</b></p>${body}` });
 }
 
 async function sendEmail() {
-  const to = document.getElementById('cTo')?.value?.trim();
-  const cc = document.getElementById('cCc')?.value?.trim();
-  const subject = document.getElementById('cSubject')?.value?.trim();
+  const to       = document.getElementById('cTo')?.value?.trim();
+  const cc       = document.getElementById('cCc')?.value?.trim();
+  const subject  = document.getElementById('cSubject')?.value?.trim();
   const body_html = quillEditor ? quillEditor.root.innerHTML : '';
   const body_text = quillEditor ? quillEditor.getText().trim() : '';
-  const status = document.getElementById('sendStatus');
-  const btn = document.getElementById('btnSend');
+  const statusEl  = document.getElementById('sendStatus');
+  const btn       = document.getElementById('btnSend');
 
-  if (!to || !subject) { status.textContent = '收件人和主题不能为空'; status.className = 'send-status err'; return; }
-
-  btn.disabled = true;
-  status.textContent = '发送中…';
-  status.className = 'send-status';
+  if (!to||!subject) { statusEl.textContent='收件人和主题不能为空'; statusEl.className='send-status err'; return; }
+  btn.disabled = true; statusEl.textContent='发送中…'; statusEl.className='send-status';
 
   try {
-    const res = await apiFetch('/api/emails/send', {
-      method: 'POST',
-      body: JSON.stringify({ to, cc, subject, body_html, body_text, attachments }),
-    });
+    const res  = await apiFetch('/api/emails/send', { method:'POST', body: JSON.stringify({ to, cc, subject, body_html, body_text, attachments, account_id: currentAccountId }) });
     const data = await res.json();
     if (data.success) {
-      status.textContent = '✓ 发送成功';
-      status.className = 'send-status ok';
+      statusEl.textContent='✓ 发送成功'; statusEl.className='send-status ok';
       showToast('邮件发送成功');
-      setTimeout(closeCompose, 1500);
+      setTimeout(showPlaceholder, 1500);
     } else {
-      status.textContent = data.message || '发送失败';
-      status.className = 'send-status err';
-      btn.disabled = false;
+      statusEl.textContent = data.message||'发送失败'; statusEl.className='send-status err'; btn.disabled=false;
     }
   } catch (e) {
-    status.textContent = '发送失败：' + e.message;
-    status.className = 'send-status err';
-    btn.disabled = false;
+    statusEl.textContent='发送失败：'+e.message; statusEl.className='send-status err'; btn.disabled=false;
   }
 }
 
@@ -652,17 +712,14 @@ async function sendEmail() {
 async function deleteEmail(id) {
   if (!confirm('确定删除这封邮件吗？')) return;
   try {
-    await apiFetch(`/api/emails/${id}`, { method: 'DELETE' });
-    showToast('邮件已删除');
-    closeCompose();
-    loadEmails(currentFolder);
-  } catch (e) {
-    showToast('删除失败：' + e.message, 'err');
-  }
+    await apiFetch(`/api/emails/${id}`, { method:'DELETE' });
+    showToast('邮件已删除'); showPlaceholder(); loadEmails(currentFolder);
+  } catch (e) { showToast('删除失败：'+e.message,'err'); }
 }
 
 // ── Init ──
 loadEmails('INBOX');
+loadAccounts();
 </script>
 </body>
 </html>

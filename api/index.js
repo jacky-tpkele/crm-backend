@@ -468,55 +468,103 @@ const EMAIL_USER      = process.env.EMAIL_USER;
 const EMAIL_PASS      = process.env.EMAIL_PASS;
 const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME || 'TPKELE';
 
-function imapClient() {
+// cfg 来自数据库账号，未提供则回退到环境变量
+function imapClient(cfg = {}) {
+  const host = cfg.imap_host || EMAIL_IMAP_HOST;
+  const port = cfg.imap_port || EMAIL_IMAP_PORT;
   return new ImapFlow({
-    host: EMAIL_IMAP_HOST,
-    port: EMAIL_IMAP_PORT,
-    secure: EMAIL_IMAP_PORT === 993,
-    auth: { user: EMAIL_USER, pass: EMAIL_PASS },
+    host, port,
+    secure: port === 993,
+    auth: { user: cfg.username || EMAIL_USER, pass: cfg.password || EMAIL_PASS },
     logger: false,
     tls: { rejectUnauthorized: false },
   });
 }
 
-function smtpTransport() {
+function smtpTransport(cfg = {}) {
+  const port = cfg.smtp_port || EMAIL_SMTP_PORT;
   return nodemailer.createTransport({
-    host: EMAIL_SMTP_HOST,
-    port: EMAIL_SMTP_PORT,
-    secure: EMAIL_SMTP_PORT === 465,
-    auth: { user: EMAIL_USER, pass: EMAIL_PASS },
+    host: cfg.smtp_host || EMAIL_SMTP_HOST,
+    port,
+    secure: port === 465,
+    auth: { user: cfg.username || EMAIL_USER, pass: cfg.password || EMAIL_PASS },
     tls: { rejectUnauthorized: false },
   });
 }
 
+async function getAccountCfg(accountId) {
+  if (!accountId) return {};
+  try {
+    const rows = await sb(`email_accounts?id=eq.${accountId}&is_active=eq.true&select=*`);
+    return rows[0] || {};
+  } catch { return {}; }
+}
+
+// ══════════════════════════════
+// EMAIL ACCOUNTS CRUD
+// ══════════════════════════════
+app.get('/api/email-accounts', auth, async (req, res) => {
+  try {
+    const data = await sb('email_accounts?select=id,display_name,email,imap_host,imap_port,smtp_host,smtp_port,username,from_name,is_active,created_at&order=created_at.asc');
+    res.json(data);
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.post('/api/email-accounts', auth, async (req, res) => {
+  try {
+    const data = await sb('email_accounts?select=id,display_name,email', {
+      method: 'POST', headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify(req.body),
+    });
+    res.json({ success: true, data: data[0] });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.put('/api/email-accounts/:id', auth, async (req, res) => {
+  try {
+    await sb(`email_accounts?id=eq.${req.params.id}`, { method: 'PATCH', body: JSON.stringify(req.body) });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.delete('/api/email-accounts/:id', auth, async (req, res) => {
+  try {
+    await sb(`email_accounts?id=eq.${req.params.id}`, { method: 'DELETE' });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
 // 同步收件箱到 Supabase
 app.post('/api/emails/sync', auth, async (req, res) => {
-  if (!EMAIL_IMAP_HOST || !EMAIL_USER || !EMAIL_PASS)
+  const { account_id } = req.body || {};
+  const cfg = await getAccountCfg(account_id);
+  const imapHost = cfg.imap_host || EMAIL_IMAP_HOST;
+  const imapUser = cfg.username  || EMAIL_USER;
+  const imapPass = cfg.password  || EMAIL_PASS;
+  if (!imapHost || !imapUser || !imapPass)
     return res.status(503).json({ message: '未配置邮箱环境变量' });
 
-  const client = imapClient();
+  const client = imapClient(cfg);
   let synced = 0;
   try {
     await client.connect();
     const lock = await client.getMailboxLock('INBOX');
     try {
-      // 查询 Supabase 中已有的最大 uid
       let lastUid = 0;
       try {
-        const rows = await sb('emails?select=uid&folder=eq.INBOX&order=uid.desc&limit=1');
+        const acctFilter = account_id ? `&account_id=eq.${account_id}` : '&account_id=is.null';
+        const rows = await sb(`emails?select=uid&folder=eq.INBOX${acctFilter}&order=uid.desc&limit=1`);
         if (rows.length) lastUid = rows[0].uid || 0;
       } catch {}
 
-      // ImapFlow fetch requires string sequence/UID range
       const range = lastUid ? `${lastUid + 1}:*` : '1:*';
       const messages = [];
       try {
         for await (const msg of client.fetch(range, { uid: true, source: true }, { uid: true })) {
           messages.push({ uid: msg.uid, source: msg.source });
-          if (messages.length >= 50) break; // 每次最多同步50封，防止超时
+          if (messages.length >= 50) break;
         }
       } catch (fetchErr) {
-        // 如果 UID 范围无新邮件，ImapFlow 会抛出异常，忽略即可
         if (!fetchErr.message?.includes('No messages')) throw fetchErr;
       }
 
@@ -528,24 +576,27 @@ app.post('/api/emails/sync', auth, async (req, res) => {
           const ccList = (parsed.cc?.value || []).map(a => a.address).join(', ');
           const msgId = parsed.messageId || `uid-${uid}-${Date.now()}`;
 
+          const emailData = {
+            message_id:   msgId,
+            folder:       'INBOX',
+            uid:          uid,
+            from_address: from.address || '',
+            from_name:    from.name || '',
+            to_addresses: toList,
+            cc:           ccList,
+            subject:      parsed.subject || '(无主题)',
+            body_text:    parsed.text || '',
+            body_html:    parsed.html || '',
+            is_read:      false,
+            is_deleted:   false,
+            received_at:  (parsed.date || new Date()).toISOString(),
+          };
+          if (account_id) emailData.account_id = account_id;
+
           await sb('emails?on_conflict=message_id', {
             method: 'POST',
             headers: { 'Prefer': 'resolution=ignore-duplicates' },
-            body: JSON.stringify({
-              message_id:   msgId,
-              folder:       'INBOX',
-              uid:          uid,
-              from_address: from.address || '',
-              from_name:    from.name || '',
-              to_addresses: toList,
-              cc:           ccList,
-              subject:      parsed.subject || '(无主题)',
-              body_text:    parsed.text || '',
-              body_html:    parsed.html || '',
-              is_read:      false,
-              is_deleted:   false,
-              received_at:  (parsed.date || new Date()).toISOString(),
-            }),
+            body: JSON.stringify(emailData),
           });
           synced++;
         } catch (parseErr) {
@@ -624,15 +675,19 @@ app.post('/api/emails/sync-sent', auth, async (req, res) => {
 // 获取邮件列表
 app.get('/api/emails', auth, async (req, res) => {
   try {
-    const folder = req.query.folder || 'INBOX';
-    const page   = Math.max(1, parseInt(req.query.page || '1'));
-    const limit  = 50;
-    const offset = (page - 1) * limit;
+    const folder     = req.query.folder || 'INBOX';
+    const account_id = req.query.account_id;
+    const page       = Math.max(1, parseInt(req.query.page || '1'));
+    const limit      = 50;
+    const offset     = (page - 1) * limit;
     const folderFilter = folder === 'SENT'
-      ? 'folder=neq.INBOX&folder=neq.DRAFTS'
+      ? 'folder=eq.SENT'
       : `folder=eq.${encodeURIComponent(folder)}`;
+    const acctFilter = account_id
+      ? `&account_id=eq.${account_id}`
+      : '&account_id=is.null';
     const data = await sb(
-      `emails?${folderFilter}&is_deleted=eq.false&order=received_at.desc&limit=${limit}&offset=${offset}&select=id,message_id,folder,from_address,from_name,to_addresses,subject,is_read,received_at`
+      `emails?${folderFilter}${acctFilter}&is_deleted=eq.false&order=received_at.desc&limit=${limit}&offset=${offset}&select=id,message_id,folder,account_id,from_address,from_name,to_addresses,subject,is_read,received_at`
     );
     res.json(data);
   } catch (e) { res.status(500).json({ message: e.message }); }
@@ -670,16 +725,19 @@ app.delete('/api/emails/:id', auth, async (req, res) => {
 
 // 发送邮件
 app.post('/api/emails/send', auth, async (req, res) => {
-  if (!EMAIL_SMTP_HOST || !EMAIL_USER || !EMAIL_PASS)
-    return res.status(503).json({ message: '未配置邮箱环境变量' });
-
-  const { to, cc, subject, body_html, body_text, attachments } = req.body;
+  const { to, cc, subject, body_html, body_text, attachments, account_id } = req.body;
   if (!to || !subject) return res.status(400).json({ message: '收件人和主题不能为空' });
 
+  const cfg      = await getAccountCfg(account_id);
+  const fromUser = cfg.username  || EMAIL_USER;
+  const fromName = cfg.from_name || EMAIL_FROM_NAME;
+
+  if (!fromUser) return res.status(503).json({ message: '未配置邮箱账号' });
+
   try {
-    const transport = smtpTransport();
+    const transport = smtpTransport(cfg);
     const info = await transport.sendMail({
-      from: `"${EMAIL_FROM_NAME}" <${EMAIL_USER}>`,
+      from: `"${fromName}" <${fromUser}>`,
       to, cc, subject,
       text: body_text || '',
       html: body_html || `<p>${(body_text || '').replace(/\n/g, '<br>')}</p>`,
@@ -690,25 +748,23 @@ app.post('/api/emails/send', auth, async (req, res) => {
       })),
     });
 
-    // 保存到已发送
-    await sb('emails', {
-      method: 'POST',
-      body: JSON.stringify({
-        message_id:   info.messageId || `sent-${Date.now()}`,
-        folder:       'SENT',
-        from_address: EMAIL_USER,
-        from_name:    EMAIL_FROM_NAME,
-        to_addresses: to,
-        cc:           cc || '',
-        subject,
-        body_text:    body_text || '',
-        body_html:    body_html || '',
-        is_read:      true,
-        is_deleted:   false,
-        received_at:  new Date().toISOString(),
-      }),
-    });
+    const sentData = {
+      message_id:   info.messageId || `sent-${Date.now()}`,
+      folder:       'SENT',
+      from_address: fromUser,
+      from_name:    fromName,
+      to_addresses: to,
+      cc:           cc || '',
+      subject,
+      body_text:    body_text || '',
+      body_html:    body_html || '',
+      is_read:      true,
+      is_deleted:   false,
+      received_at:  new Date().toISOString(),
+    };
+    if (account_id) sentData.account_id = account_id;
 
+    await sb('emails', { method: 'POST', body: JSON.stringify(sentData) });
     res.json({ success: true, messageId: info.messageId });
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
