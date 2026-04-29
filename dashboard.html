@@ -2299,7 +2299,6 @@ function buildDocHTML(order, docType, lang) {
   }
 
   // ── 其他文件类型（报价单 / 装箱单）保持原有逻辑 ──
-  const isZh = lang === 'zh';
   const titles = {
     quotation: isZh ? '报 价 单' : 'QUOTATION',
     packing:   isZh ? '装 箱 单' : 'PACKING LIST',
