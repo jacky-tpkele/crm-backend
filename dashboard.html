@@ -55,10 +55,21 @@ button,input,select,textarea{font:inherit}
 .nav-item:hover{background:rgba(0,200,255,0.05);color:var(--text)}
 .nav-item.active{background:rgba(0,200,240,0.08);color:var(--primary);border-left-color:var(--primary)}
 .nav-icon{font-size:17px;flex-shrink:0;width:22px;text-align:center}
-.nav-label{overflow:hidden}
+.nav-label{flex:1;overflow:hidden;text-align-last:justify}
 .nav-group{padding:8px 16px 4px;font-size:10px;font-weight:600;color:rgba(0,200,255,0.22);text-transform:uppercase;letter-spacing:.8px;white-space:nowrap;overflow:hidden}
 .sub-nav{padding-left:12px}
 .sub-nav .nav-item{font-size:13px;padding:8px 14px}
+/* 折叠分组 */
+.nav-collapse-hd{
+  display:flex;align-items:center;padding:8px 16px 4px;
+  font-size:10px;font-weight:600;color:rgba(0,200,255,0.22);
+  text-transform:uppercase;letter-spacing:.8px;
+  cursor:pointer;user-select:none;transition:.15s;
+}
+.nav-collapse-hd:hover{color:rgba(0,200,255,0.5)}
+.nav-collapse-arrow{margin-left:auto;font-size:10px;transition:transform .25s;display:inline-block}
+.nav-collapse-body{overflow:hidden;max-height:500px;transition:max-height .3s ease}
+.nav-collapse-body.closed{max-height:0}
 
 .sb-bottom{padding:12px;border-top:1px solid var(--border);flex-shrink:0}
 .sb-toggle{
@@ -344,49 +355,65 @@ tr:last-child td{border-bottom:none}
   </div>
   <nav class="sb-nav" id="sbNav">
     <div class="nav-item active" data-sec="dashboard">
-      <span class="nav-icon">⬛</span><span class="nav-label" data-i18n="navDashboard">Dashboard</span>
+      <span class="nav-icon">⬛</span><span class="nav-label" data-i18n="navDashboard">仪表盘</span>
     </div>
     <div class="nav-item" data-sec="inquiries">
-      <span class="nav-icon">📋</span><span class="nav-label" data-i18n="navInquiries">Inquiries</span>
+      <span class="nav-icon">📋</span><span class="nav-label" data-i18n="navInquiries">询盘管理</span>
     </div>
     <div class="nav-item" data-sec="customers">
-      <span class="nav-icon">👥</span><span class="nav-label" data-i18n="navCustomers">Customers</span>
+      <span class="nav-icon">👥</span><span class="nav-label" data-i18n="navCustomers">客户管理</span>
     </div>
     <div class="nav-item" data-sec="products">
-      <span class="nav-icon">📦</span><span class="nav-label" data-i18n="navProducts">Products</span>
+      <span class="nav-icon">📦</span><span class="nav-label" data-i18n="navProducts">产品管理</span>
     </div>
     <div class="nav-item" data-sec="suppliers">
-      <span class="nav-icon">🏭</span><span class="nav-label" data-i18n="navSuppliers">Suppliers</span>
+      <span class="nav-icon">🏭</span><span class="nav-label" data-i18n="navSuppliers">供应商管理</span>
     </div>
     <div class="nav-item" data-sec="orders">
-      <span class="nav-icon">🛒</span><span class="nav-label" data-i18n="navOrders">Orders</span>
-    </div>
-    <div class="nav-group" data-i18n="navDocGroup">Documents</div>
-    <div class="nav-item" data-sec="documents">
-      <span class="nav-icon">📄</span><span class="nav-label" data-i18n="navDocuments">Documents</span>
-    </div>
-    <div class="sub-nav">
-      <div class="nav-item" data-sec="documents" data-doctype="quotation">
-        <span class="nav-icon">📝</span><span class="nav-label" data-i18n="navQuotation">Quotation</span>
-      </div>
-      <div class="nav-item" data-sec="documents" data-doctype="pi">
-        <span class="nav-icon">🧾</span><span class="nav-label" data-i18n="navPI">Pro-forma Invoice</span>
-      </div>
-      <div class="nav-item" data-sec="documents" data-doctype="packing">
-        <span class="nav-icon">📦</span><span class="nav-label" data-i18n="navPacking">Packing List</span>
-      </div>
+      <span class="nav-icon">🛒</span><span class="nav-label" data-i18n="navOrders">订单管理</span>
     </div>
     <div class="nav-item" data-sec="analytics">
-      <span class="nav-icon">📊</span><span class="nav-label" data-i18n="navAnalytics">Analytics</span>
+      <span class="nav-icon">📊</span><span class="nav-label" data-i18n="navAnalytics">数据分析</span>
     </div>
-    <div class="nav-item" data-sec="ai">
-      <span class="nav-icon">🤖</span><span class="nav-label" data-i18n="navAI">AI Assistant</span>
+
+    <!-- 文件 折叠分组 -->
+    <div class="nav-collapse-hd" onclick="toggleGroup('docGroup')">
+      <span>文件</span>
+      <span class="nav-collapse-arrow" id="arrow-docGroup">▼</span>
     </div>
-    <div class="nav-item" onclick="location.href='email.html'">
-      <span class="nav-icon">✉️</span><span class="nav-label">邮件</span>
+    <div class="nav-collapse-body" id="docGroup">
+      <div class="nav-item" data-sec="documents">
+        <span class="nav-icon">📄</span><span class="nav-label" data-i18n="navDocuments">文件</span>
+      </div>
+      <div class="sub-nav">
+        <div class="nav-item" data-sec="documents" data-doctype="quotation">
+          <span class="nav-icon">📝</span><span class="nav-label" data-i18n="navQuotation">报价单</span>
+        </div>
+        <div class="nav-item" data-sec="documents" data-doctype="pi">
+          <span class="nav-icon">🧾</span><span class="nav-label" data-i18n="navPI">形式发票</span>
+        </div>
+        <div class="nav-item" data-sec="documents" data-doctype="packing">
+          <span class="nav-icon">📦</span><span class="nav-label" data-i18n="navPacking">装箱单</span>
+        </div>
+      </div>
     </div>
+
+    <!-- 工具 折叠分组 -->
+    <div class="nav-collapse-hd" onclick="toggleGroup('toolGroup')">
+      <span>工具</span>
+      <span class="nav-collapse-arrow" id="arrow-toolGroup">▼</span>
+    </div>
+    <div class="nav-collapse-body" id="toolGroup">
+      <div class="nav-item" data-sec="ai">
+        <span class="nav-icon">🤖</span><span class="nav-label" data-i18n="navAI">AI 助手</span>
+      </div>
+      <div class="nav-item" onclick="location.href='email.html'">
+        <span class="nav-icon">✉️</span><span class="nav-label">邮件</span>
+      </div>
+    </div>
+
     <div class="nav-item" data-sec="settings">
-      <span class="nav-icon">⚙️</span><span class="nav-label" data-i18n="navSettings">Settings</span>
+      <span class="nav-icon">⚙️</span><span class="nav-label" data-i18n="navSettings">系统设置</span>
     </div>
   </nav>
   <div class="sb-bottom">
@@ -1157,6 +1184,14 @@ function logout() {
   localStorage.removeItem('crm_token');
   localStorage.removeItem('crm_username');
   location.href = '/index.html';
+}
+
+// ── Collapsible nav groups ──
+function toggleGroup(id) {
+  const body = document.getElementById(id);
+  const arrow = document.getElementById('arrow-' + id);
+  const isClosed = body.classList.toggle('closed');
+  arrow.style.transform = isClosed ? 'rotate(-90deg)' : '';
 }
 
 // ── Navigation ──
