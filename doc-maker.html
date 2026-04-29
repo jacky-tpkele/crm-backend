@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>外贸文件制作 — TPKELE CRM</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Arial',sans-serif;background:#000509;color:#ddf0ff;min-height:100vh}
+
+/* ── Toolbar ── */
+.toolbar{
+  position:sticky;top:0;z-index:100;
+  background:#060f20;border-bottom:1px solid rgba(0,190,255,0.15);
+  padding:10px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap
+}
+.back-btn{
+  color:rgba(0,200,255,0.8);text-decoration:none;font-size:13px;
+  padding:7px 14px;border:1px solid rgba(0,190,255,0.25);border-radius:8px;
+  transition:.2s;white-space:nowrap;cursor:pointer
+}
+.back-btn:hover{background:rgba(0,190,255,0.08);color:#7ee8ff}
+.toolbar-title{font-size:15px;font-weight:600;color:#ddf0ff;white-space:nowrap;margin-right:4px}
+.type-sel{
+  background:rgba(0,180,255,0.06);border:1px solid rgba(0,190,255,0.25);
+  border-radius:8px;padding:7px 12px;color:#ddf0ff;font-size:13px;outline:none;cursor:pointer
+}
+.type-sel option{background:#060f20}
+.spacer{flex:1}
+.tbtn{
+  padding:7px 16px;border-radius:8px;border:1px solid rgba(0,190,255,0.25);
+  background:rgba(0,180,255,0.06);color:#ddf0ff;font-size:13px;cursor:pointer;
+  transition:.2s;white-space:nowrap
+}
+.tbtn:hover{background:rgba(0,190,255,0.14);border-color:rgba(0,190,255,0.5)}
+.tbtn.primary{background:rgba(0,140,255,0.18);border-color:rgba(0,190,255,0.5);color:#7ee8ff}
+.tbtn.primary:hover{background:rgba(0,160,255,0.28)}
+.tbtn.danger{border-color:rgba(255,80,80,0.35);color:#ff8888}
+.tbtn.danger:hover{background:rgba(255,60,60,0.1)}
+
+/* ── Paper ── */
+.paper-wrap{padding:32px 24px 60px;display:flex;justify-content:center}
+.paper{
+  background:#fff;color:#000;width:800px;max-width:100%;
+  padding:28px 28px 36px;
+  box-shadow:0 4px 32px rgba(0,0,0,.6);
+  font-family:Arial,sans-serif;font-size:12px;line-height:1.4
+}
+
+/* ── Editable cells ── */
+[contenteditable="true"]{outline:none;cursor:text;min-width:16px;transition:background .15s}
+[contenteditable="true"]:empty:before{content:attr(data-ph);color:#aaa;font-style:italic}
+[contenteditable="true"]:hover{background:rgba(0,120,200,0.07)}
+[contenteditable="true"]:focus{background:rgba(0,120,200,0.12);outline:1px dashed rgba(0,100,180,0.45)}
+
+/* ── Delete row button (hidden during PDF) ── */
+.del-col{border:none !important;padding:2px !important;width:22px !important;background:transparent !important}
+.del-row-btn{
+  display:none;width:18px;height:18px;line-height:16px;text-align:center;
+  background:#e53;color:#fff;border:none;border-radius:50%;cursor:pointer;
+  font-size:12px;font-weight:bold;padding:0;vertical-align:middle
+}
+tr:hover .del-row-btn{display:inline-block}
+
+/* ── Toast ── */
+.toast{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
+  background:#1a3a1a;border:1px solid #3a7a3a;color:#8fff8f;
+  padding:10px 22px;border-radius:10px;font-size:13px;z-index:9999;
+  opacity:0;transition:opacity .3s;pointer-events:none
+}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- Toolbar -->
+<div class="toolbar">
+  <a href="dashboard.html" class="back-btn">← 返回 CRM</a>
+  <span class="toolbar-title">外贸文件制作</span>
+  <select class="type-sel" id="docType" onchange="loadTemplate()">
+    <option value="pi">形式发票 (Proforma Invoice)</option>
+    <option value="pl">装箱单 (Packing List)</option>
+  </select>
+  <div class="spacer"></div>
+  <button class="tbtn" onclick="addRow()">＋ 增加行</button>
+  <button class="tbtn danger" onclick="clearDoc()">🗑 清空内容</button>
+  <button class="tbtn primary" onclick="downloadPDF()">⬇ 下载 PDF</button>
+</div>
+
+<!-- Paper -->
+<div class="paper-wrap">
+  <div id="docPaper" class="paper"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+if (!localStorage.getItem('crm_token')) location.href = 'login.html';
+
+const cfg     = JSON.parse(localStorage.getItem('crm_settings') || '{}');
+const CO_NAME = cfg.company || 'Wenzhou Hetao Electric Co., Ltd.';
+const CO_ADDR = cfg.address || 'Room 301, Building 3, Ruijinyuan, No. 5555, Central Avenue, Beibai Xiang Town, Yueqing City, Wenzhou City, Zhejiang Province';
+
+function today() {
+  const d = new Date();
+  return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+}
+
+function ed(ph='') {
+  return `contenteditable="true" data-ph="${ph}"`;
+}
+
+function productRows(cols, count=6) {
+  return Array(count).fill(0).map(() => `
+    <tr>
+      ${Array(cols).fill(0).map(() =>
+        `<td style="border:1px solid #000;padding:5px 8px;height:26px" contenteditable="true">&nbsp;</td>`
+      ).join('')}
+      <td class="del-col"><button class="del-row-btn" onclick="this.closest('tr').remove()">×</button></td>
+    </tr>`
+  ).join('');
+}
+
+/* ── PI Template ── */
+function piTemplate() {
+  return `
+  <div style="text-align:center;margin-bottom:8px">
+    <div style="font-size:22px;font-weight:bold" ${ed('Company Name')}>${CO_NAME}</div>
+    <div style="font-size:10.5px;color:#333;margin-top:3px" ${ed('Address')}>${CO_ADDR}</div>
+  </div>
+  <div style="text-align:center;font-size:15px;font-weight:bold;border:1px solid #000;padding:4px 0">Invoice</div>
+  <table style="width:100%;border-collapse:collapse">
+    <tr>
+      <td style="border:1px solid #000;padding:5px 8px;width:14%;font-weight:600">To:</td>
+      <td style="border:1px solid #000;padding:5px 8px;width:52%" ${ed('Customer name')}>&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px;width:14%;font-weight:600;text-align:right">DATE:</td>
+      <td style="border:1px solid #000;padding:5px 8px;width:20%" ${ed('Date')}>${today()}</td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000;padding:5px 8px;font-weight:600">ATTN:</td>
+      <td colspan="3" style="border:1px solid #000;padding:5px 8px" ${ed('Contact name')}>&nbsp;</td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Address:</td>
+      <td colspan="3" style="border:1px solid #000;padding:5px 8px" ${ed('Shipping address')}>&nbsp;</td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Tel:</td>
+      <td style="border:1px solid #000;padding:5px 8px" ${ed('Phone')}>&nbsp;</td>
+      <td colspan="2" style="border:1px solid #000;padding:5px 8px;font-weight:600">
+        Commercial Invoice No：<span style="font-weight:normal" ${ed('INV-')}>INV-</span>
+      </td>
+    </tr>
+  </table>
+  <table style="width:100%;border-collapse:collapse">
+    <thead>
+      <tr style="text-align:center;font-weight:bold;background:#f0f0f0">
+        <th style="border:1px solid #000;padding:6px;width:26%">Product Name</th>
+        <th style="border:1px solid #000;padding:6px;width:32%">Description</th>
+        <th style="border:1px solid #000;padding:6px;width:12%">Quantity(pcs)</th>
+        <th style="border:1px solid #000;padding:6px;width:15%">UNIT PRICE</th>
+        <th style="border:1px solid #000;padding:6px;width:15%">AMOUNT</th>
+        <th class="del-col"></th>
+      </tr>
+    </thead>
+    <tbody id="productTbody">${productRows(5)}</tbody>
+    <tfoot>
+      <tr>
+        <td colspan="4" style="border:1px solid #000;padding:6px;text-align:center;font-weight:bold">TOTAL:</td>
+        <td style="border:1px solid #000;padding:6px;background:#f4b942;font-weight:bold;text-align:center" ${ed('US$0.00')}>US$0.00</td>
+        <td class="del-col"></td>
+      </tr>
+    </tfoot>
+  </table>
+  <div style="text-align:center;padding:5px 4px;font-size:11px;border:1px solid #000;border-top:none">
+    Taxes and Duties: All Taxes, duties, license and bank charges payable should be borne by you.
+  </div>
+  <div style="text-align:center;padding:4px 4px 6px;font-size:11px">You can tt the money to our company account :</div>
+  <table style="width:100%;border-collapse:collapse;font-size:11.5px">
+    <tr><td colspan="2" style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:4px 8px">BANK INFORMATION:</td></tr>
+    <tr><td style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:3px 8px;width:28%">Account Name</td><td style="border:1px solid #000;padding:3px 8px">Wenzhou Hetao Electric Co., Ltd.</td></tr>
+    <tr><td style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:3px 8px">Account No.</td><td style="border:1px solid #000;padding:3px 8px">330501202010000008156</td></tr>
+    <tr><td style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:3px 8px">Bank</td><td style="border:1px solid #000;padding:3px 8px">ZHEJIANG TAILONG COMMERCIAL BANK</td></tr>
+    <tr><td style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:3px 8px">Country/Region</td><td style="border:1px solid #000;padding:3px 8px">China</td></tr>
+    <tr><td style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:3px 8px">Bank Address</td><td style="border:1px solid #000;padding:3px 8px">188 NANGUAN ROAD, LUQIAO DISTRICT, TAIZHOU, ZHEJIANG PROVINCE</td></tr>
+    <tr><td style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:3px 8px">SWIFT</td><td style="border:1px solid #000;padding:3px 8px">ZJTLCNBHXXX</td></tr>
+    <tr><td style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:3px 8px">Clearing system</td><td style="border:1px solid #000;padding:3px 8px">SWIFT</td></tr>
+    <tr><td style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:3px 8px">Payment and delivery methods</td><td style="border:1px solid #000;padding:3px 8px">Delivery within 3-5 working days after 100% payment</td></tr>
+  </table>`;
+}
+
+/* ── Packing List Template ── */
+function plTemplate() {
+  return `
+  <div style="text-align:center;margin-bottom:8px">
+    <div style="font-size:22px;font-weight:bold" ${ed('Company Name')}>${CO_NAME}</div>
+    <div style="font-size:10.5px;color:#333;margin-top:3px" ${ed('Address')}>${CO_ADDR}</div>
+  </div>
+  <div style="text-align:center;font-size:15px;font-weight:bold;border:1px solid #000;padding:4px 0">Packing List</div>
+  <table style="width:100%;border-collapse:collapse">
+    <tr>
+      <td style="border:1px solid #000;padding:5px 8px;width:14%;font-weight:600">To:</td>
+      <td style="border:1px solid #000;padding:5px 8px;width:38%" ${ed('Customer / Company name')}>&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px;width:14%;font-weight:600">DATE:</td>
+      <td style="border:1px solid #000;padding:5px 8px;width:34%" ${ed('Date')}>${today()}</td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000;padding:5px 8px;font-weight:600">ATTN:</td>
+      <td style="border:1px solid #000;padding:5px 8px" ${ed('Contact name')}>&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Commercial Invoice No:</td>
+      <td style="border:1px solid #000;padding:5px 8px" ${ed('Invoice number')}>&nbsp;</td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Address:</td>
+      <td style="border:1px solid #000;padding:5px 8px" ${ed('Shipping address')}>&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Delivery Term</td>
+      <td style="border:1px solid #000;padding:5px 8px" ${ed('e.g. FOB, CIF...')}>&nbsp;</td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Tel:</td>
+      <td colspan="3" style="border:1px solid #000;padding:5px 8px" ${ed('Phone')}>&nbsp;</td>
+    </tr>
+  </table>
+  <table style="width:100%;border-collapse:collapse">
+    <thead>
+      <tr style="text-align:center;font-weight:bold;background:#f0f0f0">
+        <th style="border:1px solid #000;padding:6px;width:26%">Product Name</th>
+        <th style="border:1px solid #000;padding:6px;width:12%">Quantity (pcs)</th>
+        <th style="border:1px solid #000;padding:6px;width:12%">Package</th>
+        <th style="border:1px solid #000;padding:6px;width:17%">Net Weight (kg)</th>
+        <th style="border:1px solid #000;padding:6px;width:17%">Gross Weight (kg)</th>
+        <th style="border:1px solid #000;padding:6px;width:16%">CBM</th>
+        <th class="del-col"></th>
+      </tr>
+    </thead>
+    <tbody id="productTbody">${productRows(6)}</tbody>
+    <tfoot>
+      <tr>
+        <td style="border:1px solid #000;padding:6px;font-weight:bold;text-align:right">TOTAL:</td>
+        <td style="border:1px solid #000;padding:6px" ${ed()}>&nbsp;</td>
+        <td style="border:1px solid #000;padding:6px" ${ed()}>&nbsp;</td>
+        <td style="border:1px solid #000;padding:6px" ${ed()}>&nbsp;</td>
+        <td style="border:1px solid #000;padding:6px" ${ed()}>&nbsp;</td>
+        <td style="border:1px solid #000;padding:6px" ${ed()}>&nbsp;</td>
+        <td class="del-col"></td>
+      </tr>
+    </tfoot>
+  </table>`;
+}
+
+/* ── Actions ── */
+function loadTemplate() {
+  const type = document.getElementById('docType').value;
+  document.getElementById('docPaper').innerHTML = type === 'pi' ? piTemplate() : plTemplate();
+}
+
+function addRow() {
+  const tbody = document.getElementById('productTbody');
+  if (!tbody) { showToast('请先选择文件类型'); return; }
+  const type = document.getElementById('docType').value;
+  const cols  = type === 'pi' ? 5 : 6;
+  const tr = document.createElement('tr');
+  tr.innerHTML = Array(cols).fill(0).map(() =>
+    `<td style="border:1px solid #000;padding:5px 8px;height:26px" contenteditable="true">&nbsp;</td>`
+  ).join('') + `<td class="del-col"><button class="del-row-btn" onclick="this.closest('tr').remove()">×</button></td>`;
+  tbody.appendChild(tr);
+}
+
+function clearDoc() {
+  if (!confirm('清空当前文件的填写内容？')) return;
+  loadTemplate();
+}
+
+async function downloadPDF() {
+  const el   = document.getElementById('docPaper');
+  const type = document.getElementById('docType').value;
+  const name = (type === 'pi' ? 'Proforma-Invoice' : 'Packing-List') + '-' + today().replace(/\./g, '-');
+
+  // hide delete columns before capture
+  const delCols = el.querySelectorAll('.del-col');
+  delCols.forEach(t => { t._bk = t.style.display; t.style.display = 'none'; });
+
+  try {
+    await html2pdf().set({
+      margin:      [8, 8, 8, 8],
+      filename:    name + '.pdf',
+      image:       { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    }).from(el).save();
+    showToast('PDF 已下载');
+  } catch(e) {
+    showToast('下载失败：' + e.message);
+  } finally {
+    delCols.forEach(t => { t.style.display = t._bk || ''; });
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Init
+loadTemplate();
+</script>
+</body>
+</html>
