@@ -144,8 +144,8 @@ button,input,select,textarea{font:inherit}
   background:linear-gradient(135deg,rgba(0,200,240,0.07),transparent)}
 .kpi:hover{border-color:rgba(0,200,255,0.35);transform:translateY(-2px)}
 .kpi:hover::before{opacity:1}
-.kpi-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
-.kpi-value{font-size:24px;font-weight:700}
+.kpi-label{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+.kpi-value{font-size:30px;font-weight:700}
 .kpi-value.green{color:var(--primary)}
 .kpi-value.cyan{color:var(--cyan)}
 .kpi-value.purple{color:var(--purple)}
@@ -242,7 +242,7 @@ tr:last-child td{border-bottom:none}
 .items-section{margin:14px 0}
 .items-section h3{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
 .item-row{
-  display:grid;grid-template-columns:1.2fr 1.2fr 0.8fr 0.9fr 0.9fr 36px;
+  display:grid;grid-template-columns:1fr 1fr 0.65fr;
   gap:8px;margin-bottom:10px;align-items:end;
   background:rgba(0,180,255,0.03);padding:10px;border-radius:8px;
   border:1px solid rgba(0,180,255,0.07);
@@ -351,26 +351,26 @@ tr:last-child td{border-bottom:none}
     <div class="nav-item" data-sec="orders">
       <span class="nav-icon">🛒</span><span class="nav-label" data-i18n="navOrders">Orders</span>
     </div>
-    <div class="nav-group">Documents</div>
+    <div class="nav-group" data-i18n="navDocGroup">Documents</div>
     <div class="nav-item" data-sec="documents">
       <span class="nav-icon">📄</span><span class="nav-label" data-i18n="navDocuments">Documents</span>
     </div>
     <div class="sub-nav">
       <div class="nav-item" data-sec="documents" data-doctype="quotation">
-        <span class="nav-icon">📝</span><span class="nav-label">Quotation</span>
+        <span class="nav-icon">📝</span><span class="nav-label" data-i18n="navQuotation">Quotation</span>
       </div>
       <div class="nav-item" data-sec="documents" data-doctype="pi">
-        <span class="nav-icon">🧾</span><span class="nav-label">Pro-forma Invoice</span>
+        <span class="nav-icon">🧾</span><span class="nav-label" data-i18n="navPI">Pro-forma Invoice</span>
       </div>
       <div class="nav-item" data-sec="documents" data-doctype="packing">
-        <span class="nav-icon">📦</span><span class="nav-label">Packing List</span>
+        <span class="nav-icon">📦</span><span class="nav-label" data-i18n="navPacking">Packing List</span>
       </div>
     </div>
     <div class="nav-item" data-sec="analytics">
       <span class="nav-icon">📊</span><span class="nav-label" data-i18n="navAnalytics">Analytics</span>
     </div>
     <div class="nav-item" data-sec="ai">
-      <span class="nav-icon">🤖</span><span class="nav-label">AI Assistant</span>
+      <span class="nav-icon">🤖</span><span class="nav-label" data-i18n="navAI">AI Assistant</span>
     </div>
     <div class="nav-item" data-sec="settings">
       <span class="nav-icon">⚙️</span><span class="nav-label" data-i18n="navSettings">Settings</span>
@@ -379,7 +379,7 @@ tr:last-child td{border-bottom:none}
   <div class="sb-bottom">
     <button class="sb-toggle" id="sbToggle">
       <span id="sbToggleIcon">◀</span>
-      <span class="nav-label" style="font-size:12px">Collapse</span>
+      <span class="nav-label" style="font-size:12px" data-i18n="navCollapse">Collapse</span>
     </button>
   </div>
 </aside>
@@ -391,7 +391,7 @@ tr:last-child td{border-bottom:none}
   <header class="header">
     <div class="search-wrap">
       <span class="si">🔍</span>
-      <input type="text" id="globalSearch" placeholder="Search orders, customers...">
+      <input type="text" id="globalSearch" data-i18n-ph="phGlobalSearch" placeholder="Search orders, customers...">
     </div>
     <div class="header-right">
       <button class="lang-btn" id="langBtn" onclick="toggleLang()">中/EN</button>
@@ -403,8 +403,8 @@ tr:last-child td{border-bottom:none}
           <span style="color:var(--muted)">▾</span>
         </button>
         <div class="user-dropdown" id="userDropdown">
-          <div class="dd-item" onclick="navigate('settings')">⚙️ Settings</div>
-          <div class="dd-item danger" onclick="logout()">🚪 Logout</div>
+          <div class="dd-item" onclick="navigate('settings')" data-i18n="ddSettings">⚙️ Settings</div>
+          <div class="dd-item danger" onclick="logout()" data-i18n="ddLogout">🚪 Logout</div>
         </div>
       </div>
     </div>
@@ -426,42 +426,42 @@ tr:last-child td{border-bottom:none}
         <div class="kpi"><div class="kpi-label" data-i18n="kpiYearProfit">Annual Profit</div><div class="kpi-value purple" id="kv-yp">—</div></div>
       </div>
       <div class="quick-actions">
-        <button class="qa-btn primary" onclick="openOrderModal()">＋ New Order</button>
-        <button class="qa-btn" onclick="navigate('customers');setTimeout(openCustomerModal,200)">＋ New Customer</button>
-        <button class="qa-btn" onclick="navigate('inquiries');setTimeout(openInquiryModal,200)">＋ New Inquiry</button>
+        <button class="qa-btn primary" data-i18n="btnNewOrder" onclick="openOrderModal()">＋ New Order</button>
+        <button class="qa-btn" data-i18n="btnNewCustomer" onclick="navigate('customers');setTimeout(openCustomerModal,200)">＋ New Customer</button>
+        <button class="qa-btn" data-i18n="btnNewInquiry" onclick="navigate('inquiries');setTimeout(openInquiryModal,200)">＋ New Inquiry</button>
       </div>
       <div class="charts-row">
-        <div class="chart-card"><h3>Order Trend (12 months)</h3><canvas id="chartOrders"></canvas></div>
-        <div class="chart-card"><h3>Profit Trend (12 months)</h3><canvas id="chartProfit"></canvas></div>
+        <div class="chart-card"><h3 data-i18n="chartOrderTrend">Order Trend (12 months)</h3><canvas id="chartOrders"></canvas></div>
+        <div class="chart-card"><h3 data-i18n="chartProfitTrend">Profit Trend (12 months)</h3><canvas id="chartProfit"></canvas></div>
       </div>
       <div class="charts-row">
-        <div class="chart-card"><h3>Top Products by Sales</h3><canvas id="chartProducts"></canvas></div>
-        <div class="chart-card"><h3>Top Customers by Sales</h3><canvas id="chartCustomers"></canvas></div>
+        <div class="chart-card"><h3 data-i18n="chartTopProducts">Top Products by Sales</h3><canvas id="chartProducts"></canvas></div>
+        <div class="chart-card"><h3 data-i18n="chartTopCustomers">Top Customers by Sales</h3><canvas id="chartCustomers"></canvas></div>
       </div>
     </section>
 
     <!-- ── INQUIRIES ── -->
     <section class="section" id="sec-inquiries">
       <div class="section-title" data-i18n="navInquiries">Inquiries</div>
-      <div class="section-sub">Manage incoming trade inquiries and convert to orders</div>
+      <div class="section-sub" data-i18n="subInquiries">Manage incoming trade inquiries and convert to orders</div>
       <div class="card">
         <div class="card-head">
           <div class="filter-bar">
-            <input type="text" id="iq-search" placeholder="Customer / notes..." oninput="renderInquiries()">
+            <input type="text" id="iq-search" data-i18n-ph="phSearchIq" placeholder="Customer / notes..." oninput="renderInquiries()">
             <select id="iq-status" onchange="renderInquiries()">
-              <option value="">All Status</option>
-              <option value="new">New</option>
-              <option value="quoted">Quoted</option>
-              <option value="converted">Converted</option>
-              <option value="closed">Closed</option>
+              <option value="" data-i18n="allStatus">All Status</option>
+              <option value="new" data-i18n="stNew">New</option>
+              <option value="quoted" data-i18n="stQuoted">Quoted</option>
+              <option value="converted" data-i18n="stConverted">Converted</option>
+              <option value="closed" data-i18n="stClosed">Closed</option>
             </select>
           </div>
-          <button class="btn btn-primary" onclick="openInquiryModal()">＋ New Inquiry</button>
+          <button class="btn btn-primary" data-i18n="btnNewInquiryCard" onclick="openInquiryModal()">＋ New Inquiry</button>
         </div>
         <div class="tbl-wrap">
           <table>
             <thead><tr>
-              <th>Date</th><th>Customer</th><th>Status</th><th>Notes</th><th>Actions</th>
+              <th data-i18n="thDate">Date</th><th data-i18n="thCustomer">Customer</th><th data-i18n="thStatus">Status</th><th data-i18n="thNotes">Notes</th><th data-i18n="thActions">Actions</th>
             </tr></thead>
             <tbody id="iqBody"></tbody>
           </table>
@@ -473,16 +473,16 @@ tr:last-child td{border-bottom:none}
     <!-- ── CUSTOMERS ── -->
     <section class="section" id="sec-customers">
       <div class="section-title" data-i18n="navCustomers">Customers</div>
-      <div class="section-sub">Buyer master data — auto-fills PI documents</div>
+      <div class="section-sub" data-i18n="subCustomers">Buyer master data — auto-fills PI documents</div>
       <div class="card">
         <div class="card-head">
-          <input type="text" id="cu-search" placeholder="Name / country / email..." oninput="renderCustomers()" style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:9px 14px;color:var(--text);font-size:13px;outline:none;width:260px">
-          <button class="btn btn-primary" onclick="openCustomerModal()">＋ New Customer</button>
+          <input type="text" id="cu-search" data-i18n-ph="phSearchCu" placeholder="Name / country / email..." oninput="renderCustomers()" style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:9px 14px;color:var(--text);font-size:13px;outline:none;width:260px">
+          <button class="btn btn-primary" data-i18n="btnNewCustomerCard" onclick="openCustomerModal()">＋ New Customer</button>
         </div>
         <div class="tbl-wrap">
           <table>
             <thead><tr>
-              <th>Name</th><th>Country</th><th>Email</th><th>WhatsApp</th><th>Level</th><th>Actions</th>
+              <th data-i18n="thName">Name</th><th data-i18n="thCountry">Country</th><th data-i18n="thEmail">Email</th><th data-i18n="thWhatsApp">WhatsApp</th><th data-i18n="thLevel">Level</th><th data-i18n="thActions">Actions</th>
             </tr></thead>
             <tbody id="cuBody"></tbody>
           </table>
@@ -493,16 +493,16 @@ tr:last-child td{border-bottom:none}
     <!-- ── PRODUCTS ── -->
     <section class="section" id="sec-products">
       <div class="section-title" data-i18n="navProducts">Products</div>
-      <div class="section-sub">Product library — auto-fills order items with specs and prices</div>
+      <div class="section-sub" data-i18n="subProducts">Product library — auto-fills order items with specs and prices</div>
       <div class="card">
         <div class="card-head">
-          <input type="text" id="pr-search" placeholder="Code / name / spec..." oninput="renderProducts()" style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:9px 14px;color:var(--text);font-size:13px;outline:none;width:260px">
-          <button class="btn btn-primary" onclick="openProductModal()">＋ New Product</button>
+          <input type="text" id="pr-search" data-i18n-ph="phSearchPr" placeholder="Code / name / spec..." oninput="renderProducts()" style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:9px 14px;color:var(--text);font-size:13px;outline:none;width:260px">
+          <button class="btn btn-primary" data-i18n="btnNewProductCard" onclick="openProductModal()">＋ New Product</button>
         </div>
         <div class="tbl-wrap">
           <table>
             <thead><tr>
-              <th>Code</th><th>CN Name</th><th>EN Name</th><th>Spec</th><th>Unit</th><th>Purchase</th><th>Sales</th><th>Actions</th>
+              <th data-i18n="thCode">Code</th><th data-i18n="thCNName">CN Name</th><th data-i18n="thENName">EN Name</th><th data-i18n="thSpec">Spec</th><th data-i18n="thUnit">Unit</th><th data-i18n="thPurchase">Purchase</th><th data-i18n="thSales">Sales</th><th data-i18n="thActions">Actions</th>
             </tr></thead>
             <tbody id="prBody"></tbody>
           </table>
@@ -513,16 +513,16 @@ tr:last-child td{border-bottom:none}
     <!-- ── SUPPLIERS ── -->
     <section class="section" id="sec-suppliers">
       <div class="section-title" data-i18n="navSuppliers">Suppliers</div>
-      <div class="section-sub">Supplier master data with product image and contact info</div>
+      <div class="section-sub" data-i18n="subSuppliers">Supplier master data with product image and contact info</div>
       <div class="card">
         <div class="card-head">
-          <input type="text" id="su-search" placeholder="Name / contact / phone..." oninput="renderSuppliers()" style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:9px 14px;color:var(--text);font-size:13px;outline:none;width:260px">
-          <button class="btn btn-primary" onclick="openSupplierModal()">＋ New Supplier</button>
+          <input type="text" id="su-search" data-i18n-ph="phSearchSu" placeholder="Name / contact / phone..." oninput="renderSuppliers()" style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:9px 14px;color:var(--text);font-size:13px;outline:none;width:260px">
+          <button class="btn btn-primary" data-i18n="btnNewSupplierCard" onclick="openSupplierModal()">＋ New Supplier</button>
         </div>
         <div class="tbl-wrap">
           <table>
             <thead><tr>
-              <th>Image</th><th>Supplier</th><th>Contact</th><th>Phone</th><th>Email</th><th>Lead Time</th><th>Actions</th>
+              <th data-i18n="thImage">Image</th><th data-i18n="thSupplier">Supplier</th><th data-i18n="thContact">Contact</th><th data-i18n="thPhone">Phone</th><th data-i18n="thEmail">Email</th><th data-i18n="thLeadTime">Lead Time</th><th data-i18n="thActions">Actions</th>
             </tr></thead>
             <tbody id="suBody"></tbody>
           </table>
@@ -533,29 +533,29 @@ tr:last-child td{border-bottom:none}
     <!-- ── ORDERS ── -->
     <section class="section" id="sec-orders">
       <div class="section-title" data-i18n="navOrders">Orders</div>
-      <div class="section-sub">Full order management with product line items</div>
+      <div class="section-sub" data-i18n="subOrders">Full order management with product line items</div>
       <div class="card">
         <div class="card-head">
           <div class="filter-bar">
-            <input type="text" id="or-customer" placeholder="Customer..." oninput="renderOrders()">
+            <input type="text" id="or-customer" data-i18n-ph="phSearchOr" placeholder="Customer..." oninput="renderOrders()">
             <input type="date" id="or-date" onchange="renderOrders()">
             <input type="month" id="or-month" onchange="renderOrders()">
             <select id="or-status" onchange="renderOrders()">
-              <option value="">All Status</option>
-              <option value="draft">Draft</option>
-              <option value="quoted">Quoted</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="producing">Producing</option>
-              <option value="shipped">Shipped</option>
-              <option value="completed">Completed</option>
+              <option value="" data-i18n="allStatus">All Status</option>
+              <option value="draft" data-i18n="stDraft">Draft</option>
+              <option value="quoted" data-i18n="stQuoted2">Quoted</option>
+              <option value="confirmed" data-i18n="stConfirmed">Confirmed</option>
+              <option value="producing" data-i18n="stProducing">Producing</option>
+              <option value="shipped" data-i18n="stShipped">Shipped</option>
+              <option value="completed" data-i18n="stCompleted">Completed</option>
             </select>
           </div>
-          <button class="btn btn-primary" onclick="openOrderModal()">＋ New Order</button>
+          <button class="btn btn-primary" data-i18n="btnNewOrderCard" onclick="openOrderModal()">＋ New Order</button>
         </div>
         <div class="tbl-wrap">
           <table>
             <thead><tr>
-              <th>Date</th><th>Customer</th><th>Products</th><th>Sales</th><th>Purchase</th><th>Profit</th><th>Status</th><th>Actions</th>
+              <th data-i18n="thDate">Date</th><th data-i18n="thCustomer">Customer</th><th data-i18n="navProducts">Products</th><th data-i18n="thSalesAmt">Sales</th><th data-i18n="thPurchaseAmt">Purchase</th><th data-i18n="thProfit">Profit</th><th data-i18n="thStatus">Status</th><th data-i18n="thActions">Actions</th>
             </tr></thead>
             <tbody id="orBody"></tbody>
           </table>
@@ -566,27 +566,27 @@ tr:last-child td{border-bottom:none}
 
     <!-- ── DOCUMENTS ── -->
     <section class="section" id="sec-documents">
-      <div class="section-title">Documents</div>
-      <div class="section-sub">Export Quotations, Commercial Invoices, and Packing Lists</div>
+      <div class="section-title" data-i18n="navDocuments">Documents</div>
+      <div class="section-sub" data-i18n="subDocuments">Export Quotations, Commercial Invoices, and Packing Lists</div>
       <div class="card">
         <div class="card-head">
-          <h2>Generate Document</h2>
+          <h2 data-i18n="docGenerate">Generate Document</h2>
         </div>
         <div class="form-grid">
           <div class="field">
-            <label>Select Order</label>
+            <label data-i18n="lblSelectOrder">Select Order</label>
             <select id="doc-order"><option value="">— Select an order —</option></select>
           </div>
           <div class="field">
-            <label>Document Type</label>
+            <label data-i18n="lblDocType">Document Type</label>
             <select id="doc-type">
-              <option value="quotation">Quotation</option>
-              <option value="pi">Pro-forma Invoice (PI)</option>
-              <option value="packing">Packing List</option>
+              <option value="quotation" data-i18n="optQuotation">Quotation</option>
+              <option value="pi" data-i18n="optPI">Pro-forma Invoice (PI)</option>
+              <option value="packing" data-i18n="optPacking">Packing List</option>
             </select>
           </div>
           <div class="field">
-            <label>Language</label>
+            <label data-i18n="lblDocLang">Language</label>
             <select id="doc-lang">
               <option value="en">English</option>
               <option value="zh">中文</option>
@@ -594,12 +594,12 @@ tr:last-child td{border-bottom:none}
           </div>
         </div>
         <div style="display:flex;gap:10px;margin-top:8px">
-          <button class="btn btn-primary" onclick="generateDocument()">📄 Generate & Export PDF</button>
-          <button class="btn btn-cyan" onclick="generateDocument('csv')">📊 Export CSV</button>
+          <button class="btn btn-primary" data-i18n="btnGenerate" onclick="generateDocument()">📄 Generate & Export PDF</button>
+          <button class="btn btn-cyan" data-i18n="btnExportCSV" onclick="generateDocument('csv')">📊 Export CSV</button>
         </div>
       </div>
       <div class="card" id="docPreviewCard" style="display:none">
-        <div class="card-head"><h2>Document Preview</h2><button class="btn" onclick="window.print()">🖨️ Print / Save PDF</button></div>
+        <div class="card-head"><h2 data-i18n="docPreviewTitle">Document Preview</h2><button class="btn" data-i18n="btnPrint" onclick="window.print()">🖨️ Print / Save PDF</button></div>
         <div id="docPreview" style="background:#fff;color:#000;padding:24px;border-radius:10px;font-size:13px;line-height:1.6"></div>
       </div>
     </section>
@@ -607,53 +607,53 @@ tr:last-child td{border-bottom:none}
     <!-- ── ANALYTICS ── -->
     <section class="section" id="sec-analytics">
       <div class="section-title" data-i18n="navAnalytics">Analytics</div>
-      <div class="section-sub">Detailed performance breakdown</div>
+      <div class="section-sub" data-i18n="subAnalytics">Detailed performance breakdown</div>
       <div class="analytics-grid">
-        <div class="chart-card"><h3>Monthly Revenue</h3><canvas id="chartAnalytics1"></canvas></div>
-        <div class="chart-card"><h3>Top 10 Customers</h3><canvas id="chartAnalytics2"></canvas></div>
-        <div class="chart-card"><h3>Top 10 Products</h3><canvas id="chartAnalytics3"></canvas></div>
-        <div class="chart-card"><h3>Order Status Distribution</h3><canvas id="chartAnalytics4"></canvas></div>
+        <div class="chart-card"><h3 data-i18n="chartMonthlyRevenue">Monthly Revenue</h3><canvas id="chartAnalytics1"></canvas></div>
+        <div class="chart-card"><h3 data-i18n="chartTop10Customers">Top 10 Customers</h3><canvas id="chartAnalytics2"></canvas></div>
+        <div class="chart-card"><h3 data-i18n="chartTop10Products">Top 10 Products</h3><canvas id="chartAnalytics3"></canvas></div>
+        <div class="chart-card"><h3 data-i18n="chartOrderStatus">Order Status Distribution</h3><canvas id="chartAnalytics4"></canvas></div>
       </div>
     </section>
 
     <!-- ── AI ASSISTANT ── -->
     <section class="section" id="sec-ai">
-      <div class="section-title">AI Assistant</div>
-      <div class="section-sub">Intelligent trade assistant — coming soon</div>
+      <div class="section-title" data-i18n="aiTitle">AI Assistant</div>
+      <div class="section-sub" data-i18n="aiSub">Intelligent trade assistant — coming soon</div>
       <div class="card" style="text-align:center;padding:60px 20px">
         <div style="font-size:60px;margin-bottom:20px">🤖</div>
-        <div style="font-size:20px;font-weight:700;margin-bottom:10px">AI Assistant</div>
-        <div style="color:var(--muted);font-size:14px">Automated quotation drafting, customer communication, and trade document generation — coming in the next release.</div>
+        <div style="font-size:20px;font-weight:700;margin-bottom:10px" data-i18n="aiTitle">AI Assistant</div>
+        <div style="color:var(--muted);font-size:14px" data-i18n="aiDesc">Automated quotation drafting, customer communication, and trade document generation — coming in the next release.</div>
       </div>
     </section>
 
     <!-- ── SETTINGS ── -->
     <section class="section" id="sec-settings">
       <div class="section-title" data-i18n="navSettings">Settings</div>
-      <div class="section-sub">System configuration</div>
+      <div class="section-sub" data-i18n="subSettings">System configuration</div>
       <div class="card">
         <div class="settings-section">
-          <h3>Company Info</h3>
+          <h3 data-i18n="setCompanyInfo">Company Info</h3>
           <div class="form-grid">
-            <div class="field"><label>Company Name</label><input type="text" id="set-company" placeholder="Your company name"></div>
-            <div class="field"><label>Company Address</label><input type="text" id="set-address" placeholder="Address"></div>
-            <div class="field"><label>Contact Email</label><input type="email" id="set-email" placeholder="email@company.com"></div>
-            <div class="field"><label>Bank Info</label><input type="text" id="set-bank" placeholder="Bank account for PI"></div>
+            <div class="field"><label data-i18n="lblCompanyName">Company Name</label><input type="text" id="set-company" data-i18n-ph="phCompanyName" placeholder="Your company name"></div>
+            <div class="field"><label data-i18n="lblCompanyAddr">Company Address</label><input type="text" id="set-address" data-i18n-ph="phAddr" placeholder="Address"></div>
+            <div class="field"><label data-i18n="lblContactEmail">Contact Email</label><input type="email" id="set-email" placeholder="email@company.com"></div>
+            <div class="field"><label data-i18n="lblBankInfo">Bank Info</label><input type="text" id="set-bank" data-i18n-ph="phBank" placeholder="Bank account for PI"></div>
           </div>
-          <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+          <button class="btn btn-primary" data-i18n="btnSaveSettings" onclick="saveSettings()">Save Settings</button>
         </div>
         <div class="settings-section" style="margin-top:24px">
-          <h3>Interface</h3>
+          <h3 data-i18n="setInterface">Interface</h3>
           <div style="display:flex;align-items:center;gap:16px">
-            <span style="font-size:13px;color:var(--muted)">Language</span>
+            <span style="font-size:13px;color:var(--muted)" data-i18n="lblLanguage">Language</span>
             <button class="btn" onclick="setLang('zh')">中文</button>
             <button class="btn" onclick="setLang('en')">English</button>
           </div>
         </div>
         <div class="settings-section" style="margin-top:24px">
-          <h3>Account</h3>
-          <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Single user mode. Logged in as <strong style="color:var(--text)" id="setUsername">—</strong></div>
-          <button class="btn btn-danger" onclick="logout()">🚪 Logout</button>
+          <h3 data-i18n="setAccount">Account</h3>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:12px"><span data-i18n="setLoggedIn">Single user mode. Logged in as </span><strong style="color:var(--text)" id="setUsername">—</strong></div>
+          <button class="btn btn-danger" data-i18n="btnLogout" onclick="logout()">🚪 Logout</button>
         </div>
       </div>
     </section>
@@ -666,21 +666,21 @@ tr:last-child td{border-bottom:none}
 <!-- ══ QUICK EXPORT ══ -->
 <div class="quick-export" id="quickExport">
   <div class="qe-head" onclick="toggleQE()">
-    <span>⚡ Quick Export</span>
+    <span data-i18n="qeTitle">⚡ Quick Export</span>
     <span id="qeArrow">▲</span>
   </div>
   <div class="qe-body" id="qeBody">
-    <div class="qe-label">Order</div>
-    <select id="qe-order"><option value="">Select order...</option></select>
-    <div class="qe-label">Language</div>
+    <div class="qe-label" data-i18n="qeLabelOrder">Order</div>
+    <select id="qe-order"><option value="" data-i18n="qeSelectOrder">Select order...</option></select>
+    <div class="qe-label" data-i18n="qeLabelLang">Language</div>
     <select id="qe-lang">
       <option value="en">English</option>
       <option value="zh">中文</option>
     </select>
     <div class="qe-btns">
-      <button onclick="qeExport('quotation')">📝 Export Quotation</button>
-      <button onclick="qeExport('pi')">🧾 Export PI</button>
-      <button onclick="qeExport('packing')">📦 Export Packing List</button>
+      <button data-i18n="btnQEQuotation" onclick="qeExport('quotation')">📝 Export Quotation</button>
+      <button data-i18n="btnQEPI" onclick="qeExport('pi')">🧾 Export PI</button>
+      <button data-i18n="btnQEPacking" onclick="qeExport('packing')">📦 Export Packing List</button>
     </div>
   </div>
 </div>
@@ -700,24 +700,24 @@ tr:last-child td{border-bottom:none}
     <form id="customerForm" onsubmit="saveCustomer(event)">
       <input type="hidden" id="cm-id">
       <div class="form-grid">
-        <div class="field form-full"><label>Customer Name *</label><input type="text" id="cm-name" required></div>
-        <div class="field"><label>Country</label><input type="text" id="cm-country"></div>
-        <div class="field"><label>Email</label><input type="email" id="cm-email"></div>
-        <div class="field"><label>WhatsApp</label><input type="text" id="cm-whatsapp"></div>
-        <div class="field"><label>Payment Terms</label><input type="text" id="cm-payment" placeholder="e.g. T/T 30% deposit"></div>
-        <div class="field"><label>Customer Level</label>
+        <div class="field form-full"><label data-i18n="lblCustName">Customer Name *</label><input type="text" id="cm-name" required></div>
+        <div class="field"><label data-i18n="lblCustCountry">Country</label><input type="text" id="cm-country"></div>
+        <div class="field"><label data-i18n="lblCustEmail">Email</label><input type="email" id="cm-email"></div>
+        <div class="field"><label data-i18n="lblCustWhatsApp">WhatsApp</label><input type="text" id="cm-whatsapp"></div>
+        <div class="field"><label data-i18n="lblCustPayment">Payment Terms</label><input type="text" id="cm-payment" data-i18n-ph="phCustPayment" placeholder="e.g. T/T 30% deposit"></div>
+        <div class="field"><label data-i18n="lblCustLevel">Customer Level</label>
           <select id="cm-level">
-            <option value="standard">Standard</option>
-            <option value="vip">VIP</option>
-            <option value="potential">Potential</option>
+            <option value="standard" data-i18n="optStandard">Standard</option>
+            <option value="vip" data-i18n="optVIP">VIP</option>
+            <option value="potential" data-i18n="optPotential">Potential</option>
           </select>
         </div>
-        <div class="field form-full"><label>Shipping Address</label><textarea id="cm-address"></textarea></div>
-        <div class="field form-full"><label>Notes</label><textarea id="cm-notes"></textarea></div>
+        <div class="field form-full"><label data-i18n="lblCustAddress">Shipping Address</label><textarea id="cm-address"></textarea></div>
+        <div class="field form-full"><label data-i18n="lblCustNotes">Notes</label><textarea id="cm-notes"></textarea></div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn" onclick="closeModal('customerModal')">Cancel</button>
-        <button type="submit" class="btn btn-primary">Save Customer</button>
+        <button type="button" class="btn" data-i18n="btnCancel" onclick="closeModal('customerModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary" data-i18n="btnSaveCustomer">Save Customer</button>
       </div>
     </form>
   </div>
@@ -733,19 +733,19 @@ tr:last-child td{border-bottom:none}
     <form id="productForm" onsubmit="saveProduct(event)">
       <input type="hidden" id="pm-id">
       <div class="form-grid">
-        <div class="field"><label>Product Code</label><input type="text" id="pm-code"></div>
-        <div class="field"><label>Unit</label><input type="text" id="pm-unit" value="pcs"></div>
-        <div class="field"><label>CN Name *</label><input type="text" id="pm-cn" required></div>
-        <div class="field"><label>EN Name</label><input type="text" id="pm-en"></div>
-        <div class="field form-full"><label>Specification</label><input type="text" id="pm-spec"></div>
-        <div class="field"><label>Default Purchase Price</label><input type="number" id="pm-pp" step="0.01" value="0"></div>
-        <div class="field"><label>Default Sales Price</label><input type="number" id="pm-sp" step="0.01" value="0"></div>
-        <div class="field"><label>HS Code</label><input type="text" id="pm-hs"></div>
-        <div class="field"><label>Certification</label><input type="text" id="pm-cert"></div>
+        <div class="field"><label data-i18n="lblProdCode">Product Code</label><input type="text" id="pm-code"></div>
+        <div class="field"><label data-i18n="lblProdUnit">Unit</label><input type="text" id="pm-unit" value="pcs"></div>
+        <div class="field"><label data-i18n="lblProdCN">CN Name *</label><input type="text" id="pm-cn" required></div>
+        <div class="field"><label data-i18n="lblProdEN">EN Name</label><input type="text" id="pm-en"></div>
+        <div class="field form-full"><label data-i18n="lblProdSpec">Specification</label><input type="text" id="pm-spec"></div>
+        <div class="field"><label data-i18n="lblProdPP">Default Purchase Price</label><input type="number" id="pm-pp" step="0.01" value="0"></div>
+        <div class="field"><label data-i18n="lblProdSP">Default Sales Price</label><input type="number" id="pm-sp" step="0.01" value="0"></div>
+        <div class="field"><label data-i18n="lblProdHS">HS Code</label><input type="text" id="pm-hs"></div>
+        <div class="field"><label data-i18n="lblProdCert">Certification</label><input type="text" id="pm-cert"></div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn" onclick="closeModal('productModal')">Cancel</button>
-        <button type="submit" class="btn btn-primary">Save Product</button>
+        <button type="button" class="btn" data-i18n="btnCancel" onclick="closeModal('productModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary" data-i18n="btnSaveProduct">Save Product</button>
       </div>
     </form>
   </div>
@@ -761,19 +761,19 @@ tr:last-child td{border-bottom:none}
     <form id="supplierForm" onsubmit="saveSupplier(event)">
       <input type="hidden" id="sm-id">
       <div class="form-grid">
-        <div class="field form-full"><label>Supplier Name *</label><input type="text" id="sm-name" required></div>
-        <div class="field"><label>Contact Name</label><input type="text" id="sm-contact"></div>
-        <div class="field"><label>Phone</label><input type="text" id="sm-phone"></div>
-        <div class="field"><label>Email</label><input type="email" id="sm-email"></div>
-        <div class="field"><label>Lead Time</label><input type="text" id="sm-lead" placeholder="e.g. 15 days"></div>
-        <div class="field"><label>Product Link</label><input type="text" id="sm-link" placeholder="Alibaba / 1688 URL"></div>
-        <div class="field form-full"><label>Product Image</label><input type="file" id="sm-image" accept="image/*"></div>
+        <div class="field form-full"><label data-i18n="lblSupName">Supplier Name *</label><input type="text" id="sm-name" required></div>
+        <div class="field"><label data-i18n="lblSupContact">Contact Name</label><input type="text" id="sm-contact"></div>
+        <div class="field"><label data-i18n="lblSupPhone">Phone</label><input type="text" id="sm-phone"></div>
+        <div class="field"><label data-i18n="lblSupEmail">Email</label><input type="email" id="sm-email"></div>
+        <div class="field"><label data-i18n="lblSupLead">Lead Time</label><input type="text" id="sm-lead" data-i18n-ph="phSupLead" placeholder="e.g. 15 days"></div>
+        <div class="field"><label data-i18n="lblSupLink">Product Link</label><input type="text" id="sm-link" data-i18n-ph="phSupLink" placeholder="Alibaba / 1688 URL"></div>
+        <div class="field form-full"><label data-i18n="lblSupImage">Product Image</label><input type="file" id="sm-image" accept="image/*"></div>
         <div id="sm-preview" style="display:none;grid-column:1/-1"><img id="sm-img-preview" style="max-height:120px;border-radius:10px;object-fit:cover"></div>
-        <div class="field form-full"><label>Notes</label><textarea id="sm-notes"></textarea></div>
+        <div class="field form-full"><label data-i18n="lblSupNotes">Notes</label><textarea id="sm-notes"></textarea></div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn" onclick="closeModal('supplierModal')">Cancel</button>
-        <button type="submit" class="btn btn-primary">Save Supplier</button>
+        <button type="button" class="btn" data-i18n="btnCancel" onclick="closeModal('supplierModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary" data-i18n="btnSaveSupplier">Save Supplier</button>
       </div>
     </form>
   </div>
@@ -789,21 +789,21 @@ tr:last-child td{border-bottom:none}
     <form id="inquiryForm" onsubmit="saveInquiry(event)">
       <input type="hidden" id="iqm-id">
       <div class="form-grid">
-        <div class="field"><label>Customer Name</label><input type="text" id="iqm-customer" required></div>
-        <div class="field"><label>Inquiry Date</label><input type="date" id="iqm-date" required></div>
-        <div class="field"><label>Status</label>
+        <div class="field"><label data-i18n="lblIqCustomer">Customer Name</label><input type="text" id="iqm-customer" required></div>
+        <div class="field"><label data-i18n="lblIqDate">Inquiry Date</label><input type="date" id="iqm-date" required></div>
+        <div class="field"><label data-i18n="lblIqStatus">Status</label>
           <select id="iqm-status">
-            <option value="new">New</option>
-            <option value="quoted">Quoted</option>
-            <option value="converted">Converted to Order</option>
-            <option value="closed">Closed</option>
+            <option value="new" data-i18n="optIqNew">New</option>
+            <option value="quoted" data-i18n="optIqQuoted">Quoted</option>
+            <option value="converted" data-i18n="optIqConverted">Converted to Order</option>
+            <option value="closed" data-i18n="optIqClosed">Closed</option>
           </select>
         </div>
-        <div class="field form-full"><label>Notes</label><textarea id="iqm-notes" rows="4"></textarea></div>
+        <div class="field form-full"><label data-i18n="lblIqNotes">Notes</label><textarea id="iqm-notes" rows="4"></textarea></div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn" onclick="closeModal('inquiryModal')">Cancel</button>
-        <button type="submit" class="btn btn-primary">Save Inquiry</button>
+        <button type="button" class="btn" data-i18n="btnCancel" onclick="closeModal('inquiryModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary" data-i18n="btnSaveInquiry">Save Inquiry</button>
       </div>
     </form>
   </div>
@@ -819,37 +819,37 @@ tr:last-child td{border-bottom:none}
     <form id="orderForm" onsubmit="saveOrder(event)">
       <input type="hidden" id="om-id">
       <div class="form-grid col3">
-        <div class="field"><label>Customer *</label><input type="text" id="om-customer" required></div>
-        <div class="field"><label>Order Date *</label><input type="date" id="om-date" required></div>
-        <div class="field"><label>Shipping Fee ($)</label><input type="number" id="om-shipping" value="0" step="0.01" oninput="recalcOrder()"></div>
-        <div class="field"><label>Status</label>
+        <div class="field"><label data-i18n="lblOrdCustomer">Customer *</label><input type="text" id="om-customer" required></div>
+        <div class="field"><label data-i18n="lblOrdDate">Order Date *</label><input type="date" id="om-date" required></div>
+        <div class="field"><label data-i18n="lblOrdShipping">Shipping Fee ($)</label><input type="number" id="om-shipping" value="0" step="0.01" oninput="recalcOrder()"></div>
+        <div class="field"><label data-i18n="lblOrdStatus">Status</label>
           <select id="om-status">
-            <option value="draft">Draft</option>
-            <option value="quoted">Quoted</option>
-            <option value="confirmed" selected>Confirmed</option>
-            <option value="producing">Producing</option>
-            <option value="shipped">Shipped</option>
-            <option value="completed">Completed</option>
+            <option value="draft" data-i18n="stDraft">Draft</option>
+            <option value="quoted" data-i18n="stQuoted2">Quoted</option>
+            <option value="confirmed" selected data-i18n="stConfirmed">Confirmed</option>
+            <option value="producing" data-i18n="stProducing">Producing</option>
+            <option value="shipped" data-i18n="stShipped">Shipped</option>
+            <option value="completed" data-i18n="stCompleted">Completed</option>
           </select>
         </div>
-        <div class="field"><label>Currency</label>
+        <div class="field"><label data-i18n="lblOrdCurrency">Currency</label>
           <select id="om-currency"><option value="USD">USD</option><option value="EUR">EUR</option><option value="CNY">CNY</option></select>
         </div>
-        <div class="field"><label>Remarks</label><input type="text" id="om-remarks"></div>
+        <div class="field"><label data-i18n="lblOrdRemarks">Remarks</label><input type="text" id="om-remarks"></div>
       </div>
       <div class="items-section">
-        <h3>Product Items</h3>
+        <h3 data-i18n="h3Items">Product Items</h3>
         <div id="orderItems"></div>
-        <button type="button" class="btn" style="width:100%;margin-top:8px" onclick="addOrderItem()">＋ Add Item</button>
+        <button type="button" class="btn" style="width:100%;margin-top:8px" data-i18n="btnAddItem" onclick="addOrderItem()">＋ Add Item</button>
       </div>
       <div class="calc-summary">
-        <div class="calc-item"><span>Purchase Total</span><strong id="cs-p">$0.00</strong></div>
-        <div class="calc-item"><span>Sales Total (incl. shipping)</span><strong id="cs-s">$0.00</strong></div>
-        <div class="calc-item"><span>Profit (excl. shipping)</span><strong id="cs-profit">$0.00</strong></div>
+        <div class="calc-item"><span data-i18n="cssPurchase">Purchase Total</span><strong id="cs-p">$0.00</strong></div>
+        <div class="calc-item"><span data-i18n="cssSales">Sales Total (incl. shipping)</span><strong id="cs-s">$0.00</strong></div>
+        <div class="calc-item"><span data-i18n="cssProfit">Profit (excl. shipping)</span><strong id="cs-profit">$0.00</strong></div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn" onclick="closeModal('orderModal')">Cancel</button>
-        <button type="submit" class="btn btn-primary">Save Order</button>
+        <button type="button" class="btn" data-i18n="btnCancel" onclick="closeModal('orderModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary" data-i18n="btnSaveOrder">Save Order</button>
       </div>
     </form>
   </div>
@@ -860,7 +860,7 @@ tr:last-child td{border-bottom:none}
   <div class="modal modal-lg">
     <div class="modal-head">
       <div>
-        <h2>Order Detail</h2>
+        <h2 data-i18n="titleOrderDetail">Order Detail</h2>
         <div id="detailSub" style="font-size:13px;color:var(--muted);margin-top:2px"></div>
       </div>
       <button class="modal-close" onclick="closeModal('detailModal')">×</button>
@@ -878,14 +878,17 @@ tr:last-child td{border-bottom:none}
     <div class="tbl-wrap">
       <table>
         <thead><tr>
-          <th>CN Name</th><th>EN Name</th><th>Spec</th><th>Qty</th><th>Purchase</th><th>Sales</th><th>P.Total</th><th>S.Total</th>
+          <th data-i18n="thCNNameD">CN Name</th><th data-i18n="thENNameD">EN Name</th><th data-i18n="thSpecD">Spec</th><th data-i18n="thQtyD">Qty</th><th data-i18n="thPurchaseD">Purchase</th><th data-i18n="thSalesD">Sales</th><th data-i18n="thPTotalD">P.Total</th><th data-i18n="thSTotalD">S.Total</th>
         </tr></thead>
         <tbody id="detailBody"></tbody>
       </table>
     </div>
     <div class="modal-footer">
-      <button class="btn" onclick="closeModal('detailModal')">Close</button>
+      <button class="btn" data-i18n="btnClose" onclick="closeModal('detailModal')">Close</button>
     </div>
+  </div>
+</div>
+    </form>
   </div>
 </div>
 
@@ -934,18 +937,182 @@ const S = {
 };
 
 const I18N = {
-  zh: { navDashboard:'仪表盘', navInquiries:'询盘', navCustomers:'客户', navProducts:'产品',
-        navSuppliers:'供应商', navOrders:'订单', navDocuments:'文件', navAnalytics:'数据分析',
-        navSettings:'设置', dashTitle:'仪表盘', dashSub:'贸易业绩总览',
-        kpiMonthOrders:'本月订单', kpiYearOrders:'年度订单', kpiMonthSales:'本月销售额',
-        kpiYearSales:'年度销售额', kpiMonthProfit:'本月利润', kpiYearProfit:'年度利润' },
-  en: { navDashboard:'Dashboard', navInquiries:'Inquiries', navCustomers:'Customers',
-        navProducts:'Products', navSuppliers:'Suppliers', navOrders:'Orders',
-        navDocuments:'Documents', navAnalytics:'Analytics', navSettings:'Settings',
-        dashTitle:'Dashboard', dashSub:'Overview of your trade performance',
-        kpiMonthOrders:'Monthly Orders', kpiYearOrders:'Annual Orders',
-        kpiMonthSales:'Monthly Sales', kpiYearSales:'Annual Sales',
-        kpiMonthProfit:'Monthly Profit', kpiYearProfit:'Annual Profit' }
+  zh: {
+    navDashboard:'仪表盘', navInquiries:'询盘', navCustomers:'客户', navProducts:'产品',
+    navSuppliers:'供应商', navOrders:'订单', navDocuments:'文件', navAnalytics:'数据分析',
+    navSettings:'设置', navDocGroup:'文件', navQuotation:'报价单', navPI:'形式发票',
+    navPacking:'装箱单', navAI:'AI助手', navCollapse:'收起',
+    dashTitle:'仪表盘', dashSub:'贸易业绩总览',
+    kpiMonthOrders:'本月订单', kpiYearOrders:'年度订单', kpiMonthSales:'本月销售额',
+    kpiYearSales:'年度销售额', kpiMonthProfit:'本月利润', kpiYearProfit:'年度利润',
+    btnNewOrder:'＋ 新建订单', btnNewCustomer:'＋ 新建客户', btnNewInquiry:'＋ 新建询盘',
+    chartOrderTrend:'订单趋势（12个月）', chartProfitTrend:'利润趋势（12个月）',
+    chartTopProducts:'销售额TOP产品', chartTopCustomers:'销售额TOP客户',
+    subInquiries:'管理进来的贸易询盘并转化为订单',
+    phSearchIq:'客户 / 备注...', allStatus:'全部状态',
+    stNew:'新询盘', stQuoted:'已报价', stConverted:'已转化', stClosed:'已关闭',
+    thDate:'日期', thCustomer:'客户', thStatus:'状态', thNotes:'备注', thActions:'操作',
+    btnNewInquiryCard:'＋ 新建询盘',
+    subCustomers:'买方主数据 — 自动填充PI文件',
+    phSearchCu:'名称 / 国家 / 邮箱...', btnNewCustomerCard:'＋ 新建客户',
+    thName:'名称', thCountry:'国家', thEmail:'邮箱', thWhatsApp:'WhatsApp', thLevel:'等级',
+    subProducts:'产品库 — 自动填充订单产品规格和价格',
+    phSearchPr:'编号 / 名称 / 规格...', btnNewProductCard:'＋ 新建产品',
+    thCode:'编号', thCNName:'中文名', thENName:'英文名', thSpec:'规格', thUnit:'单位', thPurchase:'采购价', thSales:'销售价',
+    subSuppliers:'供应商主数据，含产品图片和联系方式',
+    phSearchSu:'名称 / 联系人 / 电话...', btnNewSupplierCard:'＋ 新建供应商',
+    thImage:'图片', thSupplier:'供应商', thContact:'联系人', thPhone:'电话', thLeadTime:'货期',
+    subOrders:'完整订单管理，包含产品明细',
+    phSearchOr:'客户...', btnNewOrderCard:'＋ 新建订单',
+    stDraft:'草稿', stQuoted2:'已报价', stConfirmed:'已确认', stProducing:'生产中', stShipped:'已发货', stCompleted:'已完成',
+    thSalesAmt:'销售额', thPurchaseAmt:'采购额', thProfit:'利润',
+    subDocuments:'导出报价单、形式发票和装箱单',
+    docGenerate:'生成文件', lblSelectOrder:'选择订单', lblDocType:'文件类型', lblDocLang:'语言',
+    btnGenerate:'📄 生成并导出PDF', btnExportCSV:'📊 导出CSV',
+    docPreviewTitle:'文件预览', btnPrint:'🖨️ 打印/保存PDF',
+    optQuotation:'报价单', optPI:'形式发票 (PI)', optPacking:'装箱单',
+    subAnalytics:'详细业绩分析',
+    chartMonthlyRevenue:'月度收入', chartTop10Customers:'TOP10客户', chartTop10Products:'TOP10产品', chartOrderStatus:'订单状态分布',
+    aiTitle:'AI助手', aiSub:'智能贸易助手 — 即将推出',
+    aiDesc:'自动报价起草、客户沟通和贸易文件生成 — 即将推出。',
+    subSettings:'系统配置', setCompanyInfo:'公司信息',
+    lblCompanyName:'公司名称', phCompanyName:'您的公司名称', lblCompanyAddr:'公司地址', phAddr:'地址',
+    lblContactEmail:'联系邮箱', lblBankInfo:'银行信息', phBank:'PI银行账户',
+    btnSaveSettings:'保存设置', setInterface:'界面', lblLanguage:'语言', setAccount:'账号',
+    setLoggedIn:'单用户模式。当前登录：', btnLogout:'🚪 退出登录',
+    qeTitle:'⚡ 快速导出', qeLabelOrder:'订单', qeLabelLang:'语言',
+    qeSelectOrder:'选择订单...', btnQEQuotation:'📝 导出报价单', btnQEPI:'🧾 导出形式发票', btnQEPacking:'📦 导出装箱单',
+    ddSettings:'⚙️ 设置', ddLogout:'🚪 退出登录',
+    titleNewCustomer:'新建客户', titleEditCustomer:'编辑客户',
+    lblCustName:'客户名称 *', lblCustCountry:'国家', lblCustEmail:'邮箱', lblCustWhatsApp:'WhatsApp',
+    lblCustPayment:'付款条件', phCustPayment:'如：T/T 30% deposit', lblCustLevel:'客户等级',
+    lblCustAddress:'收货地址', lblCustNotes:'备注',
+    optStandard:'标准', optVIP:'VIP', optPotential:'潜在客户',
+    btnCancel:'取消', btnSaveCustomer:'保存客户',
+    titleNewProduct:'新建产品', titleEditProduct:'编辑产品',
+    lblProdCode:'产品编号', lblProdUnit:'单位', lblProdCN:'中文名 *', lblProdEN:'英文名',
+    lblProdSpec:'规格', lblProdPP:'默认采购价', lblProdSP:'默认销售价', lblProdHS:'HS编码', lblProdCert:'认证',
+    btnSaveProduct:'保存产品',
+    titleNewSupplier:'新建供应商', titleEditSupplier:'编辑供应商',
+    lblSupName:'供应商名称 *', lblSupContact:'联系人', lblSupPhone:'电话', lblSupEmail:'邮箱',
+    lblSupLead:'货期', phSupLead:'如：15天', lblSupLink:'产品链接', phSupLink:'阿里巴巴 / 1688链接',
+    lblSupImage:'产品图片', lblSupNotes:'备注', btnSaveSupplier:'保存供应商',
+    titleNewInquiry:'新建询盘', titleEditInquiry:'编辑询盘',
+    lblIqCustomer:'客户名称', lblIqDate:'询盘日期', lblIqStatus:'状态', lblIqNotes:'备注',
+    optIqNew:'新询盘', optIqQuoted:'已报价', optIqConverted:'已转化为订单', optIqClosed:'已关闭',
+    btnSaveInquiry:'保存询盘',
+    titleNewOrder:'新建订单', titleEditOrder:'编辑订单',
+    lblOrdCustomer:'客户 *', lblOrdDate:'订单日期 *', lblOrdShipping:'运费 ($)',
+    lblOrdStatus:'状态', lblOrdCurrency:'货币', lblOrdRemarks:'备注',
+    h3Items:'产品明细', btnAddItem:'＋ 添加明细',
+    lblCNName:'中文名', lblENName:'英文名', lblQty:'数量', lblPurchaseP:'采购价 $', lblSalesP:'销售价 $',
+    cssPurchase:'采购总额', cssSales:'销售总额（含运费）', cssProfit:'利润（不含运费）',
+    btnSaveOrder:'保存订单',
+    titleOrderDetail:'订单详情', btnClose:'关闭',
+    thCNNameD:'中文名', thENNameD:'英文名', thSpecD:'规格', thQtyD:'数量',
+    thPurchaseD:'采购价', thSalesD:'销售价', thPTotalD:'采购小计', thSTotalD:'销售小计',
+    toastCustSaved:'客户已保存', toastCustUpdated:'客户已更新',
+    toastProdSaved:'产品已保存', toastProdUpdated:'产品已更新',
+    toastSupSaved:'供应商已保存', toastSupUpdated:'供应商已更新',
+    toastOrdSaved:'订单已保存', toastOrdUpdated:'订单已更新',
+    toastInqSaved:'询盘已保存', toastDeleted:'已删除', toastSettingsSaved:'设置已保存',
+    confirmDelCustomer:'确定删除该客户？', confirmDelProduct:'确定删除该产品？',
+    confirmDelSupplier:'确定删除该供应商？', confirmDelInquiry:'确定删除该询盘？', confirmDelOrder:'确定删除该订单？',
+    errSelectOrder:'请先选择订单', errOrderNotFound:'订单未找到', errLoadFailed:'加载失败：',
+    ordersCount:'条订单', phGlobalSearch:'搜索订单、客户...',
+    noCustomers:'未找到客户', noProducts:'未找到产品', noSuppliers:'未找到供应商', noInquiries:'未找到询盘', noOrders:'未找到订单',
+    btnEdit:'编辑', btnDelete:'删除', btnDetail:'详情', btnToOrder:'→ 转为订单',
+    phSelectOrderDoc:'— 选择订单 —', phSelectOrderQE:'选择订单...',
+  },
+  en: {
+    navDashboard:'Dashboard', navInquiries:'Inquiries', navCustomers:'Customers',
+    navProducts:'Products', navSuppliers:'Suppliers', navOrders:'Orders',
+    navDocuments:'Documents', navAnalytics:'Analytics', navSettings:'Settings',
+    navDocGroup:'Documents', navQuotation:'Quotation', navPI:'Pro-forma Invoice',
+    navPacking:'Packing List', navAI:'AI Assistant', navCollapse:'Collapse',
+    dashTitle:'Dashboard', dashSub:'Overview of your trade performance',
+    kpiMonthOrders:'Monthly Orders', kpiYearOrders:'Annual Orders',
+    kpiMonthSales:'Monthly Sales', kpiYearSales:'Annual Sales',
+    kpiMonthProfit:'Monthly Profit', kpiYearProfit:'Annual Profit',
+    btnNewOrder:'＋ New Order', btnNewCustomer:'＋ New Customer', btnNewInquiry:'＋ New Inquiry',
+    chartOrderTrend:'Order Trend (12 months)', chartProfitTrend:'Profit Trend (12 months)',
+    chartTopProducts:'Top Products by Sales', chartTopCustomers:'Top Customers by Sales',
+    subInquiries:'Manage incoming trade inquiries and convert to orders',
+    phSearchIq:'Customer / notes...', allStatus:'All Status',
+    stNew:'New', stQuoted:'Quoted', stConverted:'Converted', stClosed:'Closed',
+    thDate:'Date', thCustomer:'Customer', thStatus:'Status', thNotes:'Notes', thActions:'Actions',
+    btnNewInquiryCard:'＋ New Inquiry',
+    subCustomers:'Buyer master data — auto-fills PI documents',
+    phSearchCu:'Name / country / email...', btnNewCustomerCard:'＋ New Customer',
+    thName:'Name', thCountry:'Country', thEmail:'Email', thWhatsApp:'WhatsApp', thLevel:'Level',
+    subProducts:'Product library — auto-fills order items with specs and prices',
+    phSearchPr:'Code / name / spec...', btnNewProductCard:'＋ New Product',
+    thCode:'Code', thCNName:'CN Name', thENName:'EN Name', thSpec:'Spec', thUnit:'Unit', thPurchase:'Purchase', thSales:'Sales',
+    subSuppliers:'Supplier master data with product image and contact info',
+    phSearchSu:'Name / contact / phone...', btnNewSupplierCard:'＋ New Supplier',
+    thImage:'Image', thSupplier:'Supplier', thContact:'Contact', thPhone:'Phone', thLeadTime:'Lead Time',
+    subOrders:'Full order management with product line items',
+    phSearchOr:'Customer...', btnNewOrderCard:'＋ New Order',
+    stDraft:'Draft', stQuoted2:'Quoted', stConfirmed:'Confirmed', stProducing:'Producing', stShipped:'Shipped', stCompleted:'Completed',
+    thSalesAmt:'Sales', thPurchaseAmt:'Purchase', thProfit:'Profit',
+    subDocuments:'Export Quotations, Commercial Invoices, and Packing Lists',
+    docGenerate:'Generate Document', lblSelectOrder:'Select Order', lblDocType:'Document Type', lblDocLang:'Language',
+    btnGenerate:'📄 Generate & Export PDF', btnExportCSV:'📊 Export CSV',
+    docPreviewTitle:'Document Preview', btnPrint:'🖨️ Print / Save PDF',
+    optQuotation:'Quotation', optPI:'Pro-forma Invoice (PI)', optPacking:'Packing List',
+    subAnalytics:'Detailed performance breakdown',
+    chartMonthlyRevenue:'Monthly Revenue', chartTop10Customers:'Top 10 Customers', chartTop10Products:'Top 10 Products', chartOrderStatus:'Order Status Distribution',
+    aiTitle:'AI Assistant', aiSub:'Intelligent trade assistant — coming soon',
+    aiDesc:'Automated quotation drafting, customer communication, and trade document generation — coming in the next release.',
+    subSettings:'System configuration', setCompanyInfo:'Company Info',
+    lblCompanyName:'Company Name', phCompanyName:'Your company name', lblCompanyAddr:'Company Address', phAddr:'Address',
+    lblContactEmail:'Contact Email', lblBankInfo:'Bank Info', phBank:'Bank account for PI',
+    btnSaveSettings:'Save Settings', setInterface:'Interface', lblLanguage:'Language', setAccount:'Account',
+    setLoggedIn:'Single user mode. Logged in as ', btnLogout:'🚪 Logout',
+    qeTitle:'⚡ Quick Export', qeLabelOrder:'Order', qeLabelLang:'Language',
+    qeSelectOrder:'Select order...', btnQEQuotation:'📝 Export Quotation', btnQEPI:'🧾 Export PI', btnQEPacking:'📦 Export Packing List',
+    ddSettings:'⚙️ Settings', ddLogout:'🚪 Logout',
+    titleNewCustomer:'New Customer', titleEditCustomer:'Edit Customer',
+    lblCustName:'Customer Name *', lblCustCountry:'Country', lblCustEmail:'Email', lblCustWhatsApp:'WhatsApp',
+    lblCustPayment:'Payment Terms', phCustPayment:'e.g. T/T 30% deposit', lblCustLevel:'Customer Level',
+    lblCustAddress:'Shipping Address', lblCustNotes:'Notes',
+    optStandard:'Standard', optVIP:'VIP', optPotential:'Potential',
+    btnCancel:'Cancel', btnSaveCustomer:'Save Customer',
+    titleNewProduct:'New Product', titleEditProduct:'Edit Product',
+    lblProdCode:'Product Code', lblProdUnit:'Unit', lblProdCN:'CN Name *', lblProdEN:'EN Name',
+    lblProdSpec:'Specification', lblProdPP:'Default Purchase Price', lblProdSP:'Default Sales Price', lblProdHS:'HS Code', lblProdCert:'Certification',
+    btnSaveProduct:'Save Product',
+    titleNewSupplier:'New Supplier', titleEditSupplier:'Edit Supplier',
+    lblSupName:'Supplier Name *', lblSupContact:'Contact Name', lblSupPhone:'Phone', lblSupEmail:'Email',
+    lblSupLead:'Lead Time', phSupLead:'e.g. 15 days', lblSupLink:'Product Link', phSupLink:'Alibaba / 1688 URL',
+    lblSupImage:'Product Image', lblSupNotes:'Notes', btnSaveSupplier:'Save Supplier',
+    titleNewInquiry:'New Inquiry', titleEditInquiry:'Edit Inquiry',
+    lblIqCustomer:'Customer Name', lblIqDate:'Inquiry Date', lblIqStatus:'Status', lblIqNotes:'Notes',
+    optIqNew:'New', optIqQuoted:'Quoted', optIqConverted:'Converted to Order', optIqClosed:'Closed',
+    btnSaveInquiry:'Save Inquiry',
+    titleNewOrder:'New Order', titleEditOrder:'Edit Order',
+    lblOrdCustomer:'Customer *', lblOrdDate:'Order Date *', lblOrdShipping:'Shipping Fee ($)',
+    lblOrdStatus:'Status', lblOrdCurrency:'Currency', lblOrdRemarks:'Remarks',
+    h3Items:'Product Items', btnAddItem:'＋ Add Item',
+    lblCNName:'CN Name', lblENName:'EN Name', lblQty:'Qty', lblPurchaseP:'Purchase $', lblSalesP:'Sales $',
+    cssPurchase:'Purchase Total', cssSales:'Sales Total (incl. shipping)', cssProfit:'Profit (excl. shipping)',
+    btnSaveOrder:'Save Order',
+    titleOrderDetail:'Order Detail', btnClose:'Close',
+    thCNNameD:'CN Name', thENNameD:'EN Name', thSpecD:'Spec', thQtyD:'Qty',
+    thPurchaseD:'Purchase', thSalesD:'Sales', thPTotalD:'P.Total', thSTotalD:'S.Total',
+    toastCustSaved:'Customer saved', toastCustUpdated:'Customer updated',
+    toastProdSaved:'Product saved', toastProdUpdated:'Product updated',
+    toastSupSaved:'Supplier saved', toastSupUpdated:'Supplier updated',
+    toastOrdSaved:'Order saved', toastOrdUpdated:'Order updated',
+    toastInqSaved:'Saved', toastDeleted:'Deleted', toastSettingsSaved:'Settings saved',
+    confirmDelCustomer:'Delete this customer?', confirmDelProduct:'Delete this product?',
+    confirmDelSupplier:'Delete this supplier?', confirmDelInquiry:'Delete this inquiry?', confirmDelOrder:'Delete this order?',
+    errSelectOrder:'Please select an order', errOrderNotFound:'Order not found', errLoadFailed:'Load error: ',
+    ordersCount:' orders', phGlobalSearch:'Search orders, customers...',
+    noCustomers:'No customers found', noProducts:'No products found', noSuppliers:'No suppliers found', noInquiries:'No inquiries found', noOrders:'No orders found',
+    btnEdit:'Edit', btnDelete:'Delete', btnDetail:'Detail', btnToOrder:'→ Order',
+    phSelectOrderDoc:'— Select an order —', phSelectOrderQE:'Select order...',
+  }
 };
 
 function token() { return localStorage.getItem('crm_token') || ''; }
@@ -1016,12 +1183,18 @@ document.addEventListener('click', e => {
 });
 
 // ── Language ──
+function t(k) { return I18N[S.lang][k] ?? k; }
 function toggleLang() { setLang(S.lang === 'zh' ? 'en' : 'zh'); }
 function setLang(l) {
   S.lang = l; localStorage.setItem('crm_lang', l);
   document.querySelectorAll('[data-i18n]').forEach(el => {
-    const k = el.dataset.i18n; if (I18N[l][k]) el.textContent = I18N[l][k];
+    const k = el.dataset.i18n; if (I18N[l][k] !== undefined) el.textContent = I18N[l][k];
   });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const k = el.dataset.i18nPh; if (I18N[l][k] !== undefined) el.placeholder = I18N[l][k];
+  });
+  // Re-render all lists so action buttons and dynamic text update
+  renderCustomers(); renderProducts(); renderSuppliers(); renderInquiries(); renderOrders();
 }
 
 // ── Settings ──
