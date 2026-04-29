@@ -176,3 +176,15 @@ CREATE INDEX IF NOT EXISTS idx_emails_folder    ON emails(folder);
 CREATE INDEX IF NOT EXISTS idx_emails_is_read   ON emails(is_read);
 CREATE INDEX IF NOT EXISTS idx_emails_received  ON emails(received_at DESC);
 CREATE INDEX IF NOT EXISTS idx_emails_deleted   ON emails(is_deleted);
+
+-- =============================================
+-- AI 助手设置表
+-- =============================================
+CREATE TABLE IF NOT EXISTS ai_settings (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  provider      TEXT NOT NULL DEFAULT 'openai',
+  api_key       TEXT,
+  model         TEXT DEFAULT 'gpt-4o',
+  system_prompt TEXT DEFAULT '你是一个专业的外贸AI助手，帮助用户处理外贸相关工作，包括邮件撰写、报价分析、客户沟通策略等。请用中文回复。',
+  created_at    TIMESTAMPTZ DEFAULT NOW()
+);

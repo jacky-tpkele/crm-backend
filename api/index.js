@@ -797,4 +797,100 @@ app.get('/api/emails/unread-count', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
+// ── AI 助手 ──
+
+// 获取 AI 设置（不返回 api_key）
+app.get('/api/ai/settings', auth, async (req, res) => {
+  try {
+    const data = await sb('ai_settings?select=id,provider,model,system_prompt&order=created_at.desc&limit=1');
+    res.json(data[0] || { provider: 'openai', model: 'gpt-4o', system_prompt: '' });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 检查是否已配置 api_key
+app.get('/api/ai/settings/status', auth, async (req, res) => {
+  try {
+    const data = await sb('ai_settings?select=id,provider,model&order=created_at.desc&limit=1');
+    res.json(data[0] ? { configured: true, ...data[0] } : { configured: false });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 保存 AI 设置
+app.put('/api/ai/settings', auth, async (req, res) => {
+  try {
+    const { provider, api_key, model, system_prompt } = req.body;
+    if (!provider) return res.status(400).json({ message: '请选择 AI 提供商' });
+    const existing = await sb('ai_settings?select=id&limit=1');
+    if (existing.length) {
+      const update = { provider, model, system_prompt };
+      if (api_key) update.api_key = api_key;
+      await sb(`ai_settings?id=eq.${existing[0].id}`, { method: 'PATCH', body: JSON.stringify(update) });
+    } else {
+      await sb('ai_settings', { method: 'POST', body: JSON.stringify({ provider, api_key, model, system_prompt }) });
+    }
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// AI 对话
+app.post('/api/ai/chat', auth, async (req, res) => {
+  try {
+    const { messages } = req.body;
+    if (!messages?.length) return res.status(400).json({ message: '消息不能为空' });
+
+    const settings = await sb('ai_settings?select=provider,api_key,model,system_prompt&order=created_at.desc&limit=1');
+    if (!settings.length || !settings[0].api_key)
+      return res.status(400).json({ message: '请先在 AI 助手设置中填写 API Key' });
+
+    const { provider, api_key, model, system_prompt } = settings[0];
+    let reply = '';
+
+    if (provider === 'openai') {
+      const msgs = [];
+      if (system_prompt) msgs.push({ role: 'system', content: system_prompt });
+      msgs.push(...messages);
+      const r = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${api_key}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: model || 'gpt-4o', messages: msgs, max_tokens: 2000 }),
+      });
+      const d = await r.json();
+      if (!r.ok) return res.status(500).json({ message: d.error?.message || 'OpenAI 调用失败' });
+      reply = d.choices[0].message.content;
+
+    } else if (provider === 'claude') {
+      const msgs = messages.map(m => ({ role: m.role, content: m.content }));
+      const body = { model: model || 'claude-3-5-sonnet-20241022', max_tokens: 2000, messages: msgs };
+      if (system_prompt) body.system = system_prompt;
+      const r = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'x-api-key': api_key, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const d = await r.json();
+      if (!r.ok) return res.status(500).json({ message: d.error?.message || 'Claude 调用失败' });
+      reply = d.content[0].text;
+
+    } else if (provider === 'gemini') {
+      const contents = [];
+      for (const m of messages) {
+        contents.push({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] });
+      }
+      const gBody = { contents };
+      if (system_prompt) gBody.systemInstruction = { parts: [{ text: system_prompt }] };
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model || 'gemini-1.5-flash'}:generateContent?key=${api_key}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(gBody),
+      });
+      const d = await r.json();
+      if (!r.ok) return res.status(500).json({ message: d.error?.message || 'Gemini 调用失败' });
+      reply = d.candidates[0].content.parts[0].text;
+
+    } else {
+      return res.status(400).json({ message: '不支持的 AI 提供商' });
+    }
+
+    res.json({ success: true, reply });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
 module.exports = app;
