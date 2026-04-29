@@ -716,6 +716,26 @@ app.patch('/api/emails/:id/read', auth, async (req, res) => {
 // 删除邮件（软删除）
 app.delete('/api/emails/:id', auth, async (req, res) => {
   try {
+    // 查出邮件的 uid / folder / account_id
+    const row = await sb(`emails?id=eq.${req.params.id}&select=uid,folder,account_id`);
+    const email = Array.isArray(row) && row[0];
+
+    // 同步删除 IMAP 服务器上的邮件
+    if (email && email.uid) {
+      try {
+        const cfg    = await getAccountCfg(email.account_id || null);
+        const client = imapClient(cfg);
+        await client.connect();
+        await client.mailboxOpen(email.folder || 'INBOX');
+        await client.messageDelete({ uid: true, seq: `${email.uid}:${email.uid}` });
+        await client.logout();
+      } catch (imapErr) {
+        console.error('IMAP delete failed (continuing):', imapErr.message);
+        // IMAP 删除失败不阻断本地删除
+      }
+    }
+
+    // 标记本地已删除
     await sb(`emails?id=eq.${req.params.id}`, {
       method: 'PATCH', body: JSON.stringify({ is_deleted: true }),
     });
