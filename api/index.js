@@ -559,7 +559,7 @@ app.post('/api/emails/sync', auth, async (req, res) => {
     res.json({ success: true, synced });
   } catch (e) {
     try { await client.logout(); } catch {}
-    res.status(500).json({ message: e.message });
+    res.status(500).json({ message: e.message, detail: e.responseText || e.code || String(e) });
   }
 });
 
