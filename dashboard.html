@@ -48,21 +48,27 @@ button,input,select,textarea{font:inherit}
 .sb-nav{flex:1;overflow-y:auto;overflow-x:hidden;padding:10px 0}
 .nav-item{
   display:flex;align-items:center;gap:12px;padding:10px 16px;
-  cursor:pointer;transition:.15s;white-space:nowrap;
-  position:relative;color:var(--muted2);font-size:13.5px;font-weight:500;
+  cursor:pointer;transition:.2s;white-space:nowrap;
+  position:relative;color:var(--muted2);font-size:15px;font-weight:500;
   border-left:3px solid transparent;
 }
 .nav-item:hover{background:rgba(0,200,255,0.05);color:var(--text)}
-.nav-item.active{background:rgba(0,200,240,0.08);color:var(--primary);border-left-color:var(--primary)}
-.nav-icon{font-size:17px;flex-shrink:0;width:22px;text-align:center}
-.nav-label{overflow:hidden}
+.nav-item.active{
+  background:rgba(0,200,240,0.08);color:var(--primary);
+  border-left-color:var(--primary);
+  font-size:17px;font-weight:600;
+}
+.nav-item.active .nav-icon{font-size:20px}
+.nav-icon{font-size:18px;flex-shrink:0;width:24px;text-align:center;transition:.2s}
+.nav-label{overflow:hidden;transition:font-size .2s, font-weight .2s}
 .nav-group{padding:8px 16px 4px;font-size:10px;font-weight:600;color:rgba(0,200,255,0.22);text-transform:uppercase;letter-spacing:.8px;white-space:nowrap;overflow:hidden}
 .sub-nav{padding-left:8px}
-.sub-nav .nav-item{font-size:13px;padding:8px 14px}
+.sub-nav .nav-item{font-size:14px;padding:8px 14px}
+.sub-nav .nav-item.active{font-size:16px}
 /* 折叠分组 */
 .nav-collapse-hd{
   display:flex;align-items:center;padding:10px 16px 8px;
-  font-size:12px;font-weight:600;color:rgba(0,200,255,0.45);
+  font-size:13px;font-weight:600;color:rgba(0,200,255,0.45);
   letter-spacing:.5px;
   cursor:pointer;user-select:none;transition:.15s;
   border-left:3px solid transparent;
