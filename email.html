@@ -202,7 +202,34 @@ button,input,select,textarea{font:inherit}
 .send-status.ok{color:var(--success)}
 .send-status.err{color:var(--danger)}
 
-/* Toast */
+/* Quill 编辑器深色主题适配 */
+.ql-toolbar.ql-snow{background:var(--panel2);border-color:var(--border)!important;border-radius:8px 8px 0 0;flex-shrink:0}
+.ql-container.ql-snow{border-color:var(--border)!important;border-radius:0 0 8px 8px;color:var(--text);flex:1;min-height:180px;display:flex;flex-direction:column}
+.ql-editor{flex:1;color:var(--text);font-size:13.5px;line-height:1.8;font-family:'Inter',sans-serif}
+.ql-editor.ql-blank::before{color:var(--muted);font-style:normal}
+.ql-snow .ql-stroke{stroke:var(--muted2)}
+.ql-snow .ql-fill{fill:var(--muted2)}
+.ql-snow .ql-picker{color:var(--muted2)}
+.ql-snow .ql-picker-options{background:var(--panel2);border-color:var(--border)!important}
+.ql-snow .ql-picker-item{color:var(--text)}
+.ql-snow .ql-toolbar button:hover .ql-stroke,.ql-snow .ql-toolbar button.ql-active .ql-stroke{stroke:var(--primary)}
+.ql-snow .ql-toolbar button:hover .ql-fill,.ql-snow .ql-toolbar button.ql-active .ql-fill{fill:var(--primary)}
+.ql-snow .ql-toolbar button:hover,.ql-snow .ql-toolbar button.ql-active{color:var(--primary)}
+.ql-snow .ql-picker-label:hover,.ql-snow .ql-picker.ql-expanded .ql-picker-label{color:var(--primary)!important}
+.ql-snow .ql-picker.ql-expanded .ql-picker-label .ql-stroke{stroke:var(--primary)!important}
+.ql-editor a{color:var(--primary)}
+.ql-editor table{border-collapse:collapse;width:100%}
+.ql-editor table td,.ql-editor table th{border:1px solid var(--border);padding:6px 10px}
+/* 附件区域 */
+.attach-area{border:1px dashed var(--border);border-radius:8px;padding:8px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;min-height:40px;flex-shrink:0}
+.attach-btn{display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-size:12px;transition:.2s;flex-shrink:0}
+.attach-btn:hover{border-color:var(--primary);color:var(--primary)}
+.attach-chip{display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11.5px;color:var(--muted2)}
+.attach-chip .rm{cursor:pointer;color:var(--muted);font-size:14px;line-height:1;transition:.15s}
+.attach-chip .rm:hover{color:var(--danger)}
+/* Quill editor 容器撑满剩余空间 */
+.compose-editor{flex:1;display:flex;flex-direction:column;min-height:0}
+
 .toast{
   position:fixed;bottom:24px;right:24px;z-index:9999;
   background:var(--panel2);border:1px solid var(--border);border-radius:10px;
@@ -214,6 +241,7 @@ button,input,select,textarea{font:inherit}
 .toast.ok{border-color:rgba(74,222,128,.35)}
 .toast.err{border-color:rgba(251,113,133,.35)}
 </style>
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
 </head>
 <body>
 <div class="app">
@@ -299,11 +327,14 @@ button,input,select,textarea{font:inherit}
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 <script>
 const API = '';
 let token = localStorage.getItem('crm_token');
 let currentFolder = 'INBOX';
 let currentEmailId = null;
+let quillEditor = null;
+let attachments = [];
 
 if (!token) { location.href = 'login.html'; }
 
@@ -486,6 +517,7 @@ async function syncEmails() {
 
 // ── Compose ──
 function openCompose(opts = {}) {
+  attachments = [];
   const panel = document.getElementById('detailPanel');
   panel.innerHTML = `
     <div class="compose">
@@ -506,7 +538,11 @@ function openCompose(opts = {}) {
           <span class="field-label">主题</span>
           <input class="field-input" id="cSubject" placeholder="邮件主题" value="${opts.subject || ''}">
         </div>
-        <textarea class="compose-body" id="cBody" placeholder="在此输入邮件内容…">${opts.body || ''}</textarea>
+        <div class="compose-editor" id="quillWrap"></div>
+        <div class="attach-area" id="attachArea">
+          <button class="attach-btn" onclick="document.getElementById('fileInput').click()">📎 添加附件</button>
+          <input type="file" id="fileInput" style="display:none" multiple onchange="addFiles(this)">
+        </div>
       </div>
       <div class="compose-footer">
         <button class="btn-send" id="btnSend" onclick="sendEmail()">📨 发送</button>
@@ -514,7 +550,43 @@ function openCompose(opts = {}) {
       </div>
     </div>
   `;
+  quillEditor = new Quill('#quillWrap', {
+    theme: 'snow',
+    placeholder: '在此输入邮件内容…',
+    modules: { toolbar: [
+      [{ header: [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ color: [] }, { background: [] }],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      [{ align: [] }],
+      ['link'],
+      ['clean'],
+    ]},
+  });
+  if (opts.body) quillEditor.clipboard.dangerouslyPasteHTML(opts.body);
 }
+
+function addFiles(input) {
+  Array.from(input.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      attachments.push({ filename: file.name, content: e.target.result.split(',')[1], contentType: file.type });
+      renderChips();
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function renderChips() {
+  const area = document.getElementById('attachArea');
+  if (!area) return;
+  area.innerHTML = `<button class="attach-btn" onclick="document.getElementById('fileInput').click()">📎 添加附件</button>
+    <input type="file" id="fileInput" style="display:none" multiple onchange="addFiles(this)">` +
+    attachments.map((a, i) => `<div class="attach-chip">📄 ${esc(a.filename)}<span class="rm" onclick="removeFile(${i})">✕</span></div>`).join('');
+}
+
+function removeFile(i) { attachments.splice(i, 1); renderChips(); }
 
 function closeCompose() {
   document.getElementById('detailPanel').innerHTML = `
@@ -534,7 +606,7 @@ function forwardEmail(subject, body) {
   openCompose({
     title: '转发',
     subject: subject.startsWith('Fwd:') ? subject : `Fwd: ${subject}`,
-    body: `\n\n---------- 转发邮件 ----------\n${body}`,
+    body: `<br><br><hr><p><b>---------- 转发邮件 ----------</b></p>${body}`,
   });
 }
 
@@ -542,7 +614,8 @@ async function sendEmail() {
   const to = document.getElementById('cTo')?.value?.trim();
   const cc = document.getElementById('cCc')?.value?.trim();
   const subject = document.getElementById('cSubject')?.value?.trim();
-  const body = document.getElementById('cBody')?.value?.trim();
+  const body_html = quillEditor ? quillEditor.root.innerHTML : '';
+  const body_text = quillEditor ? quillEditor.getText().trim() : '';
   const status = document.getElementById('sendStatus');
   const btn = document.getElementById('btnSend');
 
@@ -555,7 +628,7 @@ async function sendEmail() {
   try {
     const res = await apiFetch('/api/emails/send', {
       method: 'POST',
-      body: JSON.stringify({ to, cc, subject, body_text: body }),
+      body: JSON.stringify({ to, cc, subject, body_html, body_text, attachments }),
     });
     const data = await res.json();
     if (data.success) {

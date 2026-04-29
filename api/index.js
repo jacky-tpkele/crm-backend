@@ -673,7 +673,7 @@ app.post('/api/emails/send', auth, async (req, res) => {
   if (!EMAIL_SMTP_HOST || !EMAIL_USER || !EMAIL_PASS)
     return res.status(503).json({ message: '未配置邮箱环境变量' });
 
-  const { to, cc, subject, body_html, body_text } = req.body;
+  const { to, cc, subject, body_html, body_text, attachments } = req.body;
   if (!to || !subject) return res.status(400).json({ message: '收件人和主题不能为空' });
 
   try {
@@ -683,6 +683,11 @@ app.post('/api/emails/send', auth, async (req, res) => {
       to, cc, subject,
       text: body_text || '',
       html: body_html || `<p>${(body_text || '').replace(/\n/g, '<br>')}</p>`,
+      attachments: (attachments || []).map(a => ({
+        filename: a.filename,
+        content:  Buffer.from(a.content, 'base64'),
+        contentType: a.contentType,
+      })),
     });
 
     // 保存到已发送
