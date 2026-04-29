@@ -507,12 +507,17 @@ app.post('/api/emails/sync', auth, async (req, res) => {
         if (rows.length) lastUid = rows[0].uid || 0;
       } catch {}
 
-      const searchCriteria = lastUid ? { uid: `${lastUid + 1}:*` } : { all: true };
+      // ImapFlow fetch requires string sequence/UID range
+      const range = lastUid ? `${lastUid + 1}:*` : '1:*';
       const messages = [];
-      for await (const msg of client.fetch(searchCriteria, {
-        uid: true, envelope: true, bodyStructure: true, source: true,
-      }, { uid: true })) {
-        messages.push({ uid: msg.uid, source: msg.source });
+      try {
+        for await (const msg of client.fetch(range, { uid: true, source: true }, { uid: true })) {
+          messages.push({ uid: msg.uid, source: msg.source });
+          if (messages.length >= 50) break; // 每次最多同步50封，防止超时
+        }
+      } catch (fetchErr) {
+        // 如果 UID 范围无新邮件，ImapFlow 会抛出异常，忽略即可
+        if (!fetchErr.message?.includes('No messages')) throw fetchErr;
       }
 
       for (const { uid, source } of messages) {
@@ -543,7 +548,9 @@ app.post('/api/emails/sync', auth, async (req, res) => {
             }),
           });
           synced++;
-        } catch {}
+        } catch (parseErr) {
+          console.error('解析邮件失败 uid=' + uid, parseErr.message);
+        }
       }
     } finally {
       lock.release();
