@@ -183,6 +183,20 @@ button,input,select,textarea{font:inherit}
 .modal-status.err{color:var(--danger)}
 .modal-status.ok{color:var(--success)}
 
+/* ── Multi-select ── */
+.bulk-bar{display:none;align-items:center;gap:10px;padding:8px 16px;background:rgba(0,200,240,.07);border-bottom:1px solid var(--border);flex-shrink:0}
+.bulk-bar.show{display:flex}
+.bulk-count{font-size:12px;color:var(--primary);font-weight:600}
+.btn-bulk-del{padding:4px 12px;border-radius:6px;border:1px solid rgba(251,113,133,.4);background:rgba(251,113,133,.08);color:var(--danger);font-size:12px;cursor:pointer;transition:.2s}
+.btn-bulk-del:hover{background:rgba(251,113,133,.2)}
+.btn-bulk-cancel{margin-left:auto;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:12px;cursor:pointer;transition:.2s}
+.btn-bulk-cancel:hover{color:var(--text)}
+.sel-all-wrap{display:flex;align-items:center}
+.sel-all-check{width:14px;height:14px;cursor:pointer;accent-color:var(--primary);flex-shrink:0}
+.ei-check{width:14px;height:14px;flex-shrink:0;cursor:pointer;accent-color:var(--primary);opacity:0;transition:opacity .15s;margin-right:2px}
+.email-item:hover .ei-check,.email-item.selected .ei-check{opacity:1}
+.email-item.selected{background:rgba(0,200,240,.06)}
+
 /* ── Toast ── */
 .toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:13px;color:var(--text);display:none;align-items:center;gap:10px;box-shadow:var(--shadow)}
 .toast.show{display:flex}
@@ -254,8 +268,16 @@ button,input,select,textarea{font:inherit}
     <!-- Email List -->
     <div class="list-panel">
       <div class="list-header">
+        <div class="sel-all-wrap">
+          <input type="checkbox" class="sel-all-check" id="selAllCheck" onchange="toggleSelectAll()" title="全选">
+        </div>
         <span class="list-title" id="listTitle">收件箱</span>
         <span class="list-count" id="listCount"></span>
+      </div>
+      <div class="bulk-bar" id="bulkBar">
+        <span class="bulk-count" id="bulkCount">已选 0 封</span>
+        <button class="btn-bulk-del" onclick="bulkDelete()">🗑 删除所选</button>
+        <button class="btn-bulk-cancel" onclick="clearSelection()">取消</button>
       </div>
       <div class="list-body" id="emailList">
         <div class="list-loading">加载中…</div>
@@ -501,6 +523,10 @@ async function confirmDeleteAccount() {
 async function loadEmails(folder) {
   const list = document.getElementById('emailList');
   list.innerHTML = '<div class="list-loading">加载中…</div>';
+  selectedIds.clear();
+  document.getElementById('bulkBar')?.classList.remove('show');
+  const selAll = document.getElementById('selAllCheck');
+  if (selAll) { selAll.checked = false; selAll.indeterminate = false; }
   try {
     const acct = currentAccountId ? `&account_id=${currentAccountId}` : '';
     const res   = await apiFetch(`/api/emails?folder=${folder}${acct}`);
@@ -519,12 +545,17 @@ function updateBadge(emails) {
   b.textContent = unread; b.style.display = unread ? '' : 'none';
 }
 
+let selectedIds = new Set();
+
 function renderList(emails) {
   const list = document.getElementById('emailList');
   if (!emails.length) { list.innerHTML = '<div class="list-empty">暂无邮件</div>'; return; }
   list.innerHTML = emails.map(e => `
-    <div class="email-item ${e.is_read?'':'unread'} ${e.id===currentEmailId?'active':''}" onclick="openEmail('${e.id}',this)">
+    <div class="email-item ${e.is_read?'':'unread'} ${e.id===currentEmailId?'active':''} ${selectedIds.has(e.id)?'selected':''}"
+         data-id="${e.id}" onclick="handleItemClick(event,'${e.id}',this)">
       <div class="ei-row">
+        <input type="checkbox" class="ei-check" data-id="${e.id}"
+               ${selectedIds.has(e.id)?'checked':''} onchange="toggleEmailSelect('${e.id}',this)" onclick="event.stopPropagation()">
         ${!e.is_read?'<span class="unread-dot"></span>':''}
         <div class="ei-from" style="flex:1">${esc(e.from_name||e.from_address)}</div>
       </div>
@@ -532,6 +563,70 @@ function renderList(emails) {
       <div class="ei-date">${fmtDate(e.received_at)}</div>
     </div>
   `).join('');
+}
+
+function handleItemClick(event, id, el) {
+  if (event.target.type === 'checkbox') return;
+  openEmail(id, el);
+}
+
+function toggleEmailSelect(id, checkbox) {
+  if (checkbox.checked) selectedIds.add(id);
+  else selectedIds.delete(id);
+  const item = document.querySelector(`.email-item[data-id="${id}"]`);
+  if (item) item.classList.toggle('selected', checkbox.checked);
+  updateBulkBar();
+}
+
+function toggleSelectAll() {
+  const checked = document.getElementById('selAllCheck').checked;
+  document.querySelectorAll('.ei-check').forEach(cb => {
+    const id = cb.dataset.id;
+    cb.checked = checked;
+    checked ? selectedIds.add(id) : selectedIds.delete(id);
+    const item = document.querySelector(`.email-item[data-id="${id}"]`);
+    if (item) item.classList.toggle('selected', checked);
+  });
+  updateBulkBar();
+}
+
+function updateBulkBar() {
+  const bar = document.getElementById('bulkBar');
+  const n = selectedIds.size;
+  if (n > 0) {
+    bar.classList.add('show');
+    document.getElementById('bulkCount').textContent = `已选 ${n} 封`;
+  } else {
+    bar.classList.remove('show');
+  }
+  const allBoxes = document.querySelectorAll('.ei-check');
+  const selAll = document.getElementById('selAllCheck');
+  if (selAll && allBoxes.length) {
+    selAll.indeterminate = n > 0 && n < allBoxes.length;
+    selAll.checked = n === allBoxes.length;
+  }
+}
+
+function clearSelection() {
+  selectedIds.clear();
+  document.querySelectorAll('.ei-check').forEach(cb => { cb.checked = false; });
+  document.querySelectorAll('.email-item.selected').forEach(el => el.classList.remove('selected'));
+  const selAll = document.getElementById('selAllCheck');
+  if (selAll) { selAll.checked = false; selAll.indeterminate = false; }
+  document.getElementById('bulkBar').classList.remove('show');
+}
+
+async function bulkDelete() {
+  const ids = [...selectedIds];
+  if (!ids.length) return;
+  if (!confirm(`确定删除选中的 ${ids.length} 封邮件吗？`)) return;
+  try {
+    await Promise.all(ids.map(id => apiFetch(`/api/emails/${id}`, { method: 'DELETE' })));
+    showToast(`已删除 ${ids.length} 封邮件`);
+    selectedIds.clear();
+    if (ids.includes(currentEmailId)) { currentEmailId = null; showPlaceholder(); }
+    loadEmails(currentFolder);
+  } catch (e) { showToast('删除失败：' + e.message, 'err'); }
 }
 
 // ── Open email ──
