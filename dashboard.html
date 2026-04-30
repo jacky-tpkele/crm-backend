@@ -25,8 +25,6 @@ button,input,select,textarea{font:inherit}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(0,200,255,0.15);border-radius:4px}
 
-#circuit{position:fixed;inset:0;z-index:0;pointer-events:none;}
-
 /* ── App shell ── */
 .app{display:flex;height:100vh;overflow:hidden;position:relative;z-index:1;}
 
@@ -413,7 +411,6 @@ tr:hover .del-row-btn{display:inline-block}
 </style>
 </head>
 <body>
-<canvas id="circuit"></canvas>
 <div class="app">
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
 
@@ -1087,38 +1084,6 @@ tr:hover .del-row-btn{display:inline-block}
 </div>
 
 <script>
-/* ── Circuit Board Background ── */
-(function(){
-  const cvs = document.getElementById('circuit');
-  const cx  = cvs.getContext('2d');
-  const CELL = 58;
-  let W, H, traces = [], nodes = [], particles = [];
-  function init() {
-    W = cvs.width  = window.innerWidth;
-    H = cvs.height = window.innerHeight;
-    traces = []; nodes = []; particles = [];
-    const cols = Math.ceil(W/CELL)+2, rows = Math.ceil(H/CELL)+2;
-    const nset = new Set();
-    for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
-      const x=c*CELL, y=r*CELL;
-      if (c<cols-1 && Math.random()>0.52){ traces.push([x,y,x+CELL,y]); nset.add(x+','+y); nset.add((x+CELL)+','+y); }
-      if (r<rows-1 && Math.random()>0.52){ traces.push([x,y,x,y+CELL]); nset.add(x+','+y); nset.add(x+','+(y+CELL)); }
-    }
-    nset.forEach(k=>{ if(Math.random()>0.68){ const [nx,ny]=k.split(',').map(Number); nodes.push({x:nx,y:ny,r:1+Math.random()*1.6}); } });
-    const pick=Math.min(traces.length,85);
-    for(let i=0;i<pick;i++){ const idx=Math.floor(Math.random()*traces.length); particles.push({idx,t:Math.random(),spd:(0.003+Math.random()*0.006)*(Math.random()>.5?1:-1)}); }
-  }
-  function draw() {
-    cx.clearRect(0,0,W,H);
-    cx.strokeStyle='rgba(0,180,220,0.09)'; cx.lineWidth=0.8;
-    traces.forEach(([x1,y1,x2,y2])=>{ cx.beginPath(); cx.moveTo(x1,y1); cx.lineTo(x2,y2); cx.stroke(); });
-    nodes.forEach(n=>{ cx.beginPath(); cx.arc(n.x,n.y,n.r,0,Math.PI*2); cx.fillStyle='rgba(0,210,255,0.25)'; cx.fill(); });
-    particles.forEach(p=>{ p.t+=p.spd; if(p.t>1)p.t=0; if(p.t<0)p.t=1; const [x1,y1,x2,y2]=traces[p.idx]; const px=x1+(x2-x1)*p.t,py=y1+(y2-y1)*p.t; const g=cx.createRadialGradient(px,py,0,px,py,5); g.addColorStop(0,'rgba(0,229,255,0.5)'); g.addColorStop(1,'rgba(0,229,255,0)'); cx.beginPath(); cx.arc(px,py,5,0,Math.PI*2); cx.fillStyle=g; cx.fill(); cx.beginPath(); cx.arc(px,py,1.5,0,Math.PI*2); cx.fillStyle='rgba(0,229,255,0.88)'; cx.fill(); });
-    requestAnimationFrame(draw);
-  }
-  init(); window.addEventListener('resize',init); draw();
-})();
-
 // ══════════════════════════════
 // STATE & HELPERS
 // ══════════════════════════════
