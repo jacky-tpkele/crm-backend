@@ -381,14 +381,41 @@ tr:hover .del-row-btn{display:inline-block}
 .ai-provider-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--border);color:var(--muted2);background:var(--panel2)}
 .ai-provider-badge.configured{border-color:rgba(0,200,255,.3);color:var(--primary)}
 
+.mobile-menu-btn{display:none;align-items:center;justify-content:center;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:20px;width:38px;height:38px;cursor:pointer;flex-shrink:0;transition:.2s}
+.mobile-menu-btn:hover{border-color:rgba(0,200,255,0.4);color:var(--primary)}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:99;backdrop-filter:blur(2px)}
+.sidebar-overlay.active{display:block}
+
 /* ── Responsive ── */
 @media(max-width:1100px){.charts-row,.charts-row-3{grid-template-columns:1fr}.analytics-grid{grid-template-columns:1fr}}
-@media(max-width:768px){.sidebar{position:fixed;left:-240px;top:0;height:100%;transition:.25s}.sidebar.mobile-open{left:0}.main{width:100%}.item-row{grid-template-columns:1fr 1fr;gap:6px}.form-grid{grid-template-columns:1fr}}
+@media(max-width:768px){
+  .sidebar{position:fixed;left:-240px;top:0;height:100%;z-index:100;transition:.25s}
+  .sidebar.mobile-open{left:0}
+  .main{width:100%}
+  .mobile-menu-btn{display:flex}
+  .header>a[href="doc-maker.html"]{display:none}
+  .header .search-wrap{max-width:none;flex:1}
+  .icon-btn[title="Notifications"]{display:none}
+  .card-head{flex-wrap:wrap;gap:8px}
+  .card-head input[type=text]{width:100%;min-width:0}
+  .filter-bar{flex-wrap:wrap;gap:6px}
+  .filter-bar input,.filter-bar select{width:100%;min-width:0}
+  .tbl-wrap thead{display:none}
+  .tbl-wrap tbody tr{display:block;background:var(--panel2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;padding:8px 14px}
+  .tbl-wrap td{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border:none;font-size:13px;border-bottom:1px solid rgba(255,255,255,.04);min-height:32px}
+  .tbl-wrap td:last-child{border-bottom:none;padding-top:8px}
+  .tbl-wrap td::before{content:attr(data-label);color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-right:12px;white-space:nowrap;flex-shrink:0;min-width:72px}
+  .tbl-wrap td[data-label=""]::before{display:none}
+  .actions-cell{flex-wrap:wrap;gap:5px;justify-content:flex-end}
+  .item-row{grid-template-columns:1fr 1fr;gap:6px}
+  .form-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
 <canvas id="circuit"></canvas>
 <div class="app">
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
 
 <!-- ══ SIDEBAR ══ -->
 <aside class="sidebar" id="sidebar">
@@ -479,6 +506,7 @@ tr:hover .del-row-btn{display:inline-block}
 
   <!-- Header -->
   <header class="header">
+    <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileSidebar()">☰</button>
     <div class="search-wrap">
       <span class="si">🔍</span>
       <input type="text" id="globalSearch" data-i18n-ph="phGlobalSearch" placeholder="Search orders, customers..." autocomplete="off">
@@ -1480,8 +1508,17 @@ function navigate(sec) {
   if (sec === 'ai') initAiSection();
 }
 
+function toggleMobileSidebar() {
+  document.getElementById('sidebar').classList.toggle('mobile-open');
+  document.getElementById('sidebarOverlay').classList.toggle('active');
+}
+function closeMobileSidebar() {
+  document.getElementById('sidebar').classList.remove('mobile-open');
+  document.getElementById('sidebarOverlay').classList.remove('active');
+}
+
 document.querySelectorAll('[data-sec]').forEach(item => {
-  item.addEventListener('click', () => navigate(item.dataset.sec));
+  item.addEventListener('click', () => { navigate(item.dataset.sec); closeMobileSidebar(); });
 });
 
 // ── Sidebar collapse ──
@@ -1676,12 +1713,12 @@ function renderCustomers() {
   if (!rows.length) { body.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="icon">👥</div><p>No customers found</p></div></td></tr>'; return; }
   body.innerHTML = rows.map(c => `
     <tr>
-      <td><strong>${esc(c.customer_name)}</strong></td>
-      <td>${esc(c.country||'—')}</td>
-      <td>${esc(c.email||'—')}</td>
-      <td>${esc(c.whatsapp||'—')}</td>
-      <td><span class="badge badge-${c.customer_level||'standard'}">${esc(c.customer_level||'standard')}</span></td>
-      <td><div class="actions-cell">
+      <td data-label="Name"><strong>${esc(c.customer_name)}</strong></td>
+      <td data-label="Country">${esc(c.country||'—')}</td>
+      <td data-label="Email">${esc(c.email||'—')}</td>
+      <td data-label="WhatsApp">${esc(c.whatsapp||'—')}</td>
+      <td data-label="Level"><span class="badge badge-${c.customer_level||'standard'}">${esc(c.customer_level||'standard')}</span></td>
+      <td data-label=""><div class="actions-cell">
         <button class="btn btn-sm" onclick="editCustomer('${c.id}')">Edit</button>
         <button class="btn btn-sm btn-danger" onclick="deleteCustomer('${c.id}')">Delete</button>
       </div></td>
@@ -1747,14 +1784,14 @@ function renderProducts() {
   if (!rows.length) { body.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="icon">📦</div><p>No products found</p></div></td></tr>'; return; }
   body.innerHTML = rows.map(p => `
     <tr>
-      <td>${esc(p.product_code||'—')}</td>
-      <td>${esc(p.product_name_cn)}</td>
-      <td>${esc(p.product_name_en||'—')}</td>
-      <td>${esc(p.specification||'—')}</td>
-      <td>${esc(p.unit||'pcs')}</td>
-      <td>${fmt(p.default_purchase_price)}</td>
-      <td>${fmt(p.default_sales_price)}</td>
-      <td><div class="actions-cell">
+      <td data-label="Code">${esc(p.product_code||'—')}</td>
+      <td data-label="CN Name">${esc(p.product_name_cn)}</td>
+      <td data-label="EN Name">${esc(p.product_name_en||'—')}</td>
+      <td data-label="Spec">${esc(p.specification||'—')}</td>
+      <td data-label="Unit">${esc(p.unit||'pcs')}</td>
+      <td data-label="Purchase">${fmt(p.default_purchase_price)}</td>
+      <td data-label="Sales">${fmt(p.default_sales_price)}</td>
+      <td data-label=""><div class="actions-cell">
         <button class="btn btn-sm" onclick="editProduct('${p.id}')">Edit</button>
         <button class="btn btn-sm btn-danger" onclick="deleteProduct('${p.id}')">Delete</button>
       </div></td>
@@ -1823,13 +1860,13 @@ function renderSuppliers() {
   if (!rows.length) { body.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="icon">🏭</div><p>No suppliers found</p></div></td></tr>'; return; }
   body.innerHTML = rows.map(s => `
     <tr>
-      <td>${s.product_image_data ? `<img src="${s.product_image_data}" style="width:40px;height:40px;border-radius:8px;object-fit:cover">` : '<div style="width:40px;height:40px;border-radius:8px;background:rgba(255,255,255,.05);display:grid;place-items:center;font-size:18px">🏭</div>'}</td>
-      <td><strong>${esc(s.supplier_name)}</strong></td>
-      <td>${esc(s.contact_name||'—')}</td>
-      <td>${esc(s.phone||'—')}</td>
-      <td>${esc(s.email||'—')}</td>
-      <td>${esc(s.lead_time||'—')}</td>
-      <td><div class="actions-cell">
+      <td data-label="Image">${s.product_image_data ? `<img src="${s.product_image_data}" style="width:40px;height:40px;border-radius:8px;object-fit:cover">` : '<div style="width:40px;height:40px;border-radius:8px;background:rgba(255,255,255,.05);display:grid;place-items:center;font-size:18px">🏭</div>'}</td>
+      <td data-label="Supplier"><strong>${esc(s.supplier_name)}</strong></td>
+      <td data-label="Contact">${esc(s.contact_name||'—')}</td>
+      <td data-label="Phone">${esc(s.phone||'—')}</td>
+      <td data-label="Email">${esc(s.email||'—')}</td>
+      <td data-label="Lead Time">${esc(s.lead_time||'—')}</td>
+      <td data-label=""><div class="actions-cell">
         <button class="btn btn-sm" onclick="editSupplier('${s.id}')">Edit</button>
         <button class="btn btn-sm btn-danger" onclick="deleteSupplier('${s.id}')">Delete</button>
       </div></td>
@@ -1912,11 +1949,11 @@ function renderInquiries() {
   if (!rows.length) { body.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="icon">📋</div><p>No inquiries found</p></div></td></tr>'; return; }
   body.innerHTML = rows.map(i => `
     <tr>
-      <td>${esc(i.inquiry_date||'')}</td>
-      <td>${esc(i.customer_name||i.customers?.customer_name||'—')}</td>
-      <td><span class="badge badge-${i.status||'new'}">${esc(i.status||'new')}</span></td>
-      <td>${esc(i.notes||'—')}</td>
-      <td><div class="actions-cell">
+      <td data-label="Date">${esc(i.inquiry_date||'')}</td>
+      <td data-label="Customer">${esc(i.customer_name||i.customers?.customer_name||'—')}</td>
+      <td data-label="Status"><span class="badge badge-${i.status||'new'}">${esc(i.status||'new')}</span></td>
+      <td data-label="Notes">${esc(i.notes||'—')}</td>
+      <td data-label=""><div class="actions-cell">
         <button class="btn btn-sm btn-cyan" onclick="convertInquiryToOrder('${i.id}')">→ Order</button>
         <button class="btn btn-sm" onclick="editInquiry('${i.id}')">Edit</button>
         <button class="btn btn-sm btn-danger" onclick="deleteInquiry('${i.id}')">Delete</button>
@@ -1999,14 +2036,14 @@ function renderOrders() {
   body.innerHTML = rows.map(o => {
     const products = (o.items||[]).map(i=>i.product_name_cn||'').filter(Boolean).join(' / ').slice(0,30);
     return `<tr>
-      <td>${esc(o.order_date||'')}</td>
-      <td><strong>${esc(o.customer_name||'')}</strong></td>
-      <td>${esc(products||'—')}</td>
-      <td>${fmt(o.sales_total)}</td>
-      <td>${fmt(o.purchase_total)}</td>
-      <td style="color:${o.profit>=0?'var(--primary)':'var(--danger)'}">${fmt(o.profit)}</td>
-      <td><span class="badge badge-${o.order_status||'confirmed'}">${esc(o.order_status||'confirmed')}</span></td>
-      <td><div class="actions-cell">
+      <td data-label="Date">${esc(o.order_date||'')}</td>
+      <td data-label="Customer"><strong>${esc(o.customer_name||'')}</strong></td>
+      <td data-label="Products">${esc(products||'—')}</td>
+      <td data-label="Sales">${fmt(o.sales_total)}</td>
+      <td data-label="Purchase">${fmt(o.purchase_total)}</td>
+      <td data-label="Profit" style="color:${o.profit>=0?'var(--primary)':'var(--danger)'}">${fmt(o.profit)}</td>
+      <td data-label="Status"><span class="badge badge-${o.order_status||'confirmed'}">${esc(o.order_status||'confirmed')}</span></td>
+      <td data-label=""><div class="actions-cell">
         <button class="btn btn-sm" onclick="viewOrderDetail('${o.id}')">Detail</button>
         <button class="btn btn-sm" onclick="editOrder('${o.id}')">Edit</button>
         <button class="btn btn-sm btn-danger" onclick="deleteOrder('${o.id}')">Delete</button>
