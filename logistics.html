@@ -137,6 +137,43 @@ a{color:inherit;text-decoration:none}
   <div class="cards-grid" id="logisticsList"></div>
 </div>
 
+<!-- ── Order Detail Modal ── -->
+<div class="modal-backdrop" id="orderDetailModal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2 id="odTitle">订单详情</h2>
+        <div id="odSub" style="font-size:12px;color:var(--muted);margin-top:2px"></div>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('orderDetailModal').style.display='none'">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      <div style="background:var(--panel2);border-radius:8px;padding:12px">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">销售总额</div>
+        <div id="odSales" style="font-size:20px;font-weight:700;color:var(--green)"></div>
+      </div>
+      <div style="background:var(--panel2);border-radius:8px;padding:12px">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">利润</div>
+        <div id="odProfit" style="font-size:20px;font-weight:700;color:var(--purple)"></div>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead>
+          <tr style="background:rgba(0,180,255,0.06)">
+            <th style="padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);color:var(--muted);font-weight:600;font-size:11px">产品</th>
+            <th style="padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);color:var(--muted);font-weight:600;font-size:11px">规格</th>
+            <th style="padding:8px 10px;text-align:right;border-bottom:1px solid var(--border);color:var(--muted);font-weight:600;font-size:11px">数量</th>
+            <th style="padding:8px 10px;text-align:right;border-bottom:1px solid var(--border);color:var(--muted);font-weight:600;font-size:11px">销售价</th>
+            <th style="padding:8px 10px;text-align:right;border-bottom:1px solid var(--border);color:var(--muted);font-weight:600;font-size:11px">小计</th>
+          </tr>
+        </thead>
+        <tbody id="odBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <!-- ── Modal ── -->
 <div class="modal-backdrop" id="logModal" style="display:none" onclick="handleBackdropClick(event)">
   <div class="modal">
@@ -248,9 +285,11 @@ function toast(msg, type = 'ok') {
 // ── Status ──
 function getStatus(shipping_date, estimated_arrival) {
   const today = new Date(); today.setHours(0,0,0,0);
-  if (!estimated_arrival) return { label: '未设置', cls: 'status-unknown' };
-  const arrival = new Date(estimated_arrival);
-  if (today > arrival) return { label: '已到货', cls: 'status-arrived' };
+  if (!shipping_date && !estimated_arrival) return { label: '未设置', cls: 'status-unknown' };
+  if (estimated_arrival) {
+    const arrival = new Date(estimated_arrival);
+    if (today > arrival) return { label: '已到货', cls: 'status-arrived' };
+  }
   return { label: '运输中', cls: 'status-transit' };
 }
 
@@ -307,7 +346,7 @@ function renderList() {
         </div>
         <span class="status-badge ${cls}">${label}</span>
       </div>
-      ${orderInfo ? `<div class="card-order">🔗 ${esc(orderInfo)}</div>` : ''}
+      ${orderInfo ? `<div class="card-order" ${l.order_id ? `onclick="viewOrderDetail('${l.order_id}')" style="cursor:pointer" title="点击查看订单详情"` : ''}>🔗 ${esc(orderInfo)}${l.order_id ? ' ↗' : ''}</div>` : ''}
       <div class="card-info">
         <div class="info-item"><span class="info-label">发货日期</span><span class="info-value highlight">${l.shipping_date || '—'}</span></div>
         <div class="info-item"><span class="info-label">预计到达</span><span class="info-value highlight">${l.estimated_arrival || '—'}</span></div>
@@ -510,6 +549,26 @@ function fillForm(data) {
   if (data.weight)          document.getElementById('f-weight').value   = data.weight;
   if (data.volume)          document.getElementById('f-volume').value   = data.volume;
   if (data.notes)           document.getElementById('f-notes').value    = data.notes;
+}
+
+// ── Order Detail ──
+function viewOrderDetail(orderId) {
+  const o = S.orders.find(x => x.id === orderId);
+  if (!o) { toast('找不到关联订单', 'err'); return; }
+  document.getElementById('odTitle').textContent = o.customer_name || '订单详情';
+  document.getElementById('odSub').textContent   = (o.order_date || '') + (o.order_status ? '  ·  ' + o.order_status : '');
+  document.getElementById('odSales').textContent  = '$' + Number(o.sales_total || 0).toFixed(2);
+  document.getElementById('odProfit').textContent = '$' + Number(o.profit || 0).toFixed(2);
+  const items = o.items || [];
+  document.getElementById('odBody').innerHTML = items.length ? items.map(i => `
+    <tr>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--border)">${esc(i.product_name_en || i.product_name_cn || '—')}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--border);color:var(--muted)">${esc(i.specification || '—')}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right">${i.quantity}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right">$${Number(i.sales_price||0).toFixed(2)}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;font-weight:600">$${Number(i.sales_total||0).toFixed(2)}</td>
+    </tr>`).join('') : '<tr><td colspan="5" style="padding:16px;text-align:center;color:var(--muted)">暂无产品明细</td></tr>';
+  document.getElementById('orderDetailModal').style.display = 'flex';
 }
 
 // ── Export CSV ──
