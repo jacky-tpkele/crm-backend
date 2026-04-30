@@ -329,10 +329,18 @@ app.post('/api/orders', auth, async (req, res) => {
 app.put('/api/orders/:id', auth, async (req, res) => {
   try {
     const { items, ...orderData } = req.body;
-    await sb(`orders?id=eq.${req.params.id}`, {
+    const orderId = req.params.id;
+    await sb(`orders?id=eq.${orderId}`, {
       method: 'PATCH',
       body: JSON.stringify({ ...orderData, updated_at: new Date().toISOString() }),
     });
+    if (items?.length) {
+      await sb(`order_items?order_id=eq.${orderId}`, { method: 'DELETE' });
+      await sb('order_items', {
+        method: 'POST',
+        body: JSON.stringify(items.map(it => ({ ...it, order_id: orderId }))),
+      });
+    }
     res.json({ success: true });
   } catch (e) { res.status(500).json({ message: e.message }); }
 });

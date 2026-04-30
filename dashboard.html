@@ -2059,7 +2059,7 @@ function addOrderItem(data={}) {
   div.innerHTML = `
     <div class="field"><label>CN Name</label><input type="text" name="cn_name" value="${esc(data.product_name_cn||'')}" placeholder="中文名称" required></div>
     <div class="field"><label>EN Name</label><input type="text" name="en_name" value="${esc(data.product_name_en||'')}" placeholder="English name"></div>
-    <div class="field"><label>Spec</label><input type="text" name="spec" value="${esc(data.specification||'')}" placeholder="规格型号"></div>
+    <div class="field"><label>Description</label><input type="text" name="spec" value="${esc(data.specification||'')}" placeholder="规格型号"></div>
     <div class="field"><label>Qty</label><input type="number" name="qty" value="${data.quantity||1}" min="0" step="0.01" class="calc-trig" oninput="recalcOrder()"></div>
     <div class="field"><label>Purchase $</label><input type="number" name="pp" value="${data.purchase_price||0}" min="0" step="0.01" class="calc-trig" oninput="recalcOrder()"></div>
     <div class="field"><label>Sales $</label><input type="number" name="sp" value="${data.sales_price||0}" min="0" step="0.01" class="calc-trig" oninput="recalcOrder()"></div>
