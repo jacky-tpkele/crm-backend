@@ -286,7 +286,7 @@ tr:hover .del-row-btn{display:inline-block}
 .items-section{margin:14px 0}
 .items-section h3{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
 .item-row{
-  display:grid;grid-template-columns:1fr 1fr 0.65fr;
+  display:grid;grid-template-columns:1fr 1fr 1fr 0.65fr;
   gap:8px;margin-bottom:10px;align-items:end;
   background:rgba(0,180,255,0.03);padding:10px;border-radius:8px;
   border:1px solid rgba(0,180,255,0.07);
@@ -2059,6 +2059,7 @@ function addOrderItem(data={}) {
   div.innerHTML = `
     <div class="field"><label>CN Name</label><input type="text" name="cn_name" value="${esc(data.product_name_cn||'')}" placeholder="中文名称" required></div>
     <div class="field"><label>EN Name</label><input type="text" name="en_name" value="${esc(data.product_name_en||'')}" placeholder="English name"></div>
+    <div class="field"><label>Spec</label><input type="text" name="spec" value="${esc(data.specification||'')}" placeholder="规格型号"></div>
     <div class="field"><label>Qty</label><input type="number" name="qty" value="${data.quantity||1}" min="0" step="0.01" class="calc-trig" oninput="recalcOrder()"></div>
     <div class="field"><label>Purchase $</label><input type="number" name="pp" value="${data.purchase_price||0}" min="0" step="0.01" class="calc-trig" oninput="recalcOrder()"></div>
     <div class="field"><label>Sales $</label><input type="number" name="sp" value="${data.sales_price||0}" min="0" step="0.01" class="calc-trig" oninput="recalcOrder()"></div>
@@ -2097,6 +2098,7 @@ async function saveOrder(e) {
     items.push({
       product_name_cn: row.querySelector('[name="cn_name"]').value,
       product_name_en: row.querySelector('[name="en_name"]').value,
+      specification:   row.querySelector('[name="spec"]').value,
       quantity:        qty, purchase_price: pp, sales_price: sp,
       purchase_total:  qty*pp, sales_total: qty*sp,
     });
