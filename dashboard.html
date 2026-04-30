@@ -1460,6 +1460,9 @@ function toggleGroup(id) {
   const arrow = document.getElementById('arrow-' + id);
   const isClosed = body.classList.toggle('closed');
   arrow.style.transform = isClosed ? 'rotate(-90deg)' : '';
+  if (!isClosed) {
+    setTimeout(() => body.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 360);
+  }
 }
 
 // ── Navigation ──
