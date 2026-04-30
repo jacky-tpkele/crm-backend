@@ -901,4 +901,101 @@ app.post('/api/ai/chat', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
+// ══════════════════════════════
+// LOGISTICS
+// ══════════════════════════════
+app.get('/api/logistics', auth, async (req, res) => {
+  try {
+    const data = await sb('logistics?is_deleted=eq.false&order=created_at.desc&select=*');
+    res.json(data);
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.post('/api/logistics', auth, async (req, res) => {
+  try {
+    const { order_id, order_name, tracking_number, carrier, weight, volume, shipping_date, estimated_arrival, notes } = req.body;
+    const data = await sb('logistics?select=id', {
+      method: 'POST', headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify({
+        order_id: order_id || null, order_name: order_name || '',
+        tracking_number: tracking_number || '', carrier: carrier || '',
+        weight: weight || null, volume: volume || null,
+        shipping_date: shipping_date || null, estimated_arrival: estimated_arrival || null,
+        notes: notes || '',
+      }),
+    });
+    res.json({ success: true, id: data[0].id });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.put('/api/logistics/:id', auth, async (req, res) => {
+  try {
+    const { order_id, order_name, tracking_number, carrier, weight, volume, shipping_date, estimated_arrival, notes } = req.body;
+    await sb(`logistics?id=eq.${req.params.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        order_id: order_id || null, order_name: order_name || '',
+        tracking_number: tracking_number || '', carrier: carrier || '',
+        weight: weight || null, volume: volume || null,
+        shipping_date: shipping_date || null, estimated_arrival: estimated_arrival || null,
+        notes: notes || '',
+      }),
+    });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.delete('/api/logistics/:id', auth, async (req, res) => {
+  try {
+    await sb(`logistics?id=eq.${req.params.id}`, { method: 'PATCH', body: JSON.stringify({ is_deleted: true }) });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.post('/api/logistics/extract', auth, async (req, res) => {
+  try {
+    const { image_data } = req.body;
+    if (!image_data) return res.status(400).json({ message: '请上传图片' });
+    const settings = await sb('ai_settings?select=provider,api_key,model&order=created_at.desc&limit=1');
+    if (!settings.length || !settings[0].api_key) return res.status(400).json({ message: 'no_ai' });
+    const { provider, api_key, model } = settings[0];
+    const base64   = image_data.replace(/^data:image\/\w+;base64,/, '');
+    const mimeType = image_data.match(/^data:(image\/\w+);base64,/)?.[1] || 'image/jpeg';
+    const prompt   = `请从这张物流单/快递单图片中提取以下信息，以JSON格式返回，字段名用英文：
+{"tracking_number":"物流单号","carrier":"承运商名称","weight":"重量数字(仅数字,单位kg)","volume":"体积CBM数字(仅数字)","shipping_date":"发货日期YYYY-MM-DD","estimated_arrival":"预计到达日期YYYY-MM-DD","notes":"其他重要信息"}
+无法识别的字段值设为null，只返回JSON不要其他文字。`;
+    let reply = '';
+    if (provider === 'openai') {
+      const r = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST', headers: { 'Authorization': `Bearer ${api_key}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: model || 'gpt-4o', max_tokens: 500,
+          messages: [{ role: 'user', content: [{ type: 'image_url', image_url: { url: image_data } }, { type: 'text', text: prompt }] }] }),
+      });
+      const d = await r.json();
+      if (!r.ok) return res.status(500).json({ message: d.error?.message || 'OpenAI调用失败' });
+      reply = d.choices[0].message.content;
+    } else if (provider === 'claude') {
+      const r = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST', headers: { 'x-api-key': api_key, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: model || 'claude-3-5-sonnet-20241022', max_tokens: 500,
+          messages: [{ role: 'user', content: [{ type: 'image', source: { type: 'base64', media_type: mimeType, data: base64 } }, { type: 'text', text: prompt }] }] }),
+      });
+      const d = await r.json();
+      if (!r.ok) return res.status(500).json({ message: d.error?.message || 'Claude调用失败' });
+      reply = d.content[0].text;
+    } else if (provider === 'gemini') {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model || 'gemini-1.5-flash'}:generateContent?key=${api_key}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ inline_data: { mime_type: mimeType, data: base64 } }, { text: prompt }] }] }),
+      });
+      const d = await r.json();
+      if (!r.ok) return res.status(500).json({ message: d.error?.message || 'Gemini调用失败' });
+      reply = d.candidates[0].content.parts[0].text;
+    }
+    const m = reply.match(/\{[\s\S]*\}/);
+    if (!m) return res.status(500).json({ message: '无法解析AI返回结果' });
+    res.json({ success: true, data: JSON.parse(m[0]) });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
 module.exports = app;

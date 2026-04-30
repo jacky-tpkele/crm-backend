@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>物流管理 — TPKELE CRM</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#030712;--panel:#0d1424;--panel2:#111827;--border:rgba(0,180,255,0.12);
+  --text:#e2e8f0;--muted:#64748b;--muted2:#94a3b8;
+  --primary:#00c8ff;--cyan:#22d3ee;--green:#4ade80;--danger:#f87171;--purple:#a78bfa;
+  --shadow:0 8px 32px rgba(0,0,0,0.4);
+}
+html,body{height:100%;font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+
+/* ── Header ── */
+.header{height:58px;display:flex;align-items:center;gap:16px;padding:0 22px;border-bottom:1px solid var(--border);background:rgba(3,7,18,0.97);backdrop-filter:blur(12px);position:sticky;top:0;z-index:10}
+.header-logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px}
+.header-logo span{color:var(--primary)}
+.back-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--border);border-radius:8px;background:rgba(0,180,255,0.04);color:var(--muted2);font-size:13px;cursor:pointer;transition:.2s}
+.back-btn:hover{border-color:rgba(0,200,255,0.3);color:var(--primary)}
+.header-title{font-size:16px;font-weight:700;color:var(--text)}
+.header-right{margin-left:auto;display:flex;gap:8px}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text);font-size:13px;cursor:pointer;transition:.2s;white-space:nowrap}
+.btn:hover{border-color:rgba(0,200,255,0.35);background:rgba(0,180,255,0.06)}
+.btn-primary{background:linear-gradient(135deg,#005f90,#008fba);border-color:rgba(0,200,255,0.4);color:#fff;font-weight:600}
+.btn-primary:hover{background:linear-gradient(135deg,#007ab8,#00a8d8)}
+.btn-danger{border-color:rgba(248,113,113,0.3);color:var(--danger)}
+.btn-danger:hover{background:rgba(248,113,113,0.08)}
+.btn-cyan{border-color:rgba(34,211,238,.3);color:var(--cyan);background:rgba(34,211,238,.05)}
+.btn-cyan:hover{background:rgba(34,211,238,.12)}
+.btn-sm{padding:4px 10px;font-size:12px;border-radius:6px}
+.btn-green{border-color:rgba(74,222,128,.3);color:var(--green);background:rgba(74,222,128,.05)}
+.btn-green:hover{background:rgba(74,222,128,.12)}
+
+/* ── Main content ── */
+.main{max-width:1100px;margin:0 auto;padding:24px 20px}
+
+/* ── Toolbar ── */
+.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.search-input{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:8px 14px;color:var(--text);font-size:13px;outline:none;transition:.2s;min-width:240px}
+.search-input:focus{border-color:rgba(0,200,255,0.4)}
+.filter-select{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;outline:none;cursor:pointer}
+.count-label{margin-left:auto;color:var(--muted);font-size:12px}
+
+/* ── Cards grid ── */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.log-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;transition:.2s}
+.log-card:hover{border-color:rgba(0,200,255,0.25);box-shadow:0 4px 20px rgba(0,0,0,0.3)}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.tracking-num{font-size:15px;font-weight:700;color:var(--text);word-break:break-all}
+.carrier-name{font-size:12px;color:var(--muted);margin-top:2px}
+.status-badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;flex-shrink:0}
+.status-transit{background:rgba(34,211,238,.1);color:var(--cyan);border:1px solid rgba(34,211,238,.25)}
+.status-arrived{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.25)}
+.status-unknown{background:rgba(100,116,139,.1);color:var(--muted);border:1px solid rgba(100,116,139,.2)}
+.status-overdue{background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.25)}
+.card-info{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;margin-bottom:12px}
+.info-item{font-size:12px}
+.info-label{color:var(--muted);display:block;margin-bottom:1px;font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.info-value{color:var(--muted2)}
+.info-value.highlight{color:var(--text);font-weight:600}
+.card-order{background:rgba(0,180,255,.05);border:1px solid rgba(0,180,255,.1);border-radius:6px;padding:5px 10px;font-size:12px;color:var(--primary);margin-bottom:10px}
+.card-actions{display:flex;gap:6px;justify-content:flex-end}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-state .icon{font-size:48px;margin-bottom:12px}
+
+/* ── Modal ── */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,2,8,.82);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px)}
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);width:min(720px,100%);max-height:90vh;overflow-y:auto;padding:24px;position:relative}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-head h2{font-size:17px;font-weight:700}
+.modal-close{background:transparent;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1}
+.modal-close:hover{color:var(--text)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.form-grid.col1{grid-template-columns:1fr}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.field input,.field select,.field textarea{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;outline:none;transition:.2s}
+.field input:focus,.field select,.field textarea:focus{border-color:rgba(0,200,255,0.4)}
+.field select option{background:var(--panel)}
+.field textarea{resize:vertical;min-height:70px}
+.modal-footer{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+
+/* ── Image upload ── */
+.img-upload-area{border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:.2s;margin-bottom:14px}
+.img-upload-area:hover,.img-upload-area.drag-over{border-color:rgba(0,200,255,0.4);background:rgba(0,180,255,.04)}
+.img-upload-area.has-image{border-style:solid;border-color:rgba(0,200,255,0.25)}
+.img-preview{max-width:100%;max-height:180px;border-radius:8px;margin:8px auto 10px;display:block}
+.upload-hint{color:var(--muted);font-size:13px}
+.upload-hint span{color:var(--primary);cursor:pointer}
+.ocr-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.ocr-status{font-size:12px;color:var(--muted)}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:28px;right:28px;padding:11px 18px;border-radius:10px;font-size:13px;font-weight:500;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;max-width:320px}
+.toast.show{opacity:1}
+.toast.ok{background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.3);color:#86efac}
+.toast.err{background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.3);color:#fca5a5}
+
+@media(max-width:768px){
+  .form-grid{grid-template-columns:1fr}
+  .cards-grid{grid-template-columns:1fr}
+  .toolbar{gap:8px}
+  .search-input{min-width:0;width:100%}
+}
+</style>
+</head>
+<body>
+
+<div id="toastEl" class="toast"></div>
+
+<header class="header">
+  <a href="dashboard.html" class="back-btn">← 返回</a>
+  <div class="header-title">📦 物流管理</div>
+  <div class="header-right">
+    <button class="btn btn-primary" onclick="openModal()">＋ 新建物流</button>
+    <button class="btn btn-green" onclick="exportCSV()">⬇ 导出 CSV</button>
+  </div>
+</header>
+
+<div class="main">
+  <div class="toolbar">
+    <input type="text" class="search-input" id="searchInput" placeholder="搜索单号 / 承运商 / 关联订单..." oninput="renderList()">
+    <select class="filter-select" id="statusFilter" onchange="renderList()">
+      <option value="">全部状态</option>
+      <option value="transit">运输中</option>
+      <option value="arrived">已到货</option>
+      <option value="overdue">超期未确认</option>
+    </select>
+    <span class="count-label" id="countLabel"></span>
+  </div>
+  <div class="cards-grid" id="logisticsList"></div>
+</div>
+
+<!-- ── Modal ── -->
+<div class="modal-backdrop" id="logModal" style="display:none" onclick="handleBackdropClick(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="modalTitle">新建物流</h2>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+
+    <!-- Image upload -->
+    <div class="img-upload-area" id="uploadArea" onclick="document.getElementById('imgInput').click()" ondragover="onDragOver(event)" ondrop="onDrop(event)">
+      <img id="imgPreview" class="img-preview" style="display:none">
+      <div class="upload-hint" id="uploadHint">
+        📷 点击或拖拽上传物流单图片<br><span>支持 JPG / PNG / WEBP</span>
+      </div>
+    </div>
+    <input type="file" id="imgInput" accept="image/*" style="display:none" onchange="handleImageSelect(event)">
+    <div class="ocr-bar" id="ocrBar" style="display:none">
+      <button class="btn btn-cyan btn-sm" id="aiExtractBtn" onclick="extractWithAI()">🤖 AI 自动识别</button>
+      <button class="btn btn-sm" id="ocrExtractBtn" onclick="extractWithOCR()">📝 OCR 识别</button>
+      <button class="btn btn-sm btn-danger" onclick="clearImage()">✕ 移除图片</button>
+      <span class="ocr-status" id="ocrStatus"></span>
+    </div>
+
+    <!-- Form -->
+    <input type="hidden" id="editId">
+    <div class="form-grid">
+      <div class="field">
+        <label>物流单号 *</label>
+        <input type="text" id="f-tracking" placeholder="如 1Z999AA10123456784">
+      </div>
+      <div class="field">
+        <label>承运商</label>
+        <input type="text" id="f-carrier" placeholder="如 DHL / FedEx / UPS">
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label>发货日期</label>
+        <input type="date" id="f-shipping">
+      </div>
+      <div class="field">
+        <label>预计到达日期</label>
+        <input type="date" id="f-arrival">
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label>重量 (kg)</label>
+        <input type="number" id="f-weight" placeholder="0.00" step="0.01" min="0">
+      </div>
+      <div class="field">
+        <label>体积 (CBM)</label>
+        <input type="number" id="f-volume" placeholder="0.000" step="0.001" min="0">
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label>关联订单</label>
+        <select id="f-order">
+          <option value="">— 不关联订单 —</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>关联订单备注（补充说明）</label>
+        <input type="text" id="f-ordername" placeholder="可手动填写订单描述">
+      </div>
+    </div>
+    <div class="form-grid col1">
+      <div class="field">
+        <label>备注</label>
+        <textarea id="f-notes" placeholder="其他物流信息..."></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveLogistic()">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Auth & API ──
+const TOKEN = localStorage.getItem('crm_token');
+if (!TOKEN) location.href = 'login.html';
+
+async function api(path, opts = {}) {
+  const res = await fetch(path, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN, ...(opts.headers || {}) },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Request failed');
+  return data;
+}
+
+// ── State ──
+let S = { logistics: [], orders: [] };
+let currentImage = null; // base64
+
+// ── Toast ──
+function toast(msg, type = 'ok') {
+  const el = document.getElementById('toastEl');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ── Status ──
+function getStatus(shipping_date, estimated_arrival) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  if (!estimated_arrival) return { label: '未设置', cls: 'status-unknown' };
+  const arrival = new Date(estimated_arrival);
+  if (today > arrival) return { label: '已到货', cls: 'status-arrived' };
+  return { label: '运输中', cls: 'status-transit' };
+}
+
+// ── Load data ──
+async function loadAll() {
+  try {
+    const [logistics, orders] = await Promise.all([
+      api('/api/logistics'),
+      api('/api/orders'),
+    ]);
+    S.logistics = logistics;
+    S.orders    = orders;
+    renderList();
+    populateOrderSelect();
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+function populateOrderSelect() {
+  const sel = document.getElementById('f-order');
+  sel.innerHTML = '<option value="">— 不关联订单 —</option>' +
+    S.orders.map(o => `<option value="${o.id}">${o.order_date||''} · ${o.customer_name||''}</option>`).join('');
+}
+
+// ── Render ──
+function renderList() {
+  const q   = document.getElementById('searchInput').value.toLowerCase();
+  const st  = document.getElementById('statusFilter').value;
+  let rows  = S.logistics.filter(l => {
+    if (q && ![ l.tracking_number, l.carrier, l.order_name ].join(' ').toLowerCase().includes(q)) return false;
+    if (st) {
+      const s = getStatus(l.shipping_date, l.estimated_arrival);
+      if (st === 'transit'  && s.cls !== 'status-transit')  return false;
+      if (st === 'arrived'  && s.cls !== 'status-arrived')  return false;
+      if (st === 'overdue'  && s.cls !== 'status-overdue')  return false;
+    }
+    return true;
+  });
+
+  document.getElementById('countLabel').textContent = rows.length + ' 条记录';
+  const container = document.getElementById('logisticsList');
+  if (!rows.length) {
+    container.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="icon">📦</div><p>暂无物流记录</p></div>';
+    return;
+  }
+  container.innerHTML = rows.map(l => {
+    const { label, cls } = getStatus(l.shipping_date, l.estimated_arrival);
+    const orderInfo = l.order_name || (S.orders.find(o => o.id === l.order_id)?.customer_name) || '';
+    return `
+    <div class="log-card">
+      <div class="card-top">
+        <div>
+          <div class="tracking-num">${esc(l.tracking_number || '—')}</div>
+          <div class="carrier-name">${esc(l.carrier || '承运商未填写')}</div>
+        </div>
+        <span class="status-badge ${cls}">${label}</span>
+      </div>
+      ${orderInfo ? `<div class="card-order">🔗 ${esc(orderInfo)}</div>` : ''}
+      <div class="card-info">
+        <div class="info-item"><span class="info-label">发货日期</span><span class="info-value highlight">${l.shipping_date || '—'}</span></div>
+        <div class="info-item"><span class="info-label">预计到达</span><span class="info-value highlight">${l.estimated_arrival || '—'}</span></div>
+        <div class="info-item"><span class="info-label">重量</span><span class="info-value">${l.weight ? l.weight + ' kg' : '—'}</span></div>
+        <div class="info-item"><span class="info-label">体积</span><span class="info-value">${l.volume ? l.volume + ' CBM' : '—'}</span></div>
+      </div>
+      ${l.notes ? `<div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">${esc(l.notes)}</div>` : ''}
+      <div class="card-actions">
+        <button class="btn btn-sm" onclick="openModal('${l.id}')">编辑</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteLogistic('${l.id}')">删除</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── Modal ──
+function openModal(id) {
+  document.getElementById('editId').value     = id || '';
+  document.getElementById('modalTitle').textContent = id ? '编辑物流' : '新建物流';
+  document.getElementById('f-tracking').value = '';
+  document.getElementById('f-carrier').value  = '';
+  document.getElementById('f-shipping').value = '';
+  document.getElementById('f-arrival').value  = '';
+  document.getElementById('f-weight').value   = '';
+  document.getElementById('f-volume').value   = '';
+  document.getElementById('f-order').value    = '';
+  document.getElementById('f-ordername').value= '';
+  document.getElementById('f-notes').value    = '';
+  clearImage();
+  if (id) {
+    const l = S.logistics.find(x => x.id === id);
+    if (l) {
+      document.getElementById('f-tracking').value  = l.tracking_number || '';
+      document.getElementById('f-carrier').value   = l.carrier || '';
+      document.getElementById('f-shipping').value  = l.shipping_date || '';
+      document.getElementById('f-arrival').value   = l.estimated_arrival || '';
+      document.getElementById('f-weight').value    = l.weight || '';
+      document.getElementById('f-volume').value    = l.volume || '';
+      document.getElementById('f-order').value     = l.order_id || '';
+      document.getElementById('f-ordername').value = l.order_name || '';
+      document.getElementById('f-notes').value     = l.notes || '';
+    }
+  }
+  document.getElementById('logModal').style.display = 'flex';
+}
+
+function closeModal() { document.getElementById('logModal').style.display = 'none'; }
+function handleBackdropClick(e) { if (e.target === document.getElementById('logModal')) closeModal(); }
+
+async function saveLogistic() {
+  const tracking = document.getElementById('f-tracking').value.trim();
+  if (!tracking) { toast('请填写物流单号', 'err'); return; }
+  const orderId   = document.getElementById('f-order').value;
+  const orderName = document.getElementById('f-ordername').value.trim() ||
+    (S.orders.find(o => o.id === orderId) ? S.orders.find(o => o.id === orderId).customer_name : '');
+  const payload = {
+    tracking_number:    tracking,
+    carrier:            document.getElementById('f-carrier').value.trim(),
+    shipping_date:      document.getElementById('f-shipping').value || null,
+    estimated_arrival:  document.getElementById('f-arrival').value || null,
+    weight:             parseFloat(document.getElementById('f-weight').value) || null,
+    volume:             parseFloat(document.getElementById('f-volume').value) || null,
+    order_id:           orderId || null,
+    order_name:         orderName,
+    notes:              document.getElementById('f-notes').value.trim(),
+  };
+  try {
+    const id = document.getElementById('editId').value;
+    if (id) await api(`/api/logistics/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+    else    await api('/api/logistics',        { method: 'POST', body: JSON.stringify(payload) });
+    toast(id ? '已更新' : '已保存');
+    closeModal();
+    await loadAll();
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+async function deleteLogistic(id) {
+  if (!confirm('确认删除该物流记录？')) return;
+  try {
+    await api(`/api/logistics/${id}`, { method: 'DELETE' });
+    toast('已删除');
+    await loadAll();
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+// ── Image Upload ──
+function handleImageSelect(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  loadImageFile(file);
+}
+function onDragOver(e) { e.preventDefault(); document.getElementById('uploadArea').classList.add('drag-over'); }
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadArea').classList.remove('drag-over');
+  const file = e.dataTransfer.files?.[0];
+  if (file && file.type.startsWith('image/')) loadImageFile(file);
+}
+function loadImageFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    currentImage = ev.target.result;
+    const preview = document.getElementById('imgPreview');
+    preview.src = currentImage;
+    preview.style.display = 'block';
+    document.getElementById('uploadHint').style.display = 'none';
+    document.getElementById('uploadArea').classList.add('has-image');
+    document.getElementById('ocrBar').style.display = 'flex';
+    document.getElementById('ocrStatus').textContent = '';
+  };
+  reader.readAsDataURL(file);
+}
+function clearImage() {
+  currentImage = null;
+  document.getElementById('imgPreview').style.display = 'none';
+  document.getElementById('imgPreview').src = '';
+  document.getElementById('uploadHint').style.display = 'block';
+  document.getElementById('uploadArea').classList.remove('has-image');
+  document.getElementById('ocrBar').style.display = 'none';
+  document.getElementById('imgInput').value = '';
+  document.getElementById('ocrStatus').textContent = '';
+}
+
+// ── AI Extract ──
+async function extractWithAI() {
+  if (!currentImage) return;
+  const btn = document.getElementById('aiExtractBtn');
+  btn.disabled = true;
+  document.getElementById('ocrStatus').textContent = '🤖 AI 识别中...';
+  try {
+    const res = await api('/api/logistics/extract', { method: 'POST', body: JSON.stringify({ image_data: currentImage }) });
+    fillForm(res.data);
+    document.getElementById('ocrStatus').textContent = '✅ 识别完成，请核对';
+    toast('AI 识别成功，请检查并确认信息');
+  } catch(e) {
+    if (e.message === 'no_ai') {
+      document.getElementById('ocrStatus').textContent = '⚠️ 未配置 AI Key，请手动填写或用 OCR';
+    } else {
+      document.getElementById('ocrStatus').textContent = '识别失败：' + e.message;
+    }
+  } finally { btn.disabled = false; }
+}
+
+// ── Tesseract OCR Extract ──
+async function extractWithOCR() {
+  if (!currentImage) return;
+  const btn = document.getElementById('ocrExtractBtn');
+  btn.disabled = true;
+  document.getElementById('ocrStatus').textContent = '⏳ 加载 OCR 引擎...';
+  try {
+    if (!window.Tesseract) {
+      await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js');
+    }
+    document.getElementById('ocrStatus').textContent = '⏳ 识别中，请稍候...';
+    const { data: { text } } = await Tesseract.recognize(currentImage, 'eng+chi_sim', {
+      logger: m => { if (m.status === 'recognizing text') document.getElementById('ocrStatus').textContent = `⏳ 识别中 ${Math.round(m.progress*100)}%`; }
+    });
+    const extracted = parseOCRText(text);
+    fillForm(extracted);
+    document.getElementById('ocrStatus').textContent = '✅ OCR 完成，请核对填写内容';
+    toast('OCR 识别完成，请检查并修正信息');
+  } catch(e) {
+    document.getElementById('ocrStatus').textContent = '识别失败：' + e.message;
+    toast('OCR 失败：' + e.message, 'err');
+  } finally { btn.disabled = false; }
+}
+
+function loadScript(src) {
+  return new Promise((res, rej) => {
+    const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+
+function parseOCRText(text) {
+  const result = {};
+  const trackingMatch = text.match(/\b([A-Z]{2}\d{9}[A-Z]{2}|\d{12,22}|[A-Z]{1,3}\d{8,15})\b/);
+  if (trackingMatch) result.tracking_number = trackingMatch[0];
+  const weightMatch = text.match(/(\d+\.?\d*)\s*kg/i);
+  if (weightMatch) result.weight = weightMatch[1];
+  const cbmMatch = text.match(/(\d+\.?\d*)\s*cbm/i);
+  if (cbmMatch) result.volume = cbmMatch[1];
+  const dateMatches = text.match(/\b(\d{4}[-\/]\d{1,2}[-\/]\d{1,2})\b/g);
+  if (dateMatches?.[0]) result.shipping_date = dateMatches[0].replace(/\//g, '-');
+  if (dateMatches?.[1]) result.estimated_arrival = dateMatches[1].replace(/\//g, '-');
+  const carriers = ['DHL','FedEx','UPS','TNT','SF Express','顺丰','EMS','邮政','USPS','Amazon'];
+  const found = carriers.find(c => text.toLowerCase().includes(c.toLowerCase()));
+  if (found) result.carrier = found;
+  return result;
+}
+
+function fillForm(data) {
+  if (!data) return;
+  if (data.tracking_number) document.getElementById('f-tracking').value = data.tracking_number;
+  if (data.carrier)         document.getElementById('f-carrier').value  = data.carrier;
+  if (data.shipping_date)   document.getElementById('f-shipping').value = data.shipping_date;
+  if (data.estimated_arrival) document.getElementById('f-arrival').value = data.estimated_arrival;
+  if (data.weight)          document.getElementById('f-weight').value   = data.weight;
+  if (data.volume)          document.getElementById('f-volume').value   = data.volume;
+  if (data.notes)           document.getElementById('f-notes').value    = data.notes;
+}
+
+// ── Export CSV ──
+function exportCSV() {
+  const q  = document.getElementById('searchInput').value.toLowerCase();
+  const st = document.getElementById('statusFilter').value;
+  let rows = S.logistics.filter(l => {
+    if (q && ![ l.tracking_number, l.carrier, l.order_name ].join(' ').toLowerCase().includes(q)) return false;
+    if (st) {
+      const s = getStatus(l.shipping_date, l.estimated_arrival);
+      if (st === 'transit' && s.cls !== 'status-transit') return false;
+      if (st === 'arrived' && s.cls !== 'status-arrived') return false;
+    }
+    return true;
+  });
+  const headers = ['物流单号','承运商','关联订单','发货日期','预计到达','重量(kg)','体积(CBM)','状态','备注'];
+  const csv = [headers, ...rows.map(l => [
+    l.tracking_number, l.carrier,
+    l.order_name || (S.orders.find(o => o.id === l.order_id)?.customer_name) || '',
+    l.shipping_date, l.estimated_arrival, l.weight, l.volume,
+    getStatus(l.shipping_date, l.estimated_arrival).label, l.notes,
+  ])].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['﻿' + csv, { type: 'text/csv;charset=utf-8;' }]);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '物流记录_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+loadAll();
+</script>
+</body>
+</html>
