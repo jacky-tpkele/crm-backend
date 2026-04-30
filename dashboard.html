@@ -242,6 +242,10 @@ tr:last-child td{border-bottom:none}
 .btn-sm{padding:4px 10px;font-size:11px;border-radius:6px}
 .btn-cyan{border-color:rgba(34,211,238,.3);color:var(--cyan);background:rgba(34,211,238,.05)}
 .btn-cyan:hover{background:rgba(34,211,238,.12)}
+.del-col{border:none !important;padding:2px !important;width:22px !important;background:transparent !important}
+.del-row-btn{display:none;background:rgba(255,80,80,.15);border:1px solid rgba(255,80,80,.4);color:#f87171;border-radius:4px;cursor:pointer;font-size:13px;padding:1px 5px;line-height:1}
+.del-row-btn:hover{background:rgba(255,80,80,.35)}
+tr:hover .del-row-btn{display:inline-block}
 
 /* ── Status badges ── */
 .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
@@ -690,6 +694,7 @@ tr:last-child td{border-bottom:none}
         <div class="card-head">
           <h2 data-i18n="docPreviewTitle">Document Preview</h2>
           <div style="display:flex;gap:8px">
+            <button class="btn btn-cyan" id="addRowBtn" onclick="addPackingRow()" style="display:none">＋ 增加行</button>
             <button class="btn" id="docEditBtn" onclick="toggleDocEdit()">✏️ 编辑</button>
             <button class="btn btn-primary" onclick="downloadDocPDF()">⬇️ 下载 PDF</button>
           </div>
@@ -2170,6 +2175,8 @@ async function downloadDocPDF() {
   const orderId = document.getElementById('doc-order').value;
   const order   = S.orders.find(o=>o.id===orderId);
   const name    = order ? `${docType.toUpperCase()}-${(order.customer_name||'').replace(/\s+/g,'-')}-${order.order_date||''}` : 'document';
+  const delCols = el.querySelectorAll('.del-col');
+  delCols.forEach(c => c.style.display = 'none');
   const opt = {
     margin:     [8, 8, 8, 8],
     filename:   name + '.pdf',
@@ -2177,7 +2184,8 @@ async function downloadDocPDF() {
     html2canvas:{ scale: 2, useCORS: true },
     jsPDF:      { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
-  html2pdf().set(opt).from(el).save();
+  await html2pdf().set(opt).from(el).save();
+  delCols.forEach(c => c.style.display = '');
 }
 
 async function generateDocument(format) {
@@ -2190,6 +2198,7 @@ async function generateDocument(format) {
   if (format === 'csv') { exportCSV(order); return; }
   const html = buildDocHTML(order, docType, lang);
   document.getElementById('docPreview').innerHTML = html;
+  document.getElementById('addRowBtn').style.display = docType === 'packing' ? '' : 'none';
   document.getElementById('docPreviewCard').style.display = 'block';
   document.getElementById('docPreviewCard').scrollIntoView({behavior:'smooth'});
 }
@@ -2333,6 +2342,77 @@ function buildDocHTML(order, docType, lang) {
     </div>`;
   }
 
+  // ── 装箱单（Packing List）专用模板 ──
+  if (docType === 'packing') {
+    const plRows = items.map(it => `
+      <tr>
+        <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">${isZh ? it.product_name_cn : (it.product_name_en||it.product_name_cn)}</td>
+        <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">${it.quantity||''}</td>
+        <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">&nbsp;</td>
+        <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">&nbsp;</td>
+        <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">&nbsp;</td>
+        <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">&nbsp;</td>
+        <td class="del-col"><button class="del-row-btn" onclick="this.closest('tr').remove()">×</button></td>
+      </tr>`).join('');
+    return `
+    <div style="font-family:Arial,sans-serif;max-width:800px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:8px">
+        <div style="font-size:22px;font-weight:bold">${co.company||'TPKELE'}</div>
+        <div style="font-size:10.5px;color:#333;margin-top:3px">${co.address||''}</div>
+      </div>
+      <div style="text-align:center;font-size:15px;font-weight:bold;border:1px solid #000;padding:4px 0">Packing List</div>
+      <table style="width:100%;border-collapse:collapse">
+        <tr>
+          <td style="border:1px solid #000;padding:5px 8px;width:14%;font-weight:600">To:</td>
+          <td style="border:1px solid #000;padding:5px 8px;width:38%" contenteditable="true">${order.customer_name||''}</td>
+          <td style="border:1px solid #000;padding:5px 8px;width:14%;font-weight:600">DATE:</td>
+          <td style="border:1px solid #000;padding:5px 8px;width:34%" contenteditable="true">${order.order_date||''}</td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000;padding:5px 8px;font-weight:600">ATTN:</td>
+          <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+          <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Commercial Invoice No:</td>
+          <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Address:</td>
+          <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+          <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Delivery Term</td>
+          <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Tel:</td>
+          <td colspan="3" style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+        </tr>
+      </table>
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="text-align:center;font-weight:bold;background:#f0f0f0">
+            <th style="border:1px solid #000;padding:6px;width:26%">Product Name</th>
+            <th style="border:1px solid #000;padding:6px;width:12%">Quantity (pcs)</th>
+            <th style="border:1px solid #000;padding:6px;width:12%">Package</th>
+            <th style="border:1px solid #000;padding:6px;width:17%">Net Weight (kg)</th>
+            <th style="border:1px solid #000;padding:6px;width:17%">Gross Weight (kg)</th>
+            <th style="border:1px solid #000;padding:6px;width:16%">CBM</th>
+            <th class="del-col"></th>
+          </tr>
+        </thead>
+        <tbody id="plTbody">${plRows}</tbody>
+        <tfoot>
+          <tr>
+            <td style="border:1px solid #000;padding:6px;font-weight:bold;text-align:right">TOTAL:</td>
+            <td style="border:1px solid #000;padding:6px" contenteditable="true">&nbsp;</td>
+            <td style="border:1px solid #000;padding:6px" contenteditable="true">&nbsp;</td>
+            <td style="border:1px solid #000;padding:6px" contenteditable="true">&nbsp;</td>
+            <td style="border:1px solid #000;padding:6px" contenteditable="true">&nbsp;</td>
+            <td style="border:1px solid #000;padding:6px" contenteditable="true">&nbsp;</td>
+            <td class="del-col"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>`;
+  }
+
   // ── 其他文件类型（报价单 / 装箱单）保持原有逻辑 ──
   const titles = {
     quotation: isZh ? '报 价 单' : 'QUOTATION',
@@ -2381,6 +2461,16 @@ function buildDocHTML(order, docType, lang) {
         ${co.company||'TPKELE'} — ${isZh?'感谢您的惠顾':'Thank you for your business'}
       </div>
     </div>`;
+}
+
+function addPackingRow() {
+  const tbody = document.getElementById('plTbody');
+  if (!tbody) return;
+  const tr = document.createElement('tr');
+  tr.innerHTML = Array(6).fill(0).map(() =>
+    `<td style="border:1px solid #000;padding:5px 8px;height:26px" contenteditable="true">&nbsp;</td>`
+  ).join('') + `<td class="del-col"><button class="del-row-btn" onclick="this.closest('tr').remove()">×</button></td>`;
+  tbody.appendChild(tr);
 }
 
 function exportCSV(order) {
