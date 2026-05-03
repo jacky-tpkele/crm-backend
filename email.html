@@ -237,13 +237,13 @@ button,input,select,textarea{font:inherit}
 
 /* Compose UX override: normal email style */
 .compose{padding:16px;background:linear-gradient(180deg,#081225,#030915) !important;border:1px solid #dbe3ef;border-radius:14px;background-color:#fff !important;box-shadow:0 24px 56px rgba(2,6,23,.45)}
-.compose-header{padding:12px 16px !important;border-bottom:1px solid #e5e7eb !important;background:#f8fafc !important}
+.compose-header{padding:10px 14px !important;border-bottom:1px solid #e5e7eb !important;background:#f8fafc !important}
 .compose-title{font-size:18px !important;font-weight:700 !important;color:#0f172a !important}
 .btn-close,.btn-fs{border:1px solid #cbd5e1 !important;background:#fff !important;color:#334155 !important;border-radius:8px !important}
 .compose-form{padding:0 !important;gap:0 !important;background:#fff !important}
-.field-row{padding:10px 16px !important;border-bottom:1px solid #e5e7eb !important}
-.field-label{font-size:14px !important;color:#475569 !important;font-weight:600 !important;width:58px !important}
-.field-input{font-size:14px !important;color:#0f172a !important}
+.field-row{padding:7px 14px !important;border-bottom:1px solid #e5e7eb !important}
+.field-label{font-size:12px !important;color:#475569 !important;font-weight:600 !important;width:46px !important}
+.field-input{font-size:12.5px !important;color:#0f172a !important}
 .field-input::placeholder{color:#94a3b8 !important}
 .compose-editor{min-height:320px !important}
 .table-tools{padding:10px 14px !important;border-top:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;background:#f8fafc}
@@ -251,7 +251,7 @@ button,input,select,textarea{font:inherit}
 .attach-btn,.table-tool-btn{padding:6px 12px !important;border:1px solid #cbd5e1 !important;background:#fff !important;color:#334155 !important;border-radius:8px !important}
 .attach-btn:hover,.table-tool-btn:hover{border-color:#4f46e5 !important;color:#312e81 !important;background:#fff !important}
 .attach-chip{background:#eef2ff !important;border:1px solid #c7d2fe !important;color:#312e81 !important}
-.compose-footer{padding:10px 16px !important;border-top:1px solid #e5e7eb !important;background:#f8fafc !important;justify-content:flex-start !important}
+.compose-footer{padding:8px 14px !important;border-top:1px solid #e5e7eb !important;background:#f8fafc !important;justify-content:flex-start !important}
 .btn-send{padding:9px 22px !important;border-radius:10px !important;background:#4f46e5 !important;color:#fff !important;font-size:14px !important;font-weight:700 !important}
 .btn-send:hover{background:#4338ca !important}
 .send-status{font-size:13px !important;color:#64748b !important}
@@ -827,13 +827,17 @@ function initMailEditor(initialHtml = '') {
     selector: '#richEditor',
     height: 420,
     menubar: false,
+    language: 'zh_CN',
+    language_url: 'https://cdn.jsdelivr.net/npm/tinymce@6.8.6/langs/zh_CN.js',
     branding: false,
     promotion: false,
     statusbar: false,
     plugins: 'lists link image table code autoresize paste',
     toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | forecolor backcolor | bullist numlist | alignleft aligncenter alignright | link image table | removeformat code',
     content_style: `
-      body { background:#fff; color:#111; font-size:14px; line-height:1.8; font-family:Arial,"Microsoft YaHei",sans-serif; padding:12px; }
+      body { background:#fff; color:#111; font-size:14px; line-height:1.75; font-family:Arial,"Microsoft YaHei",sans-serif; padding:4px 10px 10px; }
+      body > :first-child { margin-top:0 !important; }
+      p { margin: 0 0 8px; }
       table { border-collapse:collapse; border:1px solid #000; }
       th,td { border:1px solid #000; padding:8px 12px; min-width:80px; vertical-align:top; }
       th { background:#f1f3f5; color:#111; font-weight:700; }
