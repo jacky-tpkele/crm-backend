@@ -136,6 +136,9 @@ button,input,select,textarea{font:inherit}
 .attach-area{border:1px dashed var(--border);border-radius:8px;padding:8px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;min-height:40px;flex-shrink:0}
 .attach-btn{display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-size:12px;transition:.2s;flex-shrink:0}
 .attach-btn:hover{border-color:var(--primary);color:var(--primary)}
+.table-tools{display:flex;flex-wrap:wrap;gap:8px;padding:4px 0;flex-shrink:0}
+.table-tool-btn{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:rgba(0,200,255,.04);color:var(--muted2);cursor:pointer;font-size:12px;transition:.2s}
+.table-tool-btn:hover{border-color:var(--primary);color:var(--primary);background:rgba(0,200,255,.1)}
 .attach-chip{display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11.5px;color:var(--muted2)}
 .attach-chip .rm{cursor:pointer;color:var(--muted);font-size:14px;line-height:1;transition:.15s}
 .attach-chip .rm:hover{color:var(--danger)}
@@ -218,9 +221,13 @@ button,input,select,textarea{font:inherit}
 .tbl-dlg-overlay.open{display:block}
 
 /* ── Table styles in editor & reader ── */
-.reader-html table,.ql-editor table{border-collapse:collapse;width:auto;margin:10px 0;font-size:13px}
-.reader-html th,.reader-html td,.ql-editor th,.ql-editor td{border:1px solid rgba(0,200,255,0.3);padding:6px 12px;min-width:60px;vertical-align:top}
-.reader-html th,.ql-editor th{background:rgba(0,200,255,0.08);font-weight:600;color:var(--primary)}
+.reader-html table,.ql-editor table{border-collapse:collapse;width:auto;margin:10px 0;font-size:13px;border:1px solid rgba(95,190,255,.45)}
+.reader-html th,.reader-html td,.ql-editor th,.ql-editor td{border:1px solid rgba(95,190,255,.45);padding:8px 12px;min-width:80px;vertical-align:top}
+.reader-html td,.ql-editor td{background:rgba(8,30,52,.88);color:#eaf6ff}
+.reader-html th,.ql-editor th{background:rgba(0,190,255,.22);font-weight:700;color:#f3fbff}
+.ql-editor td p,.ql-editor th p{margin:0}
+.ql-editor table.is-striped tbody tr:nth-child(even) td{background:rgba(12,40,68,.95)}
+.ql-editor table.active-table{outline:2px solid rgba(0,200,255,.35);outline-offset:2px}
 
 /* ── Toast ── */
 .toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:13px;color:var(--text);display:none;align-items:center;gap:10px;box-shadow:var(--shadow)}
@@ -765,8 +772,12 @@ function openCompose(opts = {}) {
         <div class="field-row"><span class="field-label">抄送</span><input class="field-input" id="cCc" placeholder="可选"></div>
         <div class="field-row"><span class="field-label">主题</span><input class="field-input" id="cSubject" placeholder="邮件主题" value="${opts.subject||''}"></div>
         <div class="compose-editor" id="quillWrap"></div>
-        <div style="padding:4px 0;flex-shrink:0">
+        <div class="table-tools">
           <button class="attach-btn" onclick="openTableDialog()">⊞ 插入表格</button>
+          <button class="table-tool-btn" onclick="addTableRow()">+ 行</button>
+          <button class="table-tool-btn" onclick="addTableColumn()">+ 列</button>
+          <button class="table-tool-btn" onclick="toggleHeaderRow()">表头开关</button>
+          <button class="table-tool-btn" onclick="toggleStripeRows()">斑马纹</button>
         </div>
         <div class="attach-area" id="attachArea">
           <button class="attach-btn" onclick="document.getElementById('fileInput').click()">📎 添加附件</button>
@@ -883,12 +894,101 @@ function confirmInsertTable() {
   const cols = Math.max(1, Math.min(15, parseInt(document.getElementById('tblCols').value) || 3));
   closeTableDialog();
   if (!quillEditor) return;
-  const th   = Array(cols).fill('<th style="padding:6px 12px;border:1px solid #1a4a6a;background:rgba(0,200,255,0.1);font-weight:600;min-width:80px">&nbsp;</th>').join('');
-  const td   = Array(cols).fill('<td style="padding:6px 12px;border:1px solid #1a4a6a;min-width:80px">&nbsp;</td>').join('');
+  const th   = Array(cols).fill('<th>&nbsp;</th>').join('');
+  const td   = Array(cols).fill('<td>&nbsp;</td>').join('');
   const body = Array(Math.max(0, rows - 1)).fill(`<tr>${td}</tr>`).join('');
-  const html = `<table style="border-collapse:collapse;width:auto;margin:8px 0"><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table><p><br></p>`;
+  const html = `<table class="mail-table"><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table><p><br></p>`;
   const range = quillEditor.getSelection(true);
   quillEditor.clipboard.dangerouslyPasteHTML(range ? range.index : quillEditor.getLength(), html);
+}
+
+function getActiveTableCell() {
+  const sel = window.getSelection();
+  if (!sel || !sel.anchorNode) return null;
+  const node = sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentElement : sel.anchorNode;
+  return node?.closest?.('td,th') || null;
+}
+
+function getActiveTable() {
+  const cell = getActiveTableCell();
+  return cell ? cell.closest('table') : null;
+}
+
+function markActiveTable(table) {
+  document.querySelectorAll('.ql-editor table.active-table').forEach(t => t.classList.remove('active-table'));
+  if (table) table.classList.add('active-table');
+}
+
+function addTableRow() {
+  const cell = getActiveTableCell();
+  if (!cell) return showToast('请先把光标放到表格内', 'err');
+  const row = cell.closest('tr');
+  const cols = row.children.length;
+  const tag = row.parentElement.tagName.toLowerCase() === 'thead' ? 'th' : 'td';
+  const newRow = document.createElement('tr');
+  for (let i = 0; i < cols; i++) {
+    const c = document.createElement(tag);
+    c.innerHTML = '&nbsp;';
+    newRow.appendChild(c);
+  }
+  row.insertAdjacentElement('afterend', newRow);
+  markActiveTable(row.closest('table'));
+}
+
+function addTableColumn() {
+  const cell = getActiveTableCell();
+  if (!cell) return showToast('请先把光标放到表格内', 'err');
+  const table = cell.closest('table');
+  const idx = Array.from(cell.parentElement.children).indexOf(cell);
+  table.querySelectorAll('tr').forEach(tr => {
+    const ref = tr.children[Math.min(idx, tr.children.length - 1)];
+    const tag = ref && ref.tagName ? ref.tagName.toLowerCase() : (tr.closest('thead') ? 'th' : 'td');
+    const c = document.createElement(tag);
+    c.innerHTML = '&nbsp;';
+    if (ref) ref.insertAdjacentElement('afterend', c);
+    else tr.appendChild(c);
+  });
+  markActiveTable(table);
+}
+
+function toggleHeaderRow() {
+  const table = getActiveTable();
+  if (!table) return showToast('请先把光标放到表格内', 'err');
+  const firstRow = table.querySelector('tr');
+  if (!firstRow) return;
+  const hasHead = !!table.querySelector('thead');
+  if (hasHead) {
+    const thead = table.querySelector('thead');
+    const tbody = table.querySelector('tbody') || table;
+    const row = thead.querySelector('tr');
+    row.querySelectorAll('th').forEach(th => {
+      const td = document.createElement('td');
+      td.innerHTML = th.innerHTML || '&nbsp;';
+      th.replaceWith(td);
+    });
+    tbody.insertAdjacentElement('afterbegin', row);
+    thead.remove();
+  } else {
+    const source = table.querySelector('tbody tr') || firstRow;
+    const headRow = source.cloneNode(true);
+    headRow.querySelectorAll('td').forEach(td => {
+      const th = document.createElement('th');
+      th.innerHTML = td.innerHTML || '&nbsp;';
+      td.replaceWith(th);
+    });
+    const thead = document.createElement('thead');
+    thead.appendChild(headRow);
+    table.insertAdjacentElement('afterbegin', thead);
+    if (source.parentElement) source.remove();
+  }
+  markActiveTable(table);
+}
+
+function toggleStripeRows() {
+  const table = getActiveTable();
+  if (!table) return showToast('请先把光标放到表格内', 'err');
+  table.classList.toggle('is-striped');
+  markActiveTable(table);
 }
 
 // ── Init ──
