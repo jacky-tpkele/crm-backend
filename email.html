@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TPKELE CRM - 閭欢</title>
+<title>TPKELE CRM - 邮件</title>
 <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -25,7 +25,7 @@ button,input,select,textarea{font:inherit}
 
 .app{display:flex;height:100vh;overflow:hidden}
 
-/* 鈹€鈹€ CRM Sidebar 鈹€鈹€ */
+/* ── CRM Sidebar ── */
 .sidebar{width:var(--sb);flex-shrink:0;height:100%;background:linear-gradient(180deg,rgba(3,8,20,.99),rgba(2,5,13,.99));border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;z-index:20}
 .sb-logo{display:flex;align-items:center;gap:12px;padding:18px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
 .logo-icon{width:36px;height:36px;flex-shrink:0;display:grid;place-items:center}
@@ -38,10 +38,10 @@ button,input,select,textarea{font:inherit}
 .nav-icon{font-size:17px;flex-shrink:0;width:22px;text-align:center}
 .nav-group{padding:8px 16px 4px;font-size:10px;font-weight:600;color:rgba(0,200,255,.22);text-transform:uppercase;letter-spacing:.8px}
 
-/* 鈹€鈹€ Email layout 鈹€鈹€ */
+/* ── Email layout ── */
 .email-shell{flex:1;display:flex;overflow:hidden}
 
-/* 鈹€鈹€ Folder panel 鈹€鈹€ */
+/* ── Folder panel ── */
 .folder-panel{width:185px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;background:var(--panel)}
 .folder-header{padding:14px;border-bottom:1px solid var(--border);flex-shrink:0}
 .btn-compose{width:100%;padding:9px 14px;border-radius:8px;border:none;background:var(--primary);color:#000;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:.15s}
@@ -53,7 +53,7 @@ button,input,select,textarea{font:inherit}
 .folder-item.active{background:rgba(0,200,240,.1);color:var(--primary);border-left-color:var(--primary)}
 .folder-item .badge{margin-left:auto;background:var(--primary);color:#000;font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;min-width:18px;text-align:center}
 
-/* 鈹€鈹€ Accounts section 鈹€鈹€ */
+/* ── Accounts section ── */
 .acct-section{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
 .acct-hd{display:flex;align-items:center;justify-content:space-between;padding:8px 14px 4px;font-size:10px;font-weight:600;color:rgba(0,200,255,.22);text-transform:uppercase;letter-spacing:.8px;flex-shrink:0}
 .btn-add-acct{width:18px;height:18px;border-radius:4px;border:1px solid rgba(0,200,255,.2);background:transparent;color:var(--muted2);cursor:pointer;font-size:15px;display:grid;place-items:center;line-height:1;transition:.15s}
@@ -75,7 +75,7 @@ button,input,select,textarea{font:inherit}
 .btn-sync:hover{border-color:var(--primary);color:var(--primary)}
 .btn-sync.syncing{opacity:.6;pointer-events:none}
 
-/* 鈹€鈹€ Email list 鈹€鈹€ */
+/* ── Email list ── */
 .list-panel{width:300px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;background:var(--panel)}
 .list-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .list-title{font-size:14px;font-weight:600}
@@ -94,7 +94,7 @@ button,input,select,textarea{font:inherit}
 .list-empty{padding:40px 16px;text-align:center;color:var(--muted);font-size:13px}
 .list-loading{padding:30px;text-align:center;color:var(--muted);font-size:13px}
 
-/* 鈹€鈹€ Detail / Compose 鈹€鈹€ */
+/* ── Detail / Compose ── */
 .detail-panel{flex:1;display:flex;flex-direction:column;background:var(--bg);min-width:0}
 .detail-placeholder{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);gap:12px}
 .detail-placeholder svg{opacity:.25}
@@ -143,7 +143,7 @@ button,input,select,textarea{font:inherit}
 .attach-chip .rm{cursor:pointer;color:var(--muted);font-size:14px;line-height:1;transition:.15s}
 .attach-chip .rm:hover{color:var(--danger)}
 
-/* 鈹€鈹€ Quill dark theme 鈹€鈹€ */
+/* ── Quill dark theme ── */
 .ql-toolbar.ql-snow{background:var(--panel2);border-color:var(--border)!important;border-radius:8px 8px 0 0;flex-shrink:0}
 .ql-container.ql-snow{border-color:var(--border)!important;border-radius:0 0 8px 8px;color:#111;flex:1;min-height:160px;display:flex;flex-direction:column;background:#fff}
 .ql-editor{flex:1;color:#111;background:#fff;font-size:13.5px;line-height:1.8}
@@ -160,7 +160,7 @@ button,input,select,textarea{font:inherit}
 .ql-snow .ql-picker.ql-expanded .ql-picker-label .ql-stroke{stroke:var(--primary)!important}
 .ql-editor a{color:#0b63ce}
 
-/* 鈹€鈹€ Account Modal 鈹€鈹€ */
+/* ── Account Modal ── */
 .modal-overlay{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);display:none;place-items:center}
 .modal-overlay.open{display:grid}
 .modal{background:var(--panel);border:1px solid var(--border);border-radius:14px;width:520px;max-width:95vw;max-height:90vh;display:flex;flex-direction:column;box-shadow:var(--shadow)}
@@ -186,7 +186,7 @@ button,input,select,textarea{font:inherit}
 .modal-status.err{color:var(--danger)}
 .modal-status.ok{color:var(--success)}
 
-/* 鈹€鈹€ Multi-select 鈹€鈹€ */
+/* ── Multi-select ── */
 .bulk-bar{display:none;align-items:center;gap:10px;padding:8px 16px;background:rgba(0,200,240,.07);border-bottom:1px solid var(--border);flex-shrink:0}
 .bulk-bar.show{display:flex}
 .bulk-count{font-size:12px;color:var(--primary);font-weight:600}
@@ -200,12 +200,12 @@ button,input,select,textarea{font:inherit}
 .email-item:hover .ei-check,.email-item.selected .ei-check{opacity:1}
 .email-item.selected{background:rgba(0,200,240,.06)}
 
-/* 鈹€鈹€ Fullscreen compose 鈹€鈹€ */
+/* ── Fullscreen compose ── */
 .detail-panel.fullscreen{position:fixed;inset:0;z-index:200}
 .btn-fs{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-size:15px;display:grid;place-items:center;transition:.15s;flex-shrink:0}
 .btn-fs:hover{border-color:rgba(0,200,255,.4);color:var(--primary)}
 
-/* 鈹€鈹€ Table insert dialog 鈹€鈹€ */
+/* ── Table insert dialog ── */
 .tbl-dlg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:500;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);display:none;flex-direction:column;gap:14px;min-width:220px}
 .tbl-dlg.open{display:flex}
 .tbl-dlg-title{font-size:14px;font-weight:600}
@@ -220,7 +220,7 @@ button,input,select,textarea{font:inherit}
 .tbl-dlg-overlay{position:fixed;inset:0;z-index:499;display:none}
 .tbl-dlg-overlay.open{display:block}
 
-/* 鈹€鈹€ Table styles in editor & reader 鈹€鈹€ */
+/* ── Table styles in editor & reader ── */
 .reader-html table,.ql-editor table{border-collapse:collapse;width:auto;margin:10px 0;font-size:13px;border:1px solid #222}
 .reader-html th,.reader-html td,.ql-editor th,.ql-editor td{border:1px solid #222;padding:8px 12px;min-width:80px;vertical-align:top}
 .reader-html td,.ql-editor td{background:#fff;color:#111}
@@ -229,13 +229,7 @@ button,input,select,textarea{font:inherit}
 .ql-editor table.is-striped tbody tr:nth-child(even) td{background:#f7f7f7}
 .ql-editor table.active-table{outline:2px solid rgba(0,200,255,.35);outline-offset:2px}
 
-/* 鈹€鈹€ TinyMCE theme 鈹€鈹€ */
-.tox-tinymce{border:1px solid var(--border)!important;border-radius:8px!important;background:var(--panel2)!important}
-.tox .tox-statusbar{border-top:1px solid var(--border)!important}
-.tox .tox-edit-area{background:#fff!important}
-.tox .tox-edit-area iframe{background:#fff!important}
-
-/* 鈹€鈹€ Toast 鈹€鈹€ */
+/* ── Toast ── */
 .toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:13px;color:var(--text);display:none;align-items:center;gap:10px;box-shadow:var(--shadow)}
 .toast.show{display:flex}
 .toast.ok{border-color:rgba(74,222,128,.35)}
@@ -258,12 +252,12 @@ button,input,select,textarea{font:inherit}
       <div class="logo-text">TP<span>KELE</span></div>
     </div>
     <div class="sb-nav">
-      <div class="nav-group">涓昏彍鍗?/div>
-      <div class="nav-item" onclick="location.href='dashboard.html'"><span class="nav-icon">馃搳</span><span>浠〃鐩?/span></div>
-      <div class="nav-item" onclick="location.href='index.html'"><span class="nav-icon">馃摝</span><span>璁㈠崟绠＄悊</span></div>
-      <div class="nav-item" onclick="location.href='index.html#customers'"><span class="nav-icon">馃懃</span><span>瀹㈡埛绠＄悊</span></div>
-      <div class="nav-group">宸ュ叿</div>
-      <div class="nav-item active"><span class="nav-icon">鉁夛笍</span><span>閭欢</span></div>
+      <div class="nav-group">主菜单</div>
+      <div class="nav-item" onclick="location.href='dashboard.html'"><span class="nav-icon">📊</span><span>仪表盘</span></div>
+      <div class="nav-item" onclick="location.href='index.html'"><span class="nav-icon">📦</span><span>订单管理</span></div>
+      <div class="nav-item" onclick="location.href='index.html#customers'"><span class="nav-icon">👥</span><span>客户管理</span></div>
+      <div class="nav-group">工具</div>
+      <div class="nav-item active"><span class="nav-icon">✉️</span><span>邮件</span></div>
     </div>
   </div>
 
@@ -273,32 +267,33 @@ button,input,select,textarea{font:inherit}
     <!-- Folder Panel -->
     <div class="folder-panel">
       <div class="folder-header">
-        <button class="btn-compose" onclick="openCompose()">鉁忥笍 鍐欓偖浠?/button>
+        <button class="btn-compose" onclick="openCompose()">✏️ 写邮件</button>
       </div>
 
       <div class="folder-list">
         <div class="folder-item active" onclick="selectFolder('INBOX',this)">
-          <span>馃摜</span><span>鏀朵欢绠?/span>
+          <span>📥</span><span>收件箱</span>
           <span class="badge" id="badge-inbox" style="display:none"></span>
         </div>
         <div class="folder-item" onclick="selectFolder('SENT',this)">
-          <span>馃摛</span><span>宸插彂閫?/span>
+          <span>📤</span><span>已发送</span>
         </div>
       </div>
 
       <div class="acct-section">
         <div class="acct-hd">
-          <span>閭璐﹀彿</span>
-          <button class="btn-add-acct" onclick="openAccountModal()" title="娣诲姞閭">锛?/button>
+          <span>邮箱账号</span>
+          <button class="btn-add-acct" onclick="openAccountModal()" title="添加邮箱">＋</button>
         </div>
         <div class="acct-list" id="acctList">
-          <div class="acct-empty">鍔犺浇涓€?/div>
+          <div class="acct-empty">加载中…</div>
         </div>
       </div>
 
       <div class="folder-sync">
         <button class="btn-sync" id="btnSync" onclick="syncEmails()">
-          <span id="syncIcon">馃攧</span> 鍚屾鏀朵欢绠?        </button>
+          <span id="syncIcon">🔄</span> 同步收件箱
+        </button>
       </div>
     </div>
 
@@ -306,18 +301,18 @@ button,input,select,textarea{font:inherit}
     <div class="list-panel">
       <div class="list-header">
         <div class="sel-all-wrap">
-          <input type="checkbox" class="sel-all-check" id="selAllCheck" onchange="toggleSelectAll()" title="鍏ㄩ€?>
+          <input type="checkbox" class="sel-all-check" id="selAllCheck" onchange="toggleSelectAll()" title="全选">
         </div>
-        <span class="list-title" id="listTitle">鏀朵欢绠?/span>
+        <span class="list-title" id="listTitle">收件箱</span>
         <span class="list-count" id="listCount"></span>
       </div>
       <div class="bulk-bar" id="bulkBar">
-        <span class="bulk-count" id="bulkCount">宸查€?0 灏?/span>
-        <button class="btn-bulk-del" onclick="bulkDelete()">馃棏 鍒犻櫎鎵€閫?/button>
-        <button class="btn-bulk-cancel" onclick="clearSelection()">鍙栨秷</button>
+        <span class="bulk-count" id="bulkCount">已选 0 封</span>
+        <button class="btn-bulk-del" onclick="bulkDelete()">🗑 删除所选</button>
+        <button class="btn-bulk-cancel" onclick="clearSelection()">取消</button>
       </div>
       <div class="list-body" id="emailList">
-        <div class="list-loading">鍔犺浇涓€?/div>
+        <div class="list-loading">加载中…</div>
       </div>
     </div>
 
@@ -327,7 +322,7 @@ button,input,select,textarea{font:inherit}
         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
           <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/>
         </svg>
-        <span>閫夋嫨涓€灏侀偖浠舵煡鐪?/span>
+        <span>选择一封邮件查看</span>
       </div>
     </div>
 
@@ -338,59 +333,59 @@ button,input,select,textarea{font:inherit}
 <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-header">
-      <span class="modal-title" id="modalTitle">娣诲姞閭</span>
-      <button class="btn-close" onclick="closeModal()">鉁?/button>
+      <span class="modal-title" id="modalTitle">添加邮箱</span>
+      <button class="btn-close" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-body">
       <div class="form-group">
-        <label class="form-label">鏄剧ず鍚嶇О <span class="req">*</span></label>
-        <input class="form-ctrl" id="fDisplayName" placeholder="渚嬶細宸ヤ綔閭">
+        <label class="form-label">显示名称 <span class="req">*</span></label>
+        <input class="form-ctrl" id="fDisplayName" placeholder="例：工作邮箱">
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">閭鍦板潃 <span class="req">*</span></label>
+          <label class="form-label">邮箱地址 <span class="req">*</span></label>
           <input class="form-ctrl" id="fEmail" placeholder="you@company.com" type="email">
         </div>
         <div class="form-group">
-          <label class="form-label">鍙戜欢浜哄悕绉?/label>
+          <label class="form-label">发件人名称</label>
           <input class="form-ctrl" id="fFromName" placeholder="Jacky">
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">鏀朵俊鏈嶅姟鍣?IMAP <span class="req">*</span></label>
+          <label class="form-label">收信服务器 IMAP <span class="req">*</span></label>
           <input class="form-ctrl" id="fImapHost" placeholder="imap.hostinger.com">
         </div>
         <div class="form-group">
-          <label class="form-label">绔彛</label>
+          <label class="form-label">端口</label>
           <input class="form-ctrl" id="fImapPort" placeholder="993" type="number">
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">鍙戜俊鏈嶅姟鍣?SMTP <span class="req">*</span></label>
+          <label class="form-label">发信服务器 SMTP <span class="req">*</span></label>
           <input class="form-ctrl" id="fSmtpHost" placeholder="smtp.hostinger.com">
         </div>
         <div class="form-group">
-          <label class="form-label">绔彛</label>
+          <label class="form-label">端口</label>
           <input class="form-ctrl" id="fSmtpPort" placeholder="465" type="number">
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">鐧诲綍鐢ㄦ埛鍚嶏紙鐣欑┖鍒欑敤閭鍦板潃锛?/label>
-        <input class="form-ctrl" id="fUsername" placeholder="閫氬父涓庨偖绠卞湴鍧€鐩稿悓">
+        <label class="form-label">登录用户名（留空则用邮箱地址）</label>
+        <input class="form-ctrl" id="fUsername" placeholder="通常与邮箱地址相同">
       </div>
       <div class="form-group">
-        <label class="form-label">閭瀵嗙爜 <span class="req" id="passReq">*</span></label>
-        <input class="form-ctrl" id="fPassword" type="password" placeholder="閭瀵嗙爜">
-        <div class="form-hint" id="passHint" style="display:none">鐣欑┖鍒欎笉淇敼瀵嗙爜</div>
+        <label class="form-label">邮箱密码 <span class="req" id="passReq">*</span></label>
+        <input class="form-ctrl" id="fPassword" type="password" placeholder="邮箱密码">
+        <div class="form-hint" id="passHint" style="display:none">留空则不修改密码</div>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-modal-delete" id="btnDeleteAccount" style="display:none" onclick="confirmDeleteAccount()">馃棏 鍒犻櫎姝よ处鍙?/button>
-      <button class="btn-modal-cancel" onclick="closeModal()">鍙栨秷</button>
+      <button class="btn-modal-delete" id="btnDeleteAccount" style="display:none" onclick="confirmDeleteAccount()">🗑 删除此账号</button>
+      <button class="btn-modal-cancel" onclick="closeModal()">取消</button>
       <span class="modal-status" id="modalStatus"></span>
-      <button class="btn-modal-save" onclick="saveAccount()">淇濆瓨</button>
+      <button class="btn-modal-save" onclick="saveAccount()">保存</button>
     </div>
   </div>
 </div>
@@ -398,18 +393,18 @@ button,input,select,textarea{font:inherit}
 <!-- Table insert dialog -->
 <div class="tbl-dlg-overlay" id="tblOverlay" onclick="closeTableDialog()"></div>
 <div class="tbl-dlg" id="tblDlg">
-  <div class="tbl-dlg-title">鈯?鎻掑叆琛ㄦ牸</div>
-  <div class="tbl-row"><span>琛屾暟</span><input class="tbl-num" id="tblRows" type="number" min="1" max="20" value="3" onkeydown="if(event.key==='Enter')confirmInsertTable()"></div>
-  <div class="tbl-row"><span>鍒楁暟</span><input class="tbl-num" id="tblCols" type="number" min="1" max="15" value="3" onkeydown="if(event.key==='Enter')confirmInsertTable()"></div>
+  <div class="tbl-dlg-title">⊞ 插入表格</div>
+  <div class="tbl-row"><span>行数</span><input class="tbl-num" id="tblRows" type="number" min="1" max="20" value="3" onkeydown="if(event.key==='Enter')confirmInsertTable()"></div>
+  <div class="tbl-row"><span>列数</span><input class="tbl-num" id="tblCols" type="number" min="1" max="15" value="3" onkeydown="if(event.key==='Enter')confirmInsertTable()"></div>
   <div class="tbl-dlg-btns">
-    <button class="btn-tbl-cancel" onclick="closeTableDialog()">鍙栨秷</button>
-    <button class="btn-tbl-ok" onclick="confirmInsertTable()">鎻掑叆</button>
+    <button class="btn-tbl-cancel" onclick="closeTableDialog()">取消</button>
+    <button class="btn-tbl-ok" onclick="confirmInsertTable()">插入</button>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 <script>
 const API = '';
 let token = localStorage.getItem('crm_token');
@@ -417,12 +412,12 @@ if (!token) location.href = 'login.html';
 
 let currentFolder    = 'INBOX';
 let currentEmailId   = null;
-let currentAccountId = null; // null = 浣跨敤鐜鍙橀噺榛樿璐﹀彿
-let mailEditor       = null;
+let currentAccountId = null; // null = 使用环境变量默认账号
+let quillEditor      = null;
 let attachments      = [];
 let editingAccountId = null;
 
-// 鈹€鈹€ Auth fetch 鈹€鈹€
+// ── Auth fetch ──
 async function apiFetch(path, opts = {}) {
   const res = await fetch(API + path, {
     ...opts,
@@ -433,21 +428,21 @@ async function apiFetch(path, opts = {}) {
   return res;
 }
 
-// 鈹€鈹€ Toast 鈹€鈹€
+// ── Toast ──
 function showToast(msg, type='ok') {
   const t = document.getElementById('toast');
-  t.textContent = (type==='ok'?'鉁?':'鉁?') + msg;
+  t.textContent = (type==='ok'?'✓ ':'✗ ') + msg;
   t.className = `toast show ${type}`;
   setTimeout(() => t.className = 'toast', 3000);
 }
 
-// 鈹€鈹€ Date format 鈹€鈹€
+// ── Date format ──
 function fmtDate(iso) {
   if (!iso) return '';
   const d = new Date(iso), now = new Date();
   if (d.toDateString() === now.toDateString())
     return d.toLocaleTimeString('zh-CN', { hour:'2-digit', minute:'2-digit' });
-  if ((now - d) / 86400000 < 7) return ['鍛ㄦ棩','鍛ㄤ竴','鍛ㄤ簩','鍛ㄤ笁','鍛ㄥ洓','鍛ㄤ簲','鍛ㄥ叚'][d.getDay()];
+  if ((now - d) / 86400000 < 7) return ['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];
   return `${d.getMonth()+1}/${d.getDate()}`;
 }
 
@@ -455,28 +450,28 @@ function esc(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-// 鈹€鈹€ Accounts 鈹€鈹€
+// ── Accounts ──
 async function loadAccounts() {
   try {
     const res  = await apiFetch('/api/email-accounts');
     const list = await res.json();
     renderAccounts(Array.isArray(list) ? list : []);
   } catch {
-    document.getElementById('acctList').innerHTML = '<div class="acct-empty">鍔犺浇澶辫触</div>';
+    document.getElementById('acctList').innerHTML = '<div class="acct-empty">加载失败</div>';
   }
 }
 
 function renderAccounts(accounts) {
   const el = document.getElementById('acctList');
   if (!accounts.length) {
-    el.innerHTML = '<div class="acct-empty">鏆傛棤璐﹀彿锛岀偣 锛?娣诲姞</div>';
+    el.innerHTML = '<div class="acct-empty">暂无账号，点 ＋ 添加</div>';
     return;
   }
   el.innerHTML = accounts.map(a => `
     <div class="acct-item ${a.id === currentAccountId ? 'active' : ''}" onclick="selectAccount('${a.id}',this)">
       <span class="acct-dot"></span>
       <span class="acct-email" title="${esc(a.email)}">${esc(a.display_name || a.email)}</span>
-      <button class="btn-edit-acct" onclick="event.stopPropagation();openAccountModal(${JSON.stringify(JSON.stringify(a))})" title="缂栬緫">鉁?/button>
+      <button class="btn-edit-acct" onclick="event.stopPropagation();openAccountModal(${JSON.stringify(JSON.stringify(a))})" title="编辑">✎</button>
     </div>
   `).join('');
 }
@@ -488,11 +483,11 @@ function selectAccount(id, el) {
   loadEmails(currentFolder);
 }
 
-// 鈹€鈹€ Account Modal 鈹€鈹€
+// ── Account Modal ──
 function openAccountModal(accountJson = null) {
   const a = accountJson ? JSON.parse(accountJson) : null;
   editingAccountId = a?.id || null;
-  document.getElementById('modalTitle').textContent = a ? '缂栬緫閭' : '娣诲姞閭';
+  document.getElementById('modalTitle').textContent = a ? '编辑邮箱' : '添加邮箱';
   document.getElementById('fDisplayName').value = a?.display_name || '';
   document.getElementById('fEmail').value        = a?.email || '';
   document.getElementById('fFromName').value     = a?.from_name || '';
@@ -502,7 +497,7 @@ function openAccountModal(accountJson = null) {
   document.getElementById('fSmtpPort').value     = a?.smtp_port || '465';
   document.getElementById('fUsername').value     = a?.username || '';
   document.getElementById('fPassword').value     = '';
-  document.getElementById('fPassword').placeholder = a ? '涓嶄慨鏀瑰垯鐣欑┖' : '閭瀵嗙爜';
+  document.getElementById('fPassword').placeholder = a ? '不修改则留空' : '邮箱密码';
   document.getElementById('passReq').style.display  = a ? 'none' : '';
   document.getElementById('passHint').style.display  = a ? '' : 'none';
   document.getElementById('btnDeleteAccount').style.display = a ? '' : 'none';
@@ -529,16 +524,16 @@ async function saveAccount() {
   const statusEl     = document.getElementById('modalStatus');
 
   if (!display_name || !email || !imap_host || !smtp_host) {
-    statusEl.textContent = '璇峰～鍐欏甫 * 鐨勫繀濉」'; statusEl.className = 'modal-status err'; return;
+    statusEl.textContent = '请填写带 * 的必填项'; statusEl.className = 'modal-status err'; return;
   }
   if (!editingAccountId && !password) {
-    statusEl.textContent = 'Please enter email password'; statusEl.className = 'modal-status err'; return;
+    statusEl.textContent = '请输入邮箱密码'; statusEl.className = 'modal-status err'; return;
   }
 
   const data = { display_name, email, from_name, imap_host, imap_port, smtp_host, smtp_port, username, is_active: true };
   if (password) data.password = password;
 
-  statusEl.textContent = 'Saving...'; statusEl.className = 'modal-status';
+  statusEl.textContent = '保存中…'; statusEl.className = 'modal-status';
 
   try {
     const url    = editingAccountId ? `/api/email-accounts/${editingAccountId}` : '/api/email-accounts';
@@ -546,32 +541,32 @@ async function saveAccount() {
     const res    = await apiFetch(url, { method, body: JSON.stringify(data) });
     const result = await res.json();
     if (result.success || result.data) {
-      showToast(editingAccountId ? 'Account updated' : 'Account added');
+      showToast(editingAccountId ? '邮箱已更新' : '邮箱已添加');
       closeModal();
       loadAccounts();
     } else {
-      statusEl.textContent = result.message || '淇濆瓨澶辫触'; statusEl.className = 'modal-status err';
+      statusEl.textContent = result.message || '保存失败'; statusEl.className = 'modal-status err';
     }
   } catch (e) {
-    statusEl.textContent = 'Failed: ' + e.message; statusEl.className = 'modal-status err';
+    statusEl.textContent = '失败：' + e.message; statusEl.className = 'modal-status err';
   }
 }
 
 async function confirmDeleteAccount() {
-  if (!confirm('Delete this email account? Email history will be kept.')) return;
+  if (!confirm('确定删除这个邮箱账号吗？该账号下的邮件记录不会被删除。')) return;
   try {
     await apiFetch(`/api/email-accounts/${editingAccountId}`, { method: 'DELETE' });
-    showToast('Account deleted');
+    showToast('账号已删除');
     if (currentAccountId === editingAccountId) { currentAccountId = null; loadEmails(currentFolder); }
     closeModal();
     loadAccounts();
-  } catch (e) { showToast('Delete failed: ' + e.message, 'err'); }
+  } catch (e) { showToast('删除失败：' + e.message, 'err'); }
 }
 
-// 鈹€鈹€ Email list 鈹€鈹€
+// ── Email list ──
 async function loadEmails(folder) {
   const list = document.getElementById('emailList');
-  list.innerHTML = '<div class="list-loading">鍔犺浇涓€?/div>';
+  list.innerHTML = '<div class="list-loading">加载中…</div>';
   selectedIds.clear();
   document.getElementById('bulkBar')?.classList.remove('show');
   const selAll = document.getElementById('selAllCheck');
@@ -581,10 +576,10 @@ async function loadEmails(folder) {
     const res   = await apiFetch(`/api/emails?folder=${folder}${acct}`);
     const emails = await res.json();
     renderList(emails);
-    document.getElementById('listCount').textContent = emails.length ? `${emails.length} emails` : '';
+    document.getElementById('listCount').textContent = emails.length ? `${emails.length} 封` : '';
     if (folder === 'INBOX') updateBadge(emails);
   } catch (e) {
-    list.innerHTML = `<div class="list-empty">Load failed: ${e.message}</div>`;
+    list.innerHTML = `<div class="list-empty">加载失败：${e.message}</div>`;
   }
 }
 
@@ -598,7 +593,7 @@ let selectedIds = new Set();
 
 function renderList(emails) {
   const list = document.getElementById('emailList');
-  if (!emails.length) { list.innerHTML = '<div class="list-empty">鏆傛棤閭欢</div>'; return; }
+  if (!emails.length) { list.innerHTML = '<div class="list-empty">暂无邮件</div>'; return; }
   list.innerHTML = emails.map(e => `
     <div class="email-item ${e.is_read?'':'unread'} ${e.id===currentEmailId?'active':''} ${selectedIds.has(e.id)?'selected':''}"
          data-id="${e.id}" onclick="handleItemClick(event,'${e.id}',this)">
@@ -644,7 +639,7 @@ function updateBulkBar() {
   const n = selectedIds.size;
   if (n > 0) {
     bar.classList.add('show');
-    document.getElementById('bulkCount').textContent = `Selected: ${n}`;
+    document.getElementById('bulkCount').textContent = `已选 ${n} 封`;
   } else {
     bar.classList.remove('show');
   }
@@ -668,23 +663,23 @@ function clearSelection() {
 async function bulkDelete() {
   const ids = [...selectedIds];
   if (!ids.length) return;
-  if (!confirm(`Delete selected ${ids.length} emails?`)) return;
+  if (!confirm(`确定删除选中的 ${ids.length} 封邮件吗？`)) return;
   try {
     await Promise.all(ids.map(id => apiFetch(`/api/emails/${id}`, { method: 'DELETE' })));
-    showToast(`Deleted ${ids.length} emails`);
+    showToast(`已删除 ${ids.length} 封邮件`);
     selectedIds.clear();
     if (ids.includes(currentEmailId)) { currentEmailId = null; showPlaceholder(); }
     loadEmails(currentFolder);
-  } catch (e) { showToast('Delete failed: ' + e.message, 'err'); }
+  } catch (e) { showToast('删除失败：' + e.message, 'err'); }
 }
 
-// 鈹€鈹€ Open email 鈹€鈹€
+// ── Open email ──
 async function openEmail(id, el) {
   currentEmailId = id;
   document.querySelectorAll('.email-item').forEach(x => x.classList.remove('active'));
   if (el) el.classList.add('active');
   const panel = document.getElementById('detailPanel');
-  panel.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">鍔犺浇涓€?/div>';
+  panel.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">加载中…</div>';
   try {
     const res   = await apiFetch(`/api/emails/${id}`);
     const email = await res.json();
@@ -698,25 +693,25 @@ async function openEmail(id, el) {
         <div class="reader-header">
           <div class="reader-subject">${esc(email.subject)}</div>
           <div class="reader-meta">
-            <div><strong>鍙戜欢浜猴細</strong>${esc(email.from_name ? `${email.from_name} <${email.from_address}>` : email.from_address)}</div>
-            <div><strong>鏀朵欢浜猴細</strong>${esc(email.to_addresses)}</div>
-            ${email.cc?`<div><strong>鎶勯€侊細</strong>${esc(email.cc)}</div>`:''}
-            <div><strong>鏃堕棿锛?/strong>${new Date(email.received_at).toLocaleString('zh-CN')}</div>
+            <div><strong>发件人：</strong>${esc(email.from_name ? `${email.from_name} <${email.from_address}>` : email.from_address)}</div>
+            <div><strong>收件人：</strong>${esc(email.to_addresses)}</div>
+            ${email.cc?`<div><strong>抄送：</strong>${esc(email.cc)}</div>`:''}
+            <div><strong>时间：</strong>${new Date(email.received_at).toLocaleString('zh-CN')}</div>
           </div>
           <div class="reader-actions">
-            <button class="btn-action" onclick="replyEmail(${JSON.stringify(esc(email.from_address))},${JSON.stringify(esc(email.subject))})">鈫?鍥炲</button>
-            <button class="btn-action" onclick="forwardEmail(${JSON.stringify(esc(email.subject))},${JSON.stringify(esc(email.body_html||email.body_text||''))})">猡?杞彂</button>
-            <button class="btn-action danger" onclick="deleteEmail('${email.id}')">馃棏 鍒犻櫎</button>
+            <button class="btn-action" onclick="replyEmail(${JSON.stringify(esc(email.from_address))},${JSON.stringify(esc(email.subject))})">↩ 回复</button>
+            <button class="btn-action" onclick="forwardEmail(${JSON.stringify(esc(email.subject))},${JSON.stringify(esc(email.body_html||email.body_text||''))})">⤷ 转发</button>
+            <button class="btn-action danger" onclick="deleteEmail('${email.id}')">🗑 删除</button>
           </div>
         </div>
         <div class="reader-body">
           ${email.body_html
             ? `<div class="reader-html">${sanitizeHtml(email.body_html)}</div>`
-            : `<div class="reader-text">${esc(email.body_text||'(No content)')}</div>`}
+            : `<div class="reader-text">${esc(email.body_text||'（无内容）')}</div>`}
         </div>
       </div>`;
   } catch (e) {
-    panel.innerHTML = `<div style="padding:24px;color:var(--danger)">Load failed: ${e.message}</div>`;
+    panel.innerHTML = `<div style="padding:24px;color:var(--danger)">加载失败：${e.message}</div>`;
   }
 }
 
@@ -725,13 +720,13 @@ function sanitizeHtml(html) {
     .replace(/on\w+="[^"]*"/gi,'').replace(/on\w+='[^']*'/gi,'');
 }
 
-// 鈹€鈹€ Folder switch 鈹€鈹€
+// ── Folder switch ──
 function selectFolder(folder, el) {
   currentFolder = folder;
   currentEmailId = null;
   document.querySelectorAll('.folder-item').forEach(x => x.classList.remove('active'));
   if (el) el.classList.add('active');
-  document.getElementById('listTitle').textContent = folder==='INBOX' ? 'Inbox' : 'Sent';
+  document.getElementById('listTitle').textContent = folder==='INBOX'?'收件箱':'已发送';
   showPlaceholder();
   loadEmails(folder);
 }
@@ -742,11 +737,11 @@ function showPlaceholder() {
       <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
         <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/>
       </svg>
-      <span>閫夋嫨涓€灏侀偖浠舵煡鐪?/span>
+      <span>选择一封邮件查看</span>
     </div>`;
 }
 
-// 鈹€鈹€ Sync 鈹€鈹€
+// ── Sync ──
 async function syncEmails() {
   const btn = document.getElementById('btnSync');
   const icon = document.getElementById('syncIcon');
@@ -754,70 +749,59 @@ async function syncEmails() {
   try {
     const res  = await apiFetch('/api/emails/sync', { method:'POST', body: JSON.stringify({ account_id: currentAccountId }) });
     const data = await res.json();
-    if (data.success) { showToast(`Sync complete, new: ${data.synced}`); loadEmails(currentFolder); }
-    else showToast(data.message||'鍚屾澶辫触','err');
-  } catch (e) { showToast('Sync failed: ' + e.message,'err'); }
-  finally { btn.classList.remove('syncing'); icon.textContent = '馃攧'; }
+    if (data.success) { showToast(`同步完成，新增 ${data.synced} 封`); loadEmails(currentFolder); }
+    else showToast(data.message||'同步失败','err');
+  } catch (e) { showToast('同步失败：'+e.message,'err'); }
+  finally { btn.classList.remove('syncing'); icon.textContent = '🔄'; }
 }
 
-// 鈹€鈹€ Compose 鈹€鈹€
+// ── Compose ──
 function openCompose(opts = {}) {
   attachments = [];
   document.getElementById('detailPanel').innerHTML = `
     <div class="compose">
       <div class="compose-header">
-        <span class="compose-title">✏️ ${opts.title||'Write Email'}</span>
+        <span class="compose-title">✏️ ${opts.title||'写邮件'}</span>
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="btn-fs" id="btnFullscreen" onclick="toggleComposeFullscreen()" title="鍏ㄥ睆">鉀?/button>
-          <button class="btn-close" onclick="showPlaceholder()">鉁?/button>
+          <button class="btn-fs" id="btnFullscreen" onclick="toggleComposeFullscreen()" title="全屏">⛶</button>
+          <button class="btn-close" onclick="showPlaceholder()">✕</button>
         </div>
       </div>
       <div class="compose-form">
-        <div class="field-row"><span class="field-label">鏀朵欢浜?/span><input class="field-input" id="cTo" placeholder="example@domain.com" value="${opts.to||''}"></div>
-        <div class="field-row"><span class="field-label">鎶勯€?/span><input class="field-input" id="cCc" placeholder="鍙€?></div>
-        <div class="field-row"><span class="field-label">涓婚</span><input class="field-input" id="cSubject" placeholder="閭欢涓婚" value="${opts.subject||''}"></div>
-        <div class="compose-editor"><textarea id="richEditor"></textarea></div>
+        <div class="field-row"><span class="field-label">收件人</span><input class="field-input" id="cTo" placeholder="example@domain.com" value="${opts.to||''}"></div>
+        <div class="field-row"><span class="field-label">抄送</span><input class="field-input" id="cCc" placeholder="可选"></div>
+        <div class="field-row"><span class="field-label">主题</span><input class="field-input" id="cSubject" placeholder="邮件主题" value="${opts.subject||''}"></div>
+        <div class="compose-editor" id="quillWrap"></div>
         <div class="table-tools">
-          <button class="attach-btn" onclick="openTableDialog()">鈯?鎻掑叆琛ㄦ牸</button>
-          <button class="table-tool-btn" onclick="addTableRow()">+ 琛?/button>
-          <button class="table-tool-btn" onclick="addTableColumn()">+ 鍒?/button>
-          <button class="table-tool-btn" onclick="toggleHeaderRow()">琛ㄥご寮€鍏?/button>
-          <button class="table-tool-btn" onclick="toggleStripeRows()">鏂戦┈绾?/button>
+          <button class="attach-btn" onclick="openTableDialog()">⊞ 插入表格</button>
+          <button class="table-tool-btn" onclick="addTableRow()">+ 行</button>
+          <button class="table-tool-btn" onclick="addTableColumn()">+ 列</button>
+          <button class="table-tool-btn" onclick="toggleHeaderRow()">表头开关</button>
+          <button class="table-tool-btn" onclick="toggleStripeRows()">斑马纹</button>
         </div>
         <div class="attach-area" id="attachArea">
-          <button class="attach-btn" onclick="document.getElementById('fileInput').click()">馃搸 娣诲姞闄勪欢</button>
+          <button class="attach-btn" onclick="document.getElementById('fileInput').click()">📎 添加附件</button>
           <input type="file" id="fileInput" style="display:none" multiple onchange="addFiles(this)">
         </div>
       </div>
       <div class="compose-footer">
-        <button class="btn-send" id="btnSend" onclick="sendEmail()">馃摠 鍙戦€?/button>
+        <button class="btn-send" id="btnSend" onclick="sendEmail()">📨 发送</button>
         <span class="send-status" id="sendStatus"></span>
       </div>
     </div>`;
-  initMailEditor(opts.body || '');
-}
-
-function initMailEditor(initialHtml = '') {
-  if (typeof tinymce === 'undefined') return;
-  tinymce.remove('#richEditor');
-  tinymce.init({
-    selector: '#richEditor',
-    height: 360,
-    menubar: false,
-    branding: false,
-    skin: 'oxide-dark',
-    content_css: 'default',
-    plugins: 'lists link image table code autoresize paste',
-    toolbar: 'undo redo | blocks fontsize | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist | table image link | removeformat code',
-    paste_data_images: true,
-    automatic_uploads: false,
-    content_style: 'body{background:#fff;color:#111;font-size:14px;line-height:1.75;font-family:Inter,Arial,sans-serif;}table{border-collapse:collapse;border:1px solid #000;}th,td{border:1px solid #000;padding:8px 12px;min-width:80px;color:#111;}th{background:#f1f3f5;font-weight:700;}table.is-striped tbody tr:nth-child(even) td{background:#f7f7f7;}',
-    setup(editor) {
-      editor.on('init', () => {
-        if (initialHtml) editor.setContent(initialHtml);
-      });
-    }
-  }).then((eds) => { mailEditor = eds[0] || null; });
+  quillEditor = new Quill('#quillWrap', {
+    theme: 'snow', placeholder: '在此输入邮件内容…',
+    modules: { toolbar: [
+      [{ header:[1,2,3,false] }],
+      ['bold','italic','underline','strike'],
+      [{ color:[] },{ background:[] }],
+      [{ list:'ordered' },{ list:'bullet' }],
+      [{ align:[] }],
+      ['link'],['clean'],
+    ]},
+  });
+  bindTableKeyFix();
+  if (opts.body) quillEditor.clipboard.dangerouslyPasteHTML(opts.body);
 }
 
 function addFiles(input) {
@@ -832,74 +816,70 @@ function addFiles(input) {
 function renderChips() {
   const area = document.getElementById('attachArea');
   if (!area) return;
-  area.innerHTML = `<button class="attach-btn" onclick="document.getElementById('fileInput').click()">馃搸 娣诲姞闄勪欢</button>
+  area.innerHTML = `<button class="attach-btn" onclick="document.getElementById('fileInput').click()">📎 添加附件</button>
     <input type="file" id="fileInput" style="display:none" multiple onchange="addFiles(this)">` +
-    attachments.map((a,i) => `<div class="attach-chip">馃搫 ${esc(a.filename)}<span class="rm" onclick="removeFile(${i})">鉁?/span></div>`).join('');
+    attachments.map((a,i) => `<div class="attach-chip">📄 ${esc(a.filename)}<span class="rm" onclick="removeFile(${i})">✕</span></div>`).join('');
 }
 
 function removeFile(i) { attachments.splice(i,1); renderChips(); }
 
 function replyEmail(to, subject) {
-  openCompose({ title:'鍥炲', to, subject: subject.startsWith('Re:')?subject:`Re: ${subject}` });
+  openCompose({ title:'回复', to, subject: subject.startsWith('Re:')?subject:`Re: ${subject}` });
 }
 
 function forwardEmail(subject, body) {
-  openCompose({ title:'杞彂', subject: subject.startsWith('Fwd:')?subject:`Fwd: ${subject}`, body:`<br><br><hr><p><b>--- 杞彂閭欢 ---</b></p>${body}` });
+  openCompose({ title:'转发', subject: subject.startsWith('Fwd:')?subject:`Fwd: ${subject}`, body:`<br><br><hr><p><b>--- 转发邮件 ---</b></p>${body}` });
 }
 
 async function sendEmail() {
   const to       = document.getElementById('cTo')?.value?.trim();
   const cc       = document.getElementById('cCc')?.value?.trim();
   const subject  = document.getElementById('cSubject')?.value?.trim();
-  const body_html = mailEditor ? mailEditor.getContent() : '';
-  const body_text = (() => {
-    const tmp = document.createElement('div');
-    tmp.innerHTML = body_html || '';
-    return (tmp.textContent || tmp.innerText || '').trim();
-  })();
+  const body_html = quillEditor ? quillEditor.root.innerHTML : '';
+  const body_text = quillEditor ? quillEditor.getText().trim() : '';
   const statusEl  = document.getElementById('sendStatus');
   const btn       = document.getElementById('btnSend');
 
-  if (!to||!subject) { statusEl.textContent='鏀朵欢浜哄拰涓婚涓嶈兘涓虹┖'; statusEl.className='send-status err'; return; }
-  btn.disabled = true; statusEl.textContent='Sending...'; statusEl.className='send-status';
+  if (!to||!subject) { statusEl.textContent='收件人和主题不能为空'; statusEl.className='send-status err'; return; }
+  btn.disabled = true; statusEl.textContent='发送中…'; statusEl.className='send-status';
 
   try {
     const res  = await apiFetch('/api/emails/send', { method:'POST', body: JSON.stringify({ to, cc, subject, body_html, body_text, attachments, account_id: currentAccountId }) });
     const data = await res.json();
     if (data.success) {
-      statusEl.textContent='Sent successfully'; statusEl.className='send-status ok';
-      showToast('Email sent successfully');
+      statusEl.textContent='✓ 发送成功'; statusEl.className='send-status ok';
+      showToast('邮件发送成功');
       setTimeout(showPlaceholder, 1500);
     } else {
-      statusEl.textContent = data.message||'Send failed'; statusEl.className='send-status err'; btn.disabled=false;
+      statusEl.textContent = data.message||'发送失败'; statusEl.className='send-status err'; btn.disabled=false;
     }
   } catch (e) {
-    statusEl.textContent='鍙戦€佸け璐ワ細'+e.message; statusEl.className='send-status err'; btn.disabled=false;
+    statusEl.textContent='发送失败：'+e.message; statusEl.className='send-status err'; btn.disabled=false;
   }
 }
 
-// 鈹€鈹€ Delete 鈹€鈹€
+// ── Delete ──
 async function deleteEmail(id) {
-  if (!confirm('纭畾鍒犻櫎杩欏皝閭欢鍚楋紵')) return;
+  if (!confirm('确定删除这封邮件吗？')) return;
   try {
     await apiFetch(`/api/emails/${id}`, { method:'DELETE' });
-    showToast('Email deleted'); showPlaceholder(); loadEmails(currentFolder);
-  } catch (e) { showToast('Delete failed: ' + e.message,'err'); }
+    showToast('邮件已删除'); showPlaceholder(); loadEmails(currentFolder);
+  } catch (e) { showToast('删除失败：'+e.message,'err'); }
 }
 
-// 鈹€鈹€ Fullscreen compose 鈹€鈹€
+// ── Fullscreen compose ──
 function toggleComposeFullscreen() {
   const panel = document.getElementById('detailPanel');
   const btn   = document.getElementById('btnFullscreen');
   if (!panel || !btn) return;
   const isFs = panel.classList.toggle('fullscreen');
-  btn.textContent = isFs ? '⤡' : '⛶';
-  btn.title       = isFs ? 'Exit Fullscreen' : 'Fullscreen';
+  btn.textContent = isFs ? '⊡' : '⛶';
+  btn.title       = isFs ? '退出全屏' : '全屏';
 }
 
-// 鈹€鈹€ Table insert 鈹€鈹€
+// ── Table insert ──
 function openTableDialog() {
-  if (!mailEditor) return;
+  if (!quillEditor) return;
   document.getElementById('tblOverlay').classList.add('open');
   document.getElementById('tblDlg').classList.add('open');
   setTimeout(() => document.getElementById('tblRows').focus(), 50);
@@ -914,24 +894,65 @@ function confirmInsertTable() {
   const rows = Math.max(1, Math.min(20, parseInt(document.getElementById('tblRows').value) || 3));
   const cols = Math.max(1, Math.min(15, parseInt(document.getElementById('tblCols').value) || 3));
   closeTableDialog();
-  if (!mailEditor) return;
-  const th   = Array(cols).fill('<th style="border:1px solid #000;color:#111;background:#f1f3f5;">&nbsp;</th>').join('');
-  const td   = Array(cols).fill('<td style="border:1px solid #000;color:#111;background:#fff;">&nbsp;</td>').join('');
+  if (!quillEditor) return;
+  const th   = Array(cols).fill('<th contenteditable="true" style="border:1px solid #000 !important;color:#111;background:#f1f3f5;">&nbsp;</th>').join('');
+  const td   = Array(cols).fill('<td contenteditable="true" style="border:1px solid #000 !important;color:#111;background:#fff;">&nbsp;</td>').join('');
   const body = Array(Math.max(0, rows - 1)).fill(`<tr>${td}</tr>`).join('');
-  const html = `<table class="mail-table" style="border-collapse:collapse;border:1px solid #000;"><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table><p><br></p>`;
+  const html = `<table class="mail-table" style="border-collapse:collapse;border:1px solid #000 !important;"><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table><p><br></p>`;
   insertHtmlAtCursor(html);
 }
 
 function insertHtmlAtCursor(html) {
-  if (!mailEditor) return;
-  mailEditor.focus();
-  mailEditor.insertContent(html);
+  if (!quillEditor) return;
+  quillEditor.focus();
+  const editor = quillEditor.root;
+  const sel = window.getSelection();
+  if (sel && sel.rangeCount > 0) {
+    const range = sel.getRangeAt(0);
+    if (editor.contains(range.commonAncestorContainer)) {
+      const frag = range.createContextualFragment(html);
+      const lastNode = frag.lastChild;
+      range.deleteContents();
+      range.insertNode(frag);
+      if (lastNode) {
+        const newRange = document.createRange();
+        newRange.setStartAfter(lastNode);
+        newRange.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(newRange);
+      }
+      quillEditor.update('silent');
+      return;
+    }
+  }
+  editor.insertAdjacentHTML('beforeend', html);
+  quillEditor.update('silent');
+}
+
+function bindTableKeyFix() {
+  if (!quillEditor || !quillEditor.root) return;
+  const editor = quillEditor.root;
+  if (editor.dataset.tableKeyFixBound === '1') return;
+  editor.dataset.tableKeyFixBound = '1';
+
+  // In table cells, let browser handle delete/backspace instead of Quill shortcuts.
+  editor.addEventListener('keydown', (e) => {
+    const key = e.key;
+    if (key !== 'Backspace' && key !== 'Delete') return;
+    const sel = window.getSelection();
+    if (!sel || !sel.anchorNode) return;
+    const node = sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentElement : sel.anchorNode;
+    const inCell = node && node.closest && node.closest('td,th');
+    if (!inCell) return;
+    e.stopImmediatePropagation();
+  }, true);
 }
 
 function getActiveTableCell() {
-  if (!mailEditor) return null;
-  const node = mailEditor.selection.getNode();
-  return node && node.closest ? node.closest('td,th') : null;
+  const sel = window.getSelection();
+  if (!sel || !sel.anchorNode) return null;
+  const node = sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentElement : sel.anchorNode;
+  return node?.closest?.('td,th') || null;
 }
 
 function getActiveTable() {
@@ -940,14 +961,13 @@ function getActiveTable() {
 }
 
 function markActiveTable(table) {
-  if (!mailEditor) return;
-  mailEditor.getBody().querySelectorAll('table.active-table').forEach(t => t.classList.remove('active-table'));
+  document.querySelectorAll('.ql-editor table.active-table').forEach(t => t.classList.remove('active-table'));
   if (table) table.classList.add('active-table');
 }
 
 function addTableRow() {
   const cell = getActiveTableCell();
-  if (!cell) return showToast('璇峰厛鎶婂厜鏍囨斁鍒拌〃鏍煎唴', 'err');
+  if (!cell) return showToast('请先把光标放到表格内', 'err');
   const row = cell.closest('tr');
   const cols = row.children.length;
   const tag = row.parentElement.tagName.toLowerCase() === 'thead' ? 'th' : 'td';
@@ -963,7 +983,7 @@ function addTableRow() {
 
 function addTableColumn() {
   const cell = getActiveTableCell();
-  if (!cell) return showToast('璇峰厛鎶婂厜鏍囨斁鍒拌〃鏍煎唴', 'err');
+  if (!cell) return showToast('请先把光标放到表格内', 'err');
   const table = cell.closest('table');
   const idx = Array.from(cell.parentElement.children).indexOf(cell);
   table.querySelectorAll('tr').forEach(tr => {
@@ -979,7 +999,7 @@ function addTableColumn() {
 
 function toggleHeaderRow() {
   const table = getActiveTable();
-  if (!table) return showToast('璇峰厛鎶婂厜鏍囨斁鍒拌〃鏍煎唴', 'err');
+  if (!table) return showToast('请先把光标放到表格内', 'err');
   const firstRow = table.querySelector('tr');
   if (!firstRow) return;
   const hasHead = !!table.querySelector('thead');
@@ -1012,12 +1032,12 @@ function toggleHeaderRow() {
 
 function toggleStripeRows() {
   const table = getActiveTable();
-  if (!table) return showToast('璇峰厛鎶婂厜鏍囨斁鍒拌〃鏍煎唴', 'err');
+  if (!table) return showToast('请先把光标放到表格内', 'err');
   table.classList.toggle('is-striped');
   markActiveTable(table);
 }
 
-// 鈹€鈹€ Init 鈹€鈹€
+// ── Init ──
 loadEmails('INBOX');
 loadAccounts();
 </script>
