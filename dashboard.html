@@ -755,6 +755,7 @@ tr:hover .del-row-btn{display:inline-block}
         <div style="display:flex;gap:8px;align-items:center">
           <span class="ai-provider-badge" id="aiProviderBadge">未配置</span>
           <button class="btn btn-primary" onclick="openAiSettings()">⚙ 设置 API</button>
+          <button class="btn" onclick="generateGeminiImage()">🖼 Gemini做图</button>
           <button class="btn" onclick="clearAiChat()">🗑 清空对话</button>
         </div>
       </div>
@@ -1457,6 +1458,37 @@ async function sendAiMessage() {
   }
   document.getElementById('btnAiSend').disabled = false;
   input.focus();
+}
+
+async function generateGeminiImage() {
+  const input = document.getElementById('aiInput');
+  const prompt = input.value.trim();
+  if (!prompt) {
+    appendAiMsg('assistant', '请先输入图片提示词，再点击 Gemini做图。');
+    return;
+  }
+
+  appendAiMsg('user', `【Gemini做图】${prompt}`);
+  const thinking = document.createElement('div');
+  thinking.className = 'ai-msg ai-msg-bot';
+  thinking.innerHTML = `<div class="ai-avatar">🤖</div><div class="ai-bubble ai-thinking"><span class="ai-dot">●</span><span class="ai-dot">●</span><span class="ai-dot">●</span></div>`;
+  document.getElementById('aiMessages').appendChild(thinking);
+  document.getElementById('aiMessages').scrollTop = 9999;
+
+  try {
+    const data = await api('/api/ai/image', { method:'POST', body: JSON.stringify({ prompt }) });
+    thinking.remove();
+    if (data.success && data.image) {
+      appendAiMsg('assistant', `图片生成完成：<br><img src="${data.image}" style="max-width:100%;border-radius:8px;border:1px solid var(--border)">`);
+      input.value = '';
+      input.style.height = 'auto';
+    } else {
+      appendAiMsg('assistant', `⚠ ${data.message || '生成失败'}`);
+    }
+  } catch (e) {
+    thinking.remove();
+    appendAiMsg('assistant', `⚠ ${e.message}`);
+  }
 }
 
 // ── Collapsible nav groups ──
