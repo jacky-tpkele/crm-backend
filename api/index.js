@@ -998,4 +998,40 @@ app.post('/api/logistics/extract', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
+// Gemini image generation endpoint
+app.post('/api/ai/image', auth, async (req, res) => {
+  try {
+    const { prompt } = req.body || {};
+    if (!prompt) return res.status(400).json({ message: '请输入图片提示词' });
+
+    const settings = await sb('ai_settings?select=provider,api_key,model&order=created_at.desc&limit=1');
+    const setting = settings[0] || {};
+    const api_key = process.env.GEMINI_API_KEY || (setting.provider === 'gemini' ? setting.api_key : '');
+    const model = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.0-flash';
+    if (!api_key) return res.status(400).json({ message: '请先配置 Gemini API Key（设置页选择Gemini后保存，或配置 GEMINI_API_KEY）' });
+
+    const body = {
+      contents: [{ role: 'user', parts: [{ text: `Generate an image: ${prompt}` }] }]
+    };
+
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${api_key}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const d = await r.json();
+    if (!r.ok) return res.status(500).json({ message: d.error?.message || 'Gemini 调用失败' });
+
+    const parts = d?.candidates?.[0]?.content?.parts || [];
+    const imagePart = parts.find(p => p.inlineData && p.inlineData.data);
+    if (!imagePart) return res.status(500).json({ message: 'Gemini 未返回图片，请尝试更换图片模型或优化提示词' });
+
+    const mimeType = imagePart.inlineData.mimeType || 'image/png';
+    const imageDataUrl = `data:${mimeType};base64,${imagePart.inlineData.data}`;
+    res.json({ success: true, image: imageDataUrl });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+
 module.exports = app;
