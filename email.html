@@ -432,6 +432,7 @@ button,input,select,textarea{font:inherit}
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/tinymce@6.8.6/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="https://cdn.jsdelivr.net/npm/tinymce-i18n@24.4.21/langs6/zh_CN.js" referrerpolicy="origin"></script>
 <script>
 const API = '';
 let token = localStorage.getItem('crm_token');
@@ -828,7 +829,6 @@ function initMailEditor(initialHtml = '') {
     height: 420,
     menubar: false,
     language: 'zh_CN',
-    language_url: 'https://cdn.jsdelivr.net/npm/tinymce@6.8.6/langs/zh_CN.js',
     branding: false,
     promotion: false,
     statusbar: false,
