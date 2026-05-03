@@ -41,7 +41,7 @@ button,input,select,textarea{font:inherit}
   border-bottom:1px solid var(--border);flex-shrink:0;
 }
 .logo-icon{width:36px;height:36px;flex-shrink:0;display:grid;place-items:center;}
-.logo-text{font-size:32px;font-weight:700;white-space:nowrap;overflow:hidden;letter-spacing:.2px;}
+.logo-text{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;letter-spacing:.2px;}
 .logo-text span{color:#d8e3ff}
 
 .sb-nav{flex:1;overflow-y:auto;overflow-x:hidden;padding:10px 0}
@@ -60,7 +60,11 @@ button,input,select,textarea{font:inherit}
   font-size:17px;font-weight:700;letter-spacing:.2px;
 }
 .nav-item.active .nav-icon{font-size:20px}
-.nav-icon{font-size:18px;flex-shrink:0;width:24px;text-align:center;transition:.2s}
+.nav-icon{
+  font-size:17px;flex-shrink:0;width:24px;text-align:center;transition:.2s;
+  color:#9eb6e7;opacity:.95;
+}
+.nav-item.active .nav-icon{color:#ffffff}
 .nav-label{overflow:hidden;transition:font-size .2s,font-weight .2s}
 .nav-group{padding:8px 16px 4px;font-size:10px;font-weight:600;color:rgba(0,200,255,0.22);text-transform:uppercase;letter-spacing:.8px;white-space:nowrap;overflow:hidden}
 
@@ -429,25 +433,25 @@ tr:hover .del-row-btn{display:inline-block}
   </div>
   <nav class="sb-nav" id="sbNav">
     <div class="nav-item active" data-sec="dashboard">
-      <span class="nav-icon">⬛</span><span class="nav-label" data-i18n="navDashboard">仪表盘</span>
+      <span class="nav-icon">⌂</span><span class="nav-label" data-i18n="navDashboard">仪表盘</span>
     </div>
     <div class="nav-item" data-sec="inquiries">
-      <span class="nav-icon">📋</span><span class="nav-label" data-i18n="navInquiries">询盘管理</span>
+      <span class="nav-icon">◎</span><span class="nav-label" data-i18n="navInquiries">询盘管理</span>
     </div>
     <div class="nav-item" data-sec="customers">
-      <span class="nav-icon">👥</span><span class="nav-label" data-i18n="navCustomers">客户管理</span>
+      <span class="nav-icon">◉</span><span class="nav-label" data-i18n="navCustomers">客户管理</span>
     </div>
     <div class="nav-item" data-sec="products">
-      <span class="nav-icon">📦</span><span class="nav-label" data-i18n="navProducts">产品管理</span>
+      <span class="nav-icon">▣</span><span class="nav-label" data-i18n="navProducts">产品管理</span>
     </div>
     <div class="nav-item" data-sec="suppliers">
-      <span class="nav-icon">🏭</span><span class="nav-label" data-i18n="navSuppliers">供应商管理</span>
+      <span class="nav-icon">◫</span><span class="nav-label" data-i18n="navSuppliers">供应商管理</span>
     </div>
     <div class="nav-item" data-sec="orders">
-      <span class="nav-icon">🛒</span><span class="nav-label" data-i18n="navOrders">订单管理</span>
+      <span class="nav-icon">◍</span><span class="nav-label" data-i18n="navOrders">订单管理</span>
     </div>
     <div class="nav-item" data-sec="analytics">
-      <span class="nav-icon">📊</span><span class="nav-label" data-i18n="navAnalytics">数据分析</span>
+      <span class="nav-icon">◔</span><span class="nav-label" data-i18n="navAnalytics">数据分析</span>
     </div>
 
     <!-- 文件 折叠分组 -->
@@ -457,17 +461,17 @@ tr:hover .del-row-btn{display:inline-block}
     </div>
     <div class="nav-collapse-body closed" id="docGroup">
       <div class="nav-item" data-sec="documents">
-        <span class="nav-icon">📄</span><span class="nav-label" data-i18n="navDocuments">文件</span>
+        <span class="nav-icon">▤</span><span class="nav-label" data-i18n="navDocuments">文件</span>
       </div>
       <div class="sub-nav">
         <div class="nav-item" data-sec="documents" data-doctype="quotation">
-          <span class="nav-icon">📝</span><span class="nav-label" data-i18n="navQuotation">报价单</span>
+          <span class="nav-icon">◌</span><span class="nav-label" data-i18n="navQuotation">报价单</span>
         </div>
         <div class="nav-item" data-sec="documents" data-doctype="pi">
-          <span class="nav-icon">🧾</span><span class="nav-label" data-i18n="navPI">形式发票</span>
+          <span class="nav-icon">◍</span><span class="nav-label" data-i18n="navPI">形式发票</span>
         </div>
         <div class="nav-item" data-sec="documents" data-doctype="packing">
-          <span class="nav-icon">📦</span><span class="nav-label" data-i18n="navPacking">装箱单</span>
+          <span class="nav-icon">◈</span><span class="nav-label" data-i18n="navPacking">装箱单</span>
         </div>
       </div>
     </div>
@@ -479,15 +483,15 @@ tr:hover .del-row-btn{display:inline-block}
     </div>
     <div class="nav-collapse-body closed" id="toolGroup">
       <div class="nav-item" data-sec="ai">
-        <span class="nav-icon">🤖</span><span class="nav-label" data-i18n="navAI">AI 助手</span>
+        <span class="nav-icon">◇</span><span class="nav-label" data-i18n="navAI">AI 助手</span>
       </div>
       <div class="nav-item" onclick="location.href='email.html'">
-        <span class="nav-icon">✉️</span><span class="nav-label">邮件</span>
+        <span class="nav-icon">✉</span><span class="nav-label">邮件</span>
       </div>
     </div>
 
     <div class="nav-item" data-sec="settings">
-      <span class="nav-icon">⚙️</span><span class="nav-label" data-i18n="navSettings">系统设置</span>
+      <span class="nav-icon">⚙</span><span class="nav-label" data-i18n="navSettings">系统设置</span>
     </div>
   </nav>
   <div class="sb-bottom">
