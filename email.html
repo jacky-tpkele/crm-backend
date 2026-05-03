@@ -404,7 +404,7 @@ button,input,select,textarea{font:inherit}
 
 <div class="toast" id="toast"></div>
 
-<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
 const API = '';
 let token = localStorage.getItem('crm_token');
@@ -413,7 +413,7 @@ if (!token) location.href = 'login.html';
 let currentFolder    = 'INBOX';
 let currentEmailId   = null;
 let currentAccountId = null; // null = 使用环境变量默认账号
-let quillEditor      = null;
+let mailEditor       = null;
 let attachments      = [];
 let editingAccountId = null;
 
@@ -789,19 +789,39 @@ function openCompose(opts = {}) {
         <span class="send-status" id="sendStatus"></span>
       </div>
     </div>`;
-  quillEditor = new Quill('#quillWrap', {
-    theme: 'snow', placeholder: '在此输入邮件内容…',
-    modules: { toolbar: [
-      [{ header:[1,2,3,false] }],
-      ['bold','italic','underline','strike'],
-      [{ color:[] },{ background:[] }],
-      [{ list:'ordered' },{ list:'bullet' }],
-      [{ align:[] }],
-      ['link'],['clean'],
-    ]},
+  initMailEditor(opts.body || '');
+}
+
+function initMailEditor(initialHtml = '') {
+  if (typeof tinymce === 'undefined') return;
+  if (tinymce.get('quillWrap')) tinymce.get('quillWrap').remove();
+
+  tinymce.init({
+    selector: '#quillWrap',
+    height: 360,
+    menubar: false,
+    branding: false,
+    statusbar: false,
+    plugins: 'lists link image table code autoresize paste',
+    toolbar: 'styles | bold italic underline strikethrough | forecolor backcolor | bullist numlist | alignleft aligncenter alignright | link image table | removeformat code',
+    content_style: `
+      body { background:#fff; color:#111; font-size:14px; line-height:1.8; font-family:Arial,"Microsoft YaHei",sans-serif; padding:12px; }
+      table { border-collapse:collapse; border:1px solid #000; }
+      th,td { border:1px solid #000; padding:8px 12px; min-width:80px; vertical-align:top; }
+      th { background:#f1f3f5; color:#111; font-weight:700; }
+      td { background:#fff; color:#111; }
+      a { color:#0b63ce; }
+      table.is-striped tbody tr:nth-child(even) td { background:#f7f7f7; }
+    `,
+    table_default_styles: { 'border-collapse': 'collapse', border: '1px solid #000' },
+    table_default_attributes: { border: '1' },
+    table_toolbar: 'tableprops tabledelete | tableinsertrowbefore tableinsertrowafter tabledeleterow | tableinsertcolbefore tableinsertcolafter tabledeletecol | tablecellprops tablemergecells tablesplitcells',
+    setup: (editor) => {
+      mailEditor = editor;
+      editor.on('init', () => editor.setContent(initialHtml || '<p><br></p>'));
+    }
   });
-  bindTableKeyFix();
-  if (opts.body) quillEditor.clipboard.dangerouslyPasteHTML(opts.body);
+}
 }
 
 function addFiles(input) {
@@ -835,8 +855,8 @@ async function sendEmail() {
   const to       = document.getElementById('cTo')?.value?.trim();
   const cc       = document.getElementById('cCc')?.value?.trim();
   const subject  = document.getElementById('cSubject')?.value?.trim();
-  const body_html = quillEditor ? quillEditor.root.innerHTML : '';
-  const body_text = quillEditor ? quillEditor.getText().trim() : '';
+  const body_html = mailEditor ? mailEditor.getContent() : '';
+  const body_text = mailEditor ? mailEditor.getContent({ format:'text' }).trim() : '';
   const statusEl  = document.getElementById('sendStatus');
   const btn       = document.getElementById('btnSend');
 
@@ -879,7 +899,7 @@ function toggleComposeFullscreen() {
 
 // ── Table insert ──
 function openTableDialog() {
-  if (!quillEditor) return;
+  if (!mailEditor) return;
   document.getElementById('tblOverlay').classList.add('open');
   document.getElementById('tblDlg').classList.add('open');
   setTimeout(() => document.getElementById('tblRows').focus(), 50);
@@ -894,147 +914,43 @@ function confirmInsertTable() {
   const rows = Math.max(1, Math.min(20, parseInt(document.getElementById('tblRows').value) || 3));
   const cols = Math.max(1, Math.min(15, parseInt(document.getElementById('tblCols').value) || 3));
   closeTableDialog();
-  if (!quillEditor) return;
-  const th   = Array(cols).fill('<th contenteditable="true" style="border:1px solid #000 !important;color:#111;background:#f1f3f5;">&nbsp;</th>').join('');
-  const td   = Array(cols).fill('<td contenteditable="true" style="border:1px solid #000 !important;color:#111;background:#fff;">&nbsp;</td>').join('');
-  const body = Array(Math.max(0, rows - 1)).fill(`<tr>${td}</tr>`).join('');
-  const html = `<table class="mail-table" style="border-collapse:collapse;border:1px solid #000 !important;"><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table><p><br></p>`;
-  insertHtmlAtCursor(html);
-}
-
-function insertHtmlAtCursor(html) {
-  if (!quillEditor) return;
-  quillEditor.focus();
-  const editor = quillEditor.root;
-  const sel = window.getSelection();
-  if (sel && sel.rangeCount > 0) {
-    const range = sel.getRangeAt(0);
-    if (editor.contains(range.commonAncestorContainer)) {
-      const frag = range.createContextualFragment(html);
-      const lastNode = frag.lastChild;
-      range.deleteContents();
-      range.insertNode(frag);
-      if (lastNode) {
-        const newRange = document.createRange();
-        newRange.setStartAfter(lastNode);
-        newRange.collapse(true);
-        sel.removeAllRanges();
-        sel.addRange(newRange);
-      }
-      quillEditor.update('silent');
-      return;
+  if (!mailEditor) return;
+  mailEditor.focus();
+  mailEditor.execCommand('mceInsertTable', false, {
+    rows,
+    columns: cols,
+    options: {
+      border: '1',
+      styles: { 'border-collapse': 'collapse', border: '1px solid #000' }
     }
-  }
-  editor.insertAdjacentHTML('beforeend', html);
-  quillEditor.update('silent');
-}
-
-function bindTableKeyFix() {
-  if (!quillEditor || !quillEditor.root) return;
-  const editor = quillEditor.root;
-  if (editor.dataset.tableKeyFixBound === '1') return;
-  editor.dataset.tableKeyFixBound = '1';
-
-  // In table cells, let browser handle delete/backspace instead of Quill shortcuts.
-  editor.addEventListener('keydown', (e) => {
-    const key = e.key;
-    if (key !== 'Backspace' && key !== 'Delete') return;
-    const sel = window.getSelection();
-    if (!sel || !sel.anchorNode) return;
-    const node = sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentElement : sel.anchorNode;
-    const inCell = node && node.closest && node.closest('td,th');
-    if (!inCell) return;
-    e.stopImmediatePropagation();
-  }, true);
-}
-
-function getActiveTableCell() {
-  const sel = window.getSelection();
-  if (!sel || !sel.anchorNode) return null;
-  const node = sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentElement : sel.anchorNode;
-  return node?.closest?.('td,th') || null;
-}
-
-function getActiveTable() {
-  const cell = getActiveTableCell();
-  return cell ? cell.closest('table') : null;
-}
-
-function markActiveTable(table) {
-  document.querySelectorAll('.ql-editor table.active-table').forEach(t => t.classList.remove('active-table'));
-  if (table) table.classList.add('active-table');
+  });
 }
 
 function addTableRow() {
-  const cell = getActiveTableCell();
-  if (!cell) return showToast('请先把光标放到表格内', 'err');
-  const row = cell.closest('tr');
-  const cols = row.children.length;
-  const tag = row.parentElement.tagName.toLowerCase() === 'thead' ? 'th' : 'td';
-  const newRow = document.createElement('tr');
-  for (let i = 0; i < cols; i++) {
-    const c = document.createElement(tag);
-    c.innerHTML = '&nbsp;';
-    newRow.appendChild(c);
-  }
-  row.insertAdjacentElement('afterend', newRow);
-  markActiveTable(row.closest('table'));
+  if (!mailEditor) return;
+  mailEditor.focus();
+  mailEditor.execCommand('mceTableInsertRowAfter');
 }
 
 function addTableColumn() {
-  const cell = getActiveTableCell();
-  if (!cell) return showToast('请先把光标放到表格内', 'err');
-  const table = cell.closest('table');
-  const idx = Array.from(cell.parentElement.children).indexOf(cell);
-  table.querySelectorAll('tr').forEach(tr => {
-    const ref = tr.children[Math.min(idx, tr.children.length - 1)];
-    const tag = ref && ref.tagName ? ref.tagName.toLowerCase() : (tr.closest('thead') ? 'th' : 'td');
-    const c = document.createElement(tag);
-    c.innerHTML = '&nbsp;';
-    if (ref) ref.insertAdjacentElement('afterend', c);
-    else tr.appendChild(c);
-  });
-  markActiveTable(table);
+  if (!mailEditor) return;
+  mailEditor.focus();
+  mailEditor.execCommand('mceTableInsertColAfter');
 }
 
 function toggleHeaderRow() {
-  const table = getActiveTable();
-  if (!table) return showToast('请先把光标放到表格内', 'err');
-  const firstRow = table.querySelector('tr');
-  if (!firstRow) return;
-  const hasHead = !!table.querySelector('thead');
-  if (hasHead) {
-    const thead = table.querySelector('thead');
-    const tbody = table.querySelector('tbody') || table;
-    const row = thead.querySelector('tr');
-    row.querySelectorAll('th').forEach(th => {
-      const td = document.createElement('td');
-      td.innerHTML = th.innerHTML || '&nbsp;';
-      th.replaceWith(td);
-    });
-    tbody.insertAdjacentElement('afterbegin', row);
-    thead.remove();
-  } else {
-    const source = table.querySelector('tbody tr') || firstRow;
-    const headRow = source.cloneNode(true);
-    headRow.querySelectorAll('td').forEach(td => {
-      const th = document.createElement('th');
-      th.innerHTML = td.innerHTML || '&nbsp;';
-      td.replaceWith(th);
-    });
-    const thead = document.createElement('thead');
-    thead.appendChild(headRow);
-    table.insertAdjacentElement('afterbegin', thead);
-    if (source.parentElement) source.remove();
-  }
-  markActiveTable(table);
+  if (!mailEditor) return;
+  mailEditor.focus();
+  mailEditor.execCommand('mceTableToggleHeaderRow');
 }
 
 function toggleStripeRows() {
-  const table = getActiveTable();
-  if (!table) return showToast('请先把光标放到表格内', 'err');
-  table.classList.toggle('is-striped');
-  markActiveTable(table);
+  if (!mailEditor) return;
+  mailEditor.focus();
+  const node = mailEditor.selection.getNode();
+  const table = mailEditor.dom.getParent(node, 'table');
+  if (!table) return showToast('???????????????', 'err');
+  mailEditor.dom.toggleClass(table, 'is-striped');
 }
 
 // ── Init ──
