@@ -404,7 +404,7 @@ button,input,select,textarea{font:inherit}
 
 <div class="toast" id="toast"></div>
 
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="https://cdn.jsdelivr.net/npm/tinymce@6.8.6/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
 const API = '';
 let token = localStorage.getItem('crm_token');
@@ -801,6 +801,7 @@ function initMailEditor(initialHtml = '') {
     height: 360,
     menubar: false,
     branding: false,
+    promotion: false,
     statusbar: false,
     plugins: 'lists link image table code autoresize paste',
     toolbar: 'styles | bold italic underline strikethrough | forecolor backcolor | bullist numlist | alignleft aligncenter alignright | link image table | removeformat code',
