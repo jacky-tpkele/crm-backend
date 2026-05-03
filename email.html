@@ -898,8 +898,34 @@ function confirmInsertTable() {
   const td   = Array(cols).fill('<td style="border:1px solid #000 !important;color:#111;background:#fff;">&nbsp;</td>').join('');
   const body = Array(Math.max(0, rows - 1)).fill(`<tr>${td}</tr>`).join('');
   const html = `<table class="mail-table" style="border-collapse:collapse;border:1px solid #000 !important;"><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table><p><br></p>`;
-  const range = quillEditor.getSelection(true);
-  quillEditor.clipboard.dangerouslyPasteHTML(range ? range.index : quillEditor.getLength(), html);
+  insertHtmlAtCursor(html);
+}
+
+function insertHtmlAtCursor(html) {
+  if (!quillEditor) return;
+  quillEditor.focus();
+  const editor = quillEditor.root;
+  const sel = window.getSelection();
+  if (sel && sel.rangeCount > 0) {
+    const range = sel.getRangeAt(0);
+    if (editor.contains(range.commonAncestorContainer)) {
+      const frag = range.createContextualFragment(html);
+      const lastNode = frag.lastChild;
+      range.deleteContents();
+      range.insertNode(frag);
+      if (lastNode) {
+        const newRange = document.createRange();
+        newRange.setStartAfter(lastNode);
+        newRange.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(newRange);
+      }
+      quillEditor.update('silent');
+      return;
+    }
+  }
+  editor.insertAdjacentHTML('beforeend', html);
+  quillEditor.update('silent');
 }
 
 function getActiveTableCell() {
