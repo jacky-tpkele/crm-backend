@@ -800,6 +800,7 @@ function openCompose(opts = {}) {
       ['link'],['clean'],
     ]},
   });
+  bindTableKeyFix();
   if (opts.body) quillEditor.clipboard.dangerouslyPasteHTML(opts.body);
 }
 
@@ -894,8 +895,8 @@ function confirmInsertTable() {
   const cols = Math.max(1, Math.min(15, parseInt(document.getElementById('tblCols').value) || 3));
   closeTableDialog();
   if (!quillEditor) return;
-  const th   = Array(cols).fill('<th style="border:1px solid #000 !important;color:#111;background:#f1f3f5;">&nbsp;</th>').join('');
-  const td   = Array(cols).fill('<td style="border:1px solid #000 !important;color:#111;background:#fff;">&nbsp;</td>').join('');
+  const th   = Array(cols).fill('<th contenteditable="true" style="border:1px solid #000 !important;color:#111;background:#f1f3f5;">&nbsp;</th>').join('');
+  const td   = Array(cols).fill('<td contenteditable="true" style="border:1px solid #000 !important;color:#111;background:#fff;">&nbsp;</td>').join('');
   const body = Array(Math.max(0, rows - 1)).fill(`<tr>${td}</tr>`).join('');
   const html = `<table class="mail-table" style="border-collapse:collapse;border:1px solid #000 !important;"><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table><p><br></p>`;
   insertHtmlAtCursor(html);
@@ -926,6 +927,25 @@ function insertHtmlAtCursor(html) {
   }
   editor.insertAdjacentHTML('beforeend', html);
   quillEditor.update('silent');
+}
+
+function bindTableKeyFix() {
+  if (!quillEditor || !quillEditor.root) return;
+  const editor = quillEditor.root;
+  if (editor.dataset.tableKeyFixBound === '1') return;
+  editor.dataset.tableKeyFixBound = '1';
+
+  // In table cells, let browser handle delete/backspace instead of Quill shortcuts.
+  editor.addEventListener('keydown', (e) => {
+    const key = e.key;
+    if (key !== 'Backspace' && key !== 'Delete') return;
+    const sel = window.getSelection();
+    if (!sel || !sel.anchorNode) return;
+    const node = sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentElement : sel.anchorNode;
+    const inCell = node && node.closest && node.closest('td,th');
+    if (!inCell) return;
+    e.stopImmediatePropagation();
+  }, true);
 }
 
 function getActiveTableCell() {
