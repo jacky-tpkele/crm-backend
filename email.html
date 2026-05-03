@@ -771,7 +771,7 @@ function openCompose(opts = {}) {
         <div class="field-row"><span class="field-label">收件人</span><input class="field-input" id="cTo" placeholder="example@domain.com" value="${opts.to||''}"></div>
         <div class="field-row"><span class="field-label">抄送</span><input class="field-input" id="cCc" placeholder="可选"></div>
         <div class="field-row"><span class="field-label">主题</span><input class="field-input" id="cSubject" placeholder="邮件主题" value="${opts.subject||''}"></div>
-        <div class="compose-editor" id="quillWrap"></div>
+        <div class="compose-editor"><textarea id="richEditor"></textarea></div>
         <div class="table-tools">
           <button class="attach-btn" onclick="openTableDialog()">⊞ 插入表格</button>
           <button class="table-tool-btn" onclick="addTableRow()">+ 行</button>
@@ -794,10 +794,10 @@ function openCompose(opts = {}) {
 
 function initMailEditor(initialHtml = '') {
   if (typeof tinymce === 'undefined') return;
-  if (tinymce.get('quillWrap')) tinymce.get('quillWrap').remove();
+  if (tinymce.get('richEditor')) tinymce.get('richEditor').remove();
 
   tinymce.init({
-    selector: '#quillWrap',
+    selector: '#richEditor',
     height: 360,
     menubar: false,
     branding: false,
@@ -821,7 +821,6 @@ function initMailEditor(initialHtml = '') {
       editor.on('init', () => editor.setContent(initialHtml || '<p><br></p>'));
     }
   });
-}
 }
 
 function addFiles(input) {
