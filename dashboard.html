@@ -1043,49 +1043,17 @@ tr:hover .del-row-btn{display:inline-block}
   </div>
 </div>
 
-<!-- ── AI Settings Modal ── -->
-<div class="modal-backdrop" id="aiSettingsModal" style="display:none">
+<!-- AI Settings Modal -->
+<div class="modal-backdrop" id="aiSettingsModal" style="display:none" onclick="closeOnBackdrop(event,'aiSettingsModal')">
   <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-head">
-      <h2>⚙ AI 助手设置</h2>
-      <button class="modal-close" onclick="closeModal('aiSettingsModal')">✕</button>
-    </div>
+    <div class="modal-head"><h2>AI Settings</h2><button class="modal-close" onclick="closeModal('aiSettingsModal')">?</button></div>
     <div style="padding:0 0 14px">
-      <div class="form-grid">
-        <div class="field">
-          <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;display:block">AI 提供商</label>
-          <select id="aiProvider" onchange="onAiProviderChange()"
-            style="background:rgba(0,180,255,0.04);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13.5px;outline:none;width:100%">
-            <option value="openai">🟢 OpenAI (ChatGPT)</option>
-            <option value="claude">🟣 Anthropic (Claude)</option>
-            <option value="gemini">🔵 Google (Gemini)</option>
-          </select>
-        </div>
-        <div class="field">
-          <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;display:block">模型</label>
-          <select id="aiModel"
-            style="background:rgba(0,180,255,0.04);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13.5px;outline:none;width:100%">
-          </select>
-        </div>
-      </div>
-      <div class="field" style="margin-bottom:14px">
-        <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;display:block">API Key <span style="color:var(--danger)">*</span></label>
-        <input type="password" id="aiApiKey" placeholder="填写你的 API Key（已保存则留空不修改）"
-          style="background:rgba(0,180,255,0.04);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13.5px;outline:none;width:100%;transition:.2s">
-        <div id="aiKeyHint" style="font-size:11px;color:var(--muted);margin-top:4px"></div>
-      </div>
-      <div class="field">
-        <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;display:block">系统提示词（System Prompt）</label>
-        <textarea id="aiSystemPrompt" rows="4"
-          style="background:rgba(0,180,255,0.04);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;outline:none;width:100%;resize:vertical;line-height:1.6"
-          placeholder="描述 AI 的角色和工作方式…"></textarea>
-      </div>
+      <div class="form-grid"><div class="field"><label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;display:block">OpenAI API Key</label><input type="password" id="openaiApiKey" placeholder="sk-... (keep empty)" style="background:rgba(0,180,255,0.04);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13.5px;outline:none;width:100%"></div><div class="field"><label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;display:block">Gemini API Key</label><input type="password" id="geminiApiKey" placeholder="AIza... (keep empty)" style="background:rgba(0,180,255,0.04);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13.5px;outline:none;width:100%"></div></div>
+      <div class="form-grid"><div class="field"><label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;display:block">OpenAI Base URL</label><input type="text" id="openaiBaseUrl" placeholder="https://api.openai.com/v1" style="background:rgba(0,180,255,0.04);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13.5px;outline:none;width:100%"></div><div class="field"><label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;display:block">Gemini Base URL</label><input type="text" id="geminiBaseUrl" placeholder="https://generativelanguage.googleapis.com/v1beta" style="background:rgba(0,180,255,0.04);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13.5px;outline:none;width:100%"></div></div>
+      <div class="form-grid"><div class="field"><label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;display:block">GPT Model</label><input type="text" id="openaiModelInput" placeholder="gpt-4.1-mini" style="background:rgba(0,180,255,0.04);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13.5px;outline:none;width:100%"></div><div class="field"><label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;display:block">Gemini Model</label><input type="text" id="geminiModelInput" placeholder="gemini-2.0-flash" style="background:rgba(0,180,255,0.04);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13.5px;outline:none;width:100%"></div></div>
+      <div class="field"><label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;display:block">System Prompt</label><textarea id="aiSystemPrompt" rows="4" style="background:rgba(0,180,255,0.04);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;outline:none;width:100%;resize:vertical;line-height:1.6"></textarea></div>
     </div>
-    <div class="modal-footer">
-      <span id="aiSettingsStatus" style="font-size:12px;color:var(--muted);margin-right:auto"></span>
-      <button class="btn" onclick="closeModal('aiSettingsModal')">取消</button>
-      <button class="btn btn-primary" onclick="saveAiSettings()">保存</button>
-    </div>
+    <div class="modal-footer"><span id="aiSettingsStatus" style="font-size:12px;color:var(--muted);margin-right:auto"></span><button class="btn" onclick="testAiSettings()">Test</button><button class="btn" onclick="closeModal('aiSettingsModal')">Cancel</button><button class="btn btn-primary" onclick="saveAiSettings()">Save</button></div>
   </div>
 </div>
 
@@ -1310,13 +1278,8 @@ function logout() {
   location.href = '/index.html';
 }
 
-// ── AI Assistant ──
-const AI_MODELS = {
-  openai: ['gpt-4o','gpt-4-turbo','gpt-4','gpt-3.5-turbo'],
-  claude: ['claude-3-5-sonnet-20241022','claude-3-opus-20240229','claude-3-haiku-20240307'],
-  gemini: ['gemini-2.0-flash','gemini-1.5-pro','gemini-1.5-flash'],
-};
-let aiHistory = []; // {role, content}
+// AI Assistant
+let aiHistory = [];
 let aiConfigured = false;
 
 async function initAiSection() {
@@ -1326,60 +1289,68 @@ async function initAiSection() {
     const badge = document.getElementById('aiProviderBadge');
     if (badge) {
       if (aiConfigured) {
-        const labels = { openai:'GPT', claude:'Claude', gemini:'Gemini' };
-        badge.textContent = `${labels[data.provider]||data.provider} · ${data.model}`;
+        const parts = [];
+        if (data.openai_configured) parts.push('GPT');
+        if (data.gemini_configured) parts.push('Gemini');
+        badge.textContent = parts.length ? ('Configured: ' + parts.join(' + ')) : 'Not Configured';
         badge.classList.add('configured');
       } else {
-        badge.textContent = '未配置'; badge.classList.remove('configured');
+        badge.textContent = 'Not Configured';
+        badge.classList.remove('configured');
       }
     }
   } catch {}
 }
 
-function onAiProviderChange() {
-  const p = document.getElementById('aiProvider').value;
-  const sel = document.getElementById('aiModel');
-  sel.innerHTML = (AI_MODELS[p]||[]).map(m => `<option value="${m}">${m}</option>`).join('');
-}
-
 async function openAiSettings() {
   document.getElementById('aiSettingsStatus').textContent = '';
-  document.getElementById('aiApiKey').value = '';
+  document.getElementById('openaiApiKey').value = '';
+  document.getElementById('geminiApiKey').value = '';
   try {
     const data = await api('/api/ai/settings');
-    document.getElementById('aiProvider').value = data.provider || 'openai';
-    onAiProviderChange();
-    if (data.model) document.getElementById('aiModel').value = data.model;
+    document.getElementById('openaiBaseUrl').value = data.openai_base_url || 'https://api.openai.com/v1';
+    document.getElementById('geminiBaseUrl').value = data.gemini_base_url || 'https://generativelanguage.googleapis.com/v1beta';
+    document.getElementById('openaiModelInput').value = data.openai_model || 'gpt-4.1-mini';
+    document.getElementById('geminiModelInput').value = data.gemini_model || 'gemini-2.0-flash';
     document.getElementById('aiSystemPrompt').value = data.system_prompt || '';
-    const hint = document.getElementById('aiKeyHint');
-    hint.textContent = data.provider ? 'API Key 已保存，留空则不修改' : '';
-  } catch { onAiProviderChange(); }
+  } catch {}
   openModal('aiSettingsModal');
 }
 
 async function saveAiSettings() {
-  const provider      = document.getElementById('aiProvider').value;
-  const model         = document.getElementById('aiModel').value;
-  const api_key       = document.getElementById('aiApiKey').value.trim();
-  const system_prompt = document.getElementById('aiSystemPrompt').value.trim();
-  const statusEl      = document.getElementById('aiSettingsStatus');
-  statusEl.textContent = '保存中…'; statusEl.style.color = 'var(--muted)';
+  const statusEl = document.getElementById('aiSettingsStatus');
+  statusEl.textContent = 'Saving...'; statusEl.style.color = 'var(--muted)';
+  const payload = {
+    openai_api_key: document.getElementById('openaiApiKey').value.trim(),
+    gemini_api_key: document.getElementById('geminiApiKey').value.trim(),
+    openai_base_url: document.getElementById('openaiBaseUrl').value.trim(),
+    gemini_base_url: document.getElementById('geminiBaseUrl').value.trim(),
+    openai_model: document.getElementById('openaiModelInput').value.trim(),
+    gemini_model: document.getElementById('geminiModelInput').value.trim(),
+    system_prompt: document.getElementById('aiSystemPrompt').value.trim()
+  };
   try {
-    const data = await api('/api/ai/settings', { method:'PUT', body: JSON.stringify({ provider, api_key, model, system_prompt }) });
+    const data = await api('/api/ai/settings', { method:'PUT', body: JSON.stringify(payload) });
     if (data.success) {
-      statusEl.textContent = '✓ 保存成功'; statusEl.style.color = 'var(--success)';
-      setTimeout(() => { closeModal('aiSettingsModal'); initAiSection(); }, 800);
-    } else { statusEl.textContent = data.message||'保存失败'; statusEl.style.color = 'var(--danger)'; }
-  } catch (e) { statusEl.textContent = '保存失败：'+e.message; statusEl.style.color = 'var(--danger)'; }
+      statusEl.textContent = 'Saved'; statusEl.style.color = 'var(--success)';
+      setTimeout(() => { closeModal('aiSettingsModal'); initAiSection(); }, 700);
+    } else { statusEl.textContent = data.message || 'Save failed'; statusEl.style.color = 'var(--danger)'; }
+  } catch (e) { statusEl.textContent = 'Save failed: ' + e.message; statusEl.style.color = 'var(--danger)'; }
+}
+
+async function testAiSettings() {
+  const statusEl = document.getElementById('aiSettingsStatus');
+  await saveAiSettings();
+  try {
+    const st = await api('/api/ai/settings/status');
+    statusEl.textContent = 'Test: GPT ' + (st.openai_configured ? 'OK' : 'NO') + ' / Gemini ' + (st.gemini_configured ? 'OK' : 'NO');
+    statusEl.style.color = 'var(--success)';
+  } catch (e) { statusEl.textContent = 'Test failed: ' + e.message; statusEl.style.color = 'var(--danger)'; }
 }
 
 function clearAiChat() {
   aiHistory = [];
-  document.getElementById('aiMessages').innerHTML = `
-    <div class="ai-msg ai-msg-bot">
-      <div class="ai-avatar">🤖</div>
-      <div class="ai-bubble">对话已清空，有什么可以帮你的？</div>
-    </div>`;
+  document.getElementById('aiMessages').innerHTML = '<div class="ai-msg ai-msg-bot"><div class="ai-avatar">??</div><div class="ai-bubble">Chat cleared. How can I help?</div></div>';
 }
 
 function autoResizeAiInput(el) {
@@ -1392,19 +1363,15 @@ function aiInputKeydown(e) {
 }
 
 function appendAiMsg(role, content) {
-  const box  = document.getElementById('aiMessages');
+  const box = document.getElementById('aiMessages');
   const isBot = role === 'assistant';
-  const div  = document.createElement('div');
-  div.className = `ai-msg ai-msg-${isBot ? 'bot' : 'user'}`;
-  div.innerHTML = `
-    <div class="ai-avatar">${isBot ? '🤖' : '👤'}</div>
-    <div class="ai-bubble">${isBot ? md2html(content) : escHtml(content)}</div>`;
+  const div = document.createElement('div');
+  div.className = 'ai-msg ai-msg-' + (isBot ? 'bot' : 'user');
+  div.innerHTML = '<div class="ai-avatar">' + (isBot ? '??' : '??') + '</div><div class="ai-bubble">' + (isBot ? md2html(content) : escHtml(content)) + '</div>';
   box.appendChild(div);
   box.scrollTop = box.scrollHeight;
   return div;
 }
-
-function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
 
 function md2html(text) {
   return text

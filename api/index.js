@@ -1,4 +1,4 @@
-const express    = require('express');
+﻿const express    = require('express');
 const fetch      = require('node-fetch');
 const jwt        = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
@@ -14,7 +14,7 @@ const SECRET  = process.env.JWT_SECRET   || 'xhon-crm-secret-2025';
 const CRM_USER= process.env.CRM_USERNAME || 'TPKELE';
 const CRM_PASS= process.env.CRM_PASSWORD || '662255';
 
-// ── Supabase REST helper ──
+// 鈹€鈹€ Supabase REST helper 鈹€鈹€
 async function sb(path, opts = {}) {
   const url = `${SB_URL}/rest/v1/${path}`;
   const res = await fetch(url, {
@@ -33,7 +33,7 @@ async function sb(path, opts = {}) {
   return data;
 }
 
-// ── JWT auth middleware ──
+// 鈹€鈹€ JWT auth middleware 鈹€鈹€
 function auth(req, res, next) {
   const raw = req.headers.authorization || '';
   const token = raw.startsWith('Bearer ') ? raw.slice(7) : raw;
@@ -46,9 +46,9 @@ function auth(req, res, next) {
   }
 }
 
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // AUTH
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body || {};
   if (!username || !password)
@@ -59,9 +59,9 @@ app.post('/api/login', (req, res) => {
   res.json({ token, username });
 });
 
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // DASHBOARD STATS
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 app.get('/api/dashboard/stats', auth, async (req, res) => {
   try {
     const month = new Date().toISOString().slice(0, 7);
@@ -108,9 +108,9 @@ app.get('/api/dashboard/trends', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // CUSTOMERS
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 app.get('/api/customers', auth, async (req, res) => {
   try {
     const data = await sb('customers?select=*&is_deleted=eq.false&order=created_at.desc');
@@ -142,9 +142,9 @@ app.delete('/api/customers/:id', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // PRODUCTS
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 app.get('/api/products', auth, async (req, res) => {
   try {
     const data = await sb('products?select=*&is_deleted=eq.false&order=created_at.desc');
@@ -176,9 +176,9 @@ app.delete('/api/products/:id', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // SUPPLIERS
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 app.get('/api/suppliers', auth, async (req, res) => {
   try {
     const data = await sb('suppliers?select=*&is_deleted=eq.false&order=created_at.desc');
@@ -236,9 +236,9 @@ app.delete('/suppliers/:id', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // INQUIRIES
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 app.get('/api/inquiries', auth, async (req, res) => {
   try {
     const data = await sb('inquiries?select=*&order=created_at.desc');
@@ -270,9 +270,9 @@ app.delete('/api/inquiries/:id', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // ORDERS
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 async function fetchOrdersWithItems() {
   const orders = await sb('orders?select=*&is_deleted=eq.false&order=order_date.desc');
   if (!orders.length) return orders;
@@ -352,7 +352,7 @@ app.delete('/api/orders/:id', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// ── Backward-compat routes ──
+// 鈹€鈹€ Backward-compat routes 鈹€鈹€
 app.post('/api/save-order', auth, async (req, res) => {
   const { customer_name, order_date, shipping_fee, items } = req.body;
   try {
@@ -386,7 +386,7 @@ app.post('/api/save-order', auth, async (req, res) => {
         sales_total:     Number(it.qty||it.quantity||0)*Number(it.s_price||it.sales_price||0),
       }))),
     });
-    res.json({ success: true, message: '订单保存成功', id: orderId });
+    res.json({ success: true, message: '璁㈠崟淇濆瓨鎴愬姛', id: orderId });
   } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 });
 
@@ -424,9 +424,9 @@ app.delete('/delete-order/:id', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // ANALYTICS
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 app.get('/api/analytics/top-customers', auth, async (req, res) => {
   try {
     const orders = await sb('orders?select=customer_name,sales_total&is_deleted=eq.false');
@@ -455,9 +455,9 @@ app.get('/api/analytics/top-products', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // DOCUMENTS
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 app.get('/api/documents', auth, async (req, res) => {
   try {
     const data = await sb('documents?select=*&order=created_at.desc');
@@ -465,9 +465,9 @@ app.get('/api/documents', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // EMAIL
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 const EMAIL_IMAP_HOST = process.env.EMAIL_IMAP_HOST;
 const EMAIL_IMAP_PORT = parseInt(process.env.EMAIL_IMAP_PORT || '993');
 const EMAIL_SMTP_HOST = process.env.EMAIL_SMTP_HOST;
@@ -476,7 +476,7 @@ const EMAIL_USER      = process.env.EMAIL_USER;
 const EMAIL_PASS      = process.env.EMAIL_PASS;
 const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME || 'TPKELE';
 
-// cfg 来自数据库账号，未提供则回退到环境变量
+// cfg 鏉ヨ嚜鏁版嵁搴撹处鍙凤紝鏈彁渚涘垯鍥為€€鍒扮幆澧冨彉閲?
 function imapClient(cfg = {}) {
   const host = cfg.imap_host || EMAIL_IMAP_HOST;
   const port = cfg.imap_port || EMAIL_IMAP_PORT;
@@ -508,9 +508,9 @@ async function getAccountCfg(accountId) {
   } catch { return {}; }
 }
 
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // EMAIL ACCOUNTS CRUD
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 app.get('/api/email-accounts', auth, async (req, res) => {
   try {
     const data = await sb('email_accounts?select=id,display_name,email,imap_host,imap_port,smtp_host,smtp_port,username,from_name,is_active,created_at&order=created_at.asc');
@@ -542,7 +542,7 @@ app.delete('/api/email-accounts/:id', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// 同步收件箱到 Supabase
+// 鍚屾鏀朵欢绠卞埌 Supabase
 app.post('/api/emails/sync', auth, async (req, res) => {
   const { account_id } = req.body || {};
   const cfg = await getAccountCfg(account_id);
@@ -550,7 +550,7 @@ app.post('/api/emails/sync', auth, async (req, res) => {
   const imapUser = cfg.username  || EMAIL_USER;
   const imapPass = cfg.password  || EMAIL_PASS;
   if (!imapHost || !imapUser || !imapPass)
-    return res.status(503).json({ message: '未配置邮箱环境变量' });
+    return res.status(503).json({ message: 'Email environment variables are not configured' });
 
   const client = imapClient(cfg);
   let synced = 0;
@@ -592,7 +592,7 @@ app.post('/api/emails/sync', auth, async (req, res) => {
             from_name:    from.name || '',
             to_addresses: toList,
             cc:           ccList,
-            subject:      parsed.subject || '(无主题)',
+            subject:      parsed.subject || '(鏃犱富棰?',
             body_text:    parsed.text || '',
             body_html:    parsed.html || '',
             is_read:      false,
@@ -608,7 +608,7 @@ app.post('/api/emails/sync', auth, async (req, res) => {
           });
           synced++;
         } catch (parseErr) {
-          console.error('解析邮件失败 uid=' + uid, parseErr.message);
+          console.error('瑙ｆ瀽閭欢澶辫触 uid=' + uid, parseErr.message);
         }
       }
     } finally {
@@ -622,19 +622,19 @@ app.post('/api/emails/sync', auth, async (req, res) => {
   }
 });
 
-// 同步已发送邮件
+// 鍚屾宸插彂閫侀偖浠?
 app.post('/api/emails/sync-sent', auth, async (req, res) => {
   if (!EMAIL_IMAP_HOST || !EMAIL_USER || !EMAIL_PASS)
-    return res.status(503).json({ message: '未配置邮箱环境变量' });
+    return res.status(503).json({ message: 'Email environment variables are not configured' });
 
   const client = imapClient();
   let synced = 0;
-  const sentFolders = ['Sent', 'Sent Messages', 'INBOX.Sent', '已发送'];
+  const sentFolders = ['Sent', 'Sent Messages', 'INBOX.Sent', 'Sent Items'];
   try {
     await client.connect();
     const list = await client.list();
     const sentFolder = list.find(f => sentFolders.some(n => f.name === n || f.path === n));
-    if (!sentFolder) { await client.logout(); return res.json({ success: true, synced: 0, note: '未找到已发送文件夹' }); }
+    if (!sentFolder) { await client.logout(); return res.json({ success: true, synced: 0, note: '鏈壘鍒板凡鍙戦€佹枃浠跺す' }); }
 
     const lock = await client.getMailboxLock(sentFolder.path);
     try {
@@ -662,7 +662,7 @@ app.post('/api/emails/sync-sent', auth, async (req, res) => {
               message_id: msgId, folder: sentFolder.path, uid,
               from_address: from.address || '', from_name: from.name || '',
               to_addresses: toList, cc: '',
-              subject: parsed.subject || '(无主题)',
+              subject: parsed.subject || '(鏃犱富棰?',
               body_text: parsed.text || '', body_html: parsed.html || '',
               is_read: true, is_deleted: false,
               received_at: (parsed.date || new Date()).toISOString(),
@@ -680,7 +680,7 @@ app.post('/api/emails/sync-sent', auth, async (req, res) => {
   }
 });
 
-// 获取邮件列表
+// 鑾峰彇閭欢鍒楄〃
 app.get('/api/emails', auth, async (req, res) => {
   try {
     const folder     = req.query.folder || 'INBOX';
@@ -701,16 +701,16 @@ app.get('/api/emails', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// 获取单封邮件详情
+// 鑾峰彇鍗曞皝閭欢璇︽儏
 app.get('/api/emails/:id', auth, async (req, res) => {
   try {
     const rows = await sb(`emails?id=eq.${req.params.id}&select=*`);
-    if (!rows.length) return res.status(404).json({ message: '邮件不存在' });
+    if (!rows.length) return res.status(404).json({ message: 'Email not found' });
     res.json(rows[0]);
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// 标记已读/未读
+// 鏍囪宸茶/鏈
 app.patch('/api/emails/:id/read', auth, async (req, res) => {
   try {
     const { is_read } = req.body;
@@ -721,14 +721,14 @@ app.patch('/api/emails/:id/read', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// 删除邮件（软删除）
+// 鍒犻櫎閭欢锛堣蒋鍒犻櫎锛?
 app.delete('/api/emails/:id', auth, async (req, res) => {
   try {
-    // 查出邮件的 uid / folder / account_id
+    // 鏌ュ嚭閭欢鐨?uid / folder / account_id
     const row = await sb(`emails?id=eq.${req.params.id}&select=uid,folder,account_id`);
     const email = Array.isArray(row) && row[0];
 
-    // 同步删除 IMAP 服务器上的邮件
+    // 鍚屾鍒犻櫎 IMAP 鏈嶅姟鍣ㄤ笂鐨勯偖浠?
     if (email && email.uid) {
       try {
         const cfg    = await getAccountCfg(email.account_id || null);
@@ -739,11 +739,11 @@ app.delete('/api/emails/:id', auth, async (req, res) => {
         await client.logout();
       } catch (imapErr) {
         console.error('IMAP delete failed (continuing):', imapErr.message);
-        // IMAP 删除失败不阻断本地删除
+        // IMAP 鍒犻櫎澶辫触涓嶉樆鏂湰鍦板垹闄?
       }
     }
 
-    // 标记本地已删除
+    // 鏍囪鏈湴宸插垹闄?
     await sb(`emails?id=eq.${req.params.id}`, {
       method: 'PATCH', body: JSON.stringify({ is_deleted: true }),
     });
@@ -751,16 +751,16 @@ app.delete('/api/emails/:id', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// 发送邮件
+// 鍙戦€侀偖浠?
 app.post('/api/emails/send', auth, async (req, res) => {
   const { to, cc, subject, body_html, body_text, attachments, account_id } = req.body;
-  if (!to || !subject) return res.status(400).json({ message: '收件人和主题不能为空' });
+  if (!to || !subject) return res.status(400).json({ message: '鏀朵欢浜哄拰涓婚涓嶈兘涓虹┖' });
 
   const cfg      = await getAccountCfg(account_id);
   const fromUser = cfg.username  || EMAIL_USER;
   const fromName = cfg.from_name || EMAIL_FROM_NAME;
 
-  if (!fromUser) return res.status(503).json({ message: '未配置邮箱账号' });
+  if (!fromUser) return res.status(503).json({ message: 'Email sender account is not configured' });
 
   try {
     const transport = smtpTransport(cfg);
@@ -797,7 +797,7 @@ app.post('/api/emails/send', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// 获取未读数量
+// 鑾峰彇鏈鏁伴噺
 app.get('/api/emails/unread-count', auth, async (req, res) => {
   try {
     const data = await sb('emails?is_read=eq.false&is_deleted=eq.false&folder=eq.INBOX&select=id');
@@ -805,105 +805,165 @@ app.get('/api/emails/unread-count', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// ── AI 助手 ──
+// 鈹€鈹€ AI 鍔╂墜 鈹€鈹€
 
-// 获取 AI 设置（不返回 api_key）
+// 鑾峰彇 AI 璁剧疆锛堜笉杩斿洖 api_key锛?
 app.get('/api/ai/settings', auth, async (req, res) => {
   try {
-    const data = await sb('ai_settings?select=id,provider,model,system_prompt&order=created_at.desc&limit=1');
-    res.json(data[0] || { provider: 'openai', model: 'gpt-4o', system_prompt: '' });
+    const rows = await sb('ai_settings?select=id,provider,model,api_key,system_prompt&order=created_at.desc&limit=1');
+    const row = rows[0] || {};
+    let apiCfg = {};
+    let modelCfg = {};
+    try { apiCfg = row.api_key ? JSON.parse(row.api_key) : {}; } catch {}
+    try { modelCfg = row.model ? JSON.parse(row.model) : {}; } catch {}
+
+    const openai = {
+      api_key: apiCfg.openai?.api_key || (row.provider === 'openai' ? row.api_key : '') || '',
+      base_url: apiCfg.openai?.base_url || 'https://api.openai.com/v1',
+      model: modelCfg.openai?.model || (row.provider === 'openai' ? row.model : '') || 'gpt-4.1-mini'
+    };
+    const gemini = {
+      api_key: apiCfg.gemini?.api_key || (row.provider === 'gemini' ? row.api_key : '') || '',
+      base_url: apiCfg.gemini?.base_url || 'https://generativelanguage.googleapis.com/v1beta',
+      model: modelCfg.gemini?.model || (row.provider === 'gemini' ? row.model : '') || 'gemini-2.0-flash'
+    };
+
+    res.json({
+      openai_configured: !!openai.api_key,
+      openai_base_url: openai.base_url,
+      openai_model: openai.model,
+      gemini_configured: !!gemini.api_key,
+      gemini_base_url: gemini.base_url,
+      gemini_model: gemini.model,
+      system_prompt: row.system_prompt || ''
+    });
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// 检查是否已配置 api_key
 app.get('/api/ai/settings/status', auth, async (req, res) => {
   try {
-    const data = await sb('ai_settings?select=id,provider,model&order=created_at.desc&limit=1');
-    res.json(data[0] ? { configured: true, ...data[0] } : { configured: false });
+    const rows = await sb('ai_settings?select=id,provider,model,api_key,system_prompt&order=created_at.desc&limit=1');
+    const row = rows[0] || {};
+    let apiCfg = {};
+    try { apiCfg = row.api_key ? JSON.parse(row.api_key) : {}; } catch {}
+    const openaiConfigured = !!(apiCfg.openai?.api_key || (row.provider === 'openai' && row.api_key));
+    const geminiConfigured = !!(apiCfg.gemini?.api_key || (row.provider === 'gemini' && row.api_key));
+    res.json({ configured: openaiConfigured || geminiConfigured, openai_configured: openaiConfigured, gemini_configured: geminiConfigured });
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// 保存 AI 设置
 app.put('/api/ai/settings', auth, async (req, res) => {
   try {
-    const { provider, api_key, model, system_prompt } = req.body;
-    if (!provider) return res.status(400).json({ message: '请选择 AI 提供商' });
-    const existing = await sb('ai_settings?select=id&limit=1');
-    if (existing.length) {
-      const update = { provider, model, system_prompt };
-      if (api_key) update.api_key = api_key;
-      await sb(`ai_settings?id=eq.${existing[0].id}`, { method: 'PATCH', body: JSON.stringify(update) });
-    } else {
-      await sb('ai_settings', { method: 'POST', body: JSON.stringify({ provider, api_key, model, system_prompt }) });
-    }
+    const payload = req.body || {};
+    const existing = await sb('ai_settings?select=id,provider,model,api_key,system_prompt&limit=1');
+    const row = existing[0] || {};
+
+    let apiCfg = {};
+    let modelCfg = {};
+    try { apiCfg = row.api_key ? JSON.parse(row.api_key) : {}; } catch {}
+    try { modelCfg = row.model ? JSON.parse(row.model) : {}; } catch {}
+
+    const nextApi = {
+      openai: {
+        api_key: payload.openai_api_key || apiCfg.openai?.api_key || (row.provider === 'openai' ? row.api_key : '') || '',
+        base_url: payload.openai_base_url || apiCfg.openai?.base_url || 'https://api.openai.com/v1'
+      },
+      gemini: {
+        api_key: payload.gemini_api_key || apiCfg.gemini?.api_key || (row.provider === 'gemini' ? row.api_key : '') || '',
+        base_url: payload.gemini_base_url || apiCfg.gemini?.base_url || 'https://generativelanguage.googleapis.com/v1beta'
+      }
+    };
+    const nextModel = {
+      openai: { model: payload.openai_model || modelCfg.openai?.model || 'gpt-4.1-mini' },
+      gemini: { model: payload.gemini_model || modelCfg.gemini?.model || 'gemini-2.0-flash' }
+    };
+
+    const dbRow = { provider: 'openai', api_key: JSON.stringify(nextApi), model: JSON.stringify(nextModel), system_prompt: payload.system_prompt ?? row.system_prompt ?? '' };
+    if (existing.length) await sb('ai_settings?id=eq.' + existing[0].id, { method: 'PATCH', body: JSON.stringify(dbRow) });
+    else await sb('ai_settings', { method: 'POST', body: JSON.stringify(dbRow) });
     res.json({ success: true });
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// AI 对话
 app.post('/api/ai/chat', auth, async (req, res) => {
   try {
-    const { messages } = req.body;
-    if (!messages?.length) return res.status(400).json({ message: '消息不能为空' });
+    const { messages } = req.body || {};
+    if (!messages?.length) return res.status(400).json({ message: 'Message is required' });
 
-    const settings = await sb('ai_settings?select=provider,api_key,model,system_prompt&order=created_at.desc&limit=1');
-    if (!settings.length || !settings[0].api_key)
-      return res.status(400).json({ message: '请先在 AI 助手设置中填写 API Key' });
+    const rows = await sb('ai_settings?select=id,provider,model,api_key,system_prompt&order=created_at.desc&limit=1');
+    const row = rows[0] || {};
+    let apiCfg = {};
+    let modelCfg = {};
+    try { apiCfg = row.api_key ? JSON.parse(row.api_key) : {}; } catch {}
+    try { modelCfg = row.model ? JSON.parse(row.model) : {}; } catch {}
 
-    const { provider, api_key, model, system_prompt } = settings[0];
-    let reply = '';
+    const apiKey = process.env.OPENAI_API_KEY || apiCfg.openai?.api_key || (row.provider === 'openai' ? row.api_key : '');
+    const base = (process.env.OPENAI_BASE_URL || apiCfg.openai?.base_url || 'https://api.openai.com/v1').replace(/\/$/, '');
+    const model = process.env.OPENAI_MODEL || modelCfg.openai?.model || (row.provider === 'openai' ? row.model : '') || 'gpt-4.1-mini';
+    if (!apiKey) return res.status(400).json({ message: 'Please set OpenAI API key in AI settings' });
 
-    if (provider === 'openai') {
-      const msgs = [];
-      if (system_prompt) msgs.push({ role: 'system', content: system_prompt });
-      msgs.push(...messages);
-      const r = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${api_key}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: model || 'gpt-4o', messages: msgs, max_tokens: 2000 }),
-      });
-      const d = await r.json();
-      if (!r.ok) return res.status(500).json({ message: d.error?.message || 'OpenAI 调用失败' });
-      reply = d.choices[0].message.content;
+    const full = [];
+    if (row.system_prompt) full.push({ role: 'system', content: row.system_prompt });
+    full.push(...messages);
 
-    } else if (provider === 'claude') {
-      const msgs = messages.map(m => ({ role: m.role, content: m.content }));
-      const body = { model: model || 'claude-3-5-sonnet-20241022', max_tokens: 2000, messages: msgs };
-      if (system_prompt) body.system = system_prompt;
-      const r = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'x-api-key': api_key, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      const d = await r.json();
-      if (!r.ok) return res.status(500).json({ message: d.error?.message || 'Claude 调用失败' });
-      reply = d.content[0].text;
-
-    } else if (provider === 'gemini') {
-      const contents = [];
-      for (const m of messages) {
-        contents.push({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] });
-      }
-      const gBody = { contents };
-      if (system_prompt) gBody.systemInstruction = { parts: [{ text: system_prompt }] };
-      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model || 'gemini-1.5-flash'}:generateContent?key=${api_key}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(gBody),
-      });
-      const d = await r.json();
-      if (!r.ok) return res.status(500).json({ message: d.error?.message || 'Gemini 调用失败' });
-      reply = d.candidates[0].content.parts[0].text;
-
-    } else {
-      return res.status(400).json({ message: '不支持的 AI 提供商' });
-    }
-
+    const r = await fetch(base + '/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model, messages: full, max_tokens: 2000 })
+    });
+    const d = await r.json();
+    if (!r.ok) return res.status(500).json({ message: d.error?.message || d.message || 'GPT request failed' });
+    const reply = d?.choices?.[0]?.message?.content;
+    if (!reply) return res.status(500).json({ message: 'Empty GPT response' });
     res.json({ success: true, reply });
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// ══════════════════════════════
+app.post('/api/ai/image', auth, async (req, res) => {
+  try {
+    const { prompt } = req.body || {};
+    if (!prompt) return res.status(400).json({ message: 'Please provide image prompt' });
+
+    const rows = await sb('ai_settings?select=id,provider,model,api_key,system_prompt&order=created_at.desc&limit=1');
+    const row = rows[0] || {};
+    let apiCfg = {};
+    let modelCfg = {};
+    try { apiCfg = row.api_key ? JSON.parse(row.api_key) : {}; } catch {}
+    try { modelCfg = row.model ? JSON.parse(row.model) : {}; } catch {}
+
+    const apiKey = process.env.GEMINI_API_KEY || apiCfg.gemini?.api_key || (row.provider === 'gemini' ? row.api_key : '');
+    const base = (process.env.GEMINI_BASE_URL || apiCfg.gemini?.base_url || 'https://generativelanguage.googleapis.com/v1beta').replace(/\/$/, '');
+    const model = process.env.GEMINI_IMAGE_MODEL || modelCfg.gemini?.model || (row.provider === 'gemini' ? row.model : '') || 'gemini-2.0-flash';
+    if (!apiKey) return res.status(400).json({ message: 'Please set Gemini API key in AI settings' });
+
+    if (base.includes('generativelanguage.googleapis.com')) {
+      const rr = await fetch(base + '/models/' + model + ':generateContent?key=' + apiKey, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: 'Generate an image: ' + prompt }] }] })
+      });
+      const dd = await rr.json();
+      if (!rr.ok) return res.status(500).json({ message: dd.error?.message || dd.message || 'Gemini request failed' });
+      const parts = dd?.candidates?.[0]?.content?.parts || [];
+      const imagePart = parts.find(p => p.inlineData && p.inlineData.data);
+      if (!imagePart) return res.status(500).json({ message: 'No image returned by Gemini' });
+      return res.json({ success: true, image: 'data:' + (imagePart.inlineData.mimeType || 'image/png') + ';base64,' + imagePart.inlineData.data });
+    }
+
+    const rr = await fetch(base + '/images/generations', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model, prompt, size: '1024x1024' })
+    });
+    const dd = await rr.json();
+    if (!rr.ok) return res.status(500).json({ message: dd.error?.message || dd.message || 'Proxy image request failed' });
+    if (dd?.data?.[0]?.b64_json) return res.json({ success: true, image: 'data:image/png;base64,' + dd.data[0].b64_json });
+    if (dd?.data?.[0]?.url) return res.json({ success: true, image: dd.data[0].url });
+    return res.status(500).json({ message: 'No image returned by proxy' });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
 // LOGISTICS
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 app.get('/api/logistics', auth, async (req, res) => {
   try {
     const data = await sb('logistics?is_deleted=eq.false&order=created_at.desc&select=*');
@@ -955,15 +1015,13 @@ app.delete('/api/logistics/:id', auth, async (req, res) => {
 app.post('/api/logistics/extract', auth, async (req, res) => {
   try {
     const { image_data } = req.body;
-    if (!image_data) return res.status(400).json({ message: '请上传图片' });
+    if (!image_data) return res.status(400).json({ message: 'Please upload an image' });
     const settings = await sb('ai_settings?select=provider,api_key,model&order=created_at.desc&limit=1');
     if (!settings.length || !settings[0].api_key) return res.status(400).json({ message: 'no_ai' });
     const { provider, api_key, model } = settings[0];
     const base64   = image_data.replace(/^data:image\/\w+;base64,/, '');
     const mimeType = image_data.match(/^data:(image\/\w+);base64,/)?.[1] || 'image/jpeg';
-    const prompt   = `请从这张物流单/快递单图片中提取以下信息，以JSON格式返回，字段名用英文：
-{"tracking_number":"物流单号","carrier":"承运商名称","weight":"重量数字(仅数字,单位kg)","volume":"体积CBM数字(仅数字)","shipping_date":"发货日期YYYY-MM-DD","estimated_arrival":"预计到达日期YYYY-MM-DD","notes":"其他重要信息"}
-无法识别的字段值设为null，只返回JSON不要其他文字。`;
+    const prompt = 'Extract tracking_number, carrier, weight, volume, shipping_date, estimated_arrival, notes from this logistics image and return JSON only.';
     let reply = '';
     if (provider === 'openai') {
       const r = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -972,7 +1030,7 @@ app.post('/api/logistics/extract', auth, async (req, res) => {
           messages: [{ role: 'user', content: [{ type: 'image_url', image_url: { url: image_data } }, { type: 'text', text: prompt }] }] }),
       });
       const d = await r.json();
-      if (!r.ok) return res.status(500).json({ message: d.error?.message || 'OpenAI调用失败' });
+    if (!image_data) return res.status(400).json({ message: 'Please upload an image' });
       reply = d.choices[0].message.content;
     } else if (provider === 'claude') {
       const r = await fetch('https://api.anthropic.com/v1/messages', {
@@ -981,7 +1039,7 @@ app.post('/api/logistics/extract', auth, async (req, res) => {
           messages: [{ role: 'user', content: [{ type: 'image', source: { type: 'base64', media_type: mimeType, data: base64 } }, { type: 'text', text: prompt }] }] }),
       });
       const d = await r.json();
-      if (!r.ok) return res.status(500).json({ message: d.error?.message || 'Claude调用失败' });
+      if (!r.ok) return res.status(500).json({ message: d.error?.message || 'Claude璋冪敤澶辫触' });
       reply = d.content[0].text;
     } else if (provider === 'gemini') {
       const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model || 'gemini-1.5-flash'}:generateContent?key=${api_key}`, {
@@ -989,49 +1047,15 @@ app.post('/api/logistics/extract', auth, async (req, res) => {
         body: JSON.stringify({ contents: [{ parts: [{ inline_data: { mime_type: mimeType, data: base64 } }, { text: prompt }] }] }),
       });
       const d = await r.json();
-      if (!r.ok) return res.status(500).json({ message: d.error?.message || 'Gemini调用失败' });
+      if (!r.ok) return res.status(500).json({ message: d.error?.message || 'Gemini璋冪敤澶辫触' });
       reply = d.candidates[0].content.parts[0].text;
     }
     const m = reply.match(/\{[\s\S]*\}/);
-    if (!m) return res.status(500).json({ message: '无法解析AI返回结果' });
+    if (!m) return res.status(500).json({ message: '鏃犳硶瑙ｆ瀽AI杩斿洖缁撴灉' });
     res.json({ success: true, data: JSON.parse(m[0]) });
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// Gemini image generation endpoint
-app.post('/api/ai/image', auth, async (req, res) => {
-  try {
-    const { prompt } = req.body || {};
-    if (!prompt) return res.status(400).json({ message: '请输入图片提示词' });
-
-    const settings = await sb('ai_settings?select=provider,api_key,model&order=created_at.desc&limit=1');
-    const setting = settings[0] || {};
-    const api_key = process.env.GEMINI_API_KEY || (setting.provider === 'gemini' ? setting.api_key : '');
-    const model = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.0-flash';
-    if (!api_key) return res.status(400).json({ message: '请先配置 Gemini API Key（设置页选择Gemini后保存，或配置 GEMINI_API_KEY）' });
-
-    const body = {
-      contents: [{ role: 'user', parts: [{ text: `Generate an image: ${prompt}` }] }]
-    };
-
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${api_key}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    const d = await r.json();
-    if (!r.ok) return res.status(500).json({ message: d.error?.message || 'Gemini 调用失败' });
-
-    const parts = d?.candidates?.[0]?.content?.parts || [];
-    const imagePart = parts.find(p => p.inlineData && p.inlineData.data);
-    if (!imagePart) return res.status(500).json({ message: 'Gemini 未返回图片，请尝试更换图片模型或优化提示词' });
-
-    const mimeType = imagePart.inlineData.mimeType || 'image/png';
-    const imageDataUrl = `data:${mimeType};base64,${imagePart.inlineData.data}`;
-    res.json({ success: true, image: imageDataUrl });
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
-});
 
 module.exports = app;
+
