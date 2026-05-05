@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -25,10 +25,10 @@ button,input,select,textarea{font:inherit}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(0,200,255,0.15);border-radius:4px}
 
-/* ── App shell ── */
+/* 鈹€鈹€ App shell 鈹€鈹€ */
 .app{display:flex;height:100vh;overflow:hidden;position:relative;z-index:1;}
 
-/* ── Sidebar ── */
+/* 鈹€鈹€ Sidebar 鈹€鈹€ */
 .sidebar{
   width:var(--sb);flex-shrink:0;height:100%;
   background:linear-gradient(180deg,#1f3463,#203b6f);
@@ -46,7 +46,7 @@ button,input,select,textarea{font:inherit}
 
 .sb-nav{flex:1;overflow-y:auto;overflow-x:hidden;padding:10px 0}
 
-/* ── 层级 L1：一级导航项 ── */
+/* 鈹€鈹€ 灞傜骇 L1锛氫竴绾у鑸」 鈹€鈹€ */
 .nav-item{
   display:flex;align-items:center;gap:12px;padding:11px 16px;
   cursor:pointer;transition:.2s;white-space:nowrap;
@@ -68,7 +68,7 @@ button,input,select,textarea{font:inherit}
 .nav-label{overflow:hidden;transition:font-size .2s,font-weight .2s}
 .nav-group{padding:8px 16px 4px;font-size:10px;font-weight:600;color:rgba(0,200,255,0.22);text-transform:uppercase;letter-spacing:.8px;white-space:nowrap;overflow:hidden}
 
-/* ── 层级 L2：折叠分组标题（分隔标签，视觉比 L1 小）── */
+/* 鈹€鈹€ 灞傜骇 L2锛氭姌鍙犲垎缁勬爣棰橈紙鍒嗛殧鏍囩锛岃瑙夋瘮 L1 灏忥級鈹€鈹€ */
 .nav-collapse-hd{
   display:flex;align-items:center;padding:11px 16px;
   font-size:15px;font-weight:500;
@@ -82,11 +82,11 @@ button,input,select,textarea{font:inherit}
 .nav-collapse-body{overflow:hidden;max-height:500px;transition:max-height .35s ease}
 .nav-collapse-body.closed{max-height:0}
 
-/* ── 层级 L2：折叠分组内的一级项（与主导航相同大小）── */
+/* 鈹€鈹€ 灞傜骇 L2锛氭姌鍙犲垎缁勫唴鐨勪竴绾ч」锛堜笌涓诲鑸浉鍚屽ぇ灏忥級鈹€鈹€ */
 .nav-collapse-body > .nav-item{font-size:15px}
 .nav-collapse-body > .nav-item.active{font-size:17px}
 
-/* ── 层级 L3：二级子项（比 L1 小一档）── */
+/* 鈹€鈹€ 灞傜骇 L3锛氫簩绾у瓙椤癸紙姣?L1 灏忎竴妗ｏ級鈹€鈹€ */
 .sub-nav{padding-left:8px}
 .sub-nav .nav-item{font-size:13.5px;padding:8px 14px;color:#a4b8e2}
 .sub-nav .nav-item:hover{color:#dbe7ff}
@@ -100,10 +100,10 @@ button,input,select,textarea{font:inherit}
 }
 .sb-toggle:hover{border-color:#9fc0ff;color:#fff}
 
-/* ── Main content ── */
+/* 鈹€鈹€ Main content 鈹€鈹€ */
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
 
-/* ── Header ── */
+/* 鈹€鈹€ Header 鈹€鈹€ */
 .header{
   height:58px;display:flex;align-items:center;gap:16px;
   padding:0 22px;border-bottom:1px solid var(--border);
@@ -168,14 +168,14 @@ button,input,select,textarea{font:inherit}
 .dd-item.danger{color:var(--danger)}
 .dd-item.danger:hover{background:rgba(251,113,133,.1)}
 
-/* ── Workspace ── */
+/* 鈹€鈹€ Workspace 鈹€鈹€ */
 .workspace{flex:1;overflow-y:auto;overflow-x:hidden;padding:24px 22px;position:relative}
 .section{display:none}
 .section.active{display:block}
 .section-title{font-size:22px;font-weight:700;margin-bottom:4px}   /* H1 */
-.section-sub{color:var(--muted);font-size:14px;margin-bottom:20px} /* 副标题 */
+.section-sub{color:var(--muted);font-size:14px;margin-bottom:20px} /* 鍓爣棰?*/
 
-/* ── KPI Grid ── */
+/* 鈹€鈹€ KPI Grid 鈹€鈹€ */
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:22px}
 .kpi{
   background:linear-gradient(180deg,rgba(0,180,255,0.06),rgba(0,100,180,0.02));
@@ -193,14 +193,14 @@ button,input,select,textarea{font:inherit}
 .kpi-value.purple{color:var(--purple)}
 .kpi-delta{font-size:11px;color:var(--muted);margin-top:4px}
 
-/* ── Charts ── */
+/* 鈹€鈹€ Charts 鈹€鈹€ */
 .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px}
 .chart-card{background:linear-gradient(180deg,rgba(0,180,255,0.05),rgba(0,100,180,0.02));border:1px solid var(--border);border-radius:var(--radius);padding:18px}
 .chart-card h3{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px}
 .chart-card canvas{max-height:210px}
 .charts-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:22px}
 
-/* ── Quick Actions ── */
+/* 鈹€鈹€ Quick Actions 鈹€鈹€ */
 .quick-actions{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
 .qa-btn{
   display:flex;align-items:center;gap:8px;padding:9px 16px;
@@ -211,12 +211,12 @@ button,input,select,textarea{font:inherit}
 .qa-btn.primary{background:linear-gradient(135deg,#005f90,#008fba);border-color:rgba(0,200,255,0.4);color:#fff;font-weight:600}
 .qa-btn.primary:hover{background:linear-gradient(135deg,#007ab8,#00a8d8);box-shadow:0 6px 20px rgba(0,180,220,0.3)}
 
-/* ── Cards ── */
+/* 鈹€鈹€ Cards 鈹€鈹€ */
 .card{background:linear-gradient(180deg,rgba(0,180,255,0.05),rgba(0,100,180,0.02));border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px}
 .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
-.card-head h2{font-size:16px;font-weight:600}  /* H2 卡片标题 */
+.card-head h2{font-size:16px;font-weight:600}  /* H2 鍗＄墖鏍囬 */
 
-/* ── Filter bar ── */
+/* 鈹€鈹€ Filter bar 鈹€鈹€ */
 .filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
 .filter-bar input,.filter-bar select{
   background:rgba(0,180,255,0.04);border:1px solid var(--border);
@@ -225,7 +225,7 @@ button,input,select,textarea{font:inherit}
 .filter-bar input:focus,.filter-bar select:focus{border-color:rgba(0,200,255,0.45)}
 .filter-bar select option{background:var(--panel);color:var(--text)}
 
-/* ── Table ── */
+/* 鈹€鈹€ Table 鈹€鈹€ */
 .tbl-wrap{overflow:auto;border-radius:10px;border:1px solid var(--border)}
 table{width:100%;border-collapse:collapse;min-width:600px}
 th,td{padding:11px 13px;text-align:left;border-bottom:1px solid rgba(0,180,255,0.06);font-size:14px;vertical-align:middle}
@@ -234,7 +234,7 @@ tr:hover td{background:rgba(0,180,255,0.03)}
 tr:last-child td{border-bottom:none}
 .actions-cell{display:flex;gap:6px;flex-wrap:wrap}
 
-/* ── Buttons ── */
+/* 鈹€鈹€ Buttons 鈹€鈹€ */
 .btn{padding:6px 13px;border-radius:7px;border:1px solid var(--border);background:rgba(0,180,255,0.04);color:var(--muted2);cursor:pointer;font-size:12px;font-weight:500;transition:.2s;white-space:nowrap}
 .btn:hover{border-color:rgba(0,200,255,0.4);color:var(--primary)}
 .btn-primary{background:linear-gradient(135deg,#005f90,#008fba);border-color:rgba(0,200,255,0.4);color:#fff;font-weight:600}
@@ -249,7 +249,7 @@ tr:last-child td{border-bottom:none}
 .del-row-btn:hover{background:rgba(255,80,80,.35)}
 tr:hover .del-row-btn{display:inline-block}
 
-/* ── Status badges ── */
+/* 鈹€鈹€ Status badges 鈹€鈹€ */
 .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
 .badge-new{background:rgba(139,92,246,.15);color:#a78bfa}
 .badge-quoted{background:rgba(34,211,238,.15);color:var(--cyan)}
@@ -262,7 +262,7 @@ tr:hover .del-row-btn{display:inline-block}
 .badge-vip{background:rgba(251,191,36,.15);color:var(--warn)}
 .badge-potential{background:rgba(139,92,246,.12);color:#a78bfa}
 
-/* ── Modal ── */
+/* 鈹€鈹€ Modal 鈹€鈹€ */
 .modal-backdrop{position:fixed;inset:0;background:rgba(0,2,8,.82);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px)}
 .modal{background:var(--panel);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);width:min(680px,100%);max-height:88vh;overflow-y:auto;padding:24px;position:relative}
 .modal-lg{width:min(900px,100%)}
@@ -284,7 +284,7 @@ tr:hover .del-row-btn{display:inline-block}
 .field select option{background:var(--panel)}
 .field textarea{resize:vertical;min-height:80px}
 
-/* ── Order items in modal ── */
+/* 鈹€鈹€ Order items in modal 鈹€鈹€ */
 .items-section{margin:14px 0}
 .items-section h3{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
 .item-row{
@@ -305,7 +305,7 @@ tr:hover .del-row-btn{display:inline-block}
 .calc-item span{font-size:11px;color:var(--muted);display:block;margin-bottom:3px}
 .calc-item strong{font-size:17px;font-weight:700;color:var(--primary)}
 
-/* ── Quick Export (floating) ── */
+/* 鈹€鈹€ Quick Export (floating) 鈹€鈹€ */
 .quick-export{
   position:fixed;right:18px;bottom:18px;z-index:50;width:230px;
   background:rgba(3,8,20,0.97);border:1px solid var(--border);
@@ -332,12 +332,12 @@ tr:hover .del-row-btn{display:inline-block}
 }
 .qe-btns button:hover{background:rgba(0,200,240,0.14);border-color:rgba(0,200,255,0.35)}
 
-/* ── Empty state ── */
+/* 鈹€鈹€ Empty state 鈹€鈹€ */
 .empty-state{text-align:center;padding:44px 20px;color:var(--muted)}
 .empty-state .icon{font-size:36px;margin-bottom:10px;opacity:.4}
 .empty-state p{font-size:14px}
 
-/* ── Toast ── */
+/* 鈹€鈹€ Toast 鈹€鈹€ */
 .toast{
   position:fixed;bottom:70px;right:18px;z-index:300;
   background:var(--panel);border:1px solid var(--border);border-radius:10px;
@@ -348,15 +348,15 @@ tr:hover .del-row-btn{display:inline-block}
 .toast.ok{border-color:rgba(0,200,240,0.4);color:var(--primary)}
 .toast.err{border-color:rgba(251,113,133,.4);color:var(--danger)}
 
-/* ── Analytics ── */
+/* 鈹€鈹€ Analytics 鈹€鈹€ */
 .analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 
-/* ── Settings ── */
+/* 鈹€鈹€ Settings 鈹€鈹€ */
 .settings-section{margin-bottom:22px}
 .settings-section h3{font-size:13px;font-weight:600;margin-bottom:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
 .status-line{margin-top:8px;font-size:12px;color:var(--muted)}
 
-/* ── AI Chat ── */
+/* 鈹€鈹€ AI Chat 鈹€鈹€ */
 .ai-wrap{display:flex;flex-direction:column;height:calc(100vh - 180px);min-height:400px}
 .ai-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px}
 .ai-msg{display:flex;gap:10px;align-items:flex-start;max-width:100%}
@@ -388,7 +388,7 @@ tr:hover .del-row-btn{display:inline-block}
 .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:99;backdrop-filter:blur(2px)}
 .sidebar-overlay.active{display:block}
 
-/* ── Responsive ── */
+/* 鈹€鈹€ Responsive 鈹€鈹€ */
 @media(max-width:1100px){.charts-row,.charts-row-3{grid-template-columns:1fr}.analytics-grid{grid-template-columns:1fr}}
 @media(max-width:768px){
   .sidebar{position:fixed;left:-240px;top:0;height:100%;z-index:100;transition:.25s}
@@ -418,7 +418,7 @@ tr:hover .del-row-btn{display:inline-block}
 <div class="app">
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
 
-<!-- ══ SIDEBAR ══ -->
+<!-- 鈺愨晲 SIDEBAR 鈺愨晲 -->
 <aside class="sidebar" id="sidebar">
   <div class="sb-logo">
     <div class="logo-icon">
@@ -433,101 +433,101 @@ tr:hover .del-row-btn{display:inline-block}
   </div>
   <nav class="sb-nav" id="sbNav">
     <div class="nav-item active" data-sec="dashboard">
-      <span class="nav-icon">⌂</span><span class="nav-label" data-i18n="navDashboard">仪表盘</span>
+      <span class="nav-icon">鈱?/span><span class="nav-label" data-i18n="navDashboard">浠〃鐩?/span>
     </div>
     <div class="nav-item" data-sec="inquiries">
-      <span class="nav-icon">◎</span><span class="nav-label" data-i18n="navInquiries">询盘管理</span>
+      <span class="nav-icon">鈼?/span><span class="nav-label" data-i18n="navInquiries">璇㈢洏绠＄悊</span>
     </div>
     <div class="nav-item" data-sec="customers">
-      <span class="nav-icon">◉</span><span class="nav-label" data-i18n="navCustomers">客户管理</span>
+      <span class="nav-icon">鈼?/span><span class="nav-label" data-i18n="navCustomers">瀹㈡埛绠＄悊</span>
     </div>
     <div class="nav-item" data-sec="products">
-      <span class="nav-icon">▣</span><span class="nav-label" data-i18n="navProducts">产品管理</span>
+      <span class="nav-icon">鈻?/span><span class="nav-label" data-i18n="navProducts">浜у搧绠＄悊</span>
     </div>
     <div class="nav-item" data-sec="suppliers">
-      <span class="nav-icon">◫</span><span class="nav-label" data-i18n="navSuppliers">供应商管理</span>
+      <span class="nav-icon">鈼?/span><span class="nav-label" data-i18n="navSuppliers">渚涘簲鍟嗙鐞?/span>
     </div>
     <div class="nav-item" data-sec="orders">
-      <span class="nav-icon">◍</span><span class="nav-label" data-i18n="navOrders">订单管理</span>
+      <span class="nav-icon">鈼?/span><span class="nav-label" data-i18n="navOrders">璁㈠崟绠＄悊</span>
     </div>
     <div class="nav-item" data-sec="analytics">
-      <span class="nav-icon">◔</span><span class="nav-label" data-i18n="navAnalytics">数据分析</span>
+      <span class="nav-icon">鈼?/span><span class="nav-label" data-i18n="navAnalytics">鏁版嵁鍒嗘瀽</span>
     </div>
 
-    <!-- 文件 折叠分组 -->
+    <!-- 鏂囦欢 鎶樺彔鍒嗙粍 -->
     <div class="nav-collapse-hd" onclick="toggleGroup('docGroup')">
-      <span>文件</span>
-      <span class="nav-collapse-arrow" id="arrow-docGroup" style="transform:rotate(-90deg)">▼</span>
+      <span>鏂囦欢</span>
+      <span class="nav-collapse-arrow" id="arrow-docGroup" style="transform:rotate(-90deg)">鈻?/span>
     </div>
     <div class="nav-collapse-body closed" id="docGroup">
       <div class="nav-item" data-sec="documents">
-        <span class="nav-icon">▤</span><span class="nav-label" data-i18n="navDocuments">文件</span>
+        <span class="nav-icon">鈻?/span><span class="nav-label" data-i18n="navDocuments">鏂囦欢</span>
       </div>
       <div class="sub-nav">
         <div class="nav-item" data-sec="documents" data-doctype="quotation">
-          <span class="nav-icon">◌</span><span class="nav-label" data-i18n="navQuotation">报价单</span>
+          <span class="nav-icon">鈼?/span><span class="nav-label" data-i18n="navQuotation">鎶ヤ环鍗?/span>
         </div>
         <div class="nav-item" data-sec="documents" data-doctype="pi">
-          <span class="nav-icon">◍</span><span class="nav-label" data-i18n="navPI">形式发票</span>
+          <span class="nav-icon">鈼?/span><span class="nav-label" data-i18n="navPI">褰㈠紡鍙戠エ</span>
         </div>
         <div class="nav-item" data-sec="documents" data-doctype="packing">
-          <span class="nav-icon">◈</span><span class="nav-label" data-i18n="navPacking">装箱单</span>
+          <span class="nav-icon">鈼?/span><span class="nav-label" data-i18n="navPacking">瑁呯鍗?/span>
         </div>
       </div>
     </div>
 
-    <!-- 工具 折叠分组 -->
+    <!-- 宸ュ叿 鎶樺彔鍒嗙粍 -->
     <div class="nav-collapse-hd" onclick="toggleGroup('toolGroup')">
-      <span>工具</span>
-      <span class="nav-collapse-arrow" id="arrow-toolGroup" style="transform:rotate(-90deg)">▼</span>
+      <span>宸ュ叿</span>
+      <span class="nav-collapse-arrow" id="arrow-toolGroup" style="transform:rotate(-90deg)">鈻?/span>
     </div>
     <div class="nav-collapse-body closed" id="toolGroup">
       <div class="nav-item" data-sec="ai">
-        <span class="nav-icon">◇</span><span class="nav-label" data-i18n="navAI">AI 助手</span>
+        <span class="nav-icon">鈼?/span><span class="nav-label" data-i18n="navAI">AI 鍔╂墜</span>
       </div>
       <div class="nav-item" onclick="location.href='email.html'">
-        <span class="nav-icon">✉</span><span class="nav-label">邮件</span>
+        <span class="nav-icon">鉁?/span><span class="nav-label">閭欢</span>
       </div>
     </div>
 
     <div class="nav-item" data-sec="settings">
-      <span class="nav-icon">⚙</span><span class="nav-label" data-i18n="navSettings">系统设置</span>
+      <span class="nav-icon">鈿?/span><span class="nav-label" data-i18n="navSettings">绯荤粺璁剧疆</span>
     </div>
   </nav>
   <div class="sb-bottom">
     <button class="sb-toggle" id="sbToggle">
-      <span id="sbToggleIcon">◀</span>
+      <span id="sbToggleIcon">鈼€</span>
       <span class="nav-label" style="font-size:12px" data-i18n="navCollapse">Collapse</span>
     </button>
   </div>
 </aside>
 
-<!-- ══ MAIN ══ -->
+<!-- 鈺愨晲 MAIN 鈺愨晲 -->
 <div class="main">
 
   <!-- Header -->
   <header class="header">
-    <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileSidebar()">☰</button>
+    <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileSidebar()">鈽?/button>
     <div class="search-wrap">
-      <span class="si">🔍</span>
+      <span class="si">馃攳</span>
       <input type="text" id="globalSearch" data-i18n-ph="phGlobalSearch" placeholder="Search orders, customers..." autocomplete="off">
       <div class="search-dropdown" id="searchDropdown"></div>
     </div>
-    <a href="doc-maker.html" target="_blank" style="padding:7px 14px;border:1px solid rgba(0,190,255,0.3);border-radius:8px;background:rgba(0,180,255,0.06);color:rgba(0,210,255,0.85);font-size:13px;text-decoration:none;white-space:nowrap;transition:.2s" onmouseover="this.style.background='rgba(0,190,255,0.14)'" onmouseout="this.style.background='rgba(0,180,255,0.06)'">📝 手动制作文件</a>
-    <a href="logistics.html" target="_blank" style="padding:7px 14px;border:1px solid rgba(74,222,128,0.3);border-radius:8px;background:rgba(74,222,128,0.05);color:rgba(74,222,128,0.9);font-size:13px;text-decoration:none;white-space:nowrap;transition:.2s" onmouseover="this.style.background='rgba(74,222,128,0.14)'" onmouseout="this.style.background='rgba(74,222,128,0.05)'">📦 物流管理</a>
-    <a href="password-vault.html" target="_blank" style="padding:7px 14px;border:1px solid rgba(251,191,36,0.35);border-radius:8px;background:rgba(251,191,36,0.07);color:rgba(253,224,71,0.95);font-size:13px;text-decoration:none;white-space:nowrap;transition:.2s" onmouseover="this.style.background='rgba(251,191,36,0.16)'" onmouseout="this.style.background='rgba(251,191,36,0.07)'">Password Vault</a>
+    <a href="doc-maker.html" target="_blank" style="padding:7px 14px;border:1px solid rgba(0,190,255,0.3);border-radius:8px;background:rgba(0,180,255,0.06);color:rgba(0,210,255,0.85);font-size:13px;text-decoration:none;white-space:nowrap;transition:.2s" onmouseover="this.style.background='rgba(0,190,255,0.14)'" onmouseout="this.style.background='rgba(0,180,255,0.06)'">馃摑 鎵嬪姩鍒朵綔鏂囦欢</a>
+    <a href="logistics.html" target="_blank" style="padding:7px 14px;border:1px solid rgba(74,222,128,0.3);border-radius:8px;background:rgba(74,222,128,0.05);color:rgba(74,222,128,0.9);font-size:13px;text-decoration:none;white-space:nowrap;transition:.2s" onmouseover="this.style.background='rgba(74,222,128,0.14)'" onmouseout="this.style.background='rgba(74,222,128,0.05)'">馃摝 鐗╂祦绠＄悊</a>
+    <a href="password-vault.html" target="_blank" style="padding:7px 14px;border:1px solid rgba(251,191,36,0.35);border-radius:8px;background:rgba(251,191,36,0.07);color:rgba(253,224,71,0.95);font-size:13px;text-decoration:none;white-space:nowrap;transition:.2s" onmouseover="this.style.background='rgba(251,191,36,0.16)'" onmouseout="this.style.background='rgba(251,191,36,0.07)'" data-i18n="navPasswordVault">Password Vault</a>
     <div class="header-right">
-      <button class="lang-btn" id="langBtn" onclick="toggleLang()">中/EN</button>
-      <button class="icon-btn" title="Notifications">🔔</button>
+      <button class="lang-btn" id="langBtn" onclick="toggleLang()">涓?EN</button>
+      <button class="icon-btn" title="Notifications">馃敂</button>
       <div style="position:relative">
         <button class="user-btn" id="userBtn" onclick="toggleUserMenu()">
           <div class="user-avatar" id="userAvatar">T</div>
           <span id="userNameDisplay">TPKELE</span>
-          <span style="color:var(--muted)">▾</span>
+          <span style="color:var(--muted)">鈻?/span>
         </button>
         <div class="user-dropdown" id="userDropdown">
-          <div class="dd-item" onclick="navigate('settings')" data-i18n="ddSettings">⚙️ Settings</div>
-          <div class="dd-item danger" onclick="logout()" data-i18n="ddLogout">🚪 Logout</div>
+          <div class="dd-item" onclick="navigate('settings')" data-i18n="ddSettings">鈿欙笍 Settings</div>
+          <div class="dd-item danger" onclick="logout()" data-i18n="ddLogout">馃毆 Logout</div>
         </div>
       </div>
     </div>
@@ -536,22 +536,22 @@ tr:hover .del-row-btn{display:inline-block}
   <!-- Workspace -->
   <main class="workspace" id="workspace">
 
-    <!-- ── DASHBOARD ── -->
+    <!-- 鈹€鈹€ DASHBOARD 鈹€鈹€ -->
     <section class="section active" id="sec-dashboard">
       <div class="section-title" data-i18n="dashTitle">Dashboard</div>
       <div class="section-sub" data-i18n="dashSub">Overview of your trade performance</div>
       <div class="kpi-grid" id="kpiGrid">
-        <div class="kpi"><div class="kpi-label" data-i18n="kpiMonthOrders">Monthly Orders</div><div class="kpi-value green" id="kv-mo">—</div></div>
-        <div class="kpi"><div class="kpi-label" data-i18n="kpiYearOrders">Annual Orders</div><div class="kpi-value cyan" id="kv-yo">—</div></div>
-        <div class="kpi"><div class="kpi-label" data-i18n="kpiMonthSales">Monthly Sales</div><div class="kpi-value green" id="kv-ms">—</div></div>
-        <div class="kpi"><div class="kpi-label" data-i18n="kpiYearSales">Annual Sales</div><div class="kpi-value cyan" id="kv-ys">—</div></div>
-        <div class="kpi"><div class="kpi-label" data-i18n="kpiMonthProfit">Monthly Profit</div><div class="kpi-value purple" id="kv-mp">—</div></div>
-        <div class="kpi"><div class="kpi-label" data-i18n="kpiYearProfit">Annual Profit</div><div class="kpi-value purple" id="kv-yp">—</div></div>
+        <div class="kpi"><div class="kpi-label" data-i18n="kpiMonthOrders">Monthly Orders</div><div class="kpi-value green" id="kv-mo">鈥?/div></div>
+        <div class="kpi"><div class="kpi-label" data-i18n="kpiYearOrders">Annual Orders</div><div class="kpi-value cyan" id="kv-yo">鈥?/div></div>
+        <div class="kpi"><div class="kpi-label" data-i18n="kpiMonthSales">Monthly Sales</div><div class="kpi-value green" id="kv-ms">鈥?/div></div>
+        <div class="kpi"><div class="kpi-label" data-i18n="kpiYearSales">Annual Sales</div><div class="kpi-value cyan" id="kv-ys">鈥?/div></div>
+        <div class="kpi"><div class="kpi-label" data-i18n="kpiMonthProfit">Monthly Profit</div><div class="kpi-value purple" id="kv-mp">鈥?/div></div>
+        <div class="kpi"><div class="kpi-label" data-i18n="kpiYearProfit">Annual Profit</div><div class="kpi-value purple" id="kv-yp">鈥?/div></div>
       </div>
       <div class="quick-actions">
-        <button class="qa-btn primary" data-i18n="btnNewOrder" onclick="openOrderModal()">＋ New Order</button>
-        <button class="qa-btn" data-i18n="btnNewCustomer" onclick="navigate('customers');setTimeout(openCustomerModal,200)">＋ New Customer</button>
-        <button class="qa-btn" data-i18n="btnNewInquiry" onclick="navigate('inquiries');setTimeout(openInquiryModal,200)">＋ New Inquiry</button>
+        <button class="qa-btn primary" data-i18n="btnNewOrder" onclick="openOrderModal()">锛?New Order</button>
+        <button class="qa-btn" data-i18n="btnNewCustomer" onclick="navigate('customers');setTimeout(openCustomerModal,200)">锛?New Customer</button>
+        <button class="qa-btn" data-i18n="btnNewInquiry" onclick="navigate('inquiries');setTimeout(openInquiryModal,200)">锛?New Inquiry</button>
       </div>
       <div class="charts-row">
         <div class="chart-card"><h3 data-i18n="chartOrderTrend">Order Trend (12 months)</h3><canvas id="chartOrders"></canvas></div>
@@ -563,7 +563,7 @@ tr:hover .del-row-btn{display:inline-block}
       </div>
     </section>
 
-    <!-- ── INQUIRIES ── -->
+    <!-- 鈹€鈹€ INQUIRIES 鈹€鈹€ -->
     <section class="section" id="sec-inquiries">
       <div class="section-title" data-i18n="navInquiries">Inquiries</div>
       <div class="section-sub" data-i18n="subInquiries">Manage incoming trade inquiries and convert to orders</div>
@@ -579,7 +579,7 @@ tr:hover .del-row-btn{display:inline-block}
               <option value="closed" data-i18n="stClosed">Closed</option>
             </select>
           </div>
-          <button class="btn btn-primary" data-i18n="btnNewInquiryCard" onclick="openInquiryModal()">＋ New Inquiry</button>
+          <button class="btn btn-primary" data-i18n="btnNewInquiryCard" onclick="openInquiryModal()">锛?New Inquiry</button>
         </div>
         <div class="tbl-wrap">
           <table>
@@ -593,14 +593,14 @@ tr:hover .del-row-btn{display:inline-block}
       </div>
     </section>
 
-    <!-- ── CUSTOMERS ── -->
+    <!-- 鈹€鈹€ CUSTOMERS 鈹€鈹€ -->
     <section class="section" id="sec-customers">
       <div class="section-title" data-i18n="navCustomers">Customers</div>
-      <div class="section-sub" data-i18n="subCustomers">Buyer master data — auto-fills PI documents</div>
+      <div class="section-sub" data-i18n="subCustomers">Buyer master data 鈥?auto-fills PI documents</div>
       <div class="card">
         <div class="card-head">
           <input type="text" id="cu-search" data-i18n-ph="phSearchCu" placeholder="Name / country / email..." oninput="renderCustomers()" style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:9px 14px;color:var(--text);font-size:13px;outline:none;width:260px">
-          <button class="btn btn-primary" data-i18n="btnNewCustomerCard" onclick="openCustomerModal()">＋ New Customer</button>
+          <button class="btn btn-primary" data-i18n="btnNewCustomerCard" onclick="openCustomerModal()">锛?New Customer</button>
         </div>
         <div class="tbl-wrap">
           <table>
@@ -613,14 +613,14 @@ tr:hover .del-row-btn{display:inline-block}
       </div>
     </section>
 
-    <!-- ── PRODUCTS ── -->
+    <!-- 鈹€鈹€ PRODUCTS 鈹€鈹€ -->
     <section class="section" id="sec-products">
       <div class="section-title" data-i18n="navProducts">Products</div>
-      <div class="section-sub" data-i18n="subProducts">Product library — auto-fills order items with specs and prices</div>
+      <div class="section-sub" data-i18n="subProducts">Product library 鈥?auto-fills order items with specs and prices</div>
       <div class="card">
         <div class="card-head">
           <input type="text" id="pr-search" data-i18n-ph="phSearchPr" placeholder="Code / name / spec..." oninput="renderProducts()" style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:9px 14px;color:var(--text);font-size:13px;outline:none;width:260px">
-          <button class="btn btn-primary" data-i18n="btnNewProductCard" onclick="openProductModal()">＋ New Product</button>
+          <button class="btn btn-primary" data-i18n="btnNewProductCard" onclick="openProductModal()">锛?New Product</button>
         </div>
         <div class="tbl-wrap">
           <table>
@@ -633,14 +633,14 @@ tr:hover .del-row-btn{display:inline-block}
       </div>
     </section>
 
-    <!-- ── SUPPLIERS ── -->
+    <!-- 鈹€鈹€ SUPPLIERS 鈹€鈹€ -->
     <section class="section" id="sec-suppliers">
       <div class="section-title" data-i18n="navSuppliers">Suppliers</div>
       <div class="section-sub" data-i18n="subSuppliers">Supplier master data with product image and contact info</div>
       <div class="card">
         <div class="card-head">
           <input type="text" id="su-search" data-i18n-ph="phSearchSu" placeholder="Name / contact / phone..." oninput="renderSuppliers()" style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:9px 14px;color:var(--text);font-size:13px;outline:none;width:260px">
-          <button class="btn btn-primary" data-i18n="btnNewSupplierCard" onclick="openSupplierModal()">＋ New Supplier</button>
+          <button class="btn btn-primary" data-i18n="btnNewSupplierCard" onclick="openSupplierModal()">锛?New Supplier</button>
         </div>
         <div class="tbl-wrap">
           <table>
@@ -653,7 +653,7 @@ tr:hover .del-row-btn{display:inline-block}
       </div>
     </section>
 
-    <!-- ── ORDERS ── -->
+    <!-- 鈹€鈹€ ORDERS 鈹€鈹€ -->
     <section class="section" id="sec-orders">
       <div class="section-title" data-i18n="navOrders">Orders</div>
       <div class="section-sub" data-i18n="subOrders">Full order management with product line items</div>
@@ -673,7 +673,7 @@ tr:hover .del-row-btn{display:inline-block}
               <option value="completed" data-i18n="stCompleted">Completed</option>
             </select>
           </div>
-          <button class="btn btn-primary" data-i18n="btnNewOrderCard" onclick="openOrderModal()">＋ New Order</button>
+          <button class="btn btn-primary" data-i18n="btnNewOrderCard" onclick="openOrderModal()">锛?New Order</button>
         </div>
         <div class="tbl-wrap">
           <table>
@@ -687,7 +687,7 @@ tr:hover .del-row-btn{display:inline-block}
       </div>
     </section>
 
-    <!-- ── DOCUMENTS ── -->
+    <!-- 鈹€鈹€ DOCUMENTS 鈹€鈹€ -->
     <section class="section" id="sec-documents">
       <div class="section-title" data-i18n="navDocuments">Documents</div>
       <div class="section-sub" data-i18n="subDocuments">Export Quotations, Commercial Invoices, and Packing Lists</div>
@@ -698,7 +698,7 @@ tr:hover .del-row-btn{display:inline-block}
         <div class="form-grid">
           <div class="field">
             <label data-i18n="lblSelectOrder">Select Order</label>
-            <select id="doc-order"><option value="">— Select an order —</option></select>
+            <select id="doc-order"><option value="">鈥?Select an order 鈥?/option></select>
           </div>
           <div class="field">
             <label data-i18n="lblDocType">Document Type</label>
@@ -712,29 +712,29 @@ tr:hover .del-row-btn{display:inline-block}
             <label data-i18n="lblDocLang">Language</label>
             <select id="doc-lang">
               <option value="en">English</option>
-              <option value="zh">中文</option>
+              <option value="zh">涓枃</option>
             </select>
           </div>
         </div>
         <div style="display:flex;gap:10px;margin-top:8px">
-          <button class="btn btn-primary" data-i18n="btnGenerate" onclick="generateDocument()">📄 Generate & Export PDF</button>
-          <button class="btn btn-cyan" data-i18n="btnExportCSV" onclick="generateDocument('csv')">📊 Export CSV</button>
+          <button class="btn btn-primary" data-i18n="btnGenerate" onclick="generateDocument()">馃搫 Generate & Export PDF</button>
+          <button class="btn btn-cyan" data-i18n="btnExportCSV" onclick="generateDocument('csv')">馃搳 Export CSV</button>
         </div>
       </div>
       <div class="card" id="docPreviewCard" style="display:none">
         <div class="card-head">
           <h2 data-i18n="docPreviewTitle">Document Preview</h2>
           <div style="display:flex;gap:8px">
-            <button class="btn btn-cyan" id="addRowBtn" onclick="addPackingRow()" style="display:none">＋ 增加行</button>
-            <button class="btn" id="docEditBtn" onclick="toggleDocEdit()">✏️ 编辑</button>
-            <button class="btn btn-primary" onclick="downloadDocPDF()">⬇️ 下载 PDF</button>
+            <button class="btn btn-cyan" id="addRowBtn" onclick="addPackingRow()" style="display:none">锛?澧炲姞琛?/button>
+            <button class="btn" id="docEditBtn" onclick="toggleDocEdit()">鉁忥笍 缂栬緫</button>
+            <button class="btn btn-primary" onclick="downloadDocPDF()">猬囷笍 涓嬭浇 PDF</button>
           </div>
         </div>
         <div id="docPreview" style="background:#fff;color:#000;padding:24px;border-radius:10px;font-size:13px;line-height:1.6;outline:none"></div>
       </div>
     </section>
 
-    <!-- ── ANALYTICS ── -->
+    <!-- 鈹€鈹€ ANALYTICS 鈹€鈹€ -->
     <section class="section" id="sec-analytics">
       <div class="section-title" data-i18n="navAnalytics">Analytics</div>
       <div class="section-sub" data-i18n="subAnalytics">Detailed performance breakdown</div>
@@ -746,44 +746,44 @@ tr:hover .del-row-btn{display:inline-block}
       </div>
     </section>
 
-    <!-- ── AI ASSISTANT ── -->
+    <!-- 鈹€鈹€ AI ASSISTANT 鈹€鈹€ -->
     <section class="section" id="sec-ai">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
         <div>
-          <div class="section-title">🤖 AI 助手</div>
-          <div class="section-sub">接入 GPT / Claude / Gemini，智能处理外贸工作</div>
+          <div class="section-title">馃 AI 鍔╂墜</div>
+          <div class="section-sub">鎺ュ叆 GPT / Claude / Gemini锛屾櫤鑳藉鐞嗗璐稿伐浣?/div>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
-          <span class="ai-provider-badge" id="aiProviderBadge">未配置</span>
-          <button class="btn btn-primary" onclick="openAiSettings()">⚙ 设置 API</button>
-          <button class="btn" onclick="generateGeminiImage()">🖼 Gemini做图</button>
-          <button class="btn" onclick="clearAiChat()">🗑 清空对话</button>
+          <span class="ai-provider-badge" id="aiProviderBadge">鏈厤缃?/span>
+          <button class="btn btn-primary" onclick="openAiSettings()">鈿?璁剧疆 API</button>
+          <button class="btn" onclick="generateGeminiImage()">馃柤 Gemini鍋氬浘</button>
+          <button class="btn" onclick="clearAiChat()">馃棏 娓呯┖瀵硅瘽</button>
         </div>
       </div>
       <div class="card" style="padding:0;overflow:hidden">
         <div class="ai-wrap">
           <div class="ai-messages" id="aiMessages">
             <div class="ai-msg ai-msg-bot">
-              <div class="ai-avatar">🤖</div>
-              <div class="ai-bubble">你好！我是你的外贸 AI 助手。你可以问我：<br>
-                • 帮我写一封英文询价邮件<br>
-                • 帮我分析客户报价，给出还价建议<br>
-                • 帮我起草一份形式发票描述<br>
-                • 如何应对客户的延迟付款<br><br>
-                请先点击右上角「⚙ 设置 API」填写你的 AI API Key。
+              <div class="ai-avatar">馃</div>
+              <div class="ai-bubble">浣犲ソ锛佹垜鏄綘鐨勫璐?AI 鍔╂墜銆備綘鍙互闂垜锛?br>
+                鈥?甯垜鍐欎竴灏佽嫳鏂囪浠烽偖浠?br>
+                鈥?甯垜鍒嗘瀽瀹㈡埛鎶ヤ环锛岀粰鍑鸿繕浠峰缓璁?br>
+                鈥?甯垜璧疯崏涓€浠藉舰寮忓彂绁ㄦ弿杩?br>
+                鈥?濡備綍搴斿瀹㈡埛鐨勫欢杩熶粯娆?br><br>
+                璇峰厛鐐瑰嚮鍙充笂瑙掋€屸殭 璁剧疆 API銆嶅～鍐欎綘鐨?AI API Key銆?
               </div>
             </div>
           </div>
           <div class="ai-bar">
-            <textarea class="ai-input" id="aiInput" rows="1" placeholder="输入消息… Enter 发送，Shift+Enter 换行"
+            <textarea class="ai-input" id="aiInput" rows="1" placeholder="杈撳叆娑堟伅鈥?Enter 鍙戦€侊紝Shift+Enter 鎹㈣"
               onkeydown="aiInputKeydown(event)" oninput="autoResizeAiInput(this)"></textarea>
-            <button class="btn-ai-send" id="btnAiSend" onclick="sendAiMessage()">发送 ↵</button>
+            <button class="btn-ai-send" id="btnAiSend" onclick="sendAiMessage()">鍙戦€?鈫?/button>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ── SETTINGS ── -->
+    <!-- 鈹€鈹€ SETTINGS 鈹€鈹€ -->
     <section class="section" id="sec-settings">
       <div class="section-title" data-i18n="navSettings">Settings</div>
       <div class="section-sub" data-i18n="subSettings">System configuration</div>
@@ -801,14 +801,14 @@ tr:hover .del-row-btn{display:inline-block}
           <h3 data-i18n="setInterface">Interface</h3>
           <div style="display:flex;align-items:center;gap:16px">
             <span style="font-size:13px;color:var(--muted)" data-i18n="lblLanguage">Language</span>
-            <button class="btn" onclick="setLang('zh')">中文</button>
+            <button class="btn" onclick="setLang('zh')">涓枃</button>
             <button class="btn" onclick="setLang('en')">English</button>
           </div>
         </div>
         <div class="settings-section" style="margin-top:24px">
           <h3 data-i18n="setAccount">Account</h3>
-          <div style="font-size:13px;color:var(--muted);margin-bottom:12px"><span data-i18n="setLoggedIn">Single user mode. Logged in as </span><strong style="color:var(--text)" id="setUsername">—</strong></div>
-          <button class="btn btn-danger" data-i18n="btnLogout" onclick="logout()">🚪 Logout</button>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:12px"><span data-i18n="setLoggedIn">Single user mode. Logged in as </span><strong style="color:var(--text)" id="setUsername">鈥?/strong></div>
+          <button class="btn btn-danger" data-i18n="btnLogout" onclick="logout()">馃毆 Logout</button>
         </div>
       </div>
     </section>
@@ -818,11 +818,11 @@ tr:hover .del-row-btn{display:inline-block}
 
 </div><!-- /app -->
 
-<!-- ══ QUICK EXPORT ══ -->
+<!-- 鈺愨晲 QUICK EXPORT 鈺愨晲 -->
 <div class="quick-export" id="quickExport">
   <div class="qe-head" onclick="toggleQE()">
-    <span data-i18n="qeTitle">⚡ Quick Export</span>
-    <span id="qeArrow">▲</span>
+    <span data-i18n="qeTitle">鈿?Quick Export</span>
+    <span id="qeArrow">鈻?/span>
   </div>
   <div class="qe-body" id="qeBody">
     <div class="qe-label" data-i18n="qeLabelOrder">Order</div>
@@ -830,27 +830,27 @@ tr:hover .del-row-btn{display:inline-block}
     <div class="qe-label" data-i18n="qeLabelLang">Language</div>
     <select id="qe-lang">
       <option value="en">English</option>
-      <option value="zh">中文</option>
+      <option value="zh">涓枃</option>
     </select>
     <div class="qe-btns">
-      <button data-i18n="btnQEQuotation" onclick="qeExport('quotation')">📝 Export Quotation</button>
-      <button data-i18n="btnQEPI" onclick="qeExport('pi')">🧾 Export PI</button>
-      <button data-i18n="btnQEPacking" onclick="qeExport('packing')">📦 Export Packing List</button>
+      <button data-i18n="btnQEQuotation" onclick="qeExport('quotation')">馃摑 Export Quotation</button>
+      <button data-i18n="btnQEPI" onclick="qeExport('pi')">馃Ь Export PI</button>
+      <button data-i18n="btnQEPacking" onclick="qeExport('packing')">馃摝 Export Packing List</button>
     </div>
   </div>
 </div>
 
-<!-- ══ TOAST ══ -->
+<!-- 鈺愨晲 TOAST 鈺愨晲 -->
 <div class="toast" id="toast"></div>
 
-<!-- ══ MODALS ══ -->
+<!-- 鈺愨晲 MODALS 鈺愨晲 -->
 
 <!-- Customer Modal -->
 <div class="modal-backdrop" id="customerModal" style="display:none" onclick="closeOnBackdrop(event,'customerModal')">
   <div class="modal">
     <div class="modal-head">
       <h2 id="customerModalTitle">New Customer</h2>
-      <button class="modal-close" onclick="closeModal('customerModal')">×</button>
+      <button class="modal-close" onclick="closeModal('customerModal')">脳</button>
     </div>
     <form id="customerForm" onsubmit="saveCustomer(event)">
       <input type="hidden" id="cm-id">
@@ -883,7 +883,7 @@ tr:hover .del-row-btn{display:inline-block}
   <div class="modal">
     <div class="modal-head">
       <h2 id="productModalTitle">New Product</h2>
-      <button class="modal-close" onclick="closeModal('productModal')">×</button>
+      <button class="modal-close" onclick="closeModal('productModal')">脳</button>
     </div>
     <form id="productForm" onsubmit="saveProduct(event)">
       <input type="hidden" id="pm-id">
@@ -911,7 +911,7 @@ tr:hover .del-row-btn{display:inline-block}
   <div class="modal">
     <div class="modal-head">
       <h2 id="supplierModalTitle">New Supplier</h2>
-      <button class="modal-close" onclick="closeModal('supplierModal')">×</button>
+      <button class="modal-close" onclick="closeModal('supplierModal')">脳</button>
     </div>
     <form id="supplierForm" onsubmit="saveSupplier(event)">
       <input type="hidden" id="sm-id">
@@ -939,7 +939,7 @@ tr:hover .del-row-btn{display:inline-block}
   <div class="modal">
     <div class="modal-head">
       <h2 id="inquiryModalTitle">New Inquiry</h2>
-      <button class="modal-close" onclick="closeModal('inquiryModal')">×</button>
+      <button class="modal-close" onclick="closeModal('inquiryModal')">脳</button>
     </div>
     <form id="inquiryForm" onsubmit="saveInquiry(event)">
       <input type="hidden" id="iqm-id">
@@ -969,7 +969,7 @@ tr:hover .del-row-btn{display:inline-block}
   <div class="modal modal-lg">
     <div class="modal-head">
       <h2 id="orderModalTitle">New Order</h2>
-      <button class="modal-close" onclick="closeModal('orderModal')">×</button>
+      <button class="modal-close" onclick="closeModal('orderModal')">脳</button>
     </div>
     <form id="orderForm" onsubmit="saveOrder(event)">
       <input type="hidden" id="om-id">
@@ -995,7 +995,7 @@ tr:hover .del-row-btn{display:inline-block}
       <div class="items-section">
         <h3 data-i18n="h3Items">Product Items</h3>
         <div id="orderItems"></div>
-        <button type="button" class="btn" style="width:100%;margin-top:8px" data-i18n="btnAddItem" onclick="addOrderItem()">＋ Add Item</button>
+        <button type="button" class="btn" style="width:100%;margin-top:8px" data-i18n="btnAddItem" onclick="addOrderItem()">锛?Add Item</button>
       </div>
       <div class="calc-summary">
         <div class="calc-item"><span data-i18n="cssPurchase">Purchase Total</span><strong id="cs-p">$0.00</strong></div>
@@ -1018,16 +1018,16 @@ tr:hover .del-row-btn{display:inline-block}
         <h2 data-i18n="titleOrderDetail">Order Detail</h2>
         <div id="detailSub" style="font-size:13px;color:var(--muted);margin-top:2px"></div>
       </div>
-      <button class="modal-close" onclick="closeModal('detailModal')">×</button>
+      <button class="modal-close" onclick="closeModal('detailModal')">脳</button>
     </div>
     <div class="form-grid" style="margin-bottom:16px">
       <div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:14px">
         <div style="font-size:11px;color:var(--muted);margin-bottom:6px">SALES TOTAL</div>
-        <div style="font-size:24px;font-weight:700;color:var(--primary)" id="dtSales">—</div>
+        <div style="font-size:24px;font-weight:700;color:var(--primary)" id="dtSales">鈥?/div>
       </div>
       <div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:14px">
         <div style="font-size:11px;color:var(--muted);margin-bottom:6px">PROFIT</div>
-        <div style="font-size:24px;font-weight:700;color:var(--purple)" id="dtProfit">—</div>
+        <div style="font-size:24px;font-weight:700;color:var(--purple)" id="dtProfit">鈥?/div>
       </div>
     </div>
     <div class="tbl-wrap">
@@ -1059,9 +1059,9 @@ tr:hover .del-row-btn{display:inline-block}
 </div>
 
 <script>
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // STATE & HELPERS
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 const S = {
   orders: [], customers: [], products: [], suppliers: [], inquiries: [],
   lang: localStorage.getItem('crm_lang') || 'zh',
@@ -1072,140 +1072,140 @@ const S = {
 
 const I18N = {
   zh: {
-    navDashboard:'仪表盘', navInquiries:'询盘', navCustomers:'客户', navProducts:'产品',
-    navSuppliers:'供应商', navOrders:'订单', navDocuments:'文件', navAnalytics:'数据分析',
-    navSettings:'设置', navDocGroup:'文件', navQuotation:'报价单', navPI:'形式发票',
-    navPacking:'装箱单', navAI:'AI助手', navCollapse:'收起',
-    dashTitle:'仪表盘', dashSub:'贸易业绩总览',
-    kpiMonthOrders:'本月订单', kpiYearOrders:'年度订单', kpiMonthSales:'本月销售额',
-    kpiYearSales:'年度销售额', kpiMonthProfit:'本月利润', kpiYearProfit:'年度利润',
-    btnNewOrder:'＋ 新建订单', btnNewCustomer:'＋ 新建客户', btnNewInquiry:'＋ 新建询盘',
-    chartOrderTrend:'订单趋势（12个月）', chartProfitTrend:'利润趋势（12个月）',
-    chartTopProducts:'销售额TOP产品', chartTopCustomers:'销售额TOP客户',
-    subInquiries:'管理进来的贸易询盘并转化为订单',
-    phSearchIq:'客户 / 备注...', allStatus:'全部状态',
-    stNew:'新询盘', stQuoted:'已报价', stConverted:'已转化', stClosed:'已关闭',
-    thDate:'日期', thCustomer:'客户', thStatus:'状态', thNotes:'备注', thActions:'操作',
-    btnNewInquiryCard:'＋ 新建询盘',
-    subCustomers:'买方主数据 — 自动填充PI文件',
-    phSearchCu:'名称 / 国家 / 邮箱...', btnNewCustomerCard:'＋ 新建客户',
-    thName:'名称', thCountry:'国家', thEmail:'邮箱', thWhatsApp:'WhatsApp', thLevel:'等级',
-    subProducts:'产品库 — 自动填充订单产品规格和价格',
-    phSearchPr:'编号 / 名称 / 规格...', btnNewProductCard:'＋ 新建产品',
-    thCode:'编号', thCNName:'中文名', thENName:'英文名', thSpec:'规格', thUnit:'单位', thPurchase:'采购价', thSales:'销售价',
-    subSuppliers:'供应商主数据，含产品图片和联系方式',
-    phSearchSu:'名称 / 联系人 / 电话...', btnNewSupplierCard:'＋ 新建供应商',
-    thImage:'图片', thSupplier:'供应商', thContact:'联系人', thPhone:'电话', thLeadTime:'货期',
-    subOrders:'完整订单管理，包含产品明细',
-    phSearchOr:'客户...', btnNewOrderCard:'＋ 新建订单',
-    stDraft:'草稿', stQuoted2:'已报价', stConfirmed:'已确认', stProducing:'生产中', stShipped:'已发货', stCompleted:'已完成',
-    thSalesAmt:'销售额', thPurchaseAmt:'采购额', thProfit:'利润',
-    subDocuments:'导出报价单、形式发票和装箱单',
-    docGenerate:'生成文件', lblSelectOrder:'选择订单', lblDocType:'文件类型', lblDocLang:'语言',
-    btnGenerate:'📄 生成并导出PDF', btnExportCSV:'📊 导出CSV',
-    docPreviewTitle:'文件预览', btnPrint:'🖨️ 打印/保存PDF',
-    optQuotation:'报价单', optPI:'形式发票 (PI)', optPacking:'装箱单',
-    subAnalytics:'详细业绩分析',
-    chartMonthlyRevenue:'月度收入', chartTop10Customers:'TOP10客户', chartTop10Products:'TOP10产品', chartOrderStatus:'订单状态分布',
-    aiTitle:'AI助手', aiSub:'智能贸易助手 — 即将推出',
-    aiDesc:'自动报价起草、客户沟通和贸易文件生成 — 即将推出。',
-    subSettings:'系统配置', setCompanyInfo:'公司信息',
-    lblCompanyName:'公司名称', phCompanyName:'您的公司名称', lblCompanyAddr:'公司地址', phAddr:'地址',
-    lblContactEmail:'联系邮箱', lblBankInfo:'银行信息', phBank:'PI银行账户',
-    btnSaveSettings:'保存设置', setInterface:'界面', lblLanguage:'语言', setAccount:'账号',
-    setLoggedIn:'单用户模式。当前登录：', btnLogout:'🚪 退出登录',
-    qeTitle:'⚡ 快速导出', qeLabelOrder:'订单', qeLabelLang:'语言',
-    qeSelectOrder:'选择订单...', btnQEQuotation:'📝 导出报价单', btnQEPI:'🧾 导出形式发票', btnQEPacking:'📦 导出装箱单',
-    ddSettings:'⚙️ 设置', ddLogout:'🚪 退出登录',
-    titleNewCustomer:'新建客户', titleEditCustomer:'编辑客户',
-    lblCustName:'客户名称 *', lblCustCountry:'国家', lblCustEmail:'邮箱', lblCustWhatsApp:'WhatsApp',
-    lblCustPayment:'付款条件', phCustPayment:'如：T/T 30% deposit', lblCustLevel:'客户等级',
-    lblCustAddress:'收货地址', lblCustNotes:'备注',
-    optStandard:'标准', optVIP:'VIP', optPotential:'潜在客户',
-    btnCancel:'取消', btnSaveCustomer:'保存客户',
-    titleNewProduct:'新建产品', titleEditProduct:'编辑产品',
-    lblProdCode:'产品编号', lblProdUnit:'单位', lblProdCN:'中文名 *', lblProdEN:'英文名',
-    lblProdSpec:'规格', lblProdPP:'默认采购价', lblProdSP:'默认销售价', lblProdHS:'HS编码', lblProdCert:'认证',
-    btnSaveProduct:'保存产品',
-    titleNewSupplier:'新建供应商', titleEditSupplier:'编辑供应商',
-    lblSupName:'供应商名称 *', lblSupContact:'联系人', lblSupPhone:'电话', lblSupEmail:'邮箱',
-    lblSupLead:'货期', phSupLead:'如：15天', lblSupLink:'产品链接', phSupLink:'阿里巴巴 / 1688链接',
-    lblSupImage:'产品图片', lblSupNotes:'备注', btnSaveSupplier:'保存供应商',
-    titleNewInquiry:'新建询盘', titleEditInquiry:'编辑询盘',
-    lblIqCustomer:'客户名称', lblIqDate:'询盘日期', lblIqStatus:'状态', lblIqNotes:'备注',
-    optIqNew:'新询盘', optIqQuoted:'已报价', optIqConverted:'已转化为订单', optIqClosed:'已关闭',
-    btnSaveInquiry:'保存询盘',
-    titleNewOrder:'新建订单', titleEditOrder:'编辑订单',
-    lblOrdCustomer:'客户 *', lblOrdDate:'订单日期 *', lblOrdShipping:'运费 ($)',
-    lblOrdStatus:'状态', lblOrdCurrency:'货币', lblOrdRemarks:'备注',
-    h3Items:'产品明细', btnAddItem:'＋ 添加明细',
-    lblCNName:'中文名', lblENName:'英文名', lblQty:'数量', lblPurchaseP:'采购价 $', lblSalesP:'销售价 $',
-    cssPurchase:'采购总额', cssSales:'销售总额（含运费）', cssProfit:'利润（不含运费）',
-    btnSaveOrder:'保存订单',
-    titleOrderDetail:'订单详情', btnClose:'关闭',
-    thCNNameD:'中文名', thENNameD:'英文名', thSpecD:'规格', thQtyD:'数量',
-    thPurchaseD:'采购价', thSalesD:'销售价', thPTotalD:'采购小计', thSTotalD:'销售小计',
-    toastCustSaved:'客户已保存', toastCustUpdated:'客户已更新',
-    toastProdSaved:'产品已保存', toastProdUpdated:'产品已更新',
-    toastSupSaved:'供应商已保存', toastSupUpdated:'供应商已更新',
-    toastOrdSaved:'订单已保存', toastOrdUpdated:'订单已更新',
-    toastInqSaved:'询盘已保存', toastDeleted:'已删除', toastSettingsSaved:'设置已保存',
-    confirmDelCustomer:'确定删除该客户？', confirmDelProduct:'确定删除该产品？',
-    confirmDelSupplier:'确定删除该供应商？', confirmDelInquiry:'确定删除该询盘？', confirmDelOrder:'确定删除该订单？',
-    errSelectOrder:'请先选择订单', errOrderNotFound:'订单未找到', errLoadFailed:'加载失败：',
-    ordersCount:'条订单', phGlobalSearch:'搜索订单、客户...',
-    noCustomers:'未找到客户', noProducts:'未找到产品', noSuppliers:'未找到供应商', noInquiries:'未找到询盘', noOrders:'未找到订单',
-    btnEdit:'编辑', btnDelete:'删除', btnDetail:'详情', btnToOrder:'→ 转为订单',
-    phSelectOrderDoc:'— 选择订单 —', phSelectOrderQE:'选择订单...',
+    navDashboard:'浠〃鐩?, navInquiries:'璇㈢洏', navCustomers:'瀹㈡埛', navProducts:'浜у搧',
+    navSuppliers:'渚涘簲鍟?, navOrders:'璁㈠崟', navDocuments:'鏂囦欢', navAnalytics:'鏁版嵁鍒嗘瀽',
+    navSettings:'璁剧疆', navDocGroup:'鏂囦欢', navQuotation:'鎶ヤ环鍗?, navPI:'褰㈠紡鍙戠エ',
+    navPacking:'瑁呯鍗?, navAI:'AI鍔╂墜', navPasswordVault:'常用密码存储', navCollapse:'鏀惰捣',
+    dashTitle:'浠〃鐩?, dashSub:'璐告槗涓氱哗鎬昏',
+    kpiMonthOrders:'鏈湀璁㈠崟', kpiYearOrders:'骞村害璁㈠崟', kpiMonthSales:'鏈湀閿€鍞',
+    kpiYearSales:'骞村害閿€鍞', kpiMonthProfit:'鏈湀鍒╂鼎', kpiYearProfit:'骞村害鍒╂鼎',
+    btnNewOrder:'锛?鏂板缓璁㈠崟', btnNewCustomer:'锛?鏂板缓瀹㈡埛', btnNewInquiry:'锛?鏂板缓璇㈢洏',
+    chartOrderTrend:'璁㈠崟瓒嬪娍锛?2涓湀锛?, chartProfitTrend:'鍒╂鼎瓒嬪娍锛?2涓湀锛?,
+    chartTopProducts:'閿€鍞TOP浜у搧', chartTopCustomers:'閿€鍞TOP瀹㈡埛',
+    subInquiries:'绠＄悊杩涙潵鐨勮锤鏄撹鐩樺苟杞寲涓鸿鍗?,
+    phSearchIq:'瀹㈡埛 / 澶囨敞...', allStatus:'鍏ㄩ儴鐘舵€?,
+    stNew:'鏂拌鐩?, stQuoted:'宸叉姤浠?, stConverted:'宸茶浆鍖?, stClosed:'宸插叧闂?,
+    thDate:'鏃ユ湡', thCustomer:'瀹㈡埛', thStatus:'鐘舵€?, thNotes:'澶囨敞', thActions:'鎿嶄綔',
+    btnNewInquiryCard:'锛?鏂板缓璇㈢洏',
+    subCustomers:'涔版柟涓绘暟鎹?鈥?鑷姩濉厖PI鏂囦欢',
+    phSearchCu:'鍚嶇О / 鍥藉 / 閭...', btnNewCustomerCard:'锛?鏂板缓瀹㈡埛',
+    thName:'鍚嶇О', thCountry:'鍥藉', thEmail:'閭', thWhatsApp:'WhatsApp', thLevel:'绛夌骇',
+    subProducts:'浜у搧搴?鈥?鑷姩濉厖璁㈠崟浜у搧瑙勬牸鍜屼环鏍?,
+    phSearchPr:'缂栧彿 / 鍚嶇О / 瑙勬牸...', btnNewProductCard:'锛?鏂板缓浜у搧',
+    thCode:'缂栧彿', thCNName:'涓枃鍚?, thENName:'鑻辨枃鍚?, thSpec:'瑙勬牸', thUnit:'鍗曚綅', thPurchase:'閲囪喘浠?, thSales:'閿€鍞环',
+    subSuppliers:'渚涘簲鍟嗕富鏁版嵁锛屽惈浜у搧鍥剧墖鍜岃仈绯绘柟寮?,
+    phSearchSu:'鍚嶇О / 鑱旂郴浜?/ 鐢佃瘽...', btnNewSupplierCard:'锛?鏂板缓渚涘簲鍟?,
+    thImage:'鍥剧墖', thSupplier:'渚涘簲鍟?, thContact:'鑱旂郴浜?, thPhone:'鐢佃瘽', thLeadTime:'璐ф湡',
+    subOrders:'瀹屾暣璁㈠崟绠＄悊锛屽寘鍚骇鍝佹槑缁?,
+    phSearchOr:'瀹㈡埛...', btnNewOrderCard:'锛?鏂板缓璁㈠崟',
+    stDraft:'鑽夌', stQuoted2:'宸叉姤浠?, stConfirmed:'宸茬‘璁?, stProducing:'鐢熶骇涓?, stShipped:'宸插彂璐?, stCompleted:'宸插畬鎴?,
+    thSalesAmt:'閿€鍞', thPurchaseAmt:'閲囪喘棰?, thProfit:'鍒╂鼎',
+    subDocuments:'瀵煎嚭鎶ヤ环鍗曘€佸舰寮忓彂绁ㄥ拰瑁呯鍗?,
+    docGenerate:'鐢熸垚鏂囦欢', lblSelectOrder:'閫夋嫨璁㈠崟', lblDocType:'鏂囦欢绫诲瀷', lblDocLang:'璇█',
+    btnGenerate:'馃搫 鐢熸垚骞跺鍑篜DF', btnExportCSV:'馃搳 瀵煎嚭CSV',
+    docPreviewTitle:'鏂囦欢棰勮', btnPrint:'馃枿锔?鎵撳嵃/淇濆瓨PDF',
+    optQuotation:'鎶ヤ环鍗?, optPI:'褰㈠紡鍙戠エ (PI)', optPacking:'瑁呯鍗?,
+    subAnalytics:'璇︾粏涓氱哗鍒嗘瀽',
+    chartMonthlyRevenue:'鏈堝害鏀跺叆', chartTop10Customers:'TOP10瀹㈡埛', chartTop10Products:'TOP10浜у搧', chartOrderStatus:'璁㈠崟鐘舵€佸垎甯?,
+    aiTitle:'AI鍔╂墜', aiSub:'鏅鸿兘璐告槗鍔╂墜 鈥?鍗冲皢鎺ㄥ嚭',
+    aiDesc:'鑷姩鎶ヤ环璧疯崏銆佸鎴锋矡閫氬拰璐告槗鏂囦欢鐢熸垚 鈥?鍗冲皢鎺ㄥ嚭銆?,
+    subSettings:'绯荤粺閰嶇疆', setCompanyInfo:'鍏徃淇℃伅',
+    lblCompanyName:'鍏徃鍚嶇О', phCompanyName:'鎮ㄧ殑鍏徃鍚嶇О', lblCompanyAddr:'鍏徃鍦板潃', phAddr:'鍦板潃',
+    lblContactEmail:'鑱旂郴閭', lblBankInfo:'閾惰淇℃伅', phBank:'PI閾惰璐︽埛',
+    btnSaveSettings:'淇濆瓨璁剧疆', setInterface:'鐣岄潰', lblLanguage:'璇█', setAccount:'璐﹀彿',
+    setLoggedIn:'鍗曠敤鎴锋ā寮忋€傚綋鍓嶇櫥褰曪細', btnLogout:'馃毆 閫€鍑虹櫥褰?,
+    qeTitle:'鈿?蹇€熷鍑?, qeLabelOrder:'璁㈠崟', qeLabelLang:'璇█',
+    qeSelectOrder:'閫夋嫨璁㈠崟...', btnQEQuotation:'馃摑 瀵煎嚭鎶ヤ环鍗?, btnQEPI:'馃Ь 瀵煎嚭褰㈠紡鍙戠エ', btnQEPacking:'馃摝 瀵煎嚭瑁呯鍗?,
+    ddSettings:'鈿欙笍 璁剧疆', ddLogout:'馃毆 閫€鍑虹櫥褰?,
+    titleNewCustomer:'鏂板缓瀹㈡埛', titleEditCustomer:'缂栬緫瀹㈡埛',
+    lblCustName:'瀹㈡埛鍚嶇О *', lblCustCountry:'鍥藉', lblCustEmail:'閭', lblCustWhatsApp:'WhatsApp',
+    lblCustPayment:'浠樻鏉′欢', phCustPayment:'濡傦細T/T 30% deposit', lblCustLevel:'瀹㈡埛绛夌骇',
+    lblCustAddress:'鏀惰揣鍦板潃', lblCustNotes:'澶囨敞',
+    optStandard:'鏍囧噯', optVIP:'VIP', optPotential:'娼滃湪瀹㈡埛',
+    btnCancel:'鍙栨秷', btnSaveCustomer:'淇濆瓨瀹㈡埛',
+    titleNewProduct:'鏂板缓浜у搧', titleEditProduct:'缂栬緫浜у搧',
+    lblProdCode:'浜у搧缂栧彿', lblProdUnit:'鍗曚綅', lblProdCN:'涓枃鍚?*', lblProdEN:'鑻辨枃鍚?,
+    lblProdSpec:'瑙勬牸', lblProdPP:'榛樿閲囪喘浠?, lblProdSP:'榛樿閿€鍞环', lblProdHS:'HS缂栫爜', lblProdCert:'璁よ瘉',
+    btnSaveProduct:'淇濆瓨浜у搧',
+    titleNewSupplier:'鏂板缓渚涘簲鍟?, titleEditSupplier:'缂栬緫渚涘簲鍟?,
+    lblSupName:'渚涘簲鍟嗗悕绉?*', lblSupContact:'鑱旂郴浜?, lblSupPhone:'鐢佃瘽', lblSupEmail:'閭',
+    lblSupLead:'璐ф湡', phSupLead:'濡傦細15澶?, lblSupLink:'浜у搧閾炬帴', phSupLink:'闃块噷宸村反 / 1688閾炬帴',
+    lblSupImage:'浜у搧鍥剧墖', lblSupNotes:'澶囨敞', btnSaveSupplier:'淇濆瓨渚涘簲鍟?,
+    titleNewInquiry:'鏂板缓璇㈢洏', titleEditInquiry:'缂栬緫璇㈢洏',
+    lblIqCustomer:'瀹㈡埛鍚嶇О', lblIqDate:'璇㈢洏鏃ユ湡', lblIqStatus:'鐘舵€?, lblIqNotes:'澶囨敞',
+    optIqNew:'鏂拌鐩?, optIqQuoted:'宸叉姤浠?, optIqConverted:'宸茶浆鍖栦负璁㈠崟', optIqClosed:'宸插叧闂?,
+    btnSaveInquiry:'淇濆瓨璇㈢洏',
+    titleNewOrder:'鏂板缓璁㈠崟', titleEditOrder:'缂栬緫璁㈠崟',
+    lblOrdCustomer:'瀹㈡埛 *', lblOrdDate:'璁㈠崟鏃ユ湡 *', lblOrdShipping:'杩愯垂 ($)',
+    lblOrdStatus:'鐘舵€?, lblOrdCurrency:'璐у竵', lblOrdRemarks:'澶囨敞',
+    h3Items:'浜у搧鏄庣粏', btnAddItem:'锛?娣诲姞鏄庣粏',
+    lblCNName:'涓枃鍚?, lblENName:'鑻辨枃鍚?, lblQty:'鏁伴噺', lblPurchaseP:'閲囪喘浠?$', lblSalesP:'閿€鍞环 $',
+    cssPurchase:'閲囪喘鎬婚', cssSales:'閿€鍞€婚锛堝惈杩愯垂锛?, cssProfit:'鍒╂鼎锛堜笉鍚繍璐癸級',
+    btnSaveOrder:'淇濆瓨璁㈠崟',
+    titleOrderDetail:'璁㈠崟璇︽儏', btnClose:'鍏抽棴',
+    thCNNameD:'涓枃鍚?, thENNameD:'鑻辨枃鍚?, thSpecD:'瑙勬牸', thQtyD:'鏁伴噺',
+    thPurchaseD:'閲囪喘浠?, thSalesD:'閿€鍞环', thPTotalD:'閲囪喘灏忚', thSTotalD:'閿€鍞皬璁?,
+    toastCustSaved:'瀹㈡埛宸蹭繚瀛?, toastCustUpdated:'瀹㈡埛宸叉洿鏂?,
+    toastProdSaved:'浜у搧宸蹭繚瀛?, toastProdUpdated:'浜у搧宸叉洿鏂?,
+    toastSupSaved:'渚涘簲鍟嗗凡淇濆瓨', toastSupUpdated:'渚涘簲鍟嗗凡鏇存柊',
+    toastOrdSaved:'璁㈠崟宸蹭繚瀛?, toastOrdUpdated:'璁㈠崟宸叉洿鏂?,
+    toastInqSaved:'璇㈢洏宸蹭繚瀛?, toastDeleted:'宸插垹闄?, toastSettingsSaved:'璁剧疆宸蹭繚瀛?,
+    confirmDelCustomer:'纭畾鍒犻櫎璇ュ鎴凤紵', confirmDelProduct:'纭畾鍒犻櫎璇ヤ骇鍝侊紵',
+    confirmDelSupplier:'纭畾鍒犻櫎璇ヤ緵搴斿晢锛?, confirmDelInquiry:'纭畾鍒犻櫎璇ヨ鐩橈紵', confirmDelOrder:'纭畾鍒犻櫎璇ヨ鍗曪紵',
+    errSelectOrder:'璇峰厛閫夋嫨璁㈠崟', errOrderNotFound:'璁㈠崟鏈壘鍒?, errLoadFailed:'鍔犺浇澶辫触锛?,
+    ordersCount:'鏉¤鍗?, phGlobalSearch:'鎼滅储璁㈠崟銆佸鎴?..',
+    noCustomers:'鏈壘鍒板鎴?, noProducts:'鏈壘鍒颁骇鍝?, noSuppliers:'鏈壘鍒颁緵搴斿晢', noInquiries:'鏈壘鍒拌鐩?, noOrders:'鏈壘鍒拌鍗?,
+    btnEdit:'缂栬緫', btnDelete:'鍒犻櫎', btnDetail:'璇︽儏', btnToOrder:'鈫?杞负璁㈠崟',
+    phSelectOrderDoc:'鈥?閫夋嫨璁㈠崟 鈥?, phSelectOrderQE:'閫夋嫨璁㈠崟...',
   },
   en: {
     navDashboard:'Dashboard', navInquiries:'Inquiries', navCustomers:'Customers',
     navProducts:'Products', navSuppliers:'Suppliers', navOrders:'Orders',
     navDocuments:'Documents', navAnalytics:'Analytics', navSettings:'Settings',
     navDocGroup:'Documents', navQuotation:'Quotation', navPI:'Pro-forma Invoice',
-    navPacking:'Packing List', navAI:'AI Assistant', navCollapse:'Collapse',
+    navPacking:'Packing List', navAI:'AI Assistant', navPasswordVault:'Password Vault', navCollapse:'Collapse',
     dashTitle:'Dashboard', dashSub:'Overview of your trade performance',
     kpiMonthOrders:'Monthly Orders', kpiYearOrders:'Annual Orders',
     kpiMonthSales:'Monthly Sales', kpiYearSales:'Annual Sales',
     kpiMonthProfit:'Monthly Profit', kpiYearProfit:'Annual Profit',
-    btnNewOrder:'＋ New Order', btnNewCustomer:'＋ New Customer', btnNewInquiry:'＋ New Inquiry',
+    btnNewOrder:'锛?New Order', btnNewCustomer:'锛?New Customer', btnNewInquiry:'锛?New Inquiry',
     chartOrderTrend:'Order Trend (12 months)', chartProfitTrend:'Profit Trend (12 months)',
     chartTopProducts:'Top Products by Sales', chartTopCustomers:'Top Customers by Sales',
     subInquiries:'Manage incoming trade inquiries and convert to orders',
     phSearchIq:'Customer / notes...', allStatus:'All Status',
     stNew:'New', stQuoted:'Quoted', stConverted:'Converted', stClosed:'Closed',
     thDate:'Date', thCustomer:'Customer', thStatus:'Status', thNotes:'Notes', thActions:'Actions',
-    btnNewInquiryCard:'＋ New Inquiry',
-    subCustomers:'Buyer master data — auto-fills PI documents',
-    phSearchCu:'Name / country / email...', btnNewCustomerCard:'＋ New Customer',
+    btnNewInquiryCard:'锛?New Inquiry',
+    subCustomers:'Buyer master data 鈥?auto-fills PI documents',
+    phSearchCu:'Name / country / email...', btnNewCustomerCard:'锛?New Customer',
     thName:'Name', thCountry:'Country', thEmail:'Email', thWhatsApp:'WhatsApp', thLevel:'Level',
-    subProducts:'Product library — auto-fills order items with specs and prices',
-    phSearchPr:'Code / name / spec...', btnNewProductCard:'＋ New Product',
+    subProducts:'Product library 鈥?auto-fills order items with specs and prices',
+    phSearchPr:'Code / name / spec...', btnNewProductCard:'锛?New Product',
     thCode:'Code', thCNName:'CN Name', thENName:'EN Name', thSpec:'Spec', thUnit:'Unit', thPurchase:'Purchase', thSales:'Sales',
     subSuppliers:'Supplier master data with product image and contact info',
-    phSearchSu:'Name / contact / phone...', btnNewSupplierCard:'＋ New Supplier',
+    phSearchSu:'Name / contact / phone...', btnNewSupplierCard:'锛?New Supplier',
     thImage:'Image', thSupplier:'Supplier', thContact:'Contact', thPhone:'Phone', thLeadTime:'Lead Time',
     subOrders:'Full order management with product line items',
-    phSearchOr:'Customer...', btnNewOrderCard:'＋ New Order',
+    phSearchOr:'Customer...', btnNewOrderCard:'锛?New Order',
     stDraft:'Draft', stQuoted2:'Quoted', stConfirmed:'Confirmed', stProducing:'Producing', stShipped:'Shipped', stCompleted:'Completed',
     thSalesAmt:'Sales', thPurchaseAmt:'Purchase', thProfit:'Profit',
     subDocuments:'Export Quotations, Commercial Invoices, and Packing Lists',
     docGenerate:'Generate Document', lblSelectOrder:'Select Order', lblDocType:'Document Type', lblDocLang:'Language',
-    btnGenerate:'📄 Generate & Export PDF', btnExportCSV:'📊 Export CSV',
-    docPreviewTitle:'Document Preview', btnPrint:'🖨️ Print / Save PDF',
+    btnGenerate:'馃搫 Generate & Export PDF', btnExportCSV:'馃搳 Export CSV',
+    docPreviewTitle:'Document Preview', btnPrint:'馃枿锔?Print / Save PDF',
     optQuotation:'Quotation', optPI:'Pro-forma Invoice (PI)', optPacking:'Packing List',
     subAnalytics:'Detailed performance breakdown',
     chartMonthlyRevenue:'Monthly Revenue', chartTop10Customers:'Top 10 Customers', chartTop10Products:'Top 10 Products', chartOrderStatus:'Order Status Distribution',
-    aiTitle:'AI Assistant', aiSub:'Intelligent trade assistant — coming soon',
-    aiDesc:'Automated quotation drafting, customer communication, and trade document generation — coming in the next release.',
+    aiTitle:'AI Assistant', aiSub:'Intelligent trade assistant 鈥?coming soon',
+    aiDesc:'Automated quotation drafting, customer communication, and trade document generation 鈥?coming in the next release.',
     subSettings:'System configuration', setCompanyInfo:'Company Info',
     lblCompanyName:'Company Name', phCompanyName:'Your company name', lblCompanyAddr:'Company Address', phAddr:'Address',
     lblContactEmail:'Contact Email', lblBankInfo:'Bank Info', phBank:'Bank account for PI',
     btnSaveSettings:'Save Settings', setInterface:'Interface', lblLanguage:'Language', setAccount:'Account',
-    setLoggedIn:'Single user mode. Logged in as ', btnLogout:'🚪 Logout',
-    qeTitle:'⚡ Quick Export', qeLabelOrder:'Order', qeLabelLang:'Language',
-    qeSelectOrder:'Select order...', btnQEQuotation:'📝 Export Quotation', btnQEPI:'🧾 Export PI', btnQEPacking:'📦 Export Packing List',
-    ddSettings:'⚙️ Settings', ddLogout:'🚪 Logout',
+    setLoggedIn:'Single user mode. Logged in as ', btnLogout:'馃毆 Logout',
+    qeTitle:'鈿?Quick Export', qeLabelOrder:'Order', qeLabelLang:'Language',
+    qeSelectOrder:'Select order...', btnQEQuotation:'馃摑 Export Quotation', btnQEPI:'馃Ь Export PI', btnQEPacking:'馃摝 Export Packing List',
+    ddSettings:'鈿欙笍 Settings', ddLogout:'馃毆 Logout',
     titleNewCustomer:'New Customer', titleEditCustomer:'Edit Customer',
     lblCustName:'Customer Name *', lblCustCountry:'Country', lblCustEmail:'Email', lblCustWhatsApp:'WhatsApp',
     lblCustPayment:'Payment Terms', phCustPayment:'e.g. T/T 30% deposit', lblCustLevel:'Customer Level',
@@ -1227,7 +1227,7 @@ const I18N = {
     titleNewOrder:'New Order', titleEditOrder:'Edit Order',
     lblOrdCustomer:'Customer *', lblOrdDate:'Order Date *', lblOrdShipping:'Shipping Fee ($)',
     lblOrdStatus:'Status', lblOrdCurrency:'Currency', lblOrdRemarks:'Remarks',
-    h3Items:'Product Items', btnAddItem:'＋ Add Item',
+    h3Items:'Product Items', btnAddItem:'锛?Add Item',
     lblCNName:'CN Name', lblENName:'EN Name', lblQty:'Qty', lblPurchaseP:'Purchase $', lblSalesP:'Sales $',
     cssPurchase:'Purchase Total', cssSales:'Sales Total (incl. shipping)', cssProfit:'Profit (excl. shipping)',
     btnSaveOrder:'Save Order',
@@ -1244,8 +1244,8 @@ const I18N = {
     errSelectOrder:'Please select an order', errOrderNotFound:'Order not found', errLoadFailed:'Load error: ',
     ordersCount:' orders', phGlobalSearch:'Search orders, customers...',
     noCustomers:'No customers found', noProducts:'No products found', noSuppliers:'No suppliers found', noInquiries:'No inquiries found', noOrders:'No orders found',
-    btnEdit:'Edit', btnDelete:'Delete', btnDetail:'Detail', btnToOrder:'→ Order',
-    phSelectOrderDoc:'— Select an order —', phSelectOrderQE:'Select order...',
+    btnEdit:'Edit', btnDelete:'Delete', btnDetail:'Detail', btnToOrder:'鈫?Order',
+    phSelectOrderDoc:'鈥?Select an order 鈥?, phSelectOrderQE:'Select order...',
   }
 };
 
@@ -1384,7 +1384,7 @@ function md2html(text) {
     .replace(/^### (.+)$/gm, '<strong>$1</strong>')
     .replace(/^## (.+)$/gm, '<strong style="font-size:15px">$1</strong>')
     .replace(/^# (.+)$/gm, '<strong style="font-size:16px">$1</strong>')
-    .replace(/^\s*[-•]\s+(.+)$/gm, '<br>• $1')
+    .replace(/^\s*[-鈥\s+(.+)$/gm, '<br>鈥?$1')
     .replace(/^\d+\.\s+(.+)$/gm, '<br>$&')
     .replace(/\n\n/g, '<br><br>')
     .replace(/\n/g, '<br>');
@@ -1394,7 +1394,7 @@ async function sendAiMessage() {
   const input = document.getElementById('aiInput');
   const text  = input.value.trim();
   if (!text) return;
-  if (!aiConfigured) { showToast('请先设置 AI API Key', 'err'); openAiSettings(); return; }
+  if (!aiConfigured) { showToast('璇峰厛璁剧疆 AI API Key', 'err'); openAiSettings(); return; }
 
   input.value = ''; input.style.height = 'auto';
   document.getElementById('btnAiSend').disabled = true;
@@ -1402,10 +1402,10 @@ async function sendAiMessage() {
   appendAiMsg('user', text);
   aiHistory.push({ role: 'user', content: text });
 
-  // 思考中占位
+  // 鎬濊€冧腑鍗犱綅
   const thinking = document.createElement('div');
   thinking.className = 'ai-msg ai-msg-bot';
-  thinking.innerHTML = `<div class="ai-avatar">🤖</div><div class="ai-bubble ai-thinking"><span class="ai-dot">●</span><span class="ai-dot">●</span><span class="ai-dot">●</span></div>`;
+  thinking.innerHTML = `<div class="ai-avatar">馃</div><div class="ai-bubble ai-thinking"><span class="ai-dot">鈼?/span><span class="ai-dot">鈼?/span><span class="ai-dot">鈼?/span></div>`;
   document.getElementById('aiMessages').appendChild(thinking);
   document.getElementById('aiMessages').scrollTop = 9999;
 
@@ -1416,12 +1416,12 @@ async function sendAiMessage() {
       aiHistory.push({ role: 'assistant', content: data.reply });
       appendAiMsg('assistant', data.reply);
     } else {
-      appendAiMsg('assistant', `⚠ ${data.message||'请求失败'}`);
+      appendAiMsg('assistant', `鈿?${data.message||'璇锋眰澶辫触'}`);
       aiHistory.pop();
     }
   } catch (e) {
     thinking.remove();
-    appendAiMsg('assistant', `⚠ 网络错误：${e.message}`);
+    appendAiMsg('assistant', `鈿?缃戠粶閿欒锛?{e.message}`);
     aiHistory.pop();
   }
   document.getElementById('btnAiSend').disabled = false;
@@ -1432,14 +1432,14 @@ async function generateGeminiImage() {
   const input = document.getElementById('aiInput');
   const prompt = input.value.trim();
   if (!prompt) {
-    appendAiMsg('assistant', '请先输入图片提示词，再点击 Gemini做图。');
+    appendAiMsg('assistant', '璇峰厛杈撳叆鍥剧墖鎻愮ず璇嶏紝鍐嶇偣鍑?Gemini鍋氬浘銆?);
     return;
   }
 
-  appendAiMsg('user', `【Gemini做图】${prompt}`);
+  appendAiMsg('user', `銆怗emini鍋氬浘銆?{prompt}`);
   const thinking = document.createElement('div');
   thinking.className = 'ai-msg ai-msg-bot';
-  thinking.innerHTML = `<div class="ai-avatar">🤖</div><div class="ai-bubble ai-thinking"><span class="ai-dot">●</span><span class="ai-dot">●</span><span class="ai-dot">●</span></div>`;
+  thinking.innerHTML = `<div class="ai-avatar">馃</div><div class="ai-bubble ai-thinking"><span class="ai-dot">鈼?/span><span class="ai-dot">鈼?/span><span class="ai-dot">鈼?/span></div>`;
   document.getElementById('aiMessages').appendChild(thinking);
   document.getElementById('aiMessages').scrollTop = 9999;
 
@@ -1447,19 +1447,19 @@ async function generateGeminiImage() {
     const data = await api('/api/ai/image', { method:'POST', body: JSON.stringify({ prompt }) });
     thinking.remove();
     if (data.success && data.image) {
-      appendAiMsg('assistant', `图片生成完成：<br><img src="${data.image}" style="max-width:100%;border-radius:8px;border:1px solid var(--border)">`);
+      appendAiMsg('assistant', `鍥剧墖鐢熸垚瀹屾垚锛?br><img src="${data.image}" style="max-width:100%;border-radius:8px;border:1px solid var(--border)">`);
       input.value = '';
       input.style.height = 'auto';
     } else {
-      appendAiMsg('assistant', `⚠ ${data.message || '生成失败'}`);
+      appendAiMsg('assistant', `鈿?${data.message || '鐢熸垚澶辫触'}`);
     }
   } catch (e) {
     thinking.remove();
-    appendAiMsg('assistant', `⚠ ${e.message}`);
+    appendAiMsg('assistant', `鈿?${e.message}`);
   }
 }
 
-// ── Collapsible nav groups ──
+// 鈹€鈹€ Collapsible nav groups 鈹€鈹€
 function toggleGroup(id) {
   const body = document.getElementById(id);
   const arrow = document.getElementById('arrow-' + id);
@@ -1470,7 +1470,7 @@ function toggleGroup(id) {
   }
 }
 
-// ── Navigation ──
+// 鈹€鈹€ Navigation 鈹€鈹€
 function navigate(sec) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -1494,22 +1494,22 @@ document.querySelectorAll('[data-sec]').forEach(item => {
   item.addEventListener('click', () => { navigate(item.dataset.sec); closeMobileSidebar(); });
 });
 
-// ── Sidebar collapse ──
+// 鈹€鈹€ Sidebar collapse 鈹€鈹€
 document.getElementById('sbToggle').addEventListener('click', () => {
   const sb = document.getElementById('sidebar');
   sb.classList.toggle('collapsed');
-  document.getElementById('sbToggleIcon').textContent = sb.classList.contains('collapsed') ? '▶' : '◀';
+  document.getElementById('sbToggleIcon').textContent = sb.classList.contains('collapsed') ? '鈻? : '鈼€';
 });
 
-// ── Quick Export toggle ──
+// 鈹€鈹€ Quick Export toggle 鈹€鈹€
 function toggleQE() {
   const body = document.getElementById('qeBody');
   const arrow = document.getElementById('qeArrow');
   const hidden = body.classList.toggle('hidden');
-  arrow.textContent = hidden ? '▼' : '▲';
+  arrow.textContent = hidden ? '鈻? : '鈻?;
 }
 
-// ── User menu ──
+// 鈹€鈹€ User menu 鈹€鈹€
 function toggleUserMenu() {
   document.getElementById('userDropdown').classList.toggle('open');
 }
@@ -1517,7 +1517,7 @@ document.addEventListener('click', e => {
   if (!e.target.closest('#userBtn')) document.getElementById('userDropdown').classList.remove('open');
 });
 
-// ── Language ──
+// 鈹€鈹€ Language 鈹€鈹€
 function t(k) { return I18N[S.lang][k] ?? k; }
 function toggleLang() { setLang(S.lang === 'zh' ? 'en' : 'zh'); }
 function setLang(l) {
@@ -1532,7 +1532,7 @@ function setLang(l) {
   renderCustomers(); renderProducts(); renderSuppliers(); renderInquiries(); renderOrders();
 }
 
-// ── Settings ──
+// 鈹€鈹€ Settings 鈹€鈹€
 function saveSettings() {
   S.settings = {
     company: document.getElementById('set-company').value,
@@ -1553,9 +1553,9 @@ function loadSettings() {
   document.getElementById('userAvatar').textContent = un[0].toUpperCase();
 }
 
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // DASHBOARD
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 async function loadDashboard() {
   try {
     const [stats, trends, topP, topC] = await Promise.all([
@@ -1673,9 +1673,9 @@ async function initAnalyticsCharts() {
   } catch(e) { console.error(e); }
 }
 
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // CUSTOMERS
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 async function loadCustomers() {
   try { S.customers = await api('/api/customers'); renderCustomers(); } catch(e) { toast(e.message,'err'); }
 }
@@ -1683,13 +1683,13 @@ function renderCustomers() {
   const q = document.getElementById('cu-search').value.toLowerCase();
   const rows = S.customers.filter(c => !q || [c.customer_name,c.country,c.email].join(' ').toLowerCase().includes(q));
   const body = document.getElementById('cuBody');
-  if (!rows.length) { body.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="icon">👥</div><p>No customers found</p></div></td></tr>'; return; }
+  if (!rows.length) { body.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="icon">馃懃</div><p>No customers found</p></div></td></tr>'; return; }
   body.innerHTML = rows.map(c => `
     <tr>
       <td data-label="Name"><strong>${esc(c.customer_name)}</strong></td>
-      <td data-label="Country">${esc(c.country||'—')}</td>
-      <td data-label="Email">${esc(c.email||'—')}</td>
-      <td data-label="WhatsApp">${esc(c.whatsapp||'—')}</td>
+      <td data-label="Country">${esc(c.country||'鈥?)}</td>
+      <td data-label="Email">${esc(c.email||'鈥?)}</td>
+      <td data-label="WhatsApp">${esc(c.whatsapp||'鈥?)}</td>
       <td data-label="Level"><span class="badge badge-${c.customer_level||'standard'}">${esc(c.customer_level||'standard')}</span></td>
       <td data-label=""><div class="actions-cell">
         <button class="btn btn-sm" onclick="editCustomer('${c.id}')">Edit</button>
@@ -1744,9 +1744,9 @@ async function deleteCustomer(id) {
   catch(e) { toast(e.message,'err'); }
 }
 
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // PRODUCTS
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 async function loadProducts() {
   try { S.products = await api('/api/products'); renderProducts(); } catch(e) { toast(e.message,'err'); }
 }
@@ -1754,13 +1754,13 @@ function renderProducts() {
   const q = document.getElementById('pr-search').value.toLowerCase();
   const rows = S.products.filter(p => !q || [p.product_code,p.product_name_cn,p.product_name_en,p.specification].join(' ').toLowerCase().includes(q));
   const body = document.getElementById('prBody');
-  if (!rows.length) { body.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="icon">📦</div><p>No products found</p></div></td></tr>'; return; }
+  if (!rows.length) { body.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="icon">馃摝</div><p>No products found</p></div></td></tr>'; return; }
   body.innerHTML = rows.map(p => `
     <tr>
-      <td data-label="Code">${esc(p.product_code||'—')}</td>
+      <td data-label="Code">${esc(p.product_code||'鈥?)}</td>
       <td data-label="CN Name">${esc(p.product_name_cn)}</td>
-      <td data-label="EN Name">${esc(p.product_name_en||'—')}</td>
-      <td data-label="Spec">${esc(p.specification||'—')}</td>
+      <td data-label="EN Name">${esc(p.product_name_en||'鈥?)}</td>
+      <td data-label="Spec">${esc(p.specification||'鈥?)}</td>
       <td data-label="Unit">${esc(p.unit||'pcs')}</td>
       <td data-label="Purchase">${fmt(p.default_purchase_price)}</td>
       <td data-label="Sales">${fmt(p.default_sales_price)}</td>
@@ -1820,9 +1820,9 @@ async function deleteProduct(id) {
   catch(e) { toast(e.message,'err'); }
 }
 
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // SUPPLIERS
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 async function loadSuppliers() {
   try { S.suppliers = await api('/api/suppliers'); renderSuppliers(); } catch(e) { toast(e.message,'err'); }
 }
@@ -1830,15 +1830,15 @@ function renderSuppliers() {
   const q = document.getElementById('su-search').value.toLowerCase();
   const rows = S.suppliers.filter(s => !q || [s.supplier_name,s.contact_name,s.phone].join(' ').toLowerCase().includes(q));
   const body = document.getElementById('suBody');
-  if (!rows.length) { body.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="icon">🏭</div><p>No suppliers found</p></div></td></tr>'; return; }
+  if (!rows.length) { body.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="icon">馃彮</div><p>No suppliers found</p></div></td></tr>'; return; }
   body.innerHTML = rows.map(s => `
     <tr>
-      <td data-label="Image">${s.product_image_data ? `<img src="${s.product_image_data}" style="width:40px;height:40px;border-radius:8px;object-fit:cover">` : '<div style="width:40px;height:40px;border-radius:8px;background:rgba(255,255,255,.05);display:grid;place-items:center;font-size:18px">🏭</div>'}</td>
+      <td data-label="Image">${s.product_image_data ? `<img src="${s.product_image_data}" style="width:40px;height:40px;border-radius:8px;object-fit:cover">` : '<div style="width:40px;height:40px;border-radius:8px;background:rgba(255,255,255,.05);display:grid;place-items:center;font-size:18px">馃彮</div>'}</td>
       <td data-label="Supplier"><strong>${esc(s.supplier_name)}</strong></td>
-      <td data-label="Contact">${esc(s.contact_name||'—')}</td>
-      <td data-label="Phone">${esc(s.phone||'—')}</td>
-      <td data-label="Email">${esc(s.email||'—')}</td>
-      <td data-label="Lead Time">${esc(s.lead_time||'—')}</td>
+      <td data-label="Contact">${esc(s.contact_name||'鈥?)}</td>
+      <td data-label="Phone">${esc(s.phone||'鈥?)}</td>
+      <td data-label="Email">${esc(s.email||'鈥?)}</td>
+      <td data-label="Lead Time">${esc(s.lead_time||'鈥?)}</td>
       <td data-label=""><div class="actions-cell">
         <button class="btn btn-sm" onclick="editSupplier('${s.id}')">Edit</button>
         <button class="btn btn-sm btn-danger" onclick="deleteSupplier('${s.id}')">Delete</button>
@@ -1905,9 +1905,9 @@ async function deleteSupplier(id) {
   catch(e) { toast(e.message,'err'); }
 }
 
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // INQUIRIES
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 async function loadInquiries() {
   try { S.inquiries = await api('/api/inquiries'); renderInquiries(); } catch(e) { toast(e.message,'err'); }
 }
@@ -1919,15 +1919,15 @@ function renderInquiries() {
     (!st || i.status === st)
   );
   const body = document.getElementById('iqBody');
-  if (!rows.length) { body.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="icon">📋</div><p>No inquiries found</p></div></td></tr>'; return; }
+  if (!rows.length) { body.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="icon">馃搵</div><p>No inquiries found</p></div></td></tr>'; return; }
   body.innerHTML = rows.map(i => `
     <tr>
       <td data-label="Date">${esc(i.inquiry_date||'')}</td>
-      <td data-label="Customer">${esc(i.customer_name||i.customers?.customer_name||'—')}</td>
+      <td data-label="Customer">${esc(i.customer_name||i.customers?.customer_name||'鈥?)}</td>
       <td data-label="Status"><span class="badge badge-${i.status||'new'}">${esc(i.status||'new')}</span></td>
-      <td data-label="Notes">${esc(i.notes||'—')}</td>
+      <td data-label="Notes">${esc(i.notes||'鈥?)}</td>
       <td data-label=""><div class="actions-cell">
-        <button class="btn btn-sm btn-cyan" onclick="convertInquiryToOrder('${i.id}')">→ Order</button>
+        <button class="btn btn-sm btn-cyan" onclick="convertInquiryToOrder('${i.id}')">鈫?Order</button>
         <button class="btn btn-sm" onclick="editInquiry('${i.id}')">Edit</button>
         <button class="btn btn-sm btn-danger" onclick="deleteInquiry('${i.id}')">Delete</button>
       </div></td>
@@ -1982,9 +1982,9 @@ function convertInquiryToOrder(id) {
   }, 200);
 }
 
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // ORDERS
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 async function loadOrders() {
   try {
     S.orders = await api('/api/orders');
@@ -2005,13 +2005,13 @@ function renderOrders() {
   );
   const body = document.getElementById('orBody');
   document.getElementById('orStatus').textContent = rows.length + ' orders';
-  if (!rows.length) { body.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="icon">🛒</div><p>No orders found</p></div></td></tr>'; return; }
+  if (!rows.length) { body.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="icon">馃洅</div><p>No orders found</p></div></td></tr>'; return; }
   body.innerHTML = rows.map(o => {
     const products = (o.items||[]).map(i=>i.product_name_cn||'').filter(Boolean).join(' / ').slice(0,30);
     return `<tr>
       <td data-label="Date">${esc(o.order_date||'')}</td>
       <td data-label="Customer"><strong>${esc(o.customer_name||'')}</strong></td>
-      <td data-label="Products">${esc(products||'—')}</td>
+      <td data-label="Products">${esc(products||'鈥?)}</td>
       <td data-label="Sales">${fmt(o.sales_total)}</td>
       <td data-label="Purchase">${fmt(o.purchase_total)}</td>
       <td data-label="Profit" style="color:${o.profit>=0?'var(--primary)':'var(--danger)'}">${fmt(o.profit)}</td>
@@ -2027,7 +2027,7 @@ function renderOrders() {
 
 function populateOrderSelects() {
   const opts = S.orders.map(o=>`<option value="${o.id}">${esc(o.order_date||'')} - ${esc(o.customer_name||'')}</option>`).join('');
-  document.getElementById('doc-order').innerHTML = '<option value="">— Select an order —</option>' + opts;
+  document.getElementById('doc-order').innerHTML = '<option value="">鈥?Select an order 鈥?/option>' + opts;
   document.getElementById('qe-order').innerHTML  = '<option value="">Select order...</option>' + opts;
 }
 
@@ -2067,13 +2067,13 @@ function addOrderItem(data={}) {
   const div = document.createElement('div');
   div.className = 'item-row';
   div.innerHTML = `
-    <div class="field"><label>CN Name</label><input type="text" name="cn_name" value="${esc(data.product_name_cn||'')}" placeholder="中文名称" required></div>
+    <div class="field"><label>CN Name</label><input type="text" name="cn_name" value="${esc(data.product_name_cn||'')}" placeholder="涓枃鍚嶇О" required></div>
     <div class="field"><label>EN Name</label><input type="text" name="en_name" value="${esc(data.product_name_en||'')}" placeholder="English name"></div>
-    <div class="field"><label>Description</label><input type="text" name="spec" value="${esc(data.specification||'')}" placeholder="规格型号"></div>
+    <div class="field"><label>Description</label><input type="text" name="spec" value="${esc(data.specification||'')}" placeholder="瑙勬牸鍨嬪彿"></div>
     <div class="field"><label>Qty</label><input type="number" name="qty" value="${data.quantity||1}" min="0" step="0.01" class="calc-trig" oninput="recalcOrder()"></div>
     <div class="field"><label>Purchase $</label><input type="number" name="pp" value="${data.purchase_price||0}" min="0" step="0.01" class="calc-trig" oninput="recalcOrder()"></div>
     <div class="field"><label>Sales $</label><input type="number" name="sp" value="${data.sales_price||0}" min="0" step="0.01" class="calc-trig" oninput="recalcOrder()"></div>
-    <button type="button" class="item-remove" onclick="removeOrderItem(this)">×</button>`;
+    <button type="button" class="item-remove" onclick="removeOrderItem(this)">脳</button>`;
   container.appendChild(div);
 }
 
@@ -2142,7 +2142,7 @@ async function saveOrder(e) {
 async function viewOrderDetail(id) {
   try {
     const { order, items } = await api(`/api/orders/${id}`);
-    document.getElementById('detailSub').textContent = `${order.customer_name||''} · ${order.order_date||''}`;
+    document.getElementById('detailSub').textContent = `${order.customer_name||''} 路 ${order.order_date||''}`;
     document.getElementById('dtSales').textContent   = fmt(order.sales_total);
     document.getElementById('dtProfit').textContent  = fmt(order.profit);
     const body = document.getElementById('detailBody');
@@ -2167,9 +2167,9 @@ async function deleteOrder(id) {
   catch(e) { toast(e.message,'err'); }
 }
 
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // DOCUMENTS & EXPORT
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 function toggleDocEdit() {
   const el  = document.getElementById('docPreview');
   const btn = document.getElementById('docEditBtn');
@@ -2177,7 +2177,7 @@ function toggleDocEdit() {
   el.contentEditable = editing ? 'false' : 'true';
   el.style.outline   = editing ? 'none' : '2px dashed rgba(0,190,255,0.6)';
   el.style.cursor    = editing ? '' : 'text';
-  btn.textContent    = editing ? '✏️ 编辑' : '✅ 完成';
+  btn.textContent    = editing ? '鉁忥笍 缂栬緫' : '鉁?瀹屾垚';
   btn.classList.toggle('btn-cyan', !editing);
 }
 
@@ -2233,7 +2233,7 @@ function buildDocHTML(order, docType, lang) {
   const isZh  = lang === 'zh';
   const items = order.items || [];
 
-  // ── PI 专用模板（匹配 CI China 格式）──
+  // 鈹€鈹€ PI 涓撶敤妯℃澘锛堝尮閰?CI China 鏍煎紡锛夆攢鈹€
   if (docType === 'pi') {
     const d = new Date(order.order_date || Date.now());
     const dateStr = `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
@@ -2246,7 +2246,7 @@ function buildDocHTML(order, docType, lang) {
         <td style="border:1px solid #000;padding:5px 8px;text-align:right">${it.sales_price?'$'+Number(it.sales_price).toFixed(2):''}</td>
         <td style="border:1px solid #000;padding:5px 8px;text-align:right">${it.sales_total?'$'+Number(it.sales_total).toFixed(2):''}</td>
       </tr>`).join('');
-    // 补空行至少 6 行
+    // 琛ョ┖琛岃嚦灏?6 琛?
     const emptyCount = Math.max(0, 6 - items.length);
     const emptyRows  = Array(emptyCount).fill(`
       <tr>
@@ -2260,14 +2260,14 @@ function buildDocHTML(order, docType, lang) {
     const customer = S.customers?.find(c=>c.id===order.customer_id)||{};
     return `
     <div style="font-family:Arial,sans-serif;max-width:780px;margin:0 auto;color:#000;font-size:12px">
-      <!-- 公司名称 -->
+      <!-- 鍏徃鍚嶇О -->
       <div style="text-align:center;margin-bottom:6px">
         <div style="font-size:22px;font-weight:bold">${esc(co.company||'Company Name')}</div>
         <div style="font-size:10.5px;color:#333;margin-top:2px">${esc(co.address||'')}</div>
       </div>
-      <!-- Invoice 标题 -->
+      <!-- Invoice 鏍囬 -->
       <div style="text-align:center;font-size:15px;font-weight:bold;border:1px solid #000;padding:4px 0;margin-bottom:0">Invoice</div>
-      <!-- 客户信息 -->
+      <!-- 瀹㈡埛淇℃伅 -->
       <table style="width:100%;border-collapse:collapse;border-left:1px solid #000;border-right:1px solid #000">
         <tr>
           <td style="border:1px solid #000;padding:5px 8px;width:14%;font-weight:600">To:</td>
@@ -2286,10 +2286,10 @@ function buildDocHTML(order, docType, lang) {
         <tr>
           <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Tel:</td>
           <td style="border:1px solid #000;padding:5px 8px">${esc(customer.whatsapp||'')}</td>
-          <td colspan="2" style="border:1px solid #000;padding:5px 8px;text-align:right;font-weight:600">Commercial Invoice No：${invNo}</td>
+          <td colspan="2" style="border:1px solid #000;padding:5px 8px;text-align:right;font-weight:600">Commercial Invoice No锛?{invNo}</td>
         </tr>
       </table>
-      <!-- 产品表格 -->
+      <!-- 浜у搧琛ㄦ牸 -->
       <table style="width:100%;border-collapse:collapse;margin-top:0">
         <thead>
           <tr style="text-align:center;font-weight:bold;font-size:12px">
@@ -2308,14 +2308,14 @@ function buildDocHTML(order, docType, lang) {
           </tr>
         </tfoot>
       </table>
-      <!-- 税务说明 -->
+      <!-- 绋庡姟璇存槑 -->
       <div style="text-align:center;padding:5px 4px;font-size:11px;border:1px solid #000;border-top:none">
         Taxes and Duties: All Taxes, duties, license and bank charges payable should be borne by you.
       </div>
       <div style="text-align:center;padding:4px;font-size:11px">
         You can tt the money to our company account :
       </div>
-      <!-- 银行信息（固定） -->
+      <!-- 閾惰淇℃伅锛堝浐瀹氾級 -->
       <table style="width:100%;border-collapse:collapse;font-size:11.5px">
         <tr><td colspan="2" style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:4px 8px">BANK INFORMATION:</td></tr>
         <tr>
@@ -2354,7 +2354,7 @@ function buildDocHTML(order, docType, lang) {
     </div>`;
   }
 
-  // ── 装箱单（Packing List）专用模板 ──
+  // 鈹€鈹€ 瑁呯鍗曪紙Packing List锛変笓鐢ㄦā鏉?鈹€鈹€
   if (docType === 'packing') {
     const plRows = items.map(it => `
       <tr>
@@ -2364,7 +2364,7 @@ function buildDocHTML(order, docType, lang) {
         <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">&nbsp;</td>
         <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">&nbsp;</td>
         <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">&nbsp;</td>
-        <td class="del-col"><button class="del-row-btn" onclick="this.closest('tr').remove()">×</button></td>
+        <td class="del-col"><button class="del-row-btn" onclick="this.closest('tr').remove()">脳</button></td>
       </tr>`).join('');
     return `
     <div style="font-family:Arial,sans-serif;max-width:800px;margin:0 auto">
@@ -2425,15 +2425,15 @@ function buildDocHTML(order, docType, lang) {
     </div>`;
   }
 
-  // ── 其他文件类型（报价单 / 装箱单）保持原有逻辑 ──
+  // 鈹€鈹€ 鍏朵粬鏂囦欢绫诲瀷锛堟姤浠峰崟 / 瑁呯鍗曪級淇濇寔鍘熸湁閫昏緫 鈹€鈹€
   const titles = {
-    quotation: isZh ? '报 价 单' : 'QUOTATION',
-    packing:   isZh ? '装 箱 单' : 'PACKING LIST',
+    quotation: isZh ? '鎶?浠?鍗? : 'QUOTATION',
+    packing:   isZh ? '瑁?绠?鍗? : 'PACKING LIST',
   };
   const rows = items.map((it,i) => {
     if (docType === 'packing') return `
       <tr><td>${i+1}</td><td>${isZh?it.product_name_cn:it.product_name_en||it.product_name_cn}</td>
-      <td>${it.specification||''}</td><td>${it.quantity}</td><td>—</td><td>—</td></tr>`;
+      <td>${it.specification||''}</td><td>${it.quantity}</td><td>鈥?/td><td>鈥?/td></tr>`;
     return `
       <tr><td>${i+1}</td><td>${isZh?it.product_name_cn:it.product_name_en||it.product_name_cn}</td>
       <td>${it.specification||''}</td><td>${it.quantity}</td>
@@ -2441,8 +2441,8 @@ function buildDocHTML(order, docType, lang) {
       <td>$${Number(it.sales_total||0).toFixed(2)}</td></tr>`;
   }).join('');
   const colHeaders = docType === 'packing'
-    ? `<tr style="background:#f5f5f5"><th>#</th><th>${isZh?'品名':'Description'}</th><th>${isZh?'规格':'Spec'}</th><th>${isZh?'数量':'Qty'}</th><th>${isZh?'净重':'N.W.'}</th><th>${isZh?'毛重':'G.W.'}</th></tr>`
-    : `<tr style="background:#f5f5f5"><th>#</th><th>${isZh?'品名':'Description'}</th><th>${isZh?'规格':'Spec'}</th><th>${isZh?'数量':'Qty'}</th><th>${isZh?'单价':'Unit Price'}</th><th>${isZh?'金额':'Amount'}</th></tr>`;
+    ? `<tr style="background:#f5f5f5"><th>#</th><th>${isZh?'鍝佸悕':'Description'}</th><th>${isZh?'瑙勬牸':'Spec'}</th><th>${isZh?'鏁伴噺':'Qty'}</th><th>${isZh?'鍑€閲?:'N.W.'}</th><th>${isZh?'姣涢噸':'G.W.'}</th></tr>`
+    : `<tr style="background:#f5f5f5"><th>#</th><th>${isZh?'鍝佸悕':'Description'}</th><th>${isZh?'瑙勬牸':'Spec'}</th><th>${isZh?'鏁伴噺':'Qty'}</th><th>${isZh?'鍗曚环':'Unit Price'}</th><th>${isZh?'閲戦':'Amount'}</th></tr>`;
   return `
     <div style="font-family:Arial,sans-serif;max-width:800px;margin:0 auto">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px">
@@ -2456,21 +2456,21 @@ function buildDocHTML(order, docType, lang) {
         </div>
       </div>
       <div style="margin-bottom:20px;padding:12px;background:#f9f9f9;border-radius:6px;font-size:13px">
-        <strong>${isZh?'买方':'Bill To'}:</strong> ${order.customer_name||''}
+        <strong>${isZh?'涔版柟':'Bill To'}:</strong> ${order.customer_name||''}
       </div>
       <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px">
         <thead>${colHeaders}</thead>
         <tbody>${rows}</tbody>
         ${docType!=='packing'?`
         <tfoot>
-          <tr><td colspan="5" style="text-align:right;padding:10px 8px;font-weight:600">${isZh?'小计':'Subtotal'}</td><td style="padding:10px 8px">$${Number(order.sales_without_shipping||0).toFixed(2)}</td></tr>
-          ${order.shipping_fee>0?`<tr><td colspan="5" style="text-align:right;padding:4px 8px">${isZh?'运费':'Shipping'}</td><td style="padding:4px 8px">$${Number(order.shipping_fee||0).toFixed(2)}</td></tr>`:''}
-          <tr style="background:#f0f0f0;font-weight:700;font-size:15px"><td colspan="5" style="text-align:right;padding:10px 8px">${isZh?'总计':'TOTAL'}</td><td style="padding:10px 8px">$${Number(order.sales_total||0).toFixed(2)}</td></tr>
+          <tr><td colspan="5" style="text-align:right;padding:10px 8px;font-weight:600">${isZh?'灏忚':'Subtotal'}</td><td style="padding:10px 8px">$${Number(order.sales_without_shipping||0).toFixed(2)}</td></tr>
+          ${order.shipping_fee>0?`<tr><td colspan="5" style="text-align:right;padding:4px 8px">${isZh?'杩愯垂':'Shipping'}</td><td style="padding:4px 8px">$${Number(order.shipping_fee||0).toFixed(2)}</td></tr>`:''}
+          <tr style="background:#f0f0f0;font-weight:700;font-size:15px"><td colspan="5" style="text-align:right;padding:10px 8px">${isZh?'鎬昏':'TOTAL'}</td><td style="padding:10px 8px">$${Number(order.sales_total||0).toFixed(2)}</td></tr>
         </tfoot>`:''}
       </table>
-      ${order.remarks?`<div style="font-size:12px;color:#666"><strong>${isZh?'备注':'Remarks'}:</strong> ${esc(order.remarks)}</div>`:''}
+      ${order.remarks?`<div style="font-size:12px;color:#666"><strong>${isZh?'澶囨敞':'Remarks'}:</strong> ${esc(order.remarks)}</div>`:''}
       <div style="margin-top:40px;font-size:11px;color:#aaa;border-top:1px solid #eee;padding-top:10px">
-        ${co.company||'TPKELE'} — ${isZh?'感谢您的惠顾':'Thank you for your business'}
+        ${co.company||'TPKELE'} 鈥?${isZh?'鎰熻阿鎮ㄧ殑鎯犻【':'Thank you for your business'}
       </div>
     </div>`;
 }
@@ -2481,7 +2481,7 @@ function addPackingRow() {
   const tr = document.createElement('tr');
   tr.innerHTML = Array(6).fill(0).map(() =>
     `<td style="border:1px solid #000;padding:5px 8px;height:26px" contenteditable="true">&nbsp;</td>`
-  ).join('') + `<td class="del-col"><button class="del-row-btn" onclick="this.closest('tr').remove()">×</button></td>`;
+  ).join('') + `<td class="del-col"><button class="del-row-btn" onclick="this.closest('tr').remove()">脳</button></td>`;
   tbody.appendChild(tr);
 }
 
@@ -2498,9 +2498,9 @@ function exportCSV(order) {
   a.click();
 }
 
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // GLOBAL SEARCH
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 (function() {
   const inp  = document.getElementById('globalSearch');
   const drop = document.getElementById('searchDropdown');
@@ -2516,25 +2516,25 @@ function exportCSV(order) {
     if (!q) { drop.classList.remove('open'); return; }
     const zh = S.lang === 'zh';
     const sections = [
-      { key:'orders',    icon:'🛒', label: zh?'订单':'Orders',
+      { key:'orders',    icon:'馃洅', label: zh?'璁㈠崟':'Orders',
         items: S.orders.filter(o => [o.customer_name, o.order_date, ...(o.items||[]).map(i=>i.product_name_cn||'')].join(' ').toLowerCase().includes(q))
-          .slice(0,4).map(o => ({ id:o.id, title:o.customer_name||'—', sub:(o.order_date||'').slice(0,10)+' · '+fmt(o.sales_total) })) },
-      { key:'customers', icon:'👥', label: zh?'客户':'Customers',
+          .slice(0,4).map(o => ({ id:o.id, title:o.customer_name||'鈥?, sub:(o.order_date||'').slice(0,10)+' 路 '+fmt(o.sales_total) })) },
+      { key:'customers', icon:'馃懃', label: zh?'瀹㈡埛':'Customers',
         items: S.customers.filter(c => [c.customer_name,c.country,c.email].join(' ').toLowerCase().includes(q))
-          .slice(0,4).map(c => ({ id:c.id, title:c.customer_name||'—', sub:[c.country,c.email].filter(Boolean).join(' · ') })) },
-      { key:'products',  icon:'📦', label: zh?'产品':'Products',
+          .slice(0,4).map(c => ({ id:c.id, title:c.customer_name||'鈥?, sub:[c.country,c.email].filter(Boolean).join(' 路 ') })) },
+      { key:'products',  icon:'馃摝', label: zh?'浜у搧':'Products',
         items: S.products.filter(p => [p.product_code,p.product_name_cn,p.product_name_en,p.specification].join(' ').toLowerCase().includes(q))
-          .slice(0,4).map(p => ({ id:p.id, title:p.product_name_cn||p.product_name_en||'—', sub:[p.product_code,p.specification].filter(Boolean).join(' · ') })) },
-      { key:'suppliers', icon:'🏭', label: zh?'供应商':'Suppliers',
+          .slice(0,4).map(p => ({ id:p.id, title:p.product_name_cn||p.product_name_en||'鈥?, sub:[p.product_code,p.specification].filter(Boolean).join(' 路 ') })) },
+      { key:'suppliers', icon:'馃彮', label: zh?'渚涘簲鍟?:'Suppliers',
         items: S.suppliers.filter(s => [s.supplier_name,s.contact_name,s.phone].join(' ').toLowerCase().includes(q))
-          .slice(0,4).map(s => ({ id:s.id, title:s.supplier_name||'—', sub:[s.contact_name,s.phone].filter(Boolean).join(' · ') })) },
-      { key:'inquiries', icon:'📋', label: zh?'询盘':'Inquiries',
+          .slice(0,4).map(s => ({ id:s.id, title:s.supplier_name||'鈥?, sub:[s.contact_name,s.phone].filter(Boolean).join(' 路 ') })) },
+      { key:'inquiries', icon:'馃搵', label: zh?'璇㈢洏':'Inquiries',
         items: S.inquiries.filter(i => [i.customer_name,i.notes].join(' ').toLowerCase().includes(q))
-          .slice(0,4).map(i => ({ id:i.id, title:i.customer_name||'—', sub:(i.inquiry_date||'').slice(0,10)+(i.notes?' · '+i.notes.slice(0,30):'') })) },
+          .slice(0,4).map(i => ({ id:i.id, title:i.customer_name||'鈥?, sub:(i.inquiry_date||'').slice(0,10)+(i.notes?' 路 '+i.notes.slice(0,30):'') })) },
     ].filter(s => s.items.length > 0);
 
     if (!sections.length) {
-      drop.innerHTML = `<div class="sd-empty">${zh?'无匹配结果':'No results found'}</div>`;
+      drop.innerHTML = `<div class="sd-empty">${zh?'鏃犲尮閰嶇粨鏋?:'No results found'}</div>`;
       drop.classList.add('open'); return;
     }
     drop.innerHTML = sections.map(sec => `
@@ -2566,9 +2566,9 @@ function exportCSV(order) {
   };
 })();
 
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // INIT
-// ══════════════════════════════
+// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 async function init() {
   if (!token()) { location.href = '/index.html'; return; }
   setLang(S.lang);
@@ -2581,3 +2581,5 @@ init().catch(e => { console.error(e); if (e.message?.includes('401')) logout(); 
 </script>
 </body>
 </html>
+
+
