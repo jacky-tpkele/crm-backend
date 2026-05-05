@@ -1,13 +1,11 @@
--- =============================================
--- XHON CRM — 完整数据库结构
--- 使用方法：全选所有内容 → 粘贴到 Supabase SQL Editor → 点击 Run
+﻿-- =============================================
+-- XHON CRM 鈥?瀹屾暣鏁版嵁搴撶粨鏋?-- 浣跨敤鏂规硶锛氬叏閫夋墍鏈夊唴瀹?鈫?绮樿创鍒?Supabase SQL Editor 鈫?鐐瑰嚮 Run
 -- =============================================
 
--- 启用 UUID 扩展
+-- 鍚敤 UUID 鎵╁睍
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- 客户表
-CREATE TABLE IF NOT EXISTS customers (
+-- 瀹㈡埛琛?CREATE TABLE IF NOT EXISTS customers (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   customer_name    TEXT NOT NULL,
   country          TEXT,
@@ -23,8 +21,7 @@ CREATE TABLE IF NOT EXISTS customers (
 CREATE INDEX IF NOT EXISTS idx_customers_name    ON customers(customer_name) WHERE is_deleted = FALSE;
 CREATE INDEX IF NOT EXISTS idx_customers_country ON customers(country)       WHERE is_deleted = FALSE;
 
--- 产品表
-CREATE TABLE IF NOT EXISTS products (
+-- 浜у搧琛?CREATE TABLE IF NOT EXISTS products (
   id                     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   product_code           TEXT,
   product_name_cn        TEXT NOT NULL,
@@ -41,7 +38,7 @@ CREATE TABLE IF NOT EXISTS products (
 CREATE INDEX IF NOT EXISTS idx_products_code ON products(product_code)    WHERE is_deleted = FALSE;
 CREATE INDEX IF NOT EXISTS idx_products_name ON products(product_name_cn) WHERE is_deleted = FALSE;
 
--- 供应商表
+-- 渚涘簲鍟嗚〃
 CREATE TABLE IF NOT EXISTS suppliers (
   id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   supplier_name      TEXT NOT NULL,
@@ -57,7 +54,7 @@ CREATE TABLE IF NOT EXISTS suppliers (
 );
 CREATE INDEX IF NOT EXISTS idx_suppliers_name ON suppliers(supplier_name) WHERE is_deleted = FALSE;
 
--- 产品供应商关联表
+-- 浜у搧渚涘簲鍟嗗叧鑱旇〃
 CREATE TABLE IF NOT EXISTS product_suppliers (
   product_id       UUID REFERENCES products(id)  ON DELETE CASCADE,
   supplier_id      UUID REFERENCES suppliers(id) ON DELETE CASCADE,
@@ -67,8 +64,7 @@ CREATE TABLE IF NOT EXISTS product_suppliers (
   PRIMARY KEY (product_id, supplier_id)
 );
 
--- 询盘表
-CREATE TABLE IF NOT EXISTS inquiries (
+-- 璇㈢洏琛?CREATE TABLE IF NOT EXISTS inquiries (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   customer_id   UUID REFERENCES customers(id),
   customer_name TEXT,
@@ -80,8 +76,7 @@ CREATE TABLE IF NOT EXISTS inquiries (
 CREATE INDEX IF NOT EXISTS idx_inquiries_status      ON inquiries(status);
 CREATE INDEX IF NOT EXISTS idx_inquiries_customer_id ON inquiries(customer_id);
 
--- 订单表
-CREATE TABLE IF NOT EXISTS orders (
+-- 璁㈠崟琛?CREATE TABLE IF NOT EXISTS orders (
   id                     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   customer_id            UUID REFERENCES customers(id),
   inquiry_id             UUID REFERENCES inquiries(id),
@@ -103,8 +98,7 @@ CREATE INDEX IF NOT EXISTS idx_orders_date     ON orders(order_date)   WHERE is_
 CREATE INDEX IF NOT EXISTS idx_orders_customer ON orders(customer_id)  WHERE is_deleted = FALSE;
 CREATE INDEX IF NOT EXISTS idx_orders_status   ON orders(order_status) WHERE is_deleted = FALSE;
 
--- 订单明细表
-CREATE TABLE IF NOT EXISTS order_items (
+-- 璁㈠崟鏄庣粏琛?CREATE TABLE IF NOT EXISTS order_items (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   order_id         UUID REFERENCES orders(id) ON DELETE CASCADE,
   product_id       UUID,
@@ -124,8 +118,7 @@ CREATE TABLE IF NOT EXISTS order_items (
 CREATE INDEX IF NOT EXISTS idx_items_order_id ON order_items(order_id);
 CREATE INDEX IF NOT EXISTS idx_items_product  ON order_items(product_id);
 
--- 文档表
-CREATE TABLE IF NOT EXISTS documents (
+-- 鏂囨。琛?CREATE TABLE IF NOT EXISTS documents (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   order_id      UUID REFERENCES orders(id) ON DELETE CASCADE,
   document_type TEXT NOT NULL,
@@ -134,8 +127,7 @@ CREATE TABLE IF NOT EXISTS documents (
   created_at    TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 文档模板表
-CREATE TABLE IF NOT EXISTS document_templates (
+-- 鏂囨。妯℃澘琛?CREATE TABLE IF NOT EXISTS document_templates (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   template_name    TEXT NOT NULL,
   document_type    TEXT NOT NULL,
@@ -143,8 +135,7 @@ CREATE TABLE IF NOT EXISTS document_templates (
   version          INTEGER DEFAULT 1
 );
 
--- 文档导出记录表
-CREATE TABLE IF NOT EXISTS document_exports (
+-- 鏂囨。瀵煎嚭璁板綍琛?CREATE TABLE IF NOT EXISTS document_exports (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   document_id   UUID REFERENCES documents(id) ON DELETE CASCADE,
   export_format TEXT NOT NULL,
@@ -152,8 +143,7 @@ CREATE TABLE IF NOT EXISTS document_exports (
 );
 
 -- =============================================
--- 邮件表（Email Module）
--- =============================================
+-- 閭欢琛紙Email Module锛?-- =============================================
 CREATE TABLE IF NOT EXISTS emails (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   message_id   TEXT UNIQUE,
@@ -178,13 +168,33 @@ CREATE INDEX IF NOT EXISTS idx_emails_received  ON emails(received_at DESC);
 CREATE INDEX IF NOT EXISTS idx_emails_deleted   ON emails(is_deleted);
 
 -- =============================================
--- AI 助手设置表
--- =============================================
+-- AI 鍔╂墜璁剧疆琛?-- =============================================
 CREATE TABLE IF NOT EXISTS ai_settings (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   provider      TEXT NOT NULL DEFAULT 'openai',
   api_key       TEXT,
   model         TEXT DEFAULT 'gpt-4o',
-  system_prompt TEXT DEFAULT '你是一个专业的外贸AI助手，帮助用户处理外贸相关工作，包括邮件撰写、报价分析、客户沟通策略等。请用中文回复。',
+  system_prompt TEXT DEFAULT '浣犳槸涓€涓笓涓氱殑澶栬锤AI鍔╂墜锛屽府鍔╃敤鎴峰鐞嗗璐哥浉鍏冲伐浣滐紝鍖呮嫭閭欢鎾板啓銆佹姤浠峰垎鏋愩€佸鎴锋矡閫氱瓥鐣ョ瓑銆傝鐢ㄤ腑鏂囧洖澶嶃€?,
   created_at    TIMESTAMPTZ DEFAULT NOW()
+);
+
+
+-- =============================================
+-- Password Vault
+-- =============================================
+CREATE TABLE IF NOT EXISTS password_items (
+  id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  username           TEXT NOT NULL,
+  name               TEXT NOT NULL,
+  platform           TEXT,
+  account            TEXT NOT NULL,
+  password_encrypted TEXT NOT NULL,
+  created_at         TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_password_items_user_created ON password_items(username, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS vault_security (
+  username         TEXT PRIMARY KEY,
+  second_pass_hash TEXT NOT NULL,
+  updated_at       TIMESTAMPTZ DEFAULT NOW()
 );

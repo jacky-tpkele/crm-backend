@@ -4,6 +4,7 @@ const jwt        = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const { ImapFlow } = require('imapflow');
 const { simpleParser } = require('mailparser');
+const crypto = require('crypto');
 
 const app = express();
 app.use(express.json({ limit: '20mb' }));
@@ -13,6 +14,43 @@ const SB_KEY  = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const SECRET  = process.env.JWT_SECRET   || 'xhon-crm-secret-2025';
 const CRM_USER= process.env.CRM_USERNAME || 'TPKELE';
 const CRM_PASS= process.env.CRM_PASSWORD || '662255';
+const VAULT_KEY = crypto
+  .createHash('sha256')
+  .update(process.env.VAULT_ENCRYPTION_KEY || SECRET)
+  .digest();
+
+function encryptText(plainText) {
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-256-gcm', VAULT_KEY, iv);
+  const encrypted = Buffer.concat([cipher.update(String(plainText), 'utf8'), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return `${iv.toString('base64')}:${tag.toString('base64')}:${encrypted.toString('base64')}`;
+}
+
+function decryptText(payload) {
+  const [ivB64, tagB64, dataB64] = String(payload || '').split(':');
+  if (!ivB64 || !tagB64 || !dataB64) throw new Error('Invalid encrypted payload');
+  const decipher = crypto.createDecipheriv('aes-256-gcm', VAULT_KEY, Buffer.from(ivB64, 'base64'));
+  decipher.setAuthTag(Buffer.from(tagB64, 'base64'));
+  const decrypted = Buffer.concat([
+    decipher.update(Buffer.from(dataB64, 'base64')),
+    decipher.final(),
+  ]);
+  return decrypted.toString('utf8');
+}
+
+function hashSecondPassword(value) {
+  const salt = crypto.randomBytes(16).toString('base64');
+  const hash = crypto.scryptSync(String(value), salt, 64).toString('base64');
+  return `${salt}:${hash}`;
+}
+
+function verifySecondPassword(value, stored) {
+  const [salt, hash] = String(stored || '').split(':');
+  if (!salt || !hash) return false;
+  const computed = crypto.scryptSync(String(value), salt, 64).toString('base64');
+  return crypto.timingSafeEqual(Buffer.from(hash), Buffer.from(computed));
+}
 
 // 鈹€鈹€ Supabase REST helper 鈹€鈹€
 async function sb(path, opts = {}) {
@@ -1057,5 +1095,105 @@ app.post('/api/logistics/extract', auth, async (req, res) => {
 });
 
 
+
+// PASSWORD VAULT
+app.get('/api/password-vault/security/status', auth, async (req, res) => {
+  try {
+    const username = encodeURIComponent(req.user.username || CRM_USER);
+    const rows = await sb(`vault_security?username=eq.${username}&select=username&limit=1`);
+    res.json({ configured: rows.length > 0 });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.post('/api/password-vault/security/second-password', auth, async (req, res) => {
+  try {
+    const username = req.user.username || CRM_USER;
+    const { oldPassword, newPassword } = req.body || {};
+    if (!newPassword || String(newPassword).length < 4) {
+      return res.status(400).json({ message: 'New second password must be at least 4 characters' });
+    }
+
+    const rows = await sb(`vault_security?username=eq.${encodeURIComponent(username)}&select=*`);
+    if (rows.length) {
+      if (!oldPassword || !verifySecondPassword(oldPassword, rows[0].second_pass_hash)) {
+        return res.status(400).json({ message: 'Old second password is incorrect' });
+      }
+      await sb(`vault_security?username=eq.${encodeURIComponent(username)}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ second_pass_hash: hashSecondPassword(newPassword), updated_at: new Date().toISOString() }),
+      });
+    } else {
+      await sb('vault_security', {
+        method: 'POST',
+        body: JSON.stringify({ username, second_pass_hash: hashSecondPassword(newPassword) }),
+      });
+    }
+
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.post('/api/password-vault/items', auth, async (req, res) => {
+  try {
+    const username = req.user.username || CRM_USER;
+    const { name, platform, account, password } = req.body || {};
+    if (!name || !account || !password) {
+      return res.status(400).json({ message: 'name, account and password are required' });
+    }
+
+    const payload = {
+      username,
+      name: String(name).trim(),
+      platform: String(platform || '').trim(),
+      account: String(account).trim(),
+      password_encrypted: encryptText(password),
+    };
+
+    const data = await sb('password_items?select=id', {
+      method: 'POST',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify(payload),
+    });
+
+    res.json({ success: true, id: data[0].id });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.get('/api/password-vault/items', auth, async (req, res) => {
+  try {
+    const username = encodeURIComponent(req.user.username || CRM_USER);
+    const keyword = String(req.query.keyword || '').trim().toLowerCase();
+    const rows = await sb(`password_items?username=eq.${username}&order=created_at.desc&select=id,name,platform,account,created_at`);
+
+    const filtered = keyword
+      ? rows.filter((r) => [r.name, r.platform, r.account].join(' ').toLowerCase().includes(keyword))
+      : rows;
+
+    res.json(filtered.map((r) => ({ ...r, password_masked: '************' })));
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.post('/api/password-vault/items/:id/reveal', auth, async (req, res) => {
+  try {
+    const username = req.user.username || CRM_USER;
+    const { secondPassword } = req.body || {};
+    if (!secondPassword) return res.status(400).json({ message: 'Second password is required' });
+
+    const sec = await sb(`vault_security?username=eq.${encodeURIComponent(username)}&select=*`);
+    if (!sec.length) return res.status(400).json({ message: 'Second password is not set yet' });
+    if (!verifySecondPassword(secondPassword, sec[0].second_pass_hash)) {
+      return res.status(401).json({ message: 'Second password is incorrect' });
+    }
+
+    const rows = await sb(`password_items?id=eq.${req.params.id}&username=eq.${encodeURIComponent(username)}&select=*`);
+    if (!rows.length) return res.status(404).json({ message: 'Password record not found' });
+
+    const plain = decryptText(rows[0].password_encrypted);
+    res.json({ success: true, password: plain, visibleSeconds: 15 });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
 module.exports = app;
+
+
+
 
