@@ -337,3 +337,80 @@ button[title="Notifications"]:hover{
 /* Links updated to forest green for harmony */
 a{color:#2f6b4a !important;}
 a:hover{color:#1d3f2c !important;}
+
+/* =========================================================
+   Sidebar nav icons → hollow circle with a small green dot
+   ========================================================= */
+.nav-icon{
+  font-size:0 !important;            /* hide the original glyph */
+  line-height:0 !important;
+  width:18px !important;
+  height:18px !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  position:relative !important;
+  flex-shrink:0 !important;
+}
+.nav-icon::before{
+  content:"" !important;
+  width:14px;height:14px;
+  border-radius:50%;
+  border:1.5px solid #2f6b4a;
+  background:#ffffff;
+  display:block;
+  box-sizing:border-box;
+  transition:border-color .18s ease,background-color .18s ease;
+}
+.nav-icon::after{
+  content:"" !important;
+  position:absolute;
+  width:6px;height:6px;
+  border-radius:50%;
+  background:#2f6b4a;
+  transition:transform .18s ease,background-color .18s ease;
+}
+.nav-item:hover .nav-icon::before{border-color:#1d3f2c;}
+.nav-item:hover .nav-icon::after{transform:scale(1.15);}
+.nav-item.active .nav-icon::before,
+.nav-item.selected .nav-icon::before,
+.nav-item.current .nav-icon::before{
+  border-color:#1d3f2c;
+  background:#eaf4ee;
+}
+.nav-item.active .nav-icon::after,
+.nav-item.selected .nav-icon::after,
+.nav-item.current .nav-icon::after{
+  background:#1d3f2c;
+  transform:scale(1.2);
+}
+
+/* =========================================================
+   Live USD → CNY rate widget (injected on dashboard)
+   ========================================================= */
+#sec-dashboard{position:relative !important;}
+.fx-widget{
+  position:absolute !important;
+  top:18px !important;
+  right:18px !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  gap:8px !important;
+  background:#ffffff !important;
+  border:1px solid #cfe2d5 !important;
+  border-radius:999px !important;
+  padding:8px 16px !important;
+  font-size:13px !important;
+  color:#1d3f2c !important;
+  box-shadow:0 1px 6px rgba(40,80,55,.08) !important;
+  z-index:5 !important;
+  user-select:none;
+}
+.fx-widget .fx-pair{font-weight:400;color:#4a5b50;}
+.fx-widget .fx-rate{font-weight:500;color:#2f6b4a;font-size:14px;}
+.fx-widget .fx-time{font-size:11px;color:#7a8a80;margin-left:4px;}
+.fx-widget .fx-arrow{color:#9fc2aa;}
+.fx-widget.loading .fx-rate{color:#9fc2aa;}
+@media(max-width:680px){
+  .fx-widget{position:static !important;margin:8px 0 12px !important;}
+}

@@ -541,6 +541,13 @@ tr:hover .del-row-btn{display:inline-block}
     <section class="section active" id="sec-dashboard">
       <div class="section-title" data-i18n="dashTitle">Dashboard</div>
       <div class="section-sub" data-i18n="dashSub">Overview of your trade performance</div>
+      <div class="fx-widget loading" id="fxWidget" title="USD → CNY 实时汇率，每5分钟刷新">
+        <span class="fx-pair">USD</span>
+        <span class="fx-arrow">→</span>
+        <span class="fx-pair">CNY</span>
+        <span class="fx-rate" id="fxRate">--</span>
+        <span class="fx-time" id="fxTime"></span>
+      </div>
       <div class="kpi-grid" id="kpiGrid">
         <div class="kpi"><div class="kpi-label" data-i18n="kpiMonthOrders">Monthly Orders</div><div class="kpi-value green" id="kv-mo">—</div></div>
         <div class="kpi"><div class="kpi-label" data-i18n="kpiYearOrders">Annual Orders</div><div class="kpi-value cyan" id="kv-yo">—</div></div>
@@ -2581,6 +2588,46 @@ async function init() {
 }
 
 init().catch(e => { console.error(e); if (e.message?.includes('401')) logout(); });
+</script>
+<script>
+/* ── Live USD → CNY exchange rate (frankfurter.dev with er-api fallback) ── */
+(function(){
+  var rateEl = document.getElementById('fxRate');
+  var timeEl = document.getElementById('fxTime');
+  var wrapEl = document.getElementById('fxWidget');
+  if(!rateEl) return;
+
+  function paint(rate){
+    rateEl.textContent = Number(rate).toFixed(4);
+    var d = new Date();
+    var hh = String(d.getHours()).padStart(2,'0');
+    var mm = String(d.getMinutes()).padStart(2,'0');
+    timeEl.textContent = hh+':'+mm;
+    wrapEl.classList.remove('loading');
+  }
+
+  async function load(){
+    try{
+      var r = await fetch('https://api.frankfurter.dev/v1/latest?base=USD&symbols=CNY',{cache:'no-store'});
+      if(r.ok){
+        var j = await r.json();
+        if(j && j.rates && j.rates.CNY){ paint(j.rates.CNY); return; }
+      }
+    }catch(e){}
+    try{
+      var r2 = await fetch('https://open.er-api.com/v6/latest/USD',{cache:'no-store'});
+      if(r2.ok){
+        var j2 = await r2.json();
+        if(j2 && j2.rates && j2.rates.CNY){ paint(j2.rates.CNY); return; }
+      }
+    }catch(e){}
+    rateEl.textContent = 'N/A';
+    timeEl.textContent = '';
+  }
+
+  load();
+  setInterval(load, 5*60*1000);
+})();
 </script>
 </body>
 </html>
