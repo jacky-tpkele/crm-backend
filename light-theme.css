@@ -1,0 +1,208 @@
+/* =========================================================
+   TPKELE CRM — Light theme override
+   White background, black text, pill/oval buttons,
+   subtle gray hover. Loaded LAST so it wins specificity.
+   ========================================================= */
+
+:root{
+  --bg:#ffffff !important;
+  --panel:#ffffff !important;
+  --panel-2:#f7f7f7 !important;
+  --text:#000000 !important;
+  --muted:#555555 !important;
+  --muted2:#333333 !important;
+  --border:#d0d0d0 !important;
+  --primary:#000000 !important;
+  --cyan:#000000 !important;
+  --danger:#c0392b !important;
+  --shadow:0 2px 8px rgba(0,0,0,.06) !important;
+  --radius:10px !important;
+}
+
+html,body{
+  background:#ffffff !important;
+  color:#000000 !important;
+}
+
+/* Kill decorative dark canvases / glows */
+#circuit,#particles,.bg-canvas,.aurora,.stars{display:none !important;}
+
+*{
+  text-shadow:none !important;
+  -webkit-tap-highlight-color:transparent;
+}
+
+/* Generic containers */
+.card,.panel,.panel-2,.topbar,.sidebar,.nav,.nav-item,.nav-collapse-hd,
+.modal,.modal-content,.dialog,.dropdown,.dd,.dd-item,
+.chart-card,.qa-btn,.filter-bar,.search-wrap,.search-dropdown,.sd-item,
+.login-panel,.fp-panel,.brand-wrap,.page,.section,.tile,.box,.list,
+.toolbar,.tabs,.tab,.subnav,.header,.footer,.content,.main,.aside{
+  background:#ffffff !important;
+  color:#000000 !important;
+  border-color:#d0d0d0 !important;
+  box-shadow:none !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+
+/* Sidebar — keep distinguishable with a soft gray */
+.sidebar,aside.sidebar,nav.sidebar{
+  background:#f7f7f7 !important;
+  color:#000 !important;
+  border-right:1px solid #e5e5e5 !important;
+}
+.sidebar *,.nav-item,.nav-collapse-hd{color:#000 !important;}
+.nav-item:hover,.nav-collapse-hd:hover{background:#ececec !important;color:#000 !important;}
+.nav-item.active,.nav-item.selected,.nav-item.current{
+  background:#e0e0e0 !important;color:#000 !important;font-weight:600 !important;
+}
+
+/* Topbar */
+.topbar,header.topbar{
+  background:#ffffff !important;
+  border-bottom:1px solid #e5e5e5 !important;
+}
+
+/* Headings & text */
+h1,h2,h3,h4,h5,h6,p,span,div,label,small,strong,em,li,td,th,a{
+  text-shadow:none !important;
+}
+h1,h2,h3,h4,h5,h6{color:#000 !important;}
+
+/* Links */
+a{color:#0066cc !important;}
+a:hover{color:#003e80 !important;}
+
+/* Inputs */
+input,textarea,select{
+  background:#ffffff !important;
+  color:#000000 !important;
+  border:1px solid #c8c8c8 !important;
+  border-radius:8px !important;
+  box-shadow:none !important;
+}
+input::placeholder,textarea::placeholder{color:#888 !important;}
+input:focus,textarea:focus,select:focus{
+  border-color:#000000 !important;
+  background:#ffffff !important;
+  outline:none !important;
+  box-shadow:0 0 0 2px rgba(0,0,0,.06) !important;
+}
+.search-wrap input{background:#fff !important;}
+
+/* ---------- Buttons: oval / pill outline + gray hover ---------- */
+button,.btn,.qa-btn,
+input[type="button"],input[type="submit"],input[type="reset"]{
+  background:#ffffff !important;
+  color:#000000 !important;
+  border:1.5px solid #000000 !important;
+  border-radius:999px !important;            /* oval / pill */
+  padding:6px 16px !important;
+  box-shadow:none !important;
+  text-shadow:none !important;
+  font-weight:500 !important;
+  cursor:pointer !important;
+  transition:background-color .18s ease,
+             color .18s ease,
+             transform .08s ease,
+             box-shadow .18s ease !important;
+}
+button:hover,.btn:hover,.qa-btn:hover,
+input[type="button"]:hover,input[type="submit"]:hover{
+  background:#ececec !important;             /* light gray on hover */
+  color:#000 !important;
+  border-color:#000 !important;
+  box-shadow:0 1px 4px rgba(0,0,0,.08) !important;
+}
+button:active,.btn:active,.qa-btn:active,
+input[type="button"]:active,input[type="submit"]:active{
+  background:#d6d6d6 !important;             /* deeper gray on click */
+  transform:scale(.97) !important;
+}
+
+/* Primary button — solid black pill */
+.btn-primary,.qa-btn.primary,button.primary,.btn.primary{
+  background:#000000 !important;
+  color:#ffffff !important;
+  border:1.5px solid #000000 !important;
+}
+.btn-primary:hover,.qa-btn.primary:hover,button.primary:hover,.btn.primary:hover{
+  background:#2a2a2a !important;
+  color:#fff !important;
+}
+
+/* Danger */
+.btn-danger,button.danger,.btn.danger{
+  background:#ffffff !important;
+  color:#c0392b !important;
+  border:1.5px solid #c0392b !important;
+}
+.btn-danger:hover{background:#fdecea !important;color:#a52a1d !important;}
+
+/* Cyan / accent — fold to outline style */
+.btn-cyan{
+  background:#ffffff !important;
+  color:#000 !important;
+  border:1.5px solid #000 !important;
+}
+
+/* Tiny icon-only delete buttons should stay borderless */
+.del-col,.icon-btn,.btn-icon{
+  background:transparent !important;
+  border:none !important;
+  border-radius:6px !important;
+  color:#000 !important;
+  padding:2px !important;
+}
+.del-col:hover,.icon-btn:hover,.btn-icon:hover{
+  background:#ececec !important;
+  transform:none !important;
+}
+
+/* Tables */
+table{background:#fff !important;color:#000 !important;}
+th{
+  background:#f3f3f3 !important;
+  color:#000 !important;
+  border-bottom:1px solid #e0e0e0 !important;
+}
+td{border-bottom:1px solid #efefef !important;color:#000 !important;}
+tr:hover td{background:#f7f7f7 !important;}
+
+/* Modals / dropdowns */
+.modal,.modal-content,.dialog,.dropdown,.dd,.search-dropdown{
+  background:#ffffff !important;
+  color:#000 !important;
+  border:1px solid #d8d8d8 !important;
+  box-shadow:0 8px 24px rgba(0,0,0,.12) !important;
+}
+.dd-item:hover,.sd-item:hover{background:#f0f0f0 !important;color:#000 !important;}
+
+/* Modal backdrop */
+.modal-backdrop,.overlay,.backdrop{
+  background:rgba(0,0,0,.35) !important;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-track{background:#f5f5f5 !important;}
+::-webkit-scrollbar-thumb{background:#c8c8c8 !important;border-radius:6px;}
+::-webkit-scrollbar-thumb:hover{background:#a8a8a8 !important;}
+
+/* Login / index page tweaks (was dark cyber theme) */
+.brand-title,.sub-title{color:#000 !important;letter-spacing:2px !important;}
+.fp-outer,.fp-inner{
+  border-color:#000 !important;
+  background:#fff !important;
+  box-shadow:none !important;
+}
+.fp-outer::before{border-color:#bbb !important;border-top-color:#000 !important;}
+.fp-scan{background:linear-gradient(90deg,transparent,#999,transparent) !important;}
+.fp-svg{filter:invert(1);opacity:.85 !important;}
+
+/* Charts container backgrounds */
+canvas{background:transparent !important;}
+
+/* Misc gradient killers */
+[style*="linear-gradient"]{background-image:none !important;}
