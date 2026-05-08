@@ -224,3 +224,106 @@ canvas{background:transparent !important;}
 
 /* Misc gradient killers */
 [style*="linear-gradient"]{background-image:none !important;}
+
+/* =========================================================
+   Page-specific dark elements that hard-coded their colors
+   ========================================================= */
+
+/* dashboard.html — AI assistant chat */
+.ai-bubble,
+.ai-msg-bot .ai-bubble,
+.ai-msg-user .ai-bubble{
+  background:#f3f3f3 !important;
+  background-image:none !important;
+  color:#000 !important;
+  border:1px solid #e0e0e0 !important;
+  border-radius:12px !important;
+}
+.ai-msg-user .ai-bubble{
+  background:#000 !important;
+  color:#fff !important;
+  border-color:#000 !important;
+}
+.ai-bubble pre,.ai-bubble code{
+  background:#f5f5f5 !important;
+  color:#000 !important;
+  border:1px solid #e5e5e5 !important;
+}
+.ai-msg-user .ai-bubble pre,.ai-msg-user .ai-bubble code{
+  background:#1a1a1a !important;color:#fff !important;border-color:#333 !important;
+}
+.ai-avatar,.ai-msg-user .ai-avatar{
+  background:#ececec !important;
+  background-image:none !important;
+  color:#000 !important;
+  border:1px solid #d0d0d0 !important;
+}
+
+/* dashboard.html — Quick Export floating panel */
+.quick-export{
+  background:#ffffff !important;
+  border:1px solid #d8d8d8 !important;
+  box-shadow:0 8px 24px rgba(0,0,0,.10) !important;
+  color:#000 !important;
+}
+.qe-head{
+  background:#f7f7f7 !important;
+  color:#000 !important;
+  border-bottom:1px solid #e5e5e5 !important;
+}
+.qe-head:hover{background:#ececec !important;}
+.qe-label{color:#555 !important;}
+.qe-body select{
+  background:#fff !important;color:#000 !important;
+  border:1px solid #c8c8c8 !important;border-radius:8px !important;
+}
+.qe-btns button{
+  width:100% !important;
+  background:#fff !important;color:#000 !important;
+  border:1.5px solid #000 !important;
+  border-radius:999px !important;
+  text-align:center !important;
+}
+.qe-btns button:hover{
+  background:#ececec !important;color:#000 !important;border-color:#000 !important;
+}
+
+/* email.html — folder list (inbox / sent) */
+.folder-item{color:#333 !important;border-left:3px solid transparent !important;}
+.folder-item:hover{background:#f0f0f0 !important;color:#000 !important;}
+.folder-item.active{
+  background:#ececec !important;
+  color:#000 !important;
+  border-left-color:#000 !important;
+  font-weight:500 !important;
+}
+.folder-item .badge{
+  background:#000 !important;color:#fff !important;
+}
+
+/* email.html — email list items */
+.email-item{border-bottom:1px solid #eee !important;}
+.email-item:hover{background:#f7f7f7 !important;}
+.email-item.active{
+  background:#ececec !important;
+  border-left:3px solid #000 !important;
+  color:#000 !important;
+}
+.email-item.selected{background:#f0f0f0 !important;}
+.email-item.unread .ei-subject{color:#000 !important;font-weight:600 !important;}
+.email-item.unread .ei-from{color:#000 !important;}
+
+/* Notification bell / icon-only top-bar buttons stay borderless circles */
+.icon-btn[title="Notifications"],
+button[title="Notifications"]{
+  background:transparent !important;
+  border:none !important;
+  border-radius:50% !important;
+  color:#000 !important;
+  width:36px !important;height:36px !important;
+  padding:0 !important;
+}
+.icon-btn[title="Notifications"]:hover,
+button[title="Notifications"]:hover{
+  background:#ececec !important;
+}
