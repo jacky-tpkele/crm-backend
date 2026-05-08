@@ -4,6 +4,24 @@
    subtle gray hover. Loaded LAST so it wins specificity.
    ========================================================= */
 
+/* Unified font: Microsoft YaHei Light across the whole site */
+html,body,input,textarea,select,button,table,th,td,
+h1,h2,h3,h4,h5,h6,p,span,div,label,a,li,small,strong,em,
+.btn,.qa-btn,.nav-item,.modal,.dropdown,.card,.panel,
+.topbar,.sidebar,.toast,.dialog{
+  font-family:"Microsoft YaHei Light","微软雅黑 Light",
+              "Microsoft YaHei","微软雅黑",
+              "Segoe UI Light","Segoe UI",
+              -apple-system,BlinkMacSystemFont,
+              "PingFang SC","Hiragino Sans GB",sans-serif !important;
+  font-weight:300 !important;
+}
+/* Keep headings/strong slightly heavier so hierarchy stays readable */
+h1,h2,h3,h4,h5,h6,strong,th,.btn-primary,.qa-btn.primary,
+button.primary,.btn.primary{
+  font-weight:400 !important;
+}
+
 :root{
   --bg:#ffffff !important;
   --panel:#ffffff !important;
