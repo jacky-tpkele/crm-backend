@@ -343,14 +343,61 @@ a:hover{color:#6EE7B7 !important;}
   z-index:5 !important;
   user-select:none;
 }
-.fx-widget .fx-pair{font-weight:400;color:#9DB5AC;}
-.fx-widget .fx-rate{font-weight:500;color:#34D399;font-size:14px;}
-.fx-widget .fx-time{font-size:11px;color:#7E9E94;margin-left:4px;}
-.fx-widget .fx-arrow{color:#34D399;}
+.fx-widget .fx-pair{font-weight:400;color:#9DB5AC;font-size:14px;}
+.fx-widget .fx-rate{font-weight:800;color:#34D399;font-size:18px;letter-spacing:.5px;}
+.fx-widget .fx-time{font-size:13px;color:#7E9E94;margin-left:4px;}
+.fx-widget .fx-arrow{color:#34D399;font-size:15px;}
 .fx-widget.loading .fx-rate{color:#7E9E94;}
 @media(max-width:680px){
   .fx-widget{position:static !important;margin:8px 0 12px !important;}
 }
+
+/* =========================================================
+   Sidebar TPKELE CRM brand: hide hexagon icon, make text bold 2x
+   ========================================================= */
+.sb-logo .logo-icon{display:none !important;}
+.sb-logo .logo-text{
+  font-size:22px !important;
+  font-weight:900 !important;
+  letter-spacing:3px !important;
+  color:#E6F4EF !important;
+  text-transform:uppercase;
+}
+.sb-logo .logo-text span{color:#6EE7B7 !important;}
+.sb-logo{padding:20px 16px !important;}
+
+/* =========================================================
+   Sidebar collapse headers (文件 / 工具) — add the same
+   hollow-circle-with-dot indicator as .nav-icon
+   ========================================================= */
+.nav-collapse-hd{
+  display:flex !important;
+  align-items:center !important;
+  gap:12px !important;
+}
+.nav-collapse-hd::before{
+  content:"" !important;
+  width:14px;height:14px;
+  flex-shrink:0;
+  border-radius:50%;
+  border:1.5px solid #34D399;
+  background:radial-gradient(#10B981 0 3px,transparent 3px);
+  box-sizing:border-box;
+  transition:border-color .18s ease,background .18s ease,transform .18s ease;
+}
+.nav-collapse-hd:hover::before{
+  border-color:#6EE7B7;
+  background:radial-gradient(#34D399 0 3.5px,transparent 3.5px);
+  transform:scale(1.1);
+}
+.nav-collapse-hd.open::before,
+.nav-collapse-hd[data-open="true"]::before{
+  border-color:#6EE7B7;
+  background:radial-gradient(#6EE7B7 0 3.5px,rgba(16,185,129,.20) 3.5px);
+  box-shadow:0 0 8px rgba(110,231,183,.5);
+}
+/* push the trailing arrow to the far right */
+.nav-collapse-hd .nav-collapse-arrow{margin-left:auto !important;}
 
 /* =========================================================
    Dashboard KPI value colors and avatar
