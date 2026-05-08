@@ -223,7 +223,31 @@ tr:hover td{background:#f3faf5 !important;}
 }
 .fp-outer::before{border-color:#cfe2d5 !important;border-top-color:#2f6b4a !important;}
 .fp-scan{background:linear-gradient(90deg,transparent,#9fc2aa,transparent) !important;}
-.fp-svg{filter:invert(35%) sepia(20%) saturate(700%) hue-rotate(95deg);opacity:.85 !important;}
+.fp-svg{filter:none !important;opacity:1 !important;}
+.fp-svg [stroke]{stroke:#2f6b4a !important;}
+.fp-svg [fill]:not([fill="none"]){fill:#2f6b4a !important;}
+
+/* Hide foreground TPKELE brand mark on the login page,
+   add a bold watermark embedded in the page background instead */
+body:has(.brand-wrap) .brand-wrap{display:none !important;}
+body:has(.brand-wrap)::before{
+  content:"TPKELE";
+  position:fixed;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  font-family:"Microsoft YaHei","微软雅黑","Segoe UI",sans-serif;
+  font-weight:900;
+  font-size:clamp(120px,18vw,260px);
+  letter-spacing:14px;
+  color:#bcd7c4;
+  opacity:.45;
+  pointer-events:none;
+  user-select:none;
+  z-index:0;
+  white-space:nowrap;
+}
+body:has(.brand-wrap) .page>.card,
+body:has(.brand-wrap) .card{position:relative;z-index:1;}
 
 /* Charts container backgrounds */
 canvas{background:transparent !important;}
@@ -413,4 +437,32 @@ a:hover{color:#1d3f2c !important;}
 .fx-widget.loading .fx-rate{color:#9fc2aa;}
 @media(max-width:680px){
   .fx-widget{position:static !important;margin:8px 0 12px !important;}
+}
+
+/* =========================================================
+   Unify dashboard KPI value colors and user avatar to mint
+   ========================================================= */
+.kpi-value,
+.kpi-value.green,
+.kpi-value.cyan,
+.kpi-value.purple{
+  color:#2f6b4a !important;
+}
+
+/* The user avatar pill in the topbar — was cyan gradient */
+.user-avatar{
+  background:#2f6b4a !important;
+  background-image:none !important;
+  border:1px solid #2f6b4a !important;
+  color:#ffffff !important;
+}
+.user-btn{
+  border-color:#cfe2d5 !important;
+  color:#1d3f2c !important;
+}
+.user-btn:hover{border-color:#2f6b4a !important;}
+
+/* Sidebar collapse / footer arrow buttons */
+.nav-collapse-hd,.sidebar-collapse,.btn-collapse{
+  color:#1d3f2c !important;
 }

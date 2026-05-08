@@ -1585,9 +1585,9 @@ async function loadDashboard() {
 }
 
 function chartDefaults() {
-  Chart.defaults.color = '#8892a4';
-  Chart.defaults.borderColor = 'rgba(255,255,255,.06)';
-  Chart.defaults.font.family = 'Inter';
+  Chart.defaults.color = '#4a5b50';
+  Chart.defaults.borderColor = 'rgba(40,80,55,.08)';
+  Chart.defaults.font.family = 'Microsoft YaHei Light, 微软雅黑 Light, Microsoft YaHei, Segoe UI Light, sans-serif';
 }
 
 function initDashCharts(trends, topP, topC) {
@@ -1601,7 +1601,7 @@ function initDashCharts(trends, topP, topC) {
     type: 'line',
     data: {
       labels,
-      datasets: [{ label:'Orders', data: trends.orders||[], borderColor:'#00c8f0', backgroundColor:'rgba(0,200,240,.08)', tension:.4, fill:true, pointRadius:3 }]
+      datasets: [{ label:'Orders', data: trends.orders||[], borderColor:'#2f6b4a', backgroundColor:'rgba(47,107,74,.10)', tension:.4, fill:true, pointRadius:3 }]
     },
     options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,grid:{color:'rgba(255,255,255,.04)'}},x:{grid:{color:'rgba(255,255,255,.04)'}}} }
   });
@@ -1610,7 +1610,7 @@ function initDashCharts(trends, topP, topC) {
     type: 'line',
     data: {
       labels,
-      datasets: [{ label:'Profit', data: trends.profit||[], borderColor:'#8b5cf6', backgroundColor:'rgba(139,92,246,.1)', tension:.4, fill:true, pointRadius:3 }]
+      datasets: [{ label:'Profit', data: trends.profit||[], borderColor:'#5a8c6f', backgroundColor:'rgba(90,140,111,.15)', tension:.4, fill:true, pointRadius:3 }]
     },
     options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,grid:{color:'rgba(255,255,255,.04)'}},x:{grid:{color:'rgba(255,255,255,.04)'}}} }
   });
@@ -1620,7 +1620,7 @@ function initDashCharts(trends, topP, topC) {
       type: 'bar',
       data: {
         labels: topP.slice(0,6).map(p=>p.name.slice(0,8)),
-        datasets: [{ label:'Sales', data: topP.slice(0,6).map(p=>p.sales), backgroundColor:'rgba(34,211,238,.6)', borderRadius:6 }]
+        datasets: [{ label:'Sales', data: topP.slice(0,6).map(p=>p.sales), backgroundColor:'rgba(47,107,74,.6)', borderRadius:6 }]
       },
       options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,grid:{color:'rgba(255,255,255,.04)'}},x:{grid:{display:false}}} }
     });
@@ -1631,7 +1631,7 @@ function initDashCharts(trends, topP, topC) {
       type: 'bar',
       data: {
         labels: topC.slice(0,6).map(c=>c.name.slice(0,10)),
-        datasets: [{ label:'Sales', data: topC.slice(0,6).map(c=>c.sales), backgroundColor:'rgba(0,200,240,.6)', borderRadius:6 }]
+        datasets: [{ label:'Sales', data: topC.slice(0,6).map(c=>c.sales), backgroundColor:'rgba(90,140,111,.6)', borderRadius:6 }]
       },
       options: { responsive:true, plugins:{legend:{display:false}}, indexAxis:'y', scales:{x:{beginAtZero:true,grid:{color:'rgba(255,255,255,.04)'}},y:{grid:{display:false}}} }
     });
@@ -1653,21 +1653,21 @@ async function initAnalyticsCharts() {
     S.charts.a1 = new Chart(document.getElementById('chartAnalytics1'), {
       type:'bar',
       data:{ labels, datasets:[
-        {label:'Sales', data:trends.sales||[], backgroundColor:'rgba(0,200,240,.5)', borderRadius:4},
-        {label:'Profit', data:trends.profit||[], backgroundColor:'rgba(139,92,246,.5)', borderRadius:4}
+        {label:'Sales', data:trends.sales||[], backgroundColor:'rgba(47,107,74,.55)', borderRadius:4},
+        {label:'Profit', data:trends.profit||[], backgroundColor:'rgba(90,140,111,.55)', borderRadius:4}
       ]},
       options:{responsive:true,scales:{y:{beginAtZero:true,grid:{color:'rgba(255,255,255,.04)'}},x:{grid:{display:false}}}}
     });
 
     if (topC?.length) {
       S.charts.a2 = new Chart(document.getElementById('chartAnalytics2'), {
-        type:'bar', data:{ labels:topC.map(c=>c.name.slice(0,12)), datasets:[{label:'Sales',data:topC.map(c=>c.sales),backgroundColor:'rgba(34,211,238,.55)',borderRadius:4}] },
+        type:'bar', data:{ labels:topC.map(c=>c.name.slice(0,12)), datasets:[{label:'Sales',data:topC.map(c=>c.sales),backgroundColor:'rgba(47,107,74,.55)',borderRadius:4}] },
         options:{responsive:true,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{color:'rgba(255,255,255,.04)'}},y:{grid:{display:false}}}}
       });
     }
     if (topP?.length) {
       S.charts.a3 = new Chart(document.getElementById('chartAnalytics3'), {
-        type:'bar', data:{ labels:topP.map(p=>p.name.slice(0,12)), datasets:[{label:'Sales',data:topP.map(p=>p.sales),backgroundColor:'rgba(139,92,246,.55)',borderRadius:4}] },
+        type:'bar', data:{ labels:topP.map(p=>p.name.slice(0,12)), datasets:[{label:'Sales',data:topP.map(p=>p.sales),backgroundColor:'rgba(90,140,111,.55)',borderRadius:4}] },
         options:{responsive:true,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{color:'rgba(255,255,255,.04)'}},y:{grid:{display:false}}}}
       });
     }
@@ -1676,7 +1676,7 @@ async function initAnalyticsCharts() {
     if (Object.keys(statusCounts).length) {
       S.charts.a4 = new Chart(document.getElementById('chartAnalytics4'), {
         type:'doughnut',
-        data:{ labels:Object.keys(statusCounts), datasets:[{data:Object.values(statusCounts),backgroundColor:['#00C46A','#22d3ee','#8b5cf6','#fbbf24','#fb7185','#4ade80']}] },
+        data:{ labels:Object.keys(statusCounts), datasets:[{data:Object.values(statusCounts),backgroundColor:['#2f6b4a','#5a8c6f','#9fc2aa','#bcd7c4','#3a7d57','#a8cfb4']}] },
         options:{responsive:true,plugins:{legend:{position:'right'}}}
       });
     }
