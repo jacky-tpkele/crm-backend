@@ -2131,29 +2131,58 @@ async function fetchExchangeRate(force) {
   const date = document.getElementById('om-date').value || today();
   const rateInput  = document.getElementById('om-rate');
   const status     = document.getElementById('om-rate-status');
-  if (rateInput.dataset.manual === '1' && !force) return;  // 手动修改后不再自动覆盖
+  if (rateInput.dataset.manual === '1' && !force) return;
   if (cur === 'CNY') { rateInput.value = '1.0000'; status.textContent='固定'; recalcOrder(); return; }
   status.textContent = '获取中...';
-  try {
-    // Frankfurter API: 免费,支持历史汇率,无需 key
-    const url = `https://api.frankfurter.app/${date}?from=${cur}&to=CNY`;
-    const r = await fetch(url);
-    const d = await r.json();
-    const rate = d?.rates?.CNY;
-    if (rate) {
-      rateInput.value = (+rate).toFixed(4);
-      status.textContent = `自动 · ${date}`;
-      recalcOrder();
-    } else {
-      status.textContent = '失败,用默认 7.20';
-      rateInput.value = '7.2000';
-      recalcOrder();
-    }
-  } catch (e) {
-    status.textContent = '网络失败,用默认 7.20';
-    rateInput.value = '7.2000';
-    recalcOrder();
+
+  // 多 API 备选（依次尝试，国内+海外都覆盖）
+  const isToday = date >= today();
+  const sources = [
+    // 1. open.er-api.com - 免费 CORS,只支持最新
+    async () => {
+      const r = await fetch(`https://open.er-api.com/v6/latest/${cur}`);
+      const d = await r.json();
+      return d?.rates?.CNY;
+    },
+    // 2. Frankfurter - ECB,支持历史,海外
+    async () => {
+      const url = isToday ? `https://api.frankfurter.app/latest?from=${cur}&to=CNY` : `https://api.frankfurter.app/${date}?from=${cur}&to=CNY`;
+      const r = await fetch(url);
+      const d = await r.json();
+      return d?.rates?.CNY;
+    },
+    // 3. exchangerate-api.com - 免费层
+    async () => {
+      const r = await fetch(`https://api.exchangerate-api.com/v4/latest/${cur}`);
+      const d = await r.json();
+      return d?.rates?.CNY;
+    },
+    // 4. fawazahmed0 (jsdelivr CDN, 国内可访问)
+    async () => {
+      const dt = isToday ? 'latest' : date;
+      const r = await fetch(`https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@${dt}/v1/currencies/${cur.toLowerCase()}.json`);
+      const d = await r.json();
+      return d?.[cur.toLowerCase()]?.cny;
+    },
+  ];
+
+  for (let i = 0; i < sources.length; i++) {
+    try {
+      const rate = await Promise.race([
+        sources[i](),
+        new Promise((_, rej) => setTimeout(()=>rej(new Error('timeout')), 5000))
+      ]);
+      if (rate && rate > 0) {
+        rateInput.value = (+rate).toFixed(4);
+        status.textContent = `自动 · 源${i+1} · ${date}`;
+        recalcOrder();
+        return;
+      }
+    } catch (_) { /* 继续下一个 */ }
   }
+  status.textContent = '4个源都失败,用默认 7.20';
+  rateInput.value = '7.2000';
+  recalcOrder();
 }
 function toggleRateEdit() {
   const r = document.getElementById('om-rate');
