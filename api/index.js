@@ -104,24 +104,28 @@ app.get('/api/dashboard/stats', auth, async (req, res) => {
   try {
     const month = new Date().toISOString().slice(0, 7);
     const year  = new Date().getFullYear().toString();
-    const orders = await sb('orders?select=order_date,sales_total,profit&is_deleted=eq.false');
+    const orders = await sb('orders?select=order_date,sales_total,profit,profit_rmb,currency,exchange_rate&is_deleted=eq.false');
     const mO = orders.filter(o => (o.order_date||'').startsWith(month));
     const yO = orders.filter(o => (o.order_date||'').startsWith(year));
-    const sum = (arr, f) => arr.reduce((a, o) => a + Number(o[f]||0), 0);
+    // 全部换算成 RMB 统计
+    const salesRmb  = o => Number(o.sales_total||0) * (o.currency==='RMB' ? 1 : (Number(o.exchange_rate)||7.2));
+    const profitRmb = o => Number(o.profit_rmb || (o.currency==='RMB' ? Number(o.profit||0) : Number(o.profit||0) * (Number(o.exchange_rate)||7.2)));
+    const sumF = (arr, f) => arr.reduce((a, o) => a + f(o), 0);
     res.json({
       month_orders:  mO.length,
       year_orders:   yO.length,
-      month_sales:   sum(mO, 'sales_total'),
-      year_sales:    sum(yO, 'sales_total'),
-      month_profit:  sum(mO, 'profit'),
-      year_profit:   sum(yO, 'profit'),
+      month_sales:   sumF(mO, salesRmb),
+      year_sales:    sumF(yO, salesRmb),
+      month_profit:  sumF(mO, profitRmb),
+      year_profit:   sumF(yO, profitRmb),
+      currency:      'RMB',
     });
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
 app.get('/api/dashboard/trends', auth, async (req, res) => {
   try {
-    const orders = await sb('orders?select=order_date,sales_total,profit&is_deleted=eq.false');
+    const orders = await sb('orders?select=order_date,sales_total,profit,profit_rmb,currency,exchange_rate&is_deleted=eq.false');
     const now = new Date();
     const months = Array.from({ length: 12 }, (_, i) => {
       const d = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
@@ -132,8 +136,11 @@ app.get('/api/dashboard/trends', auth, async (req, res) => {
     orders.forEach(o => {
       const m = (o.order_date||'').slice(0, 7);
       if (map[m]) {
-        map[m].sales  += Number(o.sales_total||0);
-        map[m].profit += Number(o.profit||0);
+        const rate = Number(o.exchange_rate)||7.2;
+        const sRmb = Number(o.sales_total||0) * (o.currency==='RMB'?1:rate);
+        const pRmb = Number(o.profit_rmb || (o.currency==='RMB' ? Number(o.profit||0) : Number(o.profit||0)*rate));
+        map[m].sales  += sRmb;
+        map[m].profit += pRmb;
         map[m].count++;
       }
     });
@@ -142,6 +149,7 @@ app.get('/api/dashboard/trends', auth, async (req, res) => {
       sales:  months.map(m => map[m].sales),
       profit: months.map(m => map[m].profit),
       orders: months.map(m => map[m].count),
+      currency: 'RMB',
     });
   } catch (e) { res.status(500).json({ message: e.message }); }
 });

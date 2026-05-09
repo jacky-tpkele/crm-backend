@@ -553,12 +553,12 @@ tr:hover .del-row-btn{display:inline-block}
         <span class="fx-time" id="fxTime"></span>
       </div>
       <div class="kpi-grid" id="kpiGrid">
-        <div class="kpi" onclick="kpiNavigate('month')" style="cursor:pointer"><div class="kpi-label" data-i18n="kpiMonthOrders">Monthly Orders</div><div class="kpi-value green" id="kv-mo">—</div></div>
-        <div class="kpi" onclick="kpiNavigate('year')" style="cursor:pointer"><div class="kpi-label" data-i18n="kpiYearOrders">Annual Orders</div><div class="kpi-value cyan" id="kv-yo">—</div></div>
-        <div class="kpi" onclick="kpiNavigate('month')" style="cursor:pointer"><div class="kpi-label" data-i18n="kpiMonthSales">Monthly Sales</div><div class="kpi-value green" id="kv-ms">—</div></div>
-        <div class="kpi" onclick="kpiNavigate('year')" style="cursor:pointer"><div class="kpi-label" data-i18n="kpiYearSales">Annual Sales</div><div class="kpi-value cyan" id="kv-ys">—</div></div>
-        <div class="kpi" onclick="kpiNavigate('month')" style="cursor:pointer"><div class="kpi-label" data-i18n="kpiMonthProfit">Monthly Profit</div><div class="kpi-value purple" id="kv-mp">—</div></div>
-        <div class="kpi" onclick="kpiNavigate('year')" style="cursor:pointer"><div class="kpi-label" data-i18n="kpiYearProfit">Annual Profit</div><div class="kpi-value purple" id="kv-yp">—</div></div>
+        <div class="kpi" onclick="kpiNavigate('month')" style="cursor:pointer"><div class="kpi-label">本月订单</div><div class="kpi-value green" id="kv-mo">—</div></div>
+        <div class="kpi" onclick="kpiNavigate('year')" style="cursor:pointer"><div class="kpi-label">年度订单</div><div class="kpi-value cyan" id="kv-yo">—</div></div>
+        <div class="kpi" onclick="kpiNavigate('month')" style="cursor:pointer"><div class="kpi-label">本月销售额 (RMB)</div><div class="kpi-value green" id="kv-ms">—</div></div>
+        <div class="kpi" onclick="kpiNavigate('year')" style="cursor:pointer"><div class="kpi-label">年度销售额 (RMB)</div><div class="kpi-value cyan" id="kv-ys">—</div></div>
+        <div class="kpi" onclick="kpiNavigate('month')" style="cursor:pointer"><div class="kpi-label">本月利润 (RMB)</div><div class="kpi-value purple" id="kv-mp">—</div></div>
+        <div class="kpi" onclick="kpiNavigate('year')" style="cursor:pointer"><div class="kpi-label">年度利润 (RMB)</div><div class="kpi-value purple" id="kv-yp">—</div></div>
       </div>
       <div class="quick-actions">
         <button class="qa-btn primary" data-i18n="btnNewOrder" onclick="openOrderModal()">＋ New Order</button>
@@ -1342,6 +1342,7 @@ function token() { return localStorage.getItem('crm_token') || ''; }
 function authH() { return { 'Content-Type':'application/json', 'Authorization':'Bearer '+token() }; }
 function esc(v) { return String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); }
 function fmt(n) { return '$'+Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtRmb(n) { return '¥'+Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function fmtN(n) { return Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2}); }
 function today() { return new Date().toISOString().slice(0,10); }
 
@@ -1481,10 +1482,10 @@ async function loadDashboard() {
     ]);
     document.getElementById('kv-mo').textContent = stats.month_orders  || 0;
     document.getElementById('kv-yo').textContent = stats.year_orders   || 0;
-    document.getElementById('kv-ms').textContent = fmt(stats.month_sales);
-    document.getElementById('kv-ys').textContent = fmt(stats.year_sales);
-    document.getElementById('kv-mp').textContent = fmt(stats.month_profit);
-    document.getElementById('kv-yp').textContent = fmt(stats.year_profit);
+    document.getElementById('kv-ms').textContent = fmtRmb(stats.month_sales);
+    document.getElementById('kv-ys').textContent = fmtRmb(stats.year_sales);
+    document.getElementById('kv-mp').textContent = fmtRmb(stats.month_profit);
+    document.getElementById('kv-yp').textContent = fmtRmb(stats.year_profit);
     initDashCharts(trends, topP, topC);
   } catch (e) { toast('Load error: '+e.message,'err'); }
 }
