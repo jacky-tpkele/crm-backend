@@ -625,7 +625,7 @@ tr:hover .del-row-btn{display:inline-block}
         <div class="tbl-wrap">
           <table>
             <thead><tr>
-              <th>编号</th><th>中文名</th><th>英文名</th><th>规格</th><th>默认供应商</th><th>默认采购¥</th><th>最近采购</th><th>最近销售</th><th>操作</th>
+              <th>编号</th><th>中文名</th><th>英文名</th><th>规格</th><th>默认供应商</th><th>默认采购¥</th><th>默认销售</th><th>最近(采/销)</th><th>操作</th>
             </tr></thead>
             <tbody id="prBody"></tbody>
           </table>
@@ -943,8 +943,9 @@ tr:hover .del-row-btn{display:inline-block}
         <div class="field"><label>HS Code</label><input type="text" id="pm-hs"></div>
         <div class="field"><label>Certification</label><input type="text" id="pm-cert"></div>
         <div class="field"><label>默认交期</label><input type="text" id="pm-lead" placeholder="如 15 days"></div>
-        <div class="field"><label>默认采购价 (RMB)</label><input type="number" id="pm-pp" step="0.01" value="0"></div>
-        <div class="field"><label>默认销售价 (USD)</label><input type="number" id="pm-sp" step="0.01" value="0"></div>
+        <div class="field"><label>默认采购价 (RMB) *</label><input type="number" id="pm-pp" step="0.01" value="0"></div>
+        <div class="field"><label>默认销售价 (USD)</label><input type="number" id="pm-sp-usd" step="0.01" placeholder="选填"></div>
+        <div class="field"><label>默认销售价 (RMB)</label><input type="number" id="pm-sp-rmb" step="0.01" placeholder="选填"></div>
         <div class="field"><label>产品图片URL</label><input type="text" id="pm-image" placeholder="https://..."></div>
       </div>
       <div class="items-section" style="margin-top:14px">
@@ -1055,8 +1056,8 @@ tr:hover .del-row-btn{display:inline-block}
         <div class="field"><label>客户名称（可改）</label><input type="text" id="om-customer" required></div>
         <div class="field"><label>订单日期 *</label><input type="date" id="om-date" required onchange="fetchExchangeRate()"></div>
         <div class="field"><label>币种</label>
-          <select id="om-currency" onchange="fetchExchangeRate()">
-            <option value="USD">USD</option><option value="EUR">EUR</option><option value="CNY">CNY</option>
+          <select id="om-currency" onchange="fetchExchangeRate();onCurrencyChange()">
+            <option value="USD">USD</option><option value="RMB">RMB</option>
           </select>
         </div>
         <div class="field"><label>汇率 (1 销售币 = X RMB) <span style="font-size:11px;color:var(--muted)" id="om-rate-status">自动</span></label>
@@ -1670,6 +1671,7 @@ function renderProducts() {
   body.innerHTML = rows.map(p => {
     const lastP = p.last_purchase_price ? `¥${fmtN(p.last_purchase_price)}` : '—';
     const lastS = p.last_sales_price ? `${fmtN(p.last_sales_price)}` : '—';
+    const defSale = [p.default_sales_price_usd?`$${fmtN(p.default_sales_price_usd)}`:'',p.default_sales_price_rmb?`¥${fmtN(p.default_sales_price_rmb)}`:''].filter(Boolean).join(' / ') || '—';
     return `
     <tr>
       <td data-label="Code">${esc(p.product_code||'—')}</td>
@@ -1678,8 +1680,8 @@ function renderProducts() {
       <td data-label="Spec">${esc(p.specification||'—')}</td>
       <td data-label="默认供应商">${esc(p._default_supplier_name||'—')}</td>
       <td data-label="默认采购">¥${fmtN(p.default_purchase_price||0)}</td>
-      <td data-label="最近采购">${lastP}</td>
-      <td data-label="最近销售">${lastS}</td>
+      <td data-label="默认销售">${defSale}</td>
+      <td data-label="最近成交">${lastP} / ${lastS}</td>
       <td data-label=""><div class="actions-cell">
         <button class="btn btn-sm" onclick="viewProduct('${p.id}')">详情</button>
         <button class="btn btn-sm" onclick="editProduct('${p.id}')">Edit</button>
@@ -1710,7 +1712,8 @@ async function editProduct(id) {
     document.getElementById('pm-spec').value     = product.specification||'';
     document.getElementById('pm-unit').value     = product.unit||'pcs';
     document.getElementById('pm-pp').value       = product.default_purchase_price||0;
-    document.getElementById('pm-sp').value       = product.default_sales_price||0;
+    document.getElementById('pm-sp-usd').value   = product.default_sales_price_usd||'';
+    document.getElementById('pm-sp-rmb').value   = product.default_sales_price_rmb||'';
     document.getElementById('pm-hs').value       = product.hs_code||'';
     document.getElementById('pm-cert').value     = product.certification||'';
     document.getElementById('pm-image').value    = product.image_url||'';
@@ -1753,7 +1756,8 @@ async function saveProduct(e) {
     specification:          document.getElementById('pm-spec').value,
     unit:                   document.getElementById('pm-unit').value,
     default_purchase_price: parseFloat(document.getElementById('pm-pp').value)||0,
-    default_sales_price:    parseFloat(document.getElementById('pm-sp').value)||0,
+    default_sales_price_usd: parseFloat(document.getElementById('pm-sp-usd').value)||null,
+    default_sales_price_rmb: parseFloat(document.getElementById('pm-sp-rmb').value)||null,
     hs_code:                document.getElementById('pm-hs').value,
     certification:          document.getElementById('pm-cert').value,
     image_url:              document.getElementById('pm-image').value,
@@ -1830,7 +1834,8 @@ async function viewProduct(id) {
         <div><label style="font-size:11px;color:var(--muted)">单位</label><div>${esc(product.unit||'pcs')}</div></div>
         <div><label style="font-size:11px;color:var(--muted)">HS Code</label><div>${esc(product.hs_code||'—')}</div></div>
         <div><label style="font-size:11px;color:var(--muted)">默认采购价</label><div>¥${fmtN(product.default_purchase_price||0)}</div></div>
-        <div><label style="font-size:11px;color:var(--muted)">默认销售价</label><div>$${fmtN(product.default_sales_price||0)}</div></div>
+        <div><label style="font-size:11px;color:var(--muted)">默认销售价(USD)</label><div>${product.default_sales_price_usd?'$'+fmtN(product.default_sales_price_usd):'—'}</div></div>
+        <div><label style="font-size:11px;color:var(--muted)">默认销售价(RMB)</label><div>${product.default_sales_price_rmb?'¥'+fmtN(product.default_sales_price_rmb):'—'}</div></div>
         <div><label style="font-size:11px;color:var(--muted)">最近采购</label><div>${product.last_purchase_price?'¥'+fmtN(product.last_purchase_price)+' · '+(product.last_purchase_date||''):'—'}</div></div>
         <div><label style="font-size:11px;color:var(--muted)">最近销售</label><div>${product.last_sales_price?'$'+fmtN(product.last_sales_price)+' · '+(product.last_sales_date||''):'—'}</div></div>
       </div>
@@ -2038,7 +2043,7 @@ function renderProductPicker() {
         <div style="font-size:11.5px;color:var(--muted)">${esc(p.product_code||'')} · ${esc(p.product_name_en||'')} · ${esc(p.specification||'')}</div>
       </div>
       <div style="font-size:12px;color:var(--muted);text-align:right">
-        采购 ¥${fmtN(p.default_purchase_price||0)}<br>销售 $${fmtN(p.default_sales_price||0)}
+        采购 ¥${fmtN(p.default_purchase_price||0)}<br>销售 ${[p.default_sales_price_usd?'$'+fmtN(p.default_sales_price_usd):'',p.default_sales_price_rmb?'¥'+fmtN(p.default_sales_price_rmb):''].filter(Boolean).join(' / ')||'—'}
       </div>
     </div>`).join('') || '<div style="padding:20px;text-align:center;color:var(--muted)">无匹配产品</div>';
   document.getElementById('ppList').innerHTML = html;
@@ -2132,7 +2137,7 @@ async function fetchExchangeRate(force) {
   const rateInput  = document.getElementById('om-rate');
   const status     = document.getElementById('om-rate-status');
   if (rateInput.dataset.manual === '1' && !force) return;
-  if (cur === 'CNY') { rateInput.value = '1.0000'; status.textContent='固定'; recalcOrder(); return; }
+  if (cur === 'CNY' || cur === 'RMB') { rateInput.value = '1.0000'; status.textContent='固定'; recalcOrder(); return; }
   status.textContent = '获取中...';
 
   // 多 API 备选（依次尝试，国内+海外都覆盖）
@@ -2219,7 +2224,8 @@ function addOrderItem(data={}) {
   div.className = 'item-row';
   div.style.gridTemplateColumns = '0.5fr 2fr 1.4fr 0.7fr 0.9fr 0.9fr 1fr auto';
   const supOpts = (S.suppliers||[]).map(s => `<option value="${s.id}" ${s.id===data.supplier_id?'selected':''}>${esc(s.supplier_name)}</option>`).join('');
-  const productLabel = data.product_name_cn ? esc(data.product_name_cn) : '— 未选 —';
+  const cur = document.getElementById('om-currency')?.value || 'USD';
+  const spSym = cur === 'USD' ? '$' : '¥';
   div.innerHTML = `
     <div class="field"><label>&nbsp;</label><button type="button" class="btn btn-sm" onclick="pickProductForRow(this)">📦 选</button></div>
     <div class="field"><label>产品</label>
@@ -2230,7 +2236,7 @@ function addOrderItem(data={}) {
     <div class="field"><label>规格</label><input type="text" name="oi_spec" value="${esc(data.specification||'')}"></div>
     <div class="field"><label>数量</label><input type="number" name="oi_qty" value="${data.quantity||1}" min="0" step="0.01" oninput="recalcOrder()"></div>
     <div class="field"><label>采购¥</label><input type="number" name="oi_pp" value="${data.purchase_price||0}" min="0" step="0.01" oninput="recalcOrder()"></div>
-    <div class="field"><label>销售</label><input type="number" name="oi_sp" value="${data.sales_price||0}" min="0" step="0.01" oninput="recalcOrder()"></div>
+    <div class="field"><label class="oi-sp-label">销售${spSym}</label><input type="number" name="oi_sp" value="${data.sales_price||0}" min="0" step="0.01" oninput="recalcOrder()"></div>
     <div class="field"><label>供应商</label><select name="oi_sup"><option value="">—</option>${supOpts}</select></div>
     <button type="button" class="item-remove" onclick="removeOrderItem(this)">×</button>`;
   c.appendChild(div);
@@ -2238,16 +2244,34 @@ function addOrderItem(data={}) {
 function pickProductForRow(btn) {
   const row = btn.closest('.item-row');
   openProductPicker(async (product, suppliers) => {
+    const orderCur = document.getElementById('om-currency').value || 'USD';
+    const rate = parseFloat(document.getElementById('om-rate').value) || 7.2;
+    // 销售价按订单币种选择（优先取已存的对应币种价，没有则换算）
+    let salesPrice = 0;
+    if (orderCur === 'USD') {
+      if (product.default_sales_price_usd) salesPrice = product.default_sales_price_usd;
+      else if (product.default_sales_price_rmb && rate > 0) salesPrice = +(product.default_sales_price_rmb / rate).toFixed(2);
+    } else { // RMB
+      if (product.default_sales_price_rmb) salesPrice = product.default_sales_price_rmb;
+      else if (product.default_sales_price_usd && rate > 0) salesPrice = +(product.default_sales_price_usd * rate).toFixed(2);
+    }
     row.querySelector('[name=oi_product_id]').value = product.id;
     row.querySelector('[name=oi_cn]').value = product.product_name_cn||'';
     row.querySelector('[name=oi_en]').value = product.product_name_en||'';
     row.querySelector('[name=oi_spec]').value = product.specification||'';
     row.querySelector('[name=oi_pp]').value = product.default_purchase_price||0;
-    row.querySelector('[name=oi_sp]').value = product.default_sales_price||0;
+    row.querySelector('[name=oi_sp]').value = salesPrice;
     if (product.default_supplier_id) row.querySelector('[name=oi_sup]').value = product.default_supplier_id;
     else if (suppliers && suppliers[0]) row.querySelector('[name=oi_sup]').value = suppliers[0].supplier_id;
     recalcOrder();
   });
+}
+function onCurrencyChange() {
+  // 更新所有行的销售列标签 & 汇总符号
+  const cur = document.getElementById('om-currency').value || 'USD';
+  const sym = cur === 'USD' ? '$' : '¥';
+  document.querySelectorAll('#orderItems .oi-sp-label').forEach(el => el.textContent = `销售${sym}`);
+  recalcOrder();
 }
 function removeOrderItem(btn) {
   const rows = document.querySelectorAll('#orderItems .item-row');
@@ -2265,7 +2289,7 @@ function recalcOrder() {
   const ship = parseFloat(document.getElementById('om-shipping').value)||0;
   const rate = parseFloat(document.getElementById('om-rate').value)||7.2;
   const cur  = document.getElementById('om-currency').value || 'USD';
-  const cSym = cur==='USD'?'$':cur==='EUR'?'€':'¥';
+  const cSym = cur==='USD'?'$':'¥';
   const salesIncl = sTotal + ship;
   const profitInCur = +(salesIncl - pTotal/rate).toFixed(2);
   const profitRmb  = +(salesIncl*rate - pTotal).toFixed(2);
