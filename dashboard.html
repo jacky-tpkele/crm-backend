@@ -149,10 +149,10 @@ button,input,select,textarea{font:inherit}
 }
 .user-btn:hover{border-color:rgba(0,200,255,0.4)}
 .user-avatar{
-  width:26px;height:26px;border-radius:7px;
+  width:30px;height:30px;border-radius:8px;
   background:linear-gradient(135deg,#005f90,#00a0c4);
   border:1px solid rgba(0,200,255,0.35);
-  display:grid;place-items:center;font-size:11px;font-weight:700;color:#fff;
+  display:grid;place-items:center;font-size:15px;font-weight:800;color:#fff;letter-spacing:.5px;
 }
 .user-dropdown{
   position:absolute;top:calc(100% + 8px);right:0;min-width:160px;
@@ -191,6 +191,18 @@ button,input,select,textarea{font:inherit}
 .kpi-value.green{color:var(--primary)}
 .kpi-value.cyan{color:var(--cyan)}
 .kpi-value.purple{color:var(--purple)}
+.kpi{transition:.18s}
+.kpi:hover{border-color:var(--p1);transform:translateY(-1px);box-shadow:0 4px 14px rgba(16,185,129,.2)}
+
+/* 日期/月份输入框主题色 */
+input[type="date"],input[type="month"]{color-scheme:dark}
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator{
+  filter:invert(0.7) sepia(1) saturate(5) hue-rotate(120deg);
+  cursor:pointer;opacity:.85;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="month"]::-webkit-calendar-picker-indicator:hover{opacity:1}
 .kpi-delta{font-size:11px;color:var(--muted);margin-top:4px}
 
 /* ── Charts ── */
@@ -541,12 +553,12 @@ tr:hover .del-row-btn{display:inline-block}
         <span class="fx-time" id="fxTime"></span>
       </div>
       <div class="kpi-grid" id="kpiGrid">
-        <div class="kpi"><div class="kpi-label" data-i18n="kpiMonthOrders">Monthly Orders</div><div class="kpi-value green" id="kv-mo">—</div></div>
-        <div class="kpi"><div class="kpi-label" data-i18n="kpiYearOrders">Annual Orders</div><div class="kpi-value cyan" id="kv-yo">—</div></div>
-        <div class="kpi"><div class="kpi-label" data-i18n="kpiMonthSales">Monthly Sales</div><div class="kpi-value green" id="kv-ms">—</div></div>
-        <div class="kpi"><div class="kpi-label" data-i18n="kpiYearSales">Annual Sales</div><div class="kpi-value cyan" id="kv-ys">—</div></div>
-        <div class="kpi"><div class="kpi-label" data-i18n="kpiMonthProfit">Monthly Profit</div><div class="kpi-value purple" id="kv-mp">—</div></div>
-        <div class="kpi"><div class="kpi-label" data-i18n="kpiYearProfit">Annual Profit</div><div class="kpi-value purple" id="kv-yp">—</div></div>
+        <div class="kpi" onclick="kpiNavigate('month')" style="cursor:pointer"><div class="kpi-label" data-i18n="kpiMonthOrders">Monthly Orders</div><div class="kpi-value green" id="kv-mo">—</div></div>
+        <div class="kpi" onclick="kpiNavigate('year')" style="cursor:pointer"><div class="kpi-label" data-i18n="kpiYearOrders">Annual Orders</div><div class="kpi-value cyan" id="kv-yo">—</div></div>
+        <div class="kpi" onclick="kpiNavigate('month')" style="cursor:pointer"><div class="kpi-label" data-i18n="kpiMonthSales">Monthly Sales</div><div class="kpi-value green" id="kv-ms">—</div></div>
+        <div class="kpi" onclick="kpiNavigate('year')" style="cursor:pointer"><div class="kpi-label" data-i18n="kpiYearSales">Annual Sales</div><div class="kpi-value cyan" id="kv-ys">—</div></div>
+        <div class="kpi" onclick="kpiNavigate('month')" style="cursor:pointer"><div class="kpi-label" data-i18n="kpiMonthProfit">Monthly Profit</div><div class="kpi-value purple" id="kv-mp">—</div></div>
+        <div class="kpi" onclick="kpiNavigate('year')" style="cursor:pointer"><div class="kpi-label" data-i18n="kpiYearProfit">Annual Profit</div><div class="kpi-value purple" id="kv-yp">—</div></div>
       </div>
       <div class="quick-actions">
         <button class="qa-btn primary" data-i18n="btnNewOrder" onclick="openOrderModal()">＋ New Order</button>
@@ -917,7 +929,7 @@ tr:hover .del-row-btn{display:inline-block}
         <div class="field form-full"><label data-i18n="lblCustNotes">Notes</label><textarea id="cm-notes"></textarea></div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn" data-i18n="btnCancel" onclick="closeModal('customerModal')">Cancel</button>
+        <button type="button" class="btn" data-i18n="btnCancel" onclick="closeModal('customerModal')">取消</button>
         <button type="submit" class="btn btn-primary" data-i18n="btnSaveCustomer">Save Customer</button>
       </div>
     </form>
@@ -928,20 +940,20 @@ tr:hover .del-row-btn{display:inline-block}
 <div class="modal-backdrop" id="productModal" style="display:none">
   <div class="modal modal-lg">
     <div class="modal-head">
-      <h2 id="productModalTitle">New Product</h2>
+      <h2 id="productModalTitle">新建产品</h2>
       <button class="modal-close" onclick="closeModal('productModal')">×</button>
     </div>
     <form id="productForm" onsubmit="saveProduct(event)">
       <input type="hidden" id="pm-id">
       <div class="form-grid col3">
-        <div class="field"><label>Product Code</label><input type="text" id="pm-code" placeholder="自动生成或手填"></div>
+        <div class="field"><label>产品编号</label><input type="text" id="pm-code" placeholder="自动生成或手填"></div>
         <div class="field"><label>分类</label><input type="text" id="pm-category" placeholder="如 LED灯具"></div>
-        <div class="field"><label>Unit</label><input type="text" id="pm-unit" value="pcs"></div>
-        <div class="field"><label>CN Name *</label><input type="text" id="pm-cn" required></div>
-        <div class="field"><label>EN Name</label><input type="text" id="pm-en"></div>
-        <div class="field"><label>Specification</label><input type="text" id="pm-spec"></div>
-        <div class="field"><label>HS Code</label><input type="text" id="pm-hs"></div>
-        <div class="field"><label>Certification</label><input type="text" id="pm-cert"></div>
+        <div class="field"><label>单位</label><input type="text" id="pm-unit" value="pcs"></div>
+        <div class="field"><label>中文名 *</label><input type="text" id="pm-cn" required></div>
+        <div class="field"><label>英文名</label><input type="text" id="pm-en"></div>
+        <div class="field"><label>规格</label><input type="text" id="pm-spec"></div>
+        <div class="field"><label>HS 编码</label><input type="text" id="pm-hs"></div>
+        <div class="field"><label>认证</label><input type="text" id="pm-cert"></div>
         <div class="field"><label>默认交期</label><input type="text" id="pm-lead" placeholder="如 15 days"></div>
         <div class="field"><label>默认采购价 (RMB) *</label><input type="number" id="pm-pp" step="0.01" value="0"></div>
         <div class="field"><label>默认销售价 (USD)</label><input type="number" id="pm-sp-usd" step="0.01" placeholder="选填"></div>
@@ -955,7 +967,7 @@ tr:hover .del-row-btn{display:inline-block}
         <div style="font-size:11.5px;color:var(--muted);margin-top:6px">提示：第一行为默认供应商，下单时会自动带出该供应商的采购价/交期</div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn" onclick="closeModal('productModal')">Cancel</button>
+        <button type="button" class="btn" onclick="closeModal('productModal')">取消</button>
         <button type="submit" class="btn btn-primary">💾 保存产品</button>
       </div>
     </form>
@@ -966,7 +978,7 @@ tr:hover .del-row-btn{display:inline-block}
 <div class="modal-backdrop" id="supplierModal" style="display:none">
   <div class="modal modal-lg">
     <div class="modal-head">
-      <h2 id="supplierModalTitle">New Supplier</h2>
+      <h2 id="supplierModalTitle">新建供应商</h2>
       <button class="modal-close" onclick="closeModal('supplierModal')">×</button>
     </div>
     <form id="supplierForm" onsubmit="saveSupplier(event)">
@@ -1001,7 +1013,7 @@ tr:hover .del-row-btn{display:inline-block}
         <button type="button" class="btn" style="width:100%;margin-top:8px" onclick="addContactRow()">＋ 添加联系方式</button>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn" onclick="closeModal('supplierModal')">Cancel</button>
+        <button type="button" class="btn" onclick="closeModal('supplierModal')">取消</button>
         <button type="submit" class="btn btn-primary">💾 保存供应商</button>
       </div>
     </form>
@@ -1031,7 +1043,7 @@ tr:hover .del-row-btn{display:inline-block}
         <div class="field form-full"><label data-i18n="lblIqNotes">Notes</label><textarea id="iqm-notes" rows="4"></textarea></div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn" data-i18n="btnCancel" onclick="closeModal('inquiryModal')">Cancel</button>
+        <button type="button" class="btn" data-i18n="btnCancel" onclick="closeModal('inquiryModal')">取消</button>
         <button type="submit" class="btn btn-primary" data-i18n="btnSaveInquiry">Save Inquiry</button>
       </div>
     </form>
@@ -1042,7 +1054,7 @@ tr:hover .del-row-btn{display:inline-block}
 <div class="modal-backdrop" id="orderModal" style="display:none">
   <div class="modal modal-lg">
     <div class="modal-head">
-      <h2 id="orderModalTitle">New Order</h2>
+      <h2 id="orderModalTitle">新建订单</h2>
       <button class="modal-close" onclick="closeModal('orderModal')">×</button>
     </div>
     <form id="orderForm" onsubmit="saveOrder(event)">
@@ -1091,7 +1103,7 @@ tr:hover .del-row-btn{display:inline-block}
         <div class="calc-item"><span>利润率</span><strong id="cs-rate">0%</strong></div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn" onclick="closeModal('orderModal')">Cancel</button>
+        <button type="button" class="btn" onclick="closeModal('orderModal')">取消</button>
         <button type="submit" class="btn btn-primary">💾 保存订单</button>
       </div>
     </form>
@@ -1595,8 +1607,8 @@ function renderCustomers() {
       <td data-label="WhatsApp">${esc(c.whatsapp||'—')}</td>
       <td data-label="Level"><span class="badge badge-${c.customer_level||'standard'}">${esc(c.customer_level||'standard')}</span></td>
       <td data-label=""><div class="actions-cell">
-        <button class="btn btn-sm" onclick="editCustomer('${c.id}')">Edit</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteCustomer('${c.id}')">Delete</button>
+        <button class="btn btn-sm" onclick="editCustomer('${c.id}')">编辑</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteCustomer('${c.id}')">删除</button>
       </div></td>
     </tr>`).join('');
 }
@@ -1684,8 +1696,8 @@ function renderProducts() {
       <td data-label="最近成交">${lastP} / ${lastS}</td>
       <td data-label=""><div class="actions-cell">
         <button class="btn btn-sm" onclick="viewProduct('${p.id}')">详情</button>
-        <button class="btn btn-sm" onclick="editProduct('${p.id}')">Edit</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteProduct('${p.id}')">Del</button>
+        <button class="btn btn-sm" onclick="editProduct('${p.id}')">编辑</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteProduct('${p.id}')">删</button>
       </div></td>
     </tr>`;
   }).join('');
@@ -1694,7 +1706,7 @@ function openProductModal() {
   document.getElementById('pm-id').value = '';
   document.getElementById('productForm').reset();
   document.getElementById('pm-unit').value = 'pcs';
-  document.getElementById('productModalTitle').textContent = 'New Product';
+  document.getElementById('productModalTitle').textContent = '新建产品';
   document.getElementById('pmSupplierLinks').innerHTML = '';
   S._editingProductLinks = [];
   addProductSupplierRow();
@@ -1703,7 +1715,7 @@ function openProductModal() {
 async function editProduct(id) {
   try {
     const { product, suppliers } = await api(`/api/products/${id}/full`);
-    document.getElementById('productModalTitle').textContent = 'Edit Product';
+    document.getElementById('productModalTitle').textContent = '编辑产品';
     document.getElementById('pm-id').value       = product.id;
     document.getElementById('pm-code').value     = product.product_code||'';
     document.getElementById('pm-category').value = product.category||'';
@@ -1881,8 +1893,8 @@ function renderSuppliers() {
       <td data-label="Status">${s.status==='active'?'<span class="badge badge-confirmed">合作中</span>':s.status==='paused'?'<span class="badge">暂停</span>':'<span class="badge badge-standard">已淘汰</span>'}</td>
       <td data-label=""><div class="actions-cell">
         <button class="btn btn-sm" onclick="viewSupplier('${s.id}')">详情</button>
-        <button class="btn btn-sm" onclick="editSupplier('${s.id}')">Edit</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteSupplier('${s.id}')">Del</button>
+        <button class="btn btn-sm" onclick="editSupplier('${s.id}')">编辑</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteSupplier('${s.id}')">删</button>
       </div></td>
     </tr>`).join('');
 }
@@ -1891,7 +1903,7 @@ function openSupplierModal() {
   document.getElementById('supplierForm').reset();
   document.getElementById('sm-status').value = 'active';
   document.getElementById('sm-rating').value = '0';
-  document.getElementById('supplierModalTitle').textContent = 'New Supplier';
+  document.getElementById('supplierModalTitle').textContent = '新建供应商';
   document.getElementById('smContactRows').innerHTML = '';
   S._editingContacts = [];
   addContactRow();
@@ -1900,7 +1912,7 @@ function openSupplierModal() {
 async function editSupplier(id) {
   try {
     const { supplier, contacts } = await api(`/api/suppliers/${id}/full`);
-    document.getElementById('supplierModalTitle').textContent = 'Edit Supplier';
+    document.getElementById('supplierModalTitle').textContent = '编辑供应商';
     document.getElementById('sm-id').value      = supplier.id;
     document.getElementById('sm-code').value    = supplier.supplier_code||'';
     document.getElementById('sm-name').value    = supplier.supplier_name||'';
@@ -2106,8 +2118,8 @@ function renderOrders() {
       <td data-label="Status"><span class="badge badge-${o.order_status||'confirmed'}">${esc(o.order_status||'confirmed')}</span></td>
       <td data-label=""><div class="actions-cell">
         <button class="btn btn-sm" onclick="viewOrderDetail('${o.id}')">详情</button>
-        <button class="btn btn-sm" onclick="editOrder('${o.id}')">Edit</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteOrder('${o.id}')">Del</button>
+        <button class="btn btn-sm" onclick="editOrder('${o.id}')">编辑</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteOrder('${o.id}')">删</button>
       </div></td>
     </tr>`;
   }).join('');
@@ -2135,7 +2147,7 @@ function openOrderModal() {
   document.getElementById('om-rate').value     = 7.20;
   document.getElementById('om-rate').readOnly  = true;
   document.getElementById('om-rate-status').textContent = '自动';
-  document.getElementById('orderModalTitle').textContent = 'New Order';
+  document.getElementById('orderModalTitle').textContent = '新建订单';
   document.getElementById('orderItems').innerHTML = '';
   populateOrderCustomerDropdown();
   addOrderItem();
@@ -2213,7 +2225,7 @@ function toggleRateEdit() {
 async function editOrder(id) {
   try {
     const { order, items } = await api(`/api/orders/${id}`);
-    document.getElementById('orderModalTitle').textContent = 'Edit Order';
+    document.getElementById('orderModalTitle').textContent = '编辑订单';
     document.getElementById('om-id').value       = order.id;
     populateOrderCustomerDropdown();
     document.getElementById('om-customer-select').value = order.customer_id || '';
@@ -2580,8 +2592,8 @@ function renderInquiries() {
       <td data-label="Notes">${esc(i.notes||'—')}</td>
       <td data-label=""><div class="actions-cell">
         <button class="btn btn-sm btn-cyan" onclick="convertInquiryToOrder('${i.id}')">→ Order</button>
-        <button class="btn btn-sm" onclick="editInquiry('${i.id}')">Edit</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteInquiry('${i.id}')">Delete</button>
+        <button class="btn btn-sm" onclick="editInquiry('${i.id}')">编辑</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteInquiry('${i.id}')">删除</button>
       </div></td>
     </tr>`).join('');
 }
@@ -2646,6 +2658,22 @@ function populateOrderSelects() {
   if (qeOrder) qeOrder.innerHTML = '<option value="">Select order...</option>' + opts;
 }
 function populateDocOrderDropdown() { populateOrderSelects(); }
+
+// KPI 卡点击 → 跳订单页 + 自动按月/年过滤
+function kpiNavigate(scope) {
+  navigate('orders');
+  setTimeout(() => {
+    const monthInput = document.getElementById('or-month');
+    const dateInput = document.getElementById('or-date');
+    const customerInput = document.getElementById('or-customer');
+    const statusInput = document.getElementById('or-status');
+    if (customerInput) customerInput.value = '';
+    if (dateInput) dateInput.value = '';
+    if (statusInput) statusInput.value = '';
+    if (monthInput) monthInput.value = (scope === 'month') ? new Date().toISOString().slice(0,7) : '';
+    if (typeof renderOrders === 'function') renderOrders();
+  }, 100);
+}
 
 // ══════════════════════════════
 // DOCUMENTS & EXPORT
