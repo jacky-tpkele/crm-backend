@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI 助手 · TPKELE CRM</title>
+<style>
+:root{
+  --bg:#02060f;--panel:#06101e;--panel2:#0a1627;
+  --border:rgba(0,200,255,0.14);--text:#dceaff;--muted:#7891a8;--muted2:#aab9c9;
+  --primary:#00c8f0;--primary2:#008fba;--success:#10b981;--danger:#fb7185;--warning:#f59e0b;
+  --shadow:0 8px 32px rgba(0,80,140,0.25);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  background:radial-gradient(ellipse at top,#062338,#02060f 70%);
+  color:var(--text);min-height:100vh;font-size:14px;line-height:1.6;
+}
+
+/* ── Header ── */
+.header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 24px;background:rgba(3,8,20,0.85);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;
+}
+.brand{display:flex;align-items:center;gap:12px;font-size:17px;font-weight:700}
+.brand-icon{
+  width:34px;height:34px;border-radius:10px;
+  background:linear-gradient(135deg,var(--primary),var(--primary2));
+  display:grid;place-items:center;font-size:18px;color:#001a26;
+}
+.header-actions{display:flex;gap:8px;align-items:center}
+.btn{
+  padding:8px 16px;border-radius:9px;border:1px solid var(--border);
+  background:var(--panel2);color:var(--text);cursor:pointer;font-size:13px;
+  font-weight:600;transition:.18s;display:inline-flex;align-items:center;gap:6px;
+}
+.btn:hover{border-color:rgba(0,200,255,0.4);background:rgba(0,200,255,0.08);color:var(--primary)}
+.btn-primary{background:var(--primary);color:#001a26;border-color:transparent}
+.btn-primary:hover{background:#00e5ff;color:#001a26}
+.btn-ghost{background:transparent}
+.badge{
+  display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:20px;
+  font-size:11px;font-weight:600;border:1px solid var(--border);color:var(--muted2);
+  background:var(--panel2);
+}
+.badge.ok{border-color:rgba(16,185,129,.4);color:var(--success)}
+.badge.warn{border-color:rgba(245,158,11,.4);color:var(--warning)}
+
+/* ── Main layout ── */
+.main{max-width:1100px;margin:0 auto;padding:24px}
+.mode-bar{
+  display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;
+}
+.mode-btn{
+  flex:1;min-width:160px;padding:18px 16px;border-radius:14px;
+  border:1px solid var(--border);background:var(--panel);cursor:pointer;
+  display:flex;flex-direction:column;align-items:flex-start;gap:6px;
+  transition:.2s;color:var(--text);font-family:inherit;text-align:left;
+}
+.mode-btn:hover{border-color:rgba(0,200,255,0.4);background:var(--panel2);transform:translateY(-1px)}
+.mode-btn.active{
+  border-color:var(--primary);background:linear-gradient(135deg,rgba(0,200,240,0.15),rgba(0,140,200,0.08));
+  box-shadow:0 0 0 1px rgba(0,200,255,0.3),var(--shadow);
+}
+.mode-btn-icon{font-size:22px}
+.mode-btn-title{font-size:15px;font-weight:700}
+.mode-btn-desc{font-size:11.5px;color:var(--muted);font-weight:500}
+
+.status-line{
+  font-size:12px;color:var(--muted);margin-bottom:14px;display:flex;
+  align-items:center;gap:10px;flex-wrap:wrap;padding:0 4px;
+}
+.status-line strong{color:var(--primary);font-weight:600}
+.status-line .dot{width:6px;height:6px;border-radius:50%;background:var(--muted)}
+.status-line .dot.live{background:var(--success);box-shadow:0 0 8px var(--success)}
+
+/* ── Chat ── */
+.chat-card{
+  background:var(--panel);border:1px solid var(--border);border-radius:14px;
+  overflow:hidden;display:flex;flex-direction:column;
+  height:calc(100vh - 290px);min-height:480px;box-shadow:var(--shadow);
+}
+.chat-toolbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.15);
+  font-size:12px;color:var(--muted);
+}
+.chat-toolbar-actions{display:flex;gap:6px}
+.icon-btn{
+  background:transparent;border:1px solid transparent;color:var(--muted);cursor:pointer;
+  padding:5px 10px;border-radius:7px;font-size:12px;transition:.15s;
+}
+.icon-btn:hover{color:var(--primary);border-color:var(--border);background:rgba(0,200,255,0.05)}
+
+.messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px}
+.msg{display:flex;gap:10px;align-items:flex-start;max-width:100%;animation:fadeIn .25s}
+.msg-user{flex-direction:row-reverse}
+.avatar{
+  width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+  font-size:16px;flex-shrink:0;background:var(--panel2);border:1px solid var(--border);
+}
+.msg-user .avatar{background:linear-gradient(135deg,var(--primary2),var(--primary));border-color:transparent;color:#001a26}
+.bubble{padding:12px 16px;border-radius:13px;font-size:14px;line-height:1.75;max-width:78%;word-break:break-word}
+.msg-bot .bubble{background:var(--panel2);border:1px solid var(--border);color:var(--text)}
+.msg-user .bubble{background:linear-gradient(135deg,var(--primary2),var(--primary));color:#001a26;font-weight:500}
+.bubble pre{background:rgba(0,0,0,.35);border-radius:7px;padding:10px;overflow-x:auto;font-size:12.5px;margin:6px 0}
+.bubble code{background:rgba(0,0,0,.25);border-radius:3px;padding:1px 5px;font-size:13px}
+.thinking{color:var(--muted);font-style:italic;display:flex;align-items:center;gap:6px}
+.dot-anim{display:inline-block;animation:blink 1.2s infinite}
+.dot-anim:nth-child(2){animation-delay:.2s}.dot-anim:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+.input-bar{border-top:1px solid var(--border);padding:14px 18px;display:flex;gap:10px;align-items:flex-end;background:rgba(0,0,0,0.15)}
+.input-area{
+  flex:1;background:rgba(0,180,255,0.04);border:1px solid var(--border);border-radius:10px;
+  padding:11px 14px;color:var(--text);font-size:14px;outline:none;resize:none;
+  min-height:46px;max-height:160px;line-height:1.6;transition:.15s;font-family:inherit;
+}
+.input-area:focus{border-color:rgba(0,200,255,.45);background:rgba(0,180,255,.07)}
+.input-area::placeholder{color:var(--muted)}
+.btn-send{
+  padding:11px 22px;border-radius:9px;border:none;background:var(--primary);
+  color:#001a26;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;
+  transition:.15s;white-space:nowrap;
+}
+.btn-send:hover{background:#00e5ff}
+.btn-send:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── Modal ── */
+.modal-bg{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);
+  z-index:100;display:none;align-items:center;justify-content:center;padding:20px;
+}
+.modal-bg.show{display:flex}
+.modal{
+  background:var(--panel);border:1px solid var(--border);border-radius:14px;
+  width:100%;max-width:680px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow);
+}
+.modal-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 22px;border-bottom:1px solid var(--border);
+}
+.modal-head h2{font-size:17px;font-weight:700}
+.modal-close{
+  background:transparent;border:none;color:var(--muted);font-size:24px;cursor:pointer;
+  width:30px;height:30px;border-radius:7px;display:grid;place-items:center;
+}
+.modal-close:hover{color:var(--danger);background:rgba(251,113,133,.1)}
+.modal-body{padding:18px 22px}
+.modal-foot{
+  display:flex;align-items:center;gap:10px;padding:14px 22px;
+  border-top:1px solid var(--border);background:rgba(0,0,0,0.15);
+}
+.modal-foot .status{flex:1;font-size:12px;color:var(--muted)}
+
+/* Provider section */
+.prov-sec{
+  border:1px solid var(--border);border-radius:10px;margin-bottom:12px;
+  background:var(--panel2);overflow:hidden;
+}
+.prov-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;cursor:pointer;font-weight:600;font-size:14px;
+  transition:.15s;
+}
+.prov-head:hover{background:rgba(0,200,255,0.05)}
+.prov-head .arrow{transition:.2s;color:var(--muted)}
+.prov-sec.open .prov-head .arrow{transform:rotate(180deg)}
+.prov-body{display:none;padding:0 16px 14px;border-top:1px solid var(--border);padding-top:14px}
+.prov-sec.open .prov-body{display:block}
+.prov-status{font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,.05);color:var(--muted);margin-left:8px}
+.prov-status.ok{background:rgba(16,185,129,.15);color:var(--success)}
+.field{margin-bottom:12px}
+.field label{
+  display:block;font-size:11px;font-weight:600;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;
+}
+.field input,.field textarea{
+  width:100%;background:rgba(0,180,255,0.04);border:1px solid var(--border);
+  border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;outline:none;
+  font-family:inherit;transition:.15s;
+}
+.field input:focus,.field textarea:focus{border-color:rgba(0,200,255,.45);background:rgba(0,180,255,.07)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field small{display:block;color:var(--muted);font-size:11px;margin-top:4px;line-height:1.5}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:24px;right:24px;z-index:200;
+  background:var(--panel);border:1px solid var(--border);border-radius:10px;
+  padding:12px 18px;font-size:13px;box-shadow:var(--shadow);
+  transform:translateY(20px);opacity:0;transition:.25s;pointer-events:none;max-width:320px;
+}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{border-color:rgba(16,185,129,.4);color:var(--success)}
+.toast.err{border-color:rgba(251,113,133,.4);color:var(--danger)}
+
+/* Responsive */
+@media(max-width:768px){
+  .main{padding:14px}
+  .mode-btn{min-width:calc(50% - 5px)}
+  .header{padding:12px 16px}
+  .brand span:not(.brand-icon){font-size:14px}
+  .chat-card{height:calc(100vh - 320px)}
+  .field-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand">
+    <span class="brand-icon">⚡</span>
+    <span>AI 助手 · TPKELE</span>
+  </div>
+  <div class="header-actions">
+    <span class="badge" id="providerBadge">未配置</span>
+    <button class="btn" onclick="window.close()">← 关闭</button>
+    <button class="btn btn-primary" onclick="openSettings()">⚙ 设置 API</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="mode-bar">
+    <button class="mode-btn active" data-mode="chat" onclick="switchMode('chat')">
+      <span class="mode-btn-icon">💬</span>
+      <span class="mode-btn-title">日常聊天</span>
+      <span class="mode-btn-desc">通用对话 · Qwen2.5-72B</span>
+    </button>
+    <button class="mode-btn" data-mode="translate" onclick="switchMode('translate')">
+      <span class="mode-btn-icon">🌐</span>
+      <span class="mode-btn-title">翻译</span>
+      <span class="mode-btn-desc">中英互译 · DeepSeek-V3</span>
+    </button>
+    <button class="mode-btn" data-mode="trade" onclick="switchMode('trade')">
+      <span class="mode-btn-icon">📧</span>
+      <span class="mode-btn-title">外贸文案</span>
+      <span class="mode-btn-desc">邮件/报价/催款 · Kimi-K2</span>
+    </button>
+  </div>
+
+  <div class="status-line">
+    <span class="dot" id="statusDot"></span>
+    当前模式：<strong id="curMode">日常聊天</strong>
+    · 模型：<strong id="curModel">—</strong>
+    · 提供商：<strong id="curProvider">SiliconFlow</strong>
+  </div>
+
+  <div class="chat-card">
+    <div class="chat-toolbar">
+      <span id="toolbarHint">💬 随便聊聊…</span>
+      <div class="chat-toolbar-actions">
+        <button class="icon-btn" onclick="clearChat()">🗑 清空</button>
+        <button class="icon-btn" onclick="copyLastReply()">📋 复制上条</button>
+      </div>
+    </div>
+    <div class="messages" id="messages"></div>
+    <div class="input-bar">
+      <textarea class="input-area" id="input" rows="1"
+        placeholder="输入消息…  Enter 发送，Shift+Enter 换行"
+        onkeydown="onKeyDown(event)" oninput="autoResize(this)"></textarea>
+      <button class="btn-send" id="btnSend" onclick="send()">发送 ↵</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-bg" id="settingsModal" onclick="if(event.target===this)closeSettings()">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>⚙ AI 设置</h2>
+      <button class="modal-close" onclick="closeSettings()">×</button>
+    </div>
+    <div class="modal-body" id="settingsBody"></div>
+    <div class="modal-foot">
+      <span class="status" id="settingsStatus"></span>
+      <button class="btn" onclick="closeSettings()">取消</button>
+      <button class="btn btn-primary" onclick="saveSettings()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  AI 助手 v2 · 多模式 · localStorage 配置
+// ═══════════════════════════════════════════════════════
+
+const LS_KEY = 'tpkele_ai_settings_v2';
+
+const DEFAULT_SETTINGS = {
+  // 4 家 API
+  gpt:        { key:'', baseUrl:'https://api.openai.com/v1',                            model:'gpt-4o-mini' },
+  claude:     { key:'', baseUrl:'https://api.anthropic.com/v1',                         model:'claude-sonnet-4-5' },
+  gemini:     { key:'', baseUrl:'https://generativelanguage.googleapis.com/v1beta',     model:'gemini-2.5-flash' },
+  silicon:    {
+    key:'',
+    baseUrl:'https://api.siliconflow.cn/v1',
+    modelChat:      'Qwen/Qwen2.5-72B-Instruct',
+    modelTranslate: 'deepseek-ai/DeepSeek-V3',
+    modelTrade:     'Pro/moonshotai/Kimi-K2-Instruct'
+  },
+  // 系统提示词
+  prompts: {
+    chat:      '你是一个友善、博学的中文 AI 助手，回答简洁清晰。如果用户没有指定语言，默认用中文回复。',
+    translate: '你是专业翻译官。规则：\n1. 自动识别输入语言，中文输入→翻译成英文；其他语言→翻译成中文。\n2. 只输出译文，不要任何解释、不要前缀（如"译文："）。\n3. 保持原文格式（换行、列表、标点）。\n4. 专业术语精准，语气自然，符合目标语言习惯。\n5. 涉及外贸场景时使用商务用语。',
+    trade:     '你是有 15 年经验的资深外贸业务员，擅长撰写专业的英文外贸沟通材料：询价函、报价单、催款邮件、产品描述、PI/合同条款、客户跟进、投诉应对等。\n规则：\n1. 默认输出英文，除非用户明确要求中文。\n2. 语气专业、礼貌、有商务气场，避免生硬翻译腔。\n3. 结构清晰，常用 Dear / Best regards 等标准格式。\n4. 涉及金额、数量、交期等关键信息要醒目（粗体或单独成行）。\n5. 主动给出 1-2 条优化建议（如有）。'
+  }
+};
+
+const MODE_INFO = {
+  chat:      { name:'日常聊天', icon:'💬', placeholder:'随便聊聊…',                                hint:'💬 随便聊聊…' },
+  translate: { name:'翻译',     icon:'🌐', placeholder:'粘贴要翻译的内容（中⇄英自动判断）…',     hint:'🌐 粘贴文本，自动中英互译' },
+  trade:     { name:'外贸文案', icon:'📧', placeholder:'描述你要写的内容，例如：给客户写一封催 30% 定金的邮件…', hint:'📧 描述需求，自动生成专业英文外贸文案' }
+};
+
+let settings = loadSettings();
+let currentMode = 'chat';
+let history = []; // 当前模式的对话历史
+
+// ── localStorage ──
+function loadSettings(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+    const saved = JSON.parse(raw);
+    // 深合并默认值（防止新增字段缺失）
+    return deepMerge(JSON.parse(JSON.stringify(DEFAULT_SETTINGS)), saved);
+  }catch{ return JSON.parse(JSON.stringify(DEFAULT_SETTINGS)); }
+}
+function deepMerge(a,b){
+  for(const k in b){
+    if(b[k]&&typeof b[k]==='object'&&!Array.isArray(b[k])) a[k]=deepMerge(a[k]||{}, b[k]);
+    else if(b[k]!==undefined&&b[k]!=='') a[k]=b[k];
+  }
+  return a;
+}
+function saveSettings(){
+  // 从弹窗收集
+  settings.gpt.key        = val('f_gpt_key');
+  settings.gpt.baseUrl    = val('f_gpt_base') || DEFAULT_SETTINGS.gpt.baseUrl;
+  settings.gpt.model      = val('f_gpt_model') || DEFAULT_SETTINGS.gpt.model;
+
+  settings.claude.key     = val('f_claude_key');
+  settings.claude.baseUrl = val('f_claude_base') || DEFAULT_SETTINGS.claude.baseUrl;
+  settings.claude.model   = val('f_claude_model') || DEFAULT_SETTINGS.claude.model;
+
+  settings.gemini.key     = val('f_gemini_key');
+  settings.gemini.baseUrl = val('f_gemini_base') || DEFAULT_SETTINGS.gemini.baseUrl;
+  settings.gemini.model   = val('f_gemini_model') || DEFAULT_SETTINGS.gemini.model;
+
+  settings.silicon.key            = val('f_si_key');
+  settings.silicon.baseUrl        = val('f_si_base') || DEFAULT_SETTINGS.silicon.baseUrl;
+  settings.silicon.modelChat      = val('f_si_chat') || DEFAULT_SETTINGS.silicon.modelChat;
+  settings.silicon.modelTranslate = val('f_si_trans') || DEFAULT_SETTINGS.silicon.modelTranslate;
+  settings.silicon.modelTrade     = val('f_si_trade') || DEFAULT_SETTINGS.silicon.modelTrade;
+
+  settings.prompts.chat      = val('f_p_chat')      || DEFAULT_SETTINGS.prompts.chat;
+  settings.prompts.translate = val('f_p_translate') || DEFAULT_SETTINGS.prompts.translate;
+  settings.prompts.trade     = val('f_p_trade')     || DEFAULT_SETTINGS.prompts.trade;
+
+  localStorage.setItem(LS_KEY, JSON.stringify(settings));
+  setStatus('已保存 ✓','ok');
+  refreshBadge();
+  refreshStatusLine();
+  setTimeout(closeSettings, 600);
+}
+function val(id){ return (document.getElementById(id)?.value||'').trim(); }
+
+// ── Settings UI ──
+function openSettings(){
+  const body = document.getElementById('settingsBody');
+  body.innerHTML = renderSettingsForm();
+  document.getElementById('settingsModal').classList.add('show');
+  document.getElementById('settingsStatus').textContent = '';
+  // 默认展开 SiliconFlow（核心）
+  document.querySelector('.prov-sec[data-prov="silicon"]')?.classList.add('open');
+}
+function closeSettings(){ document.getElementById('settingsModal').classList.remove('show'); }
+function setStatus(t, kind){
+  const el = document.getElementById('settingsStatus');
+  el.textContent = t;
+  el.style.color = kind==='ok' ? 'var(--success)' : kind==='err' ? 'var(--danger)' : 'var(--muted)';
+}
+
+function renderSettingsForm(){
+  const s = settings;
+  const provBlock = (key, title, fields, opened) => `
+    <div class="prov-sec ${opened?'open':''}" data-prov="${key}">
+      <div class="prov-head" onclick="this.parentElement.classList.toggle('open')">
+        <span>${title} ${s[key].key ? '<span class="prov-status ok">已配置</span>' : '<span class="prov-status">未配置</span>'}</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="prov-body">${fields}</div>
+    </div>`;
+
+  const f = (id, label, value, ph, type='text', tip='') => `
+    <div class="field">
+      <label>${label}</label>
+      <input id="${id}" type="${type}" value="${escAttr(value)}" placeholder="${escAttr(ph)}" autocomplete="off">
+      ${tip ? `<small>${tip}</small>` : ''}
+    </div>`;
+
+  return `
+    ${provBlock('silicon', '🇨🇳 SiliconFlow（国内模型 · 主力）', `
+      ${f('f_si_key',  'API Key',  s.silicon.key,  'sk-... ', 'password')}
+      ${f('f_si_base', 'Base URL', s.silicon.baseUrl, 'https://api.siliconflow.cn/v1')}
+      <div class="field-row">
+        ${f('f_si_chat',  '聊天模型',  s.silicon.modelChat,      'Qwen/Qwen2.5-72B-Instruct')}
+        ${f('f_si_trans', '翻译模型',  s.silicon.modelTranslate, 'deepseek-ai/DeepSeek-V3')}
+      </div>
+      ${f('f_si_trade', '外贸文案模型', s.silicon.modelTrade, 'Pro/moonshotai/Kimi-K2-Instruct', 'text', '推荐 Kimi-K2-Instruct（长文本+商务写作强）')}
+    `, true)}
+
+    ${provBlock('gpt', '🤖 GPT（中转）', `
+      ${f('f_gpt_key',   'API Key',  s.gpt.key,  'sk-...', 'password')}
+      ${f('f_gpt_base',  'Base URL', s.gpt.baseUrl, 'https://api.openai.com/v1')}
+      ${f('f_gpt_model', '默认模型',  s.gpt.model, 'gpt-4o-mini')}
+    `, false)}
+
+    ${provBlock('claude', '🧠 Claude（中转）', `
+      ${f('f_claude_key',   'API Key',  s.claude.key, 'sk-ant-...', 'password')}
+      ${f('f_claude_base',  'Base URL', s.claude.baseUrl, 'https://api.anthropic.com/v1')}
+      ${f('f_claude_model', '默认模型', s.claude.model, 'claude-sonnet-4-5')}
+    `, false)}
+
+    ${provBlock('gemini', '✨ Gemini（中转）', `
+      ${f('f_gemini_key',   'API Key',  s.gemini.key, 'AIza...', 'password')}
+      ${f('f_gemini_base',  'Base URL', s.gemini.baseUrl, 'https://generativelanguage.googleapis.com/v1beta')}
+      ${f('f_gemini_model', '默认模型', s.gemini.model, 'gemini-2.5-flash')}
+    `, false)}
+
+    <div class="prov-sec" data-prov="prompts">
+      <div class="prov-head" onclick="this.parentElement.classList.toggle('open')">
+        <span>📝 系统提示词（高级）</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="prov-body">
+        <div class="field">
+          <label>💬 日常聊天提示词</label>
+          <textarea id="f_p_chat" rows="3">${escHtml(s.prompts.chat)}</textarea>
+        </div>
+        <div class="field">
+          <label>🌐 翻译提示词</label>
+          <textarea id="f_p_translate" rows="6">${escHtml(s.prompts.translate)}</textarea>
+        </div>
+        <div class="field">
+          <label>📧 外贸文案提示词</label>
+          <textarea id="f_p_trade" rows="6">${escHtml(s.prompts.trade)}</textarea>
+        </div>
+        <small style="display:block;color:var(--muted);font-size:11px;margin-top:6px">留空将使用默认值。</small>
+      </div>
+    </div>
+  `;
+}
+
+// ── Mode switching ──
+function switchMode(mode){
+  if(currentMode === mode) return;
+  if(history.length > 0){
+    if(!confirm(`切换到「${MODE_INFO[mode].name}」会清空当前对话历史，继续吗？`)) return;
+  }
+  currentMode = mode;
+  history = [];
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode===mode));
+  document.getElementById('toolbarHint').textContent = MODE_INFO[mode].hint;
+  document.getElementById('input').placeholder = MODE_INFO[mode].placeholder;
+  refreshStatusLine();
+  renderWelcome();
+}
+
+function renderWelcome(){
+  const box = document.getElementById('messages');
+  const m = MODE_INFO[currentMode];
+  let welcome = '';
+  if(currentMode==='chat') welcome = '你好！有什么可以帮你的？';
+  else if(currentMode==='translate') welcome = '粘贴要翻译的内容，我会自动判断方向（中⇄英），只输出译文。';
+  else if(currentMode==='trade') welcome = '告诉我你要写什么 —— 询价、报价、催款、PI 描述、客户跟进 …  我会写成专业英文。';
+  box.innerHTML = `
+    <div class="msg msg-bot">
+      <div class="avatar">${m.icon}</div>
+      <div class="bubble">${escHtml(welcome)}</div>
+    </div>`;
+}
+
+function refreshStatusLine(){
+  const m = MODE_INFO[currentMode];
+  document.getElementById('curMode').textContent = m.name;
+  let model = '—', prov = 'SiliconFlow';
+  if(currentMode==='chat')      model = settings.silicon.modelChat;
+  if(currentMode==='translate') model = settings.silicon.modelTranslate;
+  if(currentMode==='trade')     model = settings.silicon.modelTrade;
+  document.getElementById('curModel').textContent = model;
+  document.getElementById('curProvider').textContent = prov;
+  const dot = document.getElementById('statusDot');
+  dot.classList.toggle('live', !!settings.silicon.key);
+}
+
+function refreshBadge(){
+  const b = document.getElementById('providerBadge');
+  const configured = [];
+  if(settings.silicon.key) configured.push('SiliconFlow');
+  if(settings.gpt.key)     configured.push('GPT');
+  if(settings.claude.key)  configured.push('Claude');
+  if(settings.gemini.key)  configured.push('Gemini');
+  if(configured.length){
+    b.textContent = '✓ ' + configured.join(' · ');
+    b.classList.add('ok'); b.classList.remove('warn');
+  } else {
+    b.textContent = '未配置';
+    b.classList.remove('ok'); b.classList.add('warn');
+  }
+}
+
+// ── Chat ──
+function clearChat(){ history = []; renderWelcome(); }
+function copyLastReply(){
+  const lastBot = [...history].reverse().find(m => m.role==='assistant');
+  if(!lastBot){ toast('没有可复制的回复', 'err'); return; }
+  navigator.clipboard.writeText(lastBot.content).then(() => toast('已复制 ✓','ok'));
+}
+
+function autoResize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,160)+'px'; }
+function onKeyDown(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); send(); } }
+
+function appendMsg(role, content, isPending){
+  const box = document.getElementById('messages');
+  const isBot = role==='assistant';
+  const div = document.createElement('div');
+  div.className = 'msg msg-' + (isBot?'bot':'user');
+  const avatar = isBot ? MODE_INFO[currentMode].icon : '🧑';
+  const inner = isPending
+    ? `<div class="bubble thinking"><span class="dot-anim">●</span><span class="dot-anim">●</span><span class="dot-anim">●</span></div>`
+    : `<div class="bubble">${isBot ? md2html(content) : escHtml(content)}</div>`;
+  div.innerHTML = `<div class="avatar">${avatar}</div>${inner}`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+  return div;
+}
+
+async function send(){
+  const input = document.getElementById('input');
+  const text = input.value.trim();
+  if(!text) return;
+  if(!settings.silicon.key){ toast('请先在设置里填写 SiliconFlow API Key','err'); openSettings(); return; }
+
+  input.value=''; input.style.height='auto';
+  document.getElementById('btnSend').disabled = true;
+
+  appendMsg('user', text);
+  history.push({ role:'user', content:text });
+  const pending = appendMsg('assistant', '', true);
+
+  try{
+    const reply = await callSiliconFlow(currentMode, history);
+    pending.remove();
+    history.push({ role:'assistant', content:reply });
+    appendMsg('assistant', reply);
+  }catch(e){
+    pending.remove();
+    appendMsg('assistant', `⚠ 请求失败：${e.message}`);
+    history.pop(); // 回滚 user
+  }
+  document.getElementById('btnSend').disabled = false;
+  input.focus();
+}
+
+// ── Provider call: SiliconFlow (OpenAI compatible) ──
+async function callSiliconFlow(mode, msgs){
+  const s = settings.silicon;
+  if(!s.key) throw new Error('SiliconFlow API Key 未配置');
+  const model = mode==='translate' ? s.modelTranslate : mode==='trade' ? s.modelTrade : s.modelChat;
+  const sysPrompt = settings.prompts[mode] || DEFAULT_SETTINGS.prompts[mode];
+
+  const body = {
+    model,
+    messages: [{ role:'system', content:sysPrompt }, ...msgs],
+    temperature: mode==='translate' ? 0.3 : 0.7,
+    max_tokens: 4096,
+    stream: false
+  };
+
+  const resp = await fetch(s.baseUrl.replace(/\/$/,'') + '/chat/completions', {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'Authorization':'Bearer ' + s.key
+    },
+    body: JSON.stringify(body)
+  });
+
+  if(!resp.ok){
+    let msg = `HTTP ${resp.status}`;
+    try{ const e = await resp.json(); msg = e.error?.message || e.message || msg; }catch{}
+    throw new Error(msg);
+  }
+  const data = await resp.json();
+  const reply = data.choices?.[0]?.message?.content;
+  if(!reply) throw new Error('空回复');
+  return reply.trim();
+}
+
+// ── Utils ──
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escAttr(s){ return escHtml(s).replace(/"/g,'&quot;'); }
+function md2html(t){
+  return escHtml(t)
+    .replace(/```([\s\S]*?)```/g,'<pre><code>$1</code></pre>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/^### (.+)$/gm,'<strong>$1</strong>')
+    .replace(/^## (.+)$/gm,'<strong style="font-size:15px">$1</strong>')
+    .replace(/^# (.+)$/gm,'<strong style="font-size:16px">$1</strong>')
+    .replace(/^\s*[-•]\s+(.+)$/gm,'<br>• $1')
+    .replace(/^\d+\.\s+(.+)$/gm,'<br>$&')
+    .replace(/\n\n/g,'<br><br>')
+    .replace(/\n/g,'<br>');
+}
+function toast(msg, kind){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + (kind||'');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ── Init ──
+refreshBadge();
+refreshStatusLine();
+renderWelcome();
+document.getElementById('input').focus();
+
+// 第一次访问，没配置 key → 自动打开设置
+if(!settings.silicon.key && !settings.gpt.key && !settings.claude.key && !settings.gemini.key){
+  setTimeout(openSettings, 400);
+}
+</script>
+</body>
+</html>
