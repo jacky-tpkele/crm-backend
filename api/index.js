@@ -1192,8 +1192,450 @@ app.post('/api/password-vault/items/:id/reveal', auth, async (req, res) => {
     res.json({ success: true, password: plain, visibleSeconds: 15 });
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
+// CRM v2 — 供应商/产品/订单/采购单 增强 API
+// ═══════════════════════════════════════════════════════════
+
+// ── 工具函数 ──
+async function genOrderNumber() {
+  const today = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  const prefix = `ORD-${today}-`;
+  const rows = await sb(`orders?order_number=like.${prefix}%25&select=order_number&order=order_number.desc&limit=1`);
+  let seq = 1;
+  if (rows.length) {
+    const last = rows[0].order_number || '';
+    const m = last.match(/-(\d+)$/);
+    if (m) seq = parseInt(m[1],10) + 1;
+  }
+  return `${prefix}${String(seq).padStart(3,'0')}`;
+}
+
+async function genPONumber(today) {
+  const prefix = `PO-${today}-`;
+  const rows = await sb(`purchase_orders?po_number=like.${prefix}%25&select=po_number&order=po_number.desc&limit=1`);
+  let seq = 1;
+  if (rows.length) {
+    const last = rows[0].po_number || '';
+    const m = last.match(/-(\d+)$/);
+    if (m) seq = parseInt(m[1],10) + 1;
+  }
+  return `${prefix}${String(seq).padStart(3,'0')}`;
+}
+
+// ─────────────────────────────────────────────
+// SUPPLIER 详情（含联系方式、供应产品、最近采购单）
+// ─────────────────────────────────────────────
+app.get('/api/suppliers/:id/full', auth, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const [supplierArr, contacts, links, pos] = await Promise.all([
+      sb(`suppliers?id=eq.${id}&select=*`),
+      sb(`supplier_contacts?supplier_id=eq.${id}&select=*&order=is_primary.desc,created_at.asc`),
+      sb(`product_suppliers?supplier_id=eq.${id}&select=*,products(id,product_code,product_name_cn,product_name_en,specification,unit)`),
+      sb(`purchase_orders?supplier_id=eq.${id}&select=*&order=po_date.desc&limit=20`),
+    ]);
+    if (!supplierArr.length) return res.status(404).json({ message: 'Supplier not found' });
+    res.json({ supplier: supplierArr[0], contacts, products: links, purchase_orders: pos });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// ─────────────────────────────────────────────
+// SUPPLIER CONTACTS
+// ─────────────────────────────────────────────
+app.get('/api/supplier-contacts', auth, async (req, res) => {
+  try {
+    const sid = req.query.supplier_id;
+    if (!sid) return res.status(400).json({ message: 'supplier_id required' });
+    const data = await sb(`supplier_contacts?supplier_id=eq.${sid}&select=*&order=is_primary.desc,created_at.asc`);
+    res.json(data);
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.post('/api/supplier-contacts', auth, async (req, res) => {
+  try {
+    const data = await sb('supplier_contacts?select=*', {
+      method:'POST', headers:{ 'Prefer':'return=representation' },
+      body: JSON.stringify(req.body),
+    });
+    res.json({ success:true, data: data[0] });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.put('/api/supplier-contacts/:id', auth, async (req, res) => {
+  try {
+    await sb(`supplier_contacts?id=eq.${req.params.id}`, { method:'PATCH', body: JSON.stringify(req.body) });
+    res.json({ success:true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.delete('/api/supplier-contacts/:id', auth, async (req, res) => {
+  try {
+    await sb(`supplier_contacts?id=eq.${req.params.id}`, { method:'DELETE' });
+    res.json({ success:true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// ─────────────────────────────────────────────
+// PRODUCT 详情（含关联供应商、价格历史）
+// ─────────────────────────────────────────────
+app.get('/api/products/:id/full', auth, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const [productArr, suppliers, history] = await Promise.all([
+      sb(`products?id=eq.${id}&select=*`),
+      sb(`product_suppliers?product_id=eq.${id}&select=*,suppliers(id,supplier_name,supplier_code,phone)&order=priority.asc`),
+      sb(`price_history?product_id=eq.${id}&select=*&order=recorded_at.desc&limit=50`),
+    ]);
+    if (!productArr.length) return res.status(404).json({ message: 'Product not found' });
+    res.json({ product: productArr[0], suppliers, price_history: history });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// ─────────────────────────────────────────────
+// PRODUCT-SUPPLIER LINKS
+// ─────────────────────────────────────────────
+app.get('/api/product-suppliers', auth, async (req, res) => {
+  try {
+    const filters = [];
+    if (req.query.product_id)  filters.push(`product_id=eq.${req.query.product_id}`);
+    if (req.query.supplier_id) filters.push(`supplier_id=eq.${req.query.supplier_id}`);
+    const q = filters.length ? '&' + filters.join('&') : '';
+    const data = await sb(`product_suppliers?select=*,suppliers(id,supplier_name,supplier_code),products(id,product_code,product_name_cn)${q}&order=priority.asc`);
+    res.json(data);
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.post('/api/product-suppliers', auth, async (req, res) => {
+  try {
+    const data = await sb('product_suppliers?select=*', {
+      method:'POST', headers:{ 'Prefer':'return=representation' },
+      body: JSON.stringify(req.body),
+    });
+    res.json({ success:true, data: data[0] });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.put('/api/product-suppliers/:id', auth, async (req, res) => {
+  try {
+    await sb(`product_suppliers?id=eq.${req.params.id}`, { method:'PATCH', body: JSON.stringify(req.body) });
+    res.json({ success:true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.delete('/api/product-suppliers/:id', auth, async (req, res) => {
+  try {
+    await sb(`product_suppliers?id=eq.${req.params.id}`, { method:'DELETE' });
+    res.json({ success:true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// ─────────────────────────────────────────────
+// PRICE HISTORY
+// ─────────────────────────────────────────────
+app.get('/api/price-history', auth, async (req, res) => {
+  try {
+    const filters = [];
+    if (req.query.product_id)  filters.push(`product_id=eq.${req.query.product_id}`);
+    if (req.query.supplier_id) filters.push(`supplier_id=eq.${req.query.supplier_id}`);
+    if (req.query.price_type)  filters.push(`price_type=eq.${req.query.price_type}`);
+    const q = filters.length ? '&' + filters.join('&') : '';
+    const data = await sb(`price_history?select=*${q}&order=recorded_at.desc&limit=200`);
+    res.json(data);
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// ─────────────────────────────────────────────
+// PURCHASE ORDERS
+// ─────────────────────────────────────────────
+app.get('/api/purchase-orders', auth, async (req, res) => {
+  try {
+    const filters = [];
+    if (req.query.order_id)    filters.push(`order_id=eq.${req.query.order_id}`);
+    if (req.query.supplier_id) filters.push(`supplier_id=eq.${req.query.supplier_id}`);
+    if (req.query.status)      filters.push(`status=eq.${req.query.status}`);
+    const q = filters.length ? '&' + filters.join('&') : '';
+    const pos = await sb(`purchase_orders?select=*${q}&order=po_date.desc`);
+    if (!pos.length) return res.json([]);
+    const ids = pos.map(p => p.id).join(',');
+    const items = await sb(`purchase_order_items?purchase_order_id=in.(${ids})&select=*`);
+    res.json(pos.map(p => ({ ...p, items: items.filter(i => i.purchase_order_id === p.id) })));
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.get('/api/purchase-orders/:id', auth, async (req, res) => {
+  try {
+    const [poArr, items] = await Promise.all([
+      sb(`purchase_orders?id=eq.${req.params.id}&select=*,suppliers(id,supplier_name,supplier_code,contact_name,phone,email,address,payment_terms)`),
+      sb(`purchase_order_items?purchase_order_id=eq.${req.params.id}&select=*`),
+    ]);
+    if (!poArr.length) return res.status(404).json({ message: 'PO not found' });
+    res.json({ purchase_order: poArr[0], items });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.put('/api/purchase-orders/:id', auth, async (req, res) => {
+  try {
+    await sb(`purchase_orders?id=eq.${req.params.id}`, {
+      method:'PATCH',
+      body: JSON.stringify({ ...req.body, updated_at: new Date().toISOString() }),
+    });
+    res.json({ success:true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.delete('/api/purchase-orders/:id', auth, async (req, res) => {
+  try {
+    await sb(`purchase_orders?id=eq.${req.params.id}`, { method:'DELETE' });
+    res.json({ success:true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// ─────────────────────────────────────────────
+// 订单 v2 — 智能保存（写价格历史 + 自动拆分采购单）
+// ─────────────────────────────────────────────
+async function recalcOrderTotals(items, shippingFee, exchangeRate) {
+  let pTotal = 0, sTotal = 0;
+  for (const it of items) {
+    const qty = Number(it.quantity || 0);
+    const pp  = Number(it.purchase_price || 0);
+    const sp  = Number(it.sales_price || 0);
+    pTotal += qty * pp;
+    sTotal += qty * sp;
+    it.purchase_total = +(qty * pp).toFixed(2);
+    it.sales_total    = +(qty * sp).toFixed(2);
+  }
+  const shipping = Number(shippingFee || 0);
+  // 销售币种利润：销售额(含运费) - 采购额(RMB→销售币种 用 exchange_rate)
+  const rate = Number(exchangeRate || 7.2) || 7.2;
+  const salesTotal = +(sTotal + shipping).toFixed(2);
+  const profitInSalesCurrency = +(salesTotal - pTotal / rate).toFixed(2);
+  const profitInRmb = +(salesTotal * rate - pTotal).toFixed(2);
+  const profitRate = salesTotal > 0 ? +(profitInSalesCurrency / salesTotal * 100).toFixed(2) : 0;
+  return {
+    purchase_total: +pTotal.toFixed(2),
+    sales_total: salesTotal,
+    sales_without_shipping: +sTotal.toFixed(2),
+    profit: profitInSalesCurrency,
+    profit_rmb: profitInRmb,
+    profit_rate: profitRate,
+  };
+}
+
+async function createPurchaseOrdersForOrder(orderId, items) {
+  // 按 supplier_id 分组
+  const groups = new Map();
+  for (const it of items) {
+    if (!it.supplier_id) continue;
+    if (!groups.has(it.supplier_id)) groups.set(it.supplier_id, []);
+    groups.get(it.supplier_id).push(it);
+  }
+  if (!groups.size) return [];
+
+  const today = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  const supplierIds = [...groups.keys()];
+  const suppliers = await sb(`suppliers?id=in.(${supplierIds.join(',')})&select=id,supplier_name`);
+  const supMap = new Map(suppliers.map(s => [s.id, s]));
+
+  const created = [];
+  for (const [supplierId, groupItems] of groups) {
+    const total = groupItems.reduce((acc,it) => acc + Number(it.purchase_total||0), 0);
+    const poNumber = await genPONumber(today);
+    const poArr = await sb('purchase_orders?select=id', {
+      method:'POST', headers:{ 'Prefer':'return=representation' },
+      body: JSON.stringify({
+        po_number: poNumber,
+        order_id: orderId,
+        supplier_id: supplierId,
+        supplier_name: supMap.get(supplierId)?.supplier_name || '',
+        po_date: new Date().toISOString().slice(0,10),
+        status: 'pending',
+        total_amount: +total.toFixed(2),
+        currency: 'RMB',
+      }),
+    });
+    const poId = poArr[0].id;
+    await sb('purchase_order_items', {
+      method:'POST',
+      body: JSON.stringify(groupItems.map(it => ({
+        purchase_order_id: poId,
+        order_item_id: it.id || null,
+        product_id: it.product_id || null,
+        product_name_cn: it.product_name_cn || '',
+        specification: it.specification || '',
+        unit: it.unit || '',
+        quantity: Number(it.quantity || 0),
+        purchase_price: Number(it.purchase_price || 0),
+        subtotal: +(Number(it.quantity||0) * Number(it.purchase_price||0)).toFixed(2),
+      }))),
+    });
+    created.push({ id: poId, po_number: poNumber, supplier_id: supplierId, total });
+  }
+  return created;
+}
+
+async function writePriceHistoryAndUpdateProducts(orderId, customerId, currency, items) {
+  const today = new Date().toISOString().slice(0,10);
+  const histRows = [];
+  for (const it of items) {
+    if (!it.product_id) continue;
+    if (Number(it.purchase_price)) {
+      histRows.push({
+        product_id: it.product_id,
+        supplier_id: it.supplier_id || null,
+        price_type: 'purchase',
+        price: Number(it.purchase_price),
+        currency: 'RMB',
+        quantity: Number(it.quantity||0),
+        order_id: orderId,
+      });
+    }
+    if (Number(it.sales_price)) {
+      histRows.push({
+        product_id: it.product_id,
+        supplier_id: null,
+        price_type: 'sales',
+        price: Number(it.sales_price),
+        currency: currency || 'USD',
+        quantity: Number(it.quantity||0),
+        order_id: orderId,
+        customer_id: customerId || null,
+      });
+    }
+    // 更新产品最近价
+    const update = { updated_at: new Date().toISOString() };
+    if (Number(it.purchase_price)) {
+      update.last_purchase_price = Number(it.purchase_price);
+      update.last_purchase_date  = today;
+    }
+    if (Number(it.sales_price)) {
+      update.last_sales_price = Number(it.sales_price);
+      update.last_sales_date  = today;
+    }
+    await sb(`products?id=eq.${it.product_id}`, { method:'PATCH', body: JSON.stringify(update) }).catch(()=>{});
+  }
+  if (histRows.length) {
+    await sb('price_history', { method:'POST', body: JSON.stringify(histRows) }).catch(()=>{});
+  }
+}
+
+app.post('/api/orders/v2', auth, async (req, res) => {
+  try {
+    const {
+      customer_name, customer_id, order_date, shipping_fee, currency, exchange_rate,
+      order_status, remarks, items
+    } = req.body;
+    const itemList = Array.isArray(items) ? items : [];
+    const totals = await recalcOrderTotals(itemList, shipping_fee, exchange_rate);
+    const orderNumber = await genOrderNumber();
+
+    const orderArr = await sb('orders?select=id', {
+      method:'POST', headers:{ 'Prefer':'return=representation' },
+      body: JSON.stringify({
+        order_number: orderNumber,
+        customer_name, customer_id: customer_id || null,
+        order_date: order_date || new Date().toISOString().slice(0,10),
+        shipping_fee: Number(shipping_fee||0),
+        currency: currency || 'USD',
+        exchange_rate: Number(exchange_rate || 7.2),
+        order_status: order_status || 'confirmed',
+        remarks: remarks || '',
+        ...totals,
+      }),
+    });
+    const orderId = orderArr[0].id;
+
+    // 写明细（保留 id 用于后续 PO 关联）
+    let itemRows = [];
+    if (itemList.length) {
+      itemRows = await sb('order_items?select=*', {
+        method:'POST', headers:{ 'Prefer':'return=representation' },
+        body: JSON.stringify(itemList.map((it, idx) => ({
+          order_id: orderId,
+          product_id: it.product_id || null,
+          supplier_id: it.supplier_id || null,
+          product_name_cn: it.product_name_cn || '',
+          product_name_en: it.product_name_en || '',
+          specification: it.specification || '',
+          unit: it.unit || '',
+          quantity: Number(it.quantity||0),
+          purchase_price: Number(it.purchase_price||0),
+          sales_price: Number(it.sales_price||0),
+          purchase_total: it.purchase_total,
+          sales_total: it.sales_total,
+          item_remarks: it.item_remarks || '',
+          sort_order: idx,
+        }))),
+      });
+    }
+
+    // 写价格历史 + 更新产品最近价（异步容错）
+    await writePriceHistoryAndUpdateProducts(orderId, customer_id, currency, itemRows);
+
+    // 自动按供应商拆分采购单
+    const purchaseOrders = await createPurchaseOrdersForOrder(orderId, itemRows);
+
+    res.json({ success:true, id: orderId, order_number: orderNumber, purchase_orders: purchaseOrders });
+  } catch (e) { res.status(500).json({ success:false, message: e.message }); }
+});
+
+app.put('/api/orders/v2/:id', auth, async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const {
+      customer_name, customer_id, order_date, shipping_fee, currency, exchange_rate,
+      order_status, remarks, items
+    } = req.body;
+    const itemList = Array.isArray(items) ? items : [];
+    const totals = await recalcOrderTotals(itemList, shipping_fee, exchange_rate);
+
+    await sb(`orders?id=eq.${orderId}`, {
+      method:'PATCH',
+      body: JSON.stringify({
+        customer_name, customer_id: customer_id || null,
+        order_date, shipping_fee: Number(shipping_fee||0),
+        currency: currency || 'USD',
+        exchange_rate: Number(exchange_rate || 7.2),
+        order_status: order_status || 'confirmed',
+        remarks: remarks || '',
+        ...totals,
+        updated_at: new Date().toISOString(),
+      }),
+    });
+
+    // 重写明细
+    await sb(`order_items?order_id=eq.${orderId}`, { method:'DELETE' });
+    let itemRows = [];
+    if (itemList.length) {
+      itemRows = await sb('order_items?select=*', {
+        method:'POST', headers:{ 'Prefer':'return=representation' },
+        body: JSON.stringify(itemList.map((it, idx) => ({
+          order_id: orderId,
+          product_id: it.product_id || null,
+          supplier_id: it.supplier_id || null,
+          product_name_cn: it.product_name_cn || '',
+          product_name_en: it.product_name_en || '',
+          specification: it.specification || '',
+          unit: it.unit || '',
+          quantity: Number(it.quantity||0),
+          purchase_price: Number(it.purchase_price||0),
+          sales_price: Number(it.sales_price||0),
+          purchase_total: it.purchase_total,
+          sales_total: it.sales_total,
+          item_remarks: it.item_remarks || '',
+          sort_order: idx,
+        }))),
+      });
+    }
+
+    // 重新生成采购单
+    await sb(`purchase_orders?order_id=eq.${orderId}`, { method:'DELETE' });
+    const purchaseOrders = await createPurchaseOrdersForOrder(orderId, itemRows);
+
+    res.json({ success:true, purchase_orders: purchaseOrders });
+  } catch (e) { res.status(500).json({ success:false, message: e.message }); }
+});
+
+
+
+
+
 module.exports = app;
-
-
-
-
