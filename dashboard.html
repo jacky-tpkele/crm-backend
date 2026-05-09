@@ -1765,9 +1765,12 @@ async function saveProduct(e) {
   };
   // 收集供应商链接
   const links = [];
+  const seen = new Set();
   document.querySelectorAll('#pmSupplierLinks .item-row').forEach((row, idx) => {
     const sid = row.querySelector('[name=ps_supplier]').value;
     if (!sid) return;
+    if (seen.has(sid)) return;  // 同一供应商不能加两次
+    seen.add(sid);
     links.push({
       supplier_id: sid,
       purchase_price: parseFloat(row.querySelector('[name=ps_price]').value)||0,
@@ -1776,6 +1779,10 @@ async function saveProduct(e) {
       priority: parseInt(row.querySelector('[name=ps_pri]').value)||2,
     });
   });
+  const totalRows = document.querySelectorAll('#pmSupplierLinks .item-row').length;
+  if (totalRows > links.length) {
+    toast(`已自动去重 ${totalRows - links.length} 个重复供应商`, 'err');
+  }
   // 默认供应商 = 优先级最高的（priority=1，否则第一行）
   const defaultLink = links.find(l => l.priority===1) || links[0];
   if (defaultLink) payload.default_supplier_id = defaultLink.supplier_id;
@@ -1787,11 +1794,11 @@ async function saveProduct(e) {
       const r = await api('/api/products', { method:'POST', body:JSON.stringify(payload) });
       prodId = r.data.id;
     }
-    // 删除旧 links（如有）
-    if (id && S._editingProductLinks?.length) {
+    // 编辑时：先删除该产品所有旧 links（不依赖 _editingProductLinks 标记）
+    if (id) {
       const oldLinks = await api(`/api/product-suppliers?product_id=${prodId}`);
       for (const ol of oldLinks) {
-        await api(`/api/product-suppliers/${ol.id}`, { method:'DELETE' }).catch(()=>{});
+        await api(`/api/product-suppliers/${ol.id}`, { method:'DELETE' });
       }
     }
     // 插入新 links
@@ -1801,7 +1808,13 @@ async function saveProduct(e) {
     closeModal('productModal');
     toast(id ? '产品已更新' : '产品已保存');
     await loadProducts();
-  } catch(err) { toast(err.message,'err'); }
+  } catch(err) {
+    if (String(err.message).includes('duplicate')) {
+      toast('保存失败：同一供应商重复，请检查供应商列表', 'err');
+    } else {
+      toast(err.message,'err');
+    }
+  }
 }
 async function deleteProduct(id) {
   if (!confirm('Delete this product?')) return;
