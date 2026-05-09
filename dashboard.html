@@ -309,8 +309,21 @@ tr:hover .del-row-btn{display:inline-block}
 .quick-export{
   position:fixed;right:18px;bottom:18px;z-index:50;width:230px;
   background:rgba(3,8,20,0.97);border:1px solid var(--border);
-  border-radius:12px;box-shadow:var(--shadow);overflow:hidden;transition:.2s;
+  border-radius:12px;box-shadow:var(--shadow);overflow:hidden;transition:width .2s,height .2s,border-radius .2s;
 }
+.quick-export.collapsed{
+  width:52px;height:52px;border-radius:50%;
+  background:linear-gradient(135deg,rgba(0,200,240,0.18),rgba(0,140,200,0.18));
+  border-color:rgba(0,200,255,0.4);
+}
+.quick-export.collapsed .qe-head{
+  padding:0;border-bottom:none;justify-content:center;height:100%;
+  font-size:22px;
+}
+.quick-export.collapsed .qe-head>span:first-child{font-size:0}
+.quick-export.collapsed .qe-head>span:first-child::before{content:'⚡';font-size:22px}
+.quick-export.collapsed #qeArrow{display:none}
+.quick-export.collapsed .qe-body{display:none}
 .qe-head{
   display:flex;align-items:center;justify-content:space-between;
   padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);
@@ -827,10 +840,10 @@ tr:hover .del-row-btn{display:inline-block}
 </div><!-- /app -->
 
 <!-- ══ QUICK EXPORT ══ -->
-<div class="quick-export" id="quickExport">
+<div class="quick-export collapsed" id="quickExport" title="Quick Export">
   <div class="qe-head" onclick="toggleQE()">
     <span data-i18n="qeTitle">⚡ Quick Export</span>
-    <span id="qeArrow">▲</span>
+    <span id="qeArrow">▼</span>
   </div>
   <div class="qe-body" id="qeBody">
     <div class="qe-label" data-i18n="qeLabelOrder">Order</div>
@@ -1511,10 +1524,10 @@ document.getElementById('sbToggle').addEventListener('click', () => {
 
 // ── Quick Export toggle ──
 function toggleQE() {
-  const body = document.getElementById('qeBody');
+  const panel = document.getElementById('quickExport');
   const arrow = document.getElementById('qeArrow');
-  const hidden = body.classList.toggle('hidden');
-  arrow.textContent = hidden ? '▼' : '▲';
+  const collapsed = panel.classList.toggle('collapsed');
+  arrow.textContent = collapsed ? '▼' : '▲';
 }
 
 // ── User menu ──
