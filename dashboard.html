@@ -835,7 +835,7 @@ tr:hover .del-row-btn{display:inline-block}
 </div>
 
 <!-- Product Picker Modal -->
-<div class="modal-backdrop" id="productPickerModal" style="display:none" onclick="closeOnBackdrop(event,'productPickerModal')">
+<div class="modal-backdrop" id="productPickerModal" style="display:none;z-index:400" onclick="closeOnBackdrop(event,'productPickerModal')">
   <div class="modal">
     <div class="modal-head">
       <h2>选择产品</h2>
@@ -1053,22 +1053,26 @@ tr:hover .del-row-btn{display:inline-block}
           </select>
         </div>
         <div class="field"><label>客户名称（可改）</label><input type="text" id="om-customer" required></div>
-        <div class="field"><label>订单日期 *</label><input type="date" id="om-date" required></div>
+        <div class="field"><label>订单日期 *</label><input type="date" id="om-date" required onchange="fetchExchangeRate()"></div>
         <div class="field"><label>币种</label>
-          <select id="om-currency" onchange="recalcOrder()">
+          <select id="om-currency" onchange="fetchExchangeRate()">
             <option value="USD">USD</option><option value="EUR">EUR</option><option value="CNY">CNY</option>
           </select>
         </div>
-        <div class="field"><label>汇率（1 销售币 = X RMB）</label><input type="number" id="om-rate" value="7.20" step="0.0001" oninput="recalcOrder()"></div>
+        <div class="field"><label>汇率 (1 销售币 = X RMB) <span style="font-size:11px;color:var(--muted)" id="om-rate-status">自动</span></label>
+          <div style="display:flex;gap:6px"><input type="number" id="om-rate" value="7.20" step="0.0001" oninput="recalcOrder()" style="flex:1" readonly>
+          <button type="button" class="btn btn-sm" onclick="fetchExchangeRate(true)" title="刷新汇率">↻</button>
+          <button type="button" class="btn btn-sm" onclick="toggleRateEdit()" title="手动修改">✎</button></div>
+        </div>
         <div class="field"><label>运费（销售币种）</label><input type="number" id="om-shipping" value="0" step="0.01" oninput="recalcOrder()"></div>
         <div class="field"><label>订单状态</label>
           <select id="om-status">
-            <option value="draft">Draft</option>
-            <option value="quoted">Quoted</option>
-            <option value="confirmed" selected>Confirmed</option>
-            <option value="producing">Producing</option>
-            <option value="shipped">Shipped</option>
-            <option value="completed">Completed</option>
+            <option value="draft">草稿</option>
+            <option value="quoted">已报价</option>
+            <option value="confirmed" selected>已确认</option>
+            <option value="producing">生产中</option>
+            <option value="shipped">已发货</option>
+            <option value="completed">已完成</option>
           </select>
         </div>
         <div class="field form-full"><label>备注</label><input type="text" id="om-remarks"></div>
@@ -2111,12 +2115,53 @@ function openOrderModal() {
   document.getElementById('om-status').value   = 'confirmed';
   document.getElementById('om-currency').value = 'USD';
   document.getElementById('om-rate').value     = 7.20;
+  document.getElementById('om-rate').readOnly  = true;
+  document.getElementById('om-rate-status').textContent = '自动';
   document.getElementById('orderModalTitle').textContent = 'New Order';
   document.getElementById('orderItems').innerHTML = '';
   populateOrderCustomerDropdown();
   addOrderItem();
   recalcOrder();
   openModal('orderModal');
+  fetchExchangeRate();
+}
+
+async function fetchExchangeRate(force) {
+  const cur  = document.getElementById('om-currency').value || 'USD';
+  const date = document.getElementById('om-date').value || today();
+  const rateInput  = document.getElementById('om-rate');
+  const status     = document.getElementById('om-rate-status');
+  if (rateInput.dataset.manual === '1' && !force) return;  // 手动修改后不再自动覆盖
+  if (cur === 'CNY') { rateInput.value = '1.0000'; status.textContent='固定'; recalcOrder(); return; }
+  status.textContent = '获取中...';
+  try {
+    // Frankfurter API: 免费,支持历史汇率,无需 key
+    const url = `https://api.frankfurter.app/${date}?from=${cur}&to=CNY`;
+    const r = await fetch(url);
+    const d = await r.json();
+    const rate = d?.rates?.CNY;
+    if (rate) {
+      rateInput.value = (+rate).toFixed(4);
+      status.textContent = `自动 · ${date}`;
+      recalcOrder();
+    } else {
+      status.textContent = '失败,用默认 7.20';
+      rateInput.value = '7.2000';
+      recalcOrder();
+    }
+  } catch (e) {
+    status.textContent = '网络失败,用默认 7.20';
+    rateInput.value = '7.2000';
+    recalcOrder();
+  }
+}
+function toggleRateEdit() {
+  const r = document.getElementById('om-rate');
+  const wasReadonly = r.readOnly;
+  r.readOnly = !wasReadonly;
+  r.dataset.manual = wasReadonly ? '1' : '0';
+  document.getElementById('om-rate-status').textContent = wasReadonly ? '手动' : '自动';
+  if (wasReadonly) r.focus();
 }
 async function editOrder(id) {
   try {
