@@ -440,6 +440,9 @@ tr:hover .del-row-btn{display:inline-block}
     <div class="nav-item" data-sec="orders">
       <span class="nav-icon">◍</span><span class="nav-label" data-i18n="navOrders">订单管理</span>
     </div>
+    <div class="nav-item" data-sec="purchase-orders">
+      <span class="nav-icon">⊞</span><span class="nav-label">采购单</span>
+    </div>
     <div class="nav-item" data-sec="analytics">
       <span class="nav-icon">◔</span><span class="nav-label" data-i18n="navAnalytics">数据分析</span>
     </div>
@@ -622,7 +625,7 @@ tr:hover .del-row-btn{display:inline-block}
         <div class="tbl-wrap">
           <table>
             <thead><tr>
-              <th data-i18n="thCode">Code</th><th data-i18n="thCNName">CN Name</th><th data-i18n="thENName">EN Name</th><th data-i18n="thSpec">Spec</th><th data-i18n="thUnit">Unit</th><th data-i18n="thPurchase">Purchase</th><th data-i18n="thSales">Sales</th><th data-i18n="thActions">Actions</th>
+              <th>编号</th><th>中文名</th><th>英文名</th><th>规格</th><th>默认供应商</th><th>默认采购¥</th><th>最近采购</th><th>最近销售</th><th>操作</th>
             </tr></thead>
             <tbody id="prBody"></tbody>
           </table>
@@ -642,7 +645,7 @@ tr:hover .del-row-btn{display:inline-block}
         <div class="tbl-wrap">
           <table>
             <thead><tr>
-              <th data-i18n="thImage">Image</th><th data-i18n="thSupplier">Supplier</th><th data-i18n="thContact">Contact</th><th data-i18n="thPhone">Phone</th><th data-i18n="thEmail">Email</th><th data-i18n="thLeadTime">Lead Time</th><th data-i18n="thActions">Actions</th>
+              <th>图</th><th>供应商</th><th>联系人</th><th>电话</th><th>邮箱</th><th>状态</th><th>操作</th>
             </tr></thead>
             <tbody id="suBody"></tbody>
           </table>
@@ -681,6 +684,35 @@ tr:hover .del-row-btn{display:inline-block}
           </table>
         </div>
         <div id="orStatus" style="margin-top:8px;font-size:12px;color:var(--muted)"></div>
+      </div>
+    </section>
+
+    <!-- ── PURCHASE ORDERS ── -->
+    <section class="section" id="sec-purchase-orders">
+      <div class="section-title">采购单 / Purchase Orders</div>
+      <div class="section-sub">订单保存后自动按供应商拆分生成 · 支持 PDF 导出发给供应商</div>
+      <div class="card">
+        <div class="card-head">
+          <div class="filter-bar">
+            <input type="text" id="po-search" placeholder="供应商 / 采购单号..." oninput="renderPurchaseOrders()">
+            <select id="po-status-filter" onchange="renderPurchaseOrders()">
+              <option value="">全部状态</option>
+              <option value="pending">待发出</option>
+              <option value="sent">已发出</option>
+              <option value="confirmed">已确认</option>
+              <option value="shipped">已发货</option>
+              <option value="received">已收货</option>
+            </select>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>采购单号</th><th>供应商</th><th>关联订单</th><th>产品数</th><th>金额(RMB)</th><th>状态</th><th>日期</th><th>操作</th>
+            </tr></thead>
+            <tbody id="poBody"></tbody>
+          </table>
+        </div>
       </div>
     </section>
 
@@ -780,6 +812,58 @@ tr:hover .del-row-btn{display:inline-block}
 
 </div><!-- /app -->
 
+<!-- Supplier Detail Modal -->
+<div class="modal-backdrop" id="supplierDetailModal" style="display:none" onclick="closeOnBackdrop(event,'supplierDetailModal')">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <h2 id="sdmTitle">供应商详情</h2>
+      <button class="modal-close" onclick="closeModal('supplierDetailModal')">×</button>
+    </div>
+    <div id="sdmBody" style="padding:0 0 14px"></div>
+  </div>
+</div>
+
+<!-- Product Detail Modal -->
+<div class="modal-backdrop" id="productDetailModal" style="display:none" onclick="closeOnBackdrop(event,'productDetailModal')">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <h2 id="pdmTitle">产品详情</h2>
+      <button class="modal-close" onclick="closeModal('productDetailModal')">×</button>
+    </div>
+    <div id="pdmBody" style="padding:0 0 14px"></div>
+  </div>
+</div>
+
+<!-- Product Picker Modal -->
+<div class="modal-backdrop" id="productPickerModal" style="display:none" onclick="closeOnBackdrop(event,'productPickerModal')">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>选择产品</h2>
+      <button class="modal-close" onclick="closeModal('productPickerModal')">×</button>
+    </div>
+    <div style="padding:0 0 14px">
+      <input type="text" id="ppSearch" placeholder="🔍 搜索：编号 / 中英文名 / 规格..." oninput="renderProductPicker()" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:9px 14px;color:var(--text);font-size:13px;outline:none;margin-bottom:10px">
+      <div id="ppList" style="max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:6px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Purchase Order Detail Modal -->
+<div class="modal-backdrop" id="poDetailModal" style="display:none" onclick="closeOnBackdrop(event,'poDetailModal')">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <h2 id="poDetailTitle">采购单详情</h2>
+      <button class="modal-close" onclick="closeModal('poDetailModal')">×</button>
+    </div>
+    <div id="poDetailBody" style="padding:0 0 14px"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('poDetailModal')">关闭</button>
+      <button class="btn btn-primary" id="poSaveBtn" onclick="savePoStatus()">💾 保存状态</button>
+      <button class="btn" onclick="downloadPoPdf()">📄 下载 PDF</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ QUICK EXPORT ══ -->
 <div class="quick-export collapsed" id="quickExport" title="Quick Export">
   <div class="qe-head" onclick="toggleQE()">
@@ -842,27 +926,36 @@ tr:hover .del-row-btn{display:inline-block}
 
 <!-- Product Modal -->
 <div class="modal-backdrop" id="productModal" style="display:none">
-  <div class="modal">
+  <div class="modal modal-lg">
     <div class="modal-head">
       <h2 id="productModalTitle">New Product</h2>
       <button class="modal-close" onclick="closeModal('productModal')">×</button>
     </div>
     <form id="productForm" onsubmit="saveProduct(event)">
       <input type="hidden" id="pm-id">
-      <div class="form-grid">
-        <div class="field"><label data-i18n="lblProdCode">Product Code</label><input type="text" id="pm-code"></div>
-        <div class="field"><label data-i18n="lblProdUnit">Unit</label><input type="text" id="pm-unit" value="pcs"></div>
-        <div class="field"><label data-i18n="lblProdCN">CN Name *</label><input type="text" id="pm-cn" required></div>
-        <div class="field"><label data-i18n="lblProdEN">EN Name</label><input type="text" id="pm-en"></div>
-        <div class="field form-full"><label data-i18n="lblProdSpec">Specification</label><input type="text" id="pm-spec"></div>
-        <div class="field"><label data-i18n="lblProdPP">Default Purchase Price</label><input type="number" id="pm-pp" step="0.01" value="0"></div>
-        <div class="field"><label data-i18n="lblProdSP">Default Sales Price</label><input type="number" id="pm-sp" step="0.01" value="0"></div>
-        <div class="field"><label data-i18n="lblProdHS">HS Code</label><input type="text" id="pm-hs"></div>
-        <div class="field"><label data-i18n="lblProdCert">Certification</label><input type="text" id="pm-cert"></div>
+      <div class="form-grid col3">
+        <div class="field"><label>Product Code</label><input type="text" id="pm-code" placeholder="自动生成或手填"></div>
+        <div class="field"><label>分类</label><input type="text" id="pm-category" placeholder="如 LED灯具"></div>
+        <div class="field"><label>Unit</label><input type="text" id="pm-unit" value="pcs"></div>
+        <div class="field"><label>CN Name *</label><input type="text" id="pm-cn" required></div>
+        <div class="field"><label>EN Name</label><input type="text" id="pm-en"></div>
+        <div class="field"><label>Specification</label><input type="text" id="pm-spec"></div>
+        <div class="field"><label>HS Code</label><input type="text" id="pm-hs"></div>
+        <div class="field"><label>Certification</label><input type="text" id="pm-cert"></div>
+        <div class="field"><label>默认交期</label><input type="text" id="pm-lead" placeholder="如 15 days"></div>
+        <div class="field"><label>默认采购价 (RMB)</label><input type="number" id="pm-pp" step="0.01" value="0"></div>
+        <div class="field"><label>默认销售价 (USD)</label><input type="number" id="pm-sp" step="0.01" value="0"></div>
+        <div class="field"><label>产品图片URL</label><input type="text" id="pm-image" placeholder="https://..."></div>
+      </div>
+      <div class="items-section" style="margin-top:14px">
+        <h3>📦 关联供应商（可多家）</h3>
+        <div id="pmSupplierLinks" style="display:flex;flex-direction:column;gap:6px"></div>
+        <button type="button" class="btn" style="width:100%;margin-top:8px" onclick="addProductSupplierRow()">＋ 添加供应商</button>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:6px">提示：第一行为默认供应商，下单时会自动带出该供应商的采购价/交期</div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn" data-i18n="btnCancel" onclick="closeModal('productModal')">Cancel</button>
-        <button type="submit" class="btn btn-primary" data-i18n="btnSaveProduct">Save Product</button>
+        <button type="button" class="btn" onclick="closeModal('productModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">💾 保存产品</button>
       </div>
     </form>
   </div>
@@ -870,27 +963,45 @@ tr:hover .del-row-btn{display:inline-block}
 
 <!-- Supplier Modal -->
 <div class="modal-backdrop" id="supplierModal" style="display:none">
-  <div class="modal">
+  <div class="modal modal-lg">
     <div class="modal-head">
       <h2 id="supplierModalTitle">New Supplier</h2>
       <button class="modal-close" onclick="closeModal('supplierModal')">×</button>
     </div>
     <form id="supplierForm" onsubmit="saveSupplier(event)">
       <input type="hidden" id="sm-id">
-      <div class="form-grid">
-        <div class="field form-full"><label data-i18n="lblSupName">Supplier Name *</label><input type="text" id="sm-name" required></div>
-        <div class="field"><label data-i18n="lblSupContact">Contact Name</label><input type="text" id="sm-contact"></div>
-        <div class="field"><label data-i18n="lblSupPhone">Phone</label><input type="text" id="sm-phone"></div>
-        <div class="field"><label data-i18n="lblSupEmail">Email</label><input type="email" id="sm-email"></div>
-        <div class="field"><label data-i18n="lblSupLead">Lead Time</label><input type="text" id="sm-lead" data-i18n-ph="phSupLead" placeholder="e.g. 15 days"></div>
-        <div class="field"><label data-i18n="lblSupLink">Product Link</label><input type="text" id="sm-link" data-i18n-ph="phSupLink" placeholder="Alibaba / 1688 URL"></div>
-        <div class="field form-full"><label data-i18n="lblSupImage">Product Image</label><input type="file" id="sm-image" accept="image/*"></div>
-        <div id="sm-preview" style="display:none;grid-column:1/-1"><img id="sm-img-preview" style="max-height:120px;border-radius:10px;object-fit:cover"></div>
-        <div class="field form-full"><label data-i18n="lblSupNotes">Notes</label><textarea id="sm-notes"></textarea></div>
+      <div class="form-grid col3">
+        <div class="field"><label>供应商编号</label><input type="text" id="sm-code" placeholder="SUP-001"></div>
+        <div class="field"><label>供应商名称 *</label><input type="text" id="sm-name" required></div>
+        <div class="field"><label>主联系人</label><input type="text" id="sm-contact"></div>
+        <div class="field"><label>主电话</label><input type="text" id="sm-phone"></div>
+        <div class="field"><label>主邮箱</label><input type="email" id="sm-email"></div>
+        <div class="field"><label>状态</label>
+          <select id="sm-status">
+            <option value="active">合作中</option>
+            <option value="paused">暂停</option>
+            <option value="dropped">已淘汰</option>
+          </select>
+        </div>
+        <div class="field"><label>评级</label>
+          <select id="sm-rating">
+            <option value="0">未评级</option>
+            <option value="1">★</option><option value="2">★★</option><option value="3">★★★</option>
+            <option value="4">★★★★</option><option value="5">★★★★★</option>
+          </select>
+        </div>
+        <div class="field"><label>付款条件</label><input type="text" id="sm-payment" placeholder="如 30%定金 70%发货前"></div>
+        <div class="field"><label>地址</label><input type="text" id="sm-address"></div>
+        <div class="field form-full"><label>备注</label><textarea id="sm-notes" rows="2"></textarea></div>
+      </div>
+      <div class="items-section" style="margin-top:14px">
+        <h3>📞 联系方式（可多种渠道）</h3>
+        <div id="smContactRows" style="display:flex;flex-direction:column;gap:6px"></div>
+        <button type="button" class="btn" style="width:100%;margin-top:8px" onclick="addContactRow()">＋ 添加联系方式</button>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn" data-i18n="btnCancel" onclick="closeModal('supplierModal')">Cancel</button>
-        <button type="submit" class="btn btn-primary" data-i18n="btnSaveSupplier">Save Supplier</button>
+        <button type="button" class="btn" onclick="closeModal('supplierModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">💾 保存供应商</button>
       </div>
     </form>
   </div>
@@ -936,37 +1047,47 @@ tr:hover .del-row-btn{display:inline-block}
     <form id="orderForm" onsubmit="saveOrder(event)">
       <input type="hidden" id="om-id">
       <div class="form-grid col3">
-        <div class="field"><label data-i18n="lblOrdCustomer">Customer *</label><input type="text" id="om-customer" required></div>
-        <div class="field"><label data-i18n="lblOrdDate">Order Date *</label><input type="date" id="om-date" required></div>
-        <div class="field"><label data-i18n="lblOrdShipping">Shipping Fee ($)</label><input type="number" id="om-shipping" value="0" step="0.01" oninput="recalcOrder()"></div>
-        <div class="field"><label data-i18n="lblOrdStatus">Status</label>
-          <select id="om-status">
-            <option value="draft" data-i18n="stDraft">Draft</option>
-            <option value="quoted" data-i18n="stQuoted2">Quoted</option>
-            <option value="confirmed" selected data-i18n="stConfirmed">Confirmed</option>
-            <option value="producing" data-i18n="stProducing">Producing</option>
-            <option value="shipped" data-i18n="stShipped">Shipped</option>
-            <option value="completed" data-i18n="stCompleted">Completed</option>
+        <div class="field"><label>客户 *</label>
+          <select id="om-customer-select" onchange="onCustomerSelect()" required>
+            <option value="">— 选择客户 —</option>
           </select>
         </div>
-        <div class="field"><label data-i18n="lblOrdCurrency">Currency</label>
-          <select id="om-currency"><option value="USD">USD</option><option value="EUR">EUR</option><option value="CNY">CNY</option></select>
+        <div class="field"><label>客户名称（可改）</label><input type="text" id="om-customer" required></div>
+        <div class="field"><label>订单日期 *</label><input type="date" id="om-date" required></div>
+        <div class="field"><label>币种</label>
+          <select id="om-currency" onchange="recalcOrder()">
+            <option value="USD">USD</option><option value="EUR">EUR</option><option value="CNY">CNY</option>
+          </select>
         </div>
-        <div class="field"><label data-i18n="lblOrdRemarks">Remarks</label><input type="text" id="om-remarks"></div>
+        <div class="field"><label>汇率（1 销售币 = X RMB）</label><input type="number" id="om-rate" value="7.20" step="0.0001" oninput="recalcOrder()"></div>
+        <div class="field"><label>运费（销售币种）</label><input type="number" id="om-shipping" value="0" step="0.01" oninput="recalcOrder()"></div>
+        <div class="field"><label>订单状态</label>
+          <select id="om-status">
+            <option value="draft">Draft</option>
+            <option value="quoted">Quoted</option>
+            <option value="confirmed" selected>Confirmed</option>
+            <option value="producing">Producing</option>
+            <option value="shipped">Shipped</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+        <div class="field form-full"><label>备注</label><input type="text" id="om-remarks"></div>
       </div>
       <div class="items-section">
-        <h3 data-i18n="h3Items">Product Items</h3>
+        <h3>📦 产品明细 <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:8px">从产品库选择，自动带出名称/规格/价格/默认供应商</span></h3>
         <div id="orderItems"></div>
-        <button type="button" class="btn" style="width:100%;margin-top:8px" data-i18n="btnAddItem" onclick="addOrderItem()">＋ Add Item</button>
+        <button type="button" class="btn" style="width:100%;margin-top:8px" onclick="addOrderItem()">＋ 添加产品</button>
       </div>
-      <div class="calc-summary">
-        <div class="calc-item"><span data-i18n="cssPurchase">Purchase Total</span><strong id="cs-p">$0.00</strong></div>
-        <div class="calc-item"><span data-i18n="cssSales">Sales Total (incl. shipping)</span><strong id="cs-s">$0.00</strong></div>
-        <div class="calc-item"><span data-i18n="cssProfit">Profit (excl. shipping)</span><strong id="cs-profit">$0.00</strong></div>
+      <div class="calc-summary" style="grid-template-columns:repeat(5,1fr);gap:10px">
+        <div class="calc-item"><span>采购总额 (RMB)</span><strong id="cs-p">¥0.00</strong></div>
+        <div class="calc-item"><span>销售总额 (含运费)</span><strong id="cs-s">$0.00</strong></div>
+        <div class="calc-item"><span>毛利润 (销售币)</span><strong id="cs-profit">$0.00</strong></div>
+        <div class="calc-item"><span>毛利润 (RMB)</span><strong id="cs-profit-rmb">¥0.00</strong></div>
+        <div class="calc-item"><span>利润率</span><strong id="cs-rate">0%</strong></div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn" data-i18n="btnCancel" onclick="closeModal('orderModal')">Cancel</button>
-        <button type="submit" class="btn btn-primary" data-i18n="btnSaveOrder">Save Order</button>
+        <button type="button" class="btn" onclick="closeModal('orderModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">💾 保存订单</button>
       </div>
     </form>
   </div>
@@ -1253,6 +1374,7 @@ function navigate(sec) {
   if (secEl) secEl.classList.add('active');
   document.querySelectorAll(`[data-sec="${sec}"]`).forEach(n => n.classList.add('active'));
   if (sec === 'analytics') initAnalyticsCharts();
+  if (sec === 'purchase-orders') loadPurchaseOrders();
 }
 
 function toggleMobileSidebar() {
@@ -1523,56 +1645,105 @@ async function deleteCustomer(id) {
 // ══════════════════════════════
 // PRODUCTS
 // ══════════════════════════════
+// PRODUCTS v2
+// ══════════════════════════════
 async function loadProducts() {
-  try { S.products = await api('/api/products'); renderProducts(); } catch(e) { toast(e.message,'err'); }
+  try {
+    S.products = await api('/api/products');
+    // 加载默认供应商名（lazy join）
+    if (S.suppliers?.length) {
+      const sMap = new Map(S.suppliers.map(s=>[s.id, s.supplier_name]));
+      S.products.forEach(p => p._default_supplier_name = p.default_supplier_id ? (sMap.get(p.default_supplier_id)||'—') : '—');
+    }
+    renderProducts();
+  } catch(e) { toast(e.message,'err'); }
 }
 function renderProducts() {
   const q = document.getElementById('pr-search').value.toLowerCase();
   const rows = S.products.filter(p => !q || [p.product_code,p.product_name_cn,p.product_name_en,p.specification].join(' ').toLowerCase().includes(q));
   const body = document.getElementById('prBody');
-  if (!rows.length) { body.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="icon">📦</div><p>No products found</p></div></td></tr>'; return; }
-  body.innerHTML = rows.map(p => `
+  if (!rows.length) { body.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="icon">📦</div><p>No products found</p></div></td></tr>'; return; }
+  body.innerHTML = rows.map(p => {
+    const lastP = p.last_purchase_price ? `¥${fmtN(p.last_purchase_price)}` : '—';
+    const lastS = p.last_sales_price ? `${fmtN(p.last_sales_price)}` : '—';
+    return `
     <tr>
       <td data-label="Code">${esc(p.product_code||'—')}</td>
-      <td data-label="CN Name">${esc(p.product_name_cn)}</td>
+      <td data-label="CN Name"><a href="javascript:viewProduct('${p.id}')" style="color:var(--p1);text-decoration:none">${esc(p.product_name_cn)}</a></td>
       <td data-label="EN Name">${esc(p.product_name_en||'—')}</td>
       <td data-label="Spec">${esc(p.specification||'—')}</td>
-      <td data-label="Unit">${esc(p.unit||'pcs')}</td>
-      <td data-label="Purchase">${fmt(p.default_purchase_price)}</td>
-      <td data-label="Sales">${fmt(p.default_sales_price)}</td>
+      <td data-label="默认供应商">${esc(p._default_supplier_name||'—')}</td>
+      <td data-label="默认采购">¥${fmtN(p.default_purchase_price||0)}</td>
+      <td data-label="最近采购">${lastP}</td>
+      <td data-label="最近销售">${lastS}</td>
       <td data-label=""><div class="actions-cell">
+        <button class="btn btn-sm" onclick="viewProduct('${p.id}')">详情</button>
         <button class="btn btn-sm" onclick="editProduct('${p.id}')">Edit</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteProduct('${p.id}')">Delete</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteProduct('${p.id}')">Del</button>
       </div></td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
 function openProductModal() {
   document.getElementById('pm-id').value = '';
   document.getElementById('productForm').reset();
   document.getElementById('pm-unit').value = 'pcs';
   document.getElementById('productModalTitle').textContent = 'New Product';
+  document.getElementById('pmSupplierLinks').innerHTML = '';
+  S._editingProductLinks = [];
+  addProductSupplierRow();
   openModal('productModal');
 }
-function editProduct(id) {
-  const p = S.products.find(x=>x.id===id); if (!p) return;
-  document.getElementById('productModalTitle').textContent = 'Edit Product';
-  document.getElementById('pm-id').value   = p.id;
-  document.getElementById('pm-code').value = p.product_code||'';
-  document.getElementById('pm-cn').value   = p.product_name_cn||'';
-  document.getElementById('pm-en').value   = p.product_name_en||'';
-  document.getElementById('pm-spec').value = p.specification||'';
-  document.getElementById('pm-unit').value = p.unit||'pcs';
-  document.getElementById('pm-pp').value   = p.default_purchase_price||0;
-  document.getElementById('pm-sp').value   = p.default_sales_price||0;
-  document.getElementById('pm-hs').value   = p.hs_code||'';
-  document.getElementById('pm-cert').value = p.certification||'';
-  openModal('productModal');
+async function editProduct(id) {
+  try {
+    const { product, suppliers } = await api(`/api/products/${id}/full`);
+    document.getElementById('productModalTitle').textContent = 'Edit Product';
+    document.getElementById('pm-id').value       = product.id;
+    document.getElementById('pm-code').value     = product.product_code||'';
+    document.getElementById('pm-category').value = product.category||'';
+    document.getElementById('pm-cn').value       = product.product_name_cn||'';
+    document.getElementById('pm-en').value       = product.product_name_en||'';
+    document.getElementById('pm-spec').value     = product.specification||'';
+    document.getElementById('pm-unit').value     = product.unit||'pcs';
+    document.getElementById('pm-pp').value       = product.default_purchase_price||0;
+    document.getElementById('pm-sp').value       = product.default_sales_price||0;
+    document.getElementById('pm-hs').value       = product.hs_code||'';
+    document.getElementById('pm-cert').value     = product.certification||'';
+    document.getElementById('pm-image').value    = product.image_url||'';
+    document.getElementById('pm-lead').value     = product.default_lead_time||'';
+    document.getElementById('pmSupplierLinks').innerHTML = '';
+    S._editingProductLinks = (suppliers||[]).map(s => s.id);
+    if (suppliers?.length) {
+      suppliers.forEach(link => addProductSupplierRow(link));
+    } else addProductSupplierRow();
+    openModal('productModal');
+  } catch(e) { toast(e.message,'err'); }
+}
+function addProductSupplierRow(link={}) {
+  const c = document.getElementById('pmSupplierLinks');
+  const div = document.createElement('div');
+  div.className = 'item-row';
+  div.style.gridTemplateColumns = '2.5fr 1fr 1fr 1fr 0.7fr auto';
+  const opts = (S.suppliers||[]).map(s => `<option value="${s.id}" ${s.id===link.supplier_id?'selected':''}>${esc(s.supplier_name)}</option>`).join('');
+  div.innerHTML = `
+    <div class="field"><label>供应商</label><select name="ps_supplier" required><option value="">— 选 —</option>${opts}</select></div>
+    <div class="field"><label>采购价 (RMB)</label><input type="number" name="ps_price" step="0.01" value="${link.purchase_price||0}"></div>
+    <div class="field"><label>交期</label><input type="text" name="ps_lead" value="${esc(link.lead_time||'')}"></div>
+    <div class="field"><label>供方型号</label><input type="text" name="ps_code" value="${esc(link.supplier_product_code||'')}"></div>
+    <div class="field"><label>优先级</label><select name="ps_pri">
+      <option value="1" ${(link.priority||2)==1?'selected':''}>默认</option>
+      <option value="2" ${(link.priority||2)==2?'selected':''}>备用</option>
+      <option value="3" ${(link.priority||2)==3?'selected':''}>应急</option>
+    </select></div>
+    <button type="button" class="item-remove" onclick="this.parentElement.remove()">×</button>`;
+  c.appendChild(div);
 }
 async function saveProduct(e) {
   e.preventDefault();
   const id = document.getElementById('pm-id').value;
   const payload = {
     product_code:           document.getElementById('pm-code').value,
+    category:               document.getElementById('pm-category').value,
     product_name_cn:        document.getElementById('pm-cn').value,
     product_name_en:        document.getElementById('pm-en').value,
     specification:          document.getElementById('pm-spec').value,
@@ -1581,12 +1752,46 @@ async function saveProduct(e) {
     default_sales_price:    parseFloat(document.getElementById('pm-sp').value)||0,
     hs_code:                document.getElementById('pm-hs').value,
     certification:          document.getElementById('pm-cert').value,
+    image_url:              document.getElementById('pm-image').value,
+    default_lead_time:      document.getElementById('pm-lead').value,
   };
+  // 收集供应商链接
+  const links = [];
+  document.querySelectorAll('#pmSupplierLinks .item-row').forEach((row, idx) => {
+    const sid = row.querySelector('[name=ps_supplier]').value;
+    if (!sid) return;
+    links.push({
+      supplier_id: sid,
+      purchase_price: parseFloat(row.querySelector('[name=ps_price]').value)||0,
+      lead_time: row.querySelector('[name=ps_lead]').value,
+      supplier_product_code: row.querySelector('[name=ps_code]').value,
+      priority: parseInt(row.querySelector('[name=ps_pri]').value)||2,
+    });
+  });
+  // 默认供应商 = 优先级最高的（priority=1，否则第一行）
+  const defaultLink = links.find(l => l.priority===1) || links[0];
+  if (defaultLink) payload.default_supplier_id = defaultLink.supplier_id;
   try {
-    if (id) await api(`/api/products/${id}`, { method:'PUT', body:JSON.stringify(payload) });
-    else    await api('/api/products',        { method:'POST', body:JSON.stringify(payload) });
+    let prodId = id;
+    if (id) {
+      await api(`/api/products/${id}`, { method:'PUT', body:JSON.stringify(payload) });
+    } else {
+      const r = await api('/api/products', { method:'POST', body:JSON.stringify(payload) });
+      prodId = r.data.id;
+    }
+    // 删除旧 links（如有）
+    if (id && S._editingProductLinks?.length) {
+      const oldLinks = await api(`/api/product-suppliers?product_id=${prodId}`);
+      for (const ol of oldLinks) {
+        await api(`/api/product-suppliers/${ol.id}`, { method:'DELETE' }).catch(()=>{});
+      }
+    }
+    // 插入新 links
+    for (const link of links) {
+      await api('/api/product-suppliers', { method:'POST', body:JSON.stringify({ product_id: prodId, ...link }) });
+    }
     closeModal('productModal');
-    toast(id ? 'Product updated' : 'Product saved');
+    toast(id ? '产品已更新' : '产品已保存');
     await loadProducts();
   } catch(err) { toast(err.message,'err'); }
 }
@@ -1595,83 +1800,165 @@ async function deleteProduct(id) {
   try { await api(`/api/products/${id}`, {method:'DELETE'}); toast('Deleted'); await loadProducts(); }
   catch(e) { toast(e.message,'err'); }
 }
+async function viewProduct(id) {
+  try {
+    const { product, suppliers, price_history } = await api(`/api/products/${id}/full`);
+    document.getElementById('pdmTitle').textContent = `📦 ${product.product_name_cn||''} ${product.product_code?`(${product.product_code})`:''}`;
+    const supplierTable = (suppliers||[]).map(s => `
+      <tr>
+        <td>${s.priority===1?'<span class="badge badge-confirmed">默认</span>':s.priority===2?'<span class="badge">备用</span>':'<span class="badge">应急</span>'}</td>
+        <td>${esc(s.suppliers?.supplier_name||'—')}</td>
+        <td>${esc(s.supplier_product_code||'—')}</td>
+        <td>¥${fmtN(s.purchase_price||0)}</td>
+        <td>${esc(s.lead_time||'—')}</td>
+      </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:14px">暂无关联供应商</td></tr>';
+    const historyRows = (price_history||[]).slice(0,30).map(h => `
+      <tr>
+        <td>${esc((h.recorded_at||'').slice(0,10))}</td>
+        <td><span class="badge ${h.price_type==='purchase'?'badge-confirmed':'badge-standard'}">${h.price_type==='purchase'?'采购':'销售'}</span></td>
+        <td>${h.currency==='RMB'?'¥':'$'}${fmtN(h.price)}</td>
+        <td>${fmtN(h.quantity||0)}</td>
+      </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:14px">暂无价格历史</td></tr>';
+    document.getElementById('pdmBody').innerHTML = `
+      <div class="form-grid col3" style="margin-bottom:14px">
+        <div><label style="font-size:11px;color:var(--muted)">EN</label><div>${esc(product.product_name_en||'—')}</div></div>
+        <div><label style="font-size:11px;color:var(--muted)">规格</label><div>${esc(product.specification||'—')}</div></div>
+        <div><label style="font-size:11px;color:var(--muted)">单位</label><div>${esc(product.unit||'pcs')}</div></div>
+        <div><label style="font-size:11px;color:var(--muted)">HS Code</label><div>${esc(product.hs_code||'—')}</div></div>
+        <div><label style="font-size:11px;color:var(--muted)">默认采购价</label><div>¥${fmtN(product.default_purchase_price||0)}</div></div>
+        <div><label style="font-size:11px;color:var(--muted)">默认销售价</label><div>$${fmtN(product.default_sales_price||0)}</div></div>
+        <div><label style="font-size:11px;color:var(--muted)">最近采购</label><div>${product.last_purchase_price?'¥'+fmtN(product.last_purchase_price)+' · '+(product.last_purchase_date||''):'—'}</div></div>
+        <div><label style="font-size:11px;color:var(--muted)">最近销售</label><div>${product.last_sales_price?'$'+fmtN(product.last_sales_price)+' · '+(product.last_sales_date||''):'—'}</div></div>
+      </div>
+      <h3 style="font-size:13px;margin:8px 0">🏭 关联供应商</h3>
+      <div class="tbl-wrap"><table><thead><tr><th>优先级</th><th>供应商</th><th>供方型号</th><th>采购价</th><th>交期</th></tr></thead><tbody>${supplierTable}</tbody></table></div>
+      <h3 style="font-size:13px;margin:14px 0 8px">📈 价格历史（最近30条）</h3>
+      <div class="tbl-wrap"><table><thead><tr><th>日期</th><th>类型</th><th>价格</th><th>数量</th></tr></thead><tbody>${historyRows}</tbody></table></div>`;
+    openModal('productDetailModal');
+  } catch(e) { toast(e.message,'err'); }
+}
 
 // ══════════════════════════════
-// SUPPLIERS
+// SUPPLIERS v2
 // ══════════════════════════════
 async function loadSuppliers() {
   try { S.suppliers = await api('/api/suppliers'); renderSuppliers(); } catch(e) { toast(e.message,'err'); }
 }
 function renderSuppliers() {
   const q = document.getElementById('su-search').value.toLowerCase();
-  const rows = S.suppliers.filter(s => !q || [s.supplier_name,s.contact_name,s.phone].join(' ').toLowerCase().includes(q));
+  const rows = S.suppliers.filter(s => !q || [s.supplier_code,s.supplier_name,s.contact_name,s.phone].join(' ').toLowerCase().includes(q));
   const body = document.getElementById('suBody');
   if (!rows.length) { body.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="icon">🏭</div><p>No suppliers found</p></div></td></tr>'; return; }
   body.innerHTML = rows.map(s => `
     <tr>
-      <td data-label="Image">${s.product_image_data ? `<img src="${s.product_image_data}" style="width:40px;height:40px;border-radius:8px;object-fit:cover">` : '<div style="width:40px;height:40px;border-radius:8px;background:rgba(255,255,255,.05);display:grid;place-items:center;font-size:18px">🏭</div>'}</td>
-      <td data-label="Supplier"><strong>${esc(s.supplier_name)}</strong></td>
+      <td data-label="Image">${s.product_image_data ? `<img src="${s.product_image_data}" style="width:36px;height:36px;border-radius:8px;object-fit:cover">` : '<div style="width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.05);display:grid;place-items:center;font-size:16px">🏭</div>'}</td>
+      <td data-label="Supplier"><a href="javascript:viewSupplier('${s.id}')" style="color:var(--p1);text-decoration:none"><strong>${esc(s.supplier_name)}</strong></a>${s.supplier_code?`<div style="font-size:11px;color:var(--muted)">${esc(s.supplier_code)}</div>`:''}</td>
       <td data-label="Contact">${esc(s.contact_name||'—')}</td>
       <td data-label="Phone">${esc(s.phone||'—')}</td>
       <td data-label="Email">${esc(s.email||'—')}</td>
-      <td data-label="Lead Time">${esc(s.lead_time||'—')}</td>
+      <td data-label="Status">${s.status==='active'?'<span class="badge badge-confirmed">合作中</span>':s.status==='paused'?'<span class="badge">暂停</span>':'<span class="badge badge-standard">已淘汰</span>'}</td>
       <td data-label=""><div class="actions-cell">
+        <button class="btn btn-sm" onclick="viewSupplier('${s.id}')">详情</button>
         <button class="btn btn-sm" onclick="editSupplier('${s.id}')">Edit</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteSupplier('${s.id}')">Delete</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteSupplier('${s.id}')">Del</button>
       </div></td>
     </tr>`).join('');
 }
 function openSupplierModal() {
   document.getElementById('sm-id').value = '';
   document.getElementById('supplierForm').reset();
+  document.getElementById('sm-status').value = 'active';
+  document.getElementById('sm-rating').value = '0';
   document.getElementById('supplierModalTitle').textContent = 'New Supplier';
-  document.getElementById('sm-preview').style.display = 'none';
-  S.supplierImageData = '';
+  document.getElementById('smContactRows').innerHTML = '';
+  S._editingContacts = [];
+  addContactRow();
   openModal('supplierModal');
 }
-function editSupplier(id) {
-  const s = S.suppliers.find(x=>x.id===id); if (!s) return;
-  document.getElementById('supplierModalTitle').textContent = 'Edit Supplier';
-  document.getElementById('sm-id').value      = s.id;
-  document.getElementById('sm-name').value    = s.supplier_name||'';
-  document.getElementById('sm-contact').value = s.contact_name||'';
-  document.getElementById('sm-phone').value   = s.phone||'';
-  document.getElementById('sm-email').value   = s.email||'';
-  document.getElementById('sm-lead').value    = s.lead_time||'';
-  document.getElementById('sm-link').value    = s.product_link||'';
-  document.getElementById('sm-notes').value   = s.notes||'';
-  S.supplierImageData = s.product_image_data || '';
-  if (s.product_image_data) {
-    document.getElementById('sm-img-preview').src = s.product_image_data;
-    document.getElementById('sm-preview').style.display = 'block';
-  } else { document.getElementById('sm-preview').style.display = 'none'; }
-  openModal('supplierModal');
+async function editSupplier(id) {
+  try {
+    const { supplier, contacts } = await api(`/api/suppliers/${id}/full`);
+    document.getElementById('supplierModalTitle').textContent = 'Edit Supplier';
+    document.getElementById('sm-id').value      = supplier.id;
+    document.getElementById('sm-code').value    = supplier.supplier_code||'';
+    document.getElementById('sm-name').value    = supplier.supplier_name||'';
+    document.getElementById('sm-contact').value = supplier.contact_name||'';
+    document.getElementById('sm-phone').value   = supplier.phone||'';
+    document.getElementById('sm-email').value   = supplier.email||'';
+    document.getElementById('sm-status').value  = supplier.status||'active';
+    document.getElementById('sm-rating').value  = supplier.rating||0;
+    document.getElementById('sm-payment').value = supplier.payment_terms||'';
+    document.getElementById('sm-address').value = supplier.address||'';
+    document.getElementById('sm-notes').value   = supplier.notes||'';
+    document.getElementById('smContactRows').innerHTML = '';
+    S._editingContacts = (contacts||[]).map(c=>c.id);
+    if (contacts?.length) contacts.forEach(c => addContactRow(c));
+    else addContactRow();
+    openModal('supplierModal');
+  } catch(e) { toast(e.message,'err'); }
 }
-document.getElementById('sm-image').addEventListener('change', async e => {
-  const f = e.target.files?.[0];
-  if (!f) { S.supplierImageData = ''; document.getElementById('sm-preview').style.display='none'; return; }
-  S.supplierImageData = await new Promise((res,rej) => { const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f); });
-  document.getElementById('sm-img-preview').src = S.supplierImageData;
-  document.getElementById('sm-preview').style.display = 'block';
-});
+function addContactRow(c={}) {
+  const container = document.getElementById('smContactRows');
+  const div = document.createElement('div');
+  div.className = 'item-row';
+  div.style.gridTemplateColumns = '1fr 2fr 1.4fr 0.7fr auto';
+  const types = ['wechat','phone','email','taobao','1688','qq','other'];
+  const typeLabel = { wechat:'微信', phone:'电话', email:'邮箱', taobao:'淘宝', '1688':'1688', qq:'QQ', other:'其它' };
+  const opts = types.map(t => `<option value="${t}" ${c.channel_type===t?'selected':''}>${typeLabel[t]}</option>`).join('');
+  div.innerHTML = `
+    <div class="field"><label>渠道</label><select name="ct_type">${opts}</select></div>
+    <div class="field"><label>账号/号码/链接</label><input type="text" name="ct_value" value="${esc(c.value||'')}" required></div>
+    <div class="field"><label>联系人</label><input type="text" name="ct_name" value="${esc(c.contact_name||'')}"></div>
+    <div class="field"><label>主联系</label><label style="display:flex;align-items:center;height:36px"><input type="checkbox" name="ct_primary" ${c.is_primary?'checked':''}></label></div>
+    <button type="button" class="item-remove" onclick="this.parentElement.remove()">×</button>`;
+  container.appendChild(div);
+}
 async function saveSupplier(e) {
   e.preventDefault();
   const id = document.getElementById('sm-id').value;
   const payload = {
-    supplier_name:     document.getElementById('sm-name').value,
-    contact_name:      document.getElementById('sm-contact').value,
-    phone:             document.getElementById('sm-phone').value,
-    email:             document.getElementById('sm-email').value,
-    lead_time:         document.getElementById('sm-lead').value,
-    product_link:      document.getElementById('sm-link').value,
-    notes:             document.getElementById('sm-notes').value,
-    product_image_data: S.supplierImageData,
+    supplier_code:  document.getElementById('sm-code').value,
+    supplier_name:  document.getElementById('sm-name').value,
+    contact_name:   document.getElementById('sm-contact').value,
+    phone:          document.getElementById('sm-phone').value,
+    email:          document.getElementById('sm-email').value,
+    status:         document.getElementById('sm-status').value,
+    rating:         parseInt(document.getElementById('sm-rating').value)||0,
+    payment_terms:  document.getElementById('sm-payment').value,
+    address:        document.getElementById('sm-address').value,
+    notes:          document.getElementById('sm-notes').value,
   };
+  // 收集联系方式
+  const contacts = [];
+  document.querySelectorAll('#smContactRows .item-row').forEach(row => {
+    const v = row.querySelector('[name=ct_value]').value.trim();
+    if (!v) return;
+    contacts.push({
+      channel_type: row.querySelector('[name=ct_type]').value,
+      value: v,
+      contact_name: row.querySelector('[name=ct_name]').value,
+      is_primary: row.querySelector('[name=ct_primary]').checked,
+    });
+  });
   try {
-    if (id) await api(`/api/suppliers/${id}`, { method:'PUT', body:JSON.stringify(payload) });
-    else    await api('/api/suppliers',        { method:'POST', body:JSON.stringify(payload) });
+    let supId = id;
+    if (id) {
+      await api(`/api/suppliers/${id}`, { method:'PUT', body:JSON.stringify(payload) });
+    } else {
+      const r = await api('/api/suppliers', { method:'POST', body:JSON.stringify(payload) });
+      supId = r.data.id;
+    }
+    // 删除旧 contacts
+    if (id && S._editingContacts?.length) {
+      const old = await api(`/api/supplier-contacts?supplier_id=${supId}`);
+      for (const oc of old) await api(`/api/supplier-contacts/${oc.id}`, { method:'DELETE' }).catch(()=>{});
+    }
+    // 插入新 contacts
+    for (const c of contacts) {
+      await api('/api/supplier-contacts', { method:'POST', body: JSON.stringify({ supplier_id: supId, ...c }) });
+    }
     closeModal('supplierModal');
-    toast(id ? 'Supplier updated' : 'Supplier saved');
+    toast(id ? '供应商已更新' : '供应商已保存');
     await loadSuppliers();
   } catch(err) { toast(err.message,'err'); }
 }
@@ -1679,6 +1966,484 @@ async function deleteSupplier(id) {
   if (!confirm('Delete this supplier?')) return;
   try { await api(`/api/suppliers/${id}`, {method:'DELETE'}); toast('Deleted'); await loadSuppliers(); }
   catch(e) { toast(e.message,'err'); }
+}
+async function viewSupplier(id) {
+  try {
+    const { supplier, contacts, products, purchase_orders } = await api(`/api/suppliers/${id}/full`);
+    document.getElementById('sdmTitle').textContent = `🏭 ${supplier.supplier_name||''}`;
+    const channelLabel = { wechat:'微信', phone:'电话', email:'邮箱', taobao:'淘宝', '1688':'1688', qq:'QQ', other:'其它' };
+    const contactList = (contacts||[]).map(c => `
+      <div style="display:flex;gap:10px;padding:8px 12px;background:var(--panel2);border-radius:8px;margin-bottom:6px;align-items:center">
+        <span class="badge ${c.is_primary?'badge-confirmed':''}">${channelLabel[c.channel_type]||c.channel_type}</span>
+        <strong>${esc(c.value)}</strong>
+        ${c.contact_name?`<span style="color:var(--muted)">· ${esc(c.contact_name)}</span>`:''}
+        ${c.is_primary?'<span style="color:var(--p1);font-size:11px">★ 主</span>':''}
+      </div>`).join('') || '<div style="color:var(--muted);padding:8px">暂无联系方式</div>';
+    const productRows = (products||[]).map(p => `
+      <tr>
+        <td>${p.priority===1?'<span class="badge badge-confirmed">默认</span>':'备用'}</td>
+        <td>${esc(p.products?.product_code||'—')}</td>
+        <td>${esc(p.products?.product_name_cn||'—')}</td>
+        <td>${esc(p.supplier_product_code||'—')}</td>
+        <td>¥${fmtN(p.purchase_price||0)}</td>
+        <td>${esc(p.lead_time||'—')}</td>
+      </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:14px">该供应商暂未关联产品</td></tr>';
+    const poRows = (purchase_orders||[]).slice(0,15).map(po => `
+      <tr>
+        <td>${esc(po.po_number||'—')}</td>
+        <td>${esc((po.po_date||'').slice(0,10))}</td>
+        <td>¥${fmtN(po.total_amount||0)}</td>
+        <td>${poStatusBadge(po.status)}</td>
+        <td><button class="btn btn-sm" onclick="viewPo('${po.id}')">查看</button></td>
+      </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:14px">暂无采购单</td></tr>';
+    document.getElementById('sdmBody').innerHTML = `
+      <div class="form-grid col3" style="margin-bottom:14px">
+        <div><label style="font-size:11px;color:var(--muted)">编号</label><div>${esc(supplier.supplier_code||'—')}</div></div>
+        <div><label style="font-size:11px;color:var(--muted)">付款条件</label><div>${esc(supplier.payment_terms||'—')}</div></div>
+        <div><label style="font-size:11px;color:var(--muted)">评级</label><div>${'★'.repeat(supplier.rating||0)||'—'}</div></div>
+        <div class="form-full"><label style="font-size:11px;color:var(--muted)">地址</label><div>${esc(supplier.address||'—')}</div></div>
+      </div>
+      <h3 style="font-size:13px;margin:8px 0">📞 联系方式</h3>
+      ${contactList}
+      <h3 style="font-size:13px;margin:14px 0 8px">📦 供应产品</h3>
+      <div class="tbl-wrap"><table><thead><tr><th>优先级</th><th>编号</th><th>产品</th><th>供方型号</th><th>采购价</th><th>交期</th></tr></thead><tbody>${productRows}</tbody></table></div>
+      <h3 style="font-size:13px;margin:14px 0 8px">📋 最近采购单</h3>
+      <div class="tbl-wrap"><table><thead><tr><th>采购单号</th><th>日期</th><th>金额</th><th>状态</th><th></th></tr></thead><tbody>${poRows}</tbody></table></div>`;
+    openModal('supplierDetailModal');
+  } catch(e) { toast(e.message,'err'); }
+}
+
+// ══════════════════════════════
+// PRODUCT PICKER (订单/报价用)
+// ══════════════════════════════
+let _productPickerCallback = null;
+function openProductPicker(callback) {
+  _productPickerCallback = callback;
+  document.getElementById('ppSearch').value = '';
+  renderProductPicker();
+  openModal('productPickerModal');
+  setTimeout(()=>document.getElementById('ppSearch').focus(), 100);
+}
+function renderProductPicker() {
+  const q = document.getElementById('ppSearch').value.toLowerCase();
+  const list = (S.products||[]).filter(p => !q || [p.product_code,p.product_name_cn,p.product_name_en,p.specification].join(' ').toLowerCase().includes(q));
+  const html = list.slice(0,50).map(p => `
+    <div onclick="pickProduct('${p.id}')" style="padding:10px 14px;border:1px solid var(--border);border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:var(--panel2);transition:.15s" onmouseover="this.style.borderColor='var(--p1)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div>
+        <div style="font-weight:600">${esc(p.product_name_cn||'')}</div>
+        <div style="font-size:11.5px;color:var(--muted)">${esc(p.product_code||'')} · ${esc(p.product_name_en||'')} · ${esc(p.specification||'')}</div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);text-align:right">
+        采购 ¥${fmtN(p.default_purchase_price||0)}<br>销售 $${fmtN(p.default_sales_price||0)}
+      </div>
+    </div>`).join('') || '<div style="padding:20px;text-align:center;color:var(--muted)">无匹配产品</div>';
+  document.getElementById('ppList').innerHTML = html;
+}
+async function pickProduct(productId) {
+  // 取产品详情含默认供应商及交期
+  try {
+    const { product, suppliers } = await api(`/api/products/${productId}/full`);
+    closeModal('productPickerModal');
+    if (_productPickerCallback) _productPickerCallback(product, suppliers||[]);
+  } catch(e) { toast(e.message,'err'); }
+}
+
+// ══════════════════════════════
+// ORDERS v2
+// ══════════════════════════════
+async function loadOrders() {
+  try {
+    S.orders = await api('/api/orders');
+    renderOrders();
+    populateDocOrderDropdown && populateDocOrderDropdown();
+  } catch(e) { toast(e.message,'err'); }
+}
+function renderOrders() {
+  const q   = (document.getElementById('or-customer').value||'').toLowerCase();
+  const d   = document.getElementById('or-date').value;
+  const m   = document.getElementById('or-month').value;
+  const st  = document.getElementById('or-status').value;
+  const rows = (S.orders||[]).filter(o =>
+    (!q  || (o.customer_name||'').toLowerCase().includes(q)) &&
+    (!d  || (o.order_date||'').slice(0,10)===d) &&
+    (!m  || (o.order_date||'').slice(0,7)===m) &&
+    (!st || o.order_status===st)
+  );
+  const body = document.getElementById('orBody');
+  if (!rows.length) { body.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="icon">📋</div><p>No orders found</p></div></td></tr>'; return; }
+  body.innerHTML = rows.map(o => {
+    const itemsLabel = (o.items||[]).map(i=>esc(i.product_name_cn||i.product_name_en)).slice(0,2).join(', ') + ((o.items||[]).length>2?`...+${(o.items||[]).length-2}`:'');
+    const cur = o.currency||'USD';
+    return `<tr>
+      <td data-label="Date">${esc((o.order_date||'').slice(0,10))}<div style="font-size:11px;color:var(--muted)">${esc(o.order_number||'')}</div></td>
+      <td data-label="Customer">${esc(o.customer_name||'—')}</td>
+      <td data-label="Products" style="font-size:12px">${itemsLabel||'—'}</td>
+      <td data-label="Sales">${cur} ${fmtN(o.sales_total||0)}</td>
+      <td data-label="Purchase">¥${fmtN(o.purchase_total||0)}</td>
+      <td data-label="Profit" style="color:${(o.profit_rmb||0)>=0?'var(--p1)':'var(--danger)'}">¥${fmtN(o.profit_rmb||0)}<div style="font-size:11px;color:var(--muted)">${o.profit_rate||0}%</div></td>
+      <td data-label="Status"><span class="badge badge-${o.order_status||'confirmed'}">${esc(o.order_status||'confirmed')}</span></td>
+      <td data-label=""><div class="actions-cell">
+        <button class="btn btn-sm" onclick="viewOrderDetail('${o.id}')">详情</button>
+        <button class="btn btn-sm" onclick="editOrder('${o.id}')">Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteOrder('${o.id}')">Del</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('orStatus').textContent = `共 ${rows.length} 条订单`;
+}
+function populateOrderCustomerDropdown() {
+  const sel = document.getElementById('om-customer-select');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— 选择客户 —</option>' +
+    (S.customers||[]).map(c => `<option value="${c.id}" data-name="${esc(c.customer_name)}">${esc(c.customer_name)}${c.country?' · '+esc(c.country):''}</option>`).join('');
+}
+function onCustomerSelect() {
+  const sel = document.getElementById('om-customer-select');
+  const opt = sel.options[sel.selectedIndex];
+  if (opt && opt.dataset.name) {
+    document.getElementById('om-customer').value = opt.dataset.name;
+  }
+}
+function openOrderModal() {
+  document.getElementById('om-id').value = '';
+  document.getElementById('orderForm').reset();
+  document.getElementById('om-date').value     = today();
+  document.getElementById('om-status').value   = 'confirmed';
+  document.getElementById('om-currency').value = 'USD';
+  document.getElementById('om-rate').value     = 7.20;
+  document.getElementById('orderModalTitle').textContent = 'New Order';
+  document.getElementById('orderItems').innerHTML = '';
+  populateOrderCustomerDropdown();
+  addOrderItem();
+  recalcOrder();
+  openModal('orderModal');
+}
+async function editOrder(id) {
+  try {
+    const { order, items } = await api(`/api/orders/${id}`);
+    document.getElementById('orderModalTitle').textContent = 'Edit Order';
+    document.getElementById('om-id').value       = order.id;
+    populateOrderCustomerDropdown();
+    document.getElementById('om-customer-select').value = order.customer_id || '';
+    document.getElementById('om-customer').value = order.customer_name||'';
+    document.getElementById('om-date').value     = (order.order_date||'').slice(0,10);
+    document.getElementById('om-shipping').value = order.shipping_fee||0;
+    document.getElementById('om-status').value   = order.order_status||'confirmed';
+    document.getElementById('om-currency').value = order.currency||'USD';
+    document.getElementById('om-rate').value     = order.exchange_rate||7.20;
+    document.getElementById('om-remarks').value  = order.remarks||'';
+    document.getElementById('orderItems').innerHTML = '';
+    if (items?.length) items.forEach(item => addOrderItem(item));
+    else addOrderItem();
+    recalcOrder();
+    openModal('orderModal');
+  } catch(e) { toast(e.message,'err'); }
+}
+function addOrderItem(data={}) {
+  const c = document.getElementById('orderItems');
+  const div = document.createElement('div');
+  div.className = 'item-row';
+  div.style.gridTemplateColumns = '0.5fr 2fr 1.4fr 0.7fr 0.9fr 0.9fr 1fr auto';
+  const supOpts = (S.suppliers||[]).map(s => `<option value="${s.id}" ${s.id===data.supplier_id?'selected':''}>${esc(s.supplier_name)}</option>`).join('');
+  const productLabel = data.product_name_cn ? esc(data.product_name_cn) : '— 未选 —';
+  div.innerHTML = `
+    <div class="field"><label>&nbsp;</label><button type="button" class="btn btn-sm" onclick="pickProductForRow(this)">📦 选</button></div>
+    <div class="field"><label>产品</label>
+      <input type="hidden" name="oi_product_id" value="${data.product_id||''}">
+      <input type="text" name="oi_cn" value="${esc(data.product_name_cn||'')}" placeholder="中文名" required>
+      <input type="text" name="oi_en" value="${esc(data.product_name_en||'')}" placeholder="英文名" style="margin-top:3px;font-size:11px">
+    </div>
+    <div class="field"><label>规格</label><input type="text" name="oi_spec" value="${esc(data.specification||'')}"></div>
+    <div class="field"><label>数量</label><input type="number" name="oi_qty" value="${data.quantity||1}" min="0" step="0.01" oninput="recalcOrder()"></div>
+    <div class="field"><label>采购¥</label><input type="number" name="oi_pp" value="${data.purchase_price||0}" min="0" step="0.01" oninput="recalcOrder()"></div>
+    <div class="field"><label>销售</label><input type="number" name="oi_sp" value="${data.sales_price||0}" min="0" step="0.01" oninput="recalcOrder()"></div>
+    <div class="field"><label>供应商</label><select name="oi_sup"><option value="">—</option>${supOpts}</select></div>
+    <button type="button" class="item-remove" onclick="removeOrderItem(this)">×</button>`;
+  c.appendChild(div);
+}
+function pickProductForRow(btn) {
+  const row = btn.closest('.item-row');
+  openProductPicker(async (product, suppliers) => {
+    row.querySelector('[name=oi_product_id]').value = product.id;
+    row.querySelector('[name=oi_cn]').value = product.product_name_cn||'';
+    row.querySelector('[name=oi_en]').value = product.product_name_en||'';
+    row.querySelector('[name=oi_spec]').value = product.specification||'';
+    row.querySelector('[name=oi_pp]').value = product.default_purchase_price||0;
+    row.querySelector('[name=oi_sp]').value = product.default_sales_price||0;
+    if (product.default_supplier_id) row.querySelector('[name=oi_sup]').value = product.default_supplier_id;
+    else if (suppliers && suppliers[0]) row.querySelector('[name=oi_sup]').value = suppliers[0].supplier_id;
+    recalcOrder();
+  });
+}
+function removeOrderItem(btn) {
+  const rows = document.querySelectorAll('#orderItems .item-row');
+  if (rows.length > 1) { btn.closest('.item-row').remove(); recalcOrder(); }
+}
+function recalcOrder() {
+  let pTotal=0, sTotal=0;
+  document.querySelectorAll('#orderItems .item-row').forEach(row => {
+    const qty = parseFloat(row.querySelector('[name=oi_qty]').value)||0;
+    const pp  = parseFloat(row.querySelector('[name=oi_pp]').value)||0;
+    const sp  = parseFloat(row.querySelector('[name=oi_sp]').value)||0;
+    pTotal += qty*pp;
+    sTotal += qty*sp;
+  });
+  const ship = parseFloat(document.getElementById('om-shipping').value)||0;
+  const rate = parseFloat(document.getElementById('om-rate').value)||7.2;
+  const cur  = document.getElementById('om-currency').value || 'USD';
+  const cSym = cur==='USD'?'$':cur==='EUR'?'€':'¥';
+  const salesIncl = sTotal + ship;
+  const profitInCur = +(salesIncl - pTotal/rate).toFixed(2);
+  const profitRmb  = +(salesIncl*rate - pTotal).toFixed(2);
+  const profitRate = salesIncl>0 ? +(profitInCur/salesIncl*100).toFixed(2) : 0;
+  document.getElementById('cs-p').textContent       = `¥${fmtN(pTotal)}`;
+  document.getElementById('cs-s').textContent       = `${cSym}${fmtN(salesIncl)}`;
+  document.getElementById('cs-profit').textContent  = `${cSym}${fmtN(profitInCur)}`;
+  document.getElementById('cs-profit-rmb').textContent = `¥${fmtN(profitRmb)}`;
+  document.getElementById('cs-rate').textContent    = `${profitRate}%`;
+  document.getElementById('cs-profit').style.color  = profitInCur>=0?'var(--p1)':'var(--danger)';
+  document.getElementById('cs-profit-rmb').style.color = profitRmb>=0?'var(--p1)':'var(--danger)';
+}
+async function saveOrder(e) {
+  e.preventDefault();
+  const id = document.getElementById('om-id').value;
+  const items = [];
+  document.querySelectorAll('#orderItems .item-row').forEach(row => {
+    items.push({
+      product_id: row.querySelector('[name=oi_product_id]').value || null,
+      supplier_id: row.querySelector('[name=oi_sup]').value || null,
+      product_name_cn: row.querySelector('[name=oi_cn]').value,
+      product_name_en: row.querySelector('[name=oi_en]').value,
+      specification:   row.querySelector('[name=oi_spec]').value,
+      quantity:        parseFloat(row.querySelector('[name=oi_qty]').value)||0,
+      purchase_price:  parseFloat(row.querySelector('[name=oi_pp]').value)||0,
+      sales_price:     parseFloat(row.querySelector('[name=oi_sp]').value)||0,
+    });
+  });
+  const payload = {
+    customer_id:    document.getElementById('om-customer-select').value || null,
+    customer_name:  document.getElementById('om-customer').value,
+    order_date:     document.getElementById('om-date').value,
+    shipping_fee:   parseFloat(document.getElementById('om-shipping').value)||0,
+    currency:       document.getElementById('om-currency').value,
+    exchange_rate:  parseFloat(document.getElementById('om-rate').value)||7.2,
+    order_status:   document.getElementById('om-status').value,
+    remarks:        document.getElementById('om-remarks').value,
+    items,
+  };
+  try {
+    let res;
+    if (id) res = await api(`/api/orders/v2/${id}`, { method:'PUT', body:JSON.stringify(payload) });
+    else    res = await api('/api/orders/v2',        { method:'POST', body:JSON.stringify(payload) });
+    closeModal('orderModal');
+    const poCount = res.purchase_orders?.length || 0;
+    toast(id ? `订单已更新 · 已生成 ${poCount} 张采购单` : `订单已保存 · 已生成 ${poCount} 张采购单`);
+    await loadOrders();
+    await loadPurchaseOrders();
+    await loadDashboard();
+  } catch(err) { toast(err.message,'err'); }
+}
+async function viewOrderDetail(id) {
+  try {
+    const { order, items } = await api(`/api/orders/${id}`);
+    document.getElementById('detailSub').textContent = `${order.order_number||''} · ${order.customer_name||''} · ${order.order_date||''}`;
+    document.getElementById('dtSales').textContent   = `${order.currency||'USD'} ${fmtN(order.sales_total)}`;
+    document.getElementById('dtProfit').textContent  = `¥${fmtN(order.profit_rmb||0)} (${order.profit_rate||0}%)`;
+    const body = document.getElementById('detailBody');
+    body.innerHTML = (items||[]).map(i=>`
+      <tr>
+        <td>${esc(i.product_name_cn||'')}</td>
+        <td>${esc(i.product_name_en||'')}</td>
+        <td>${esc(i.specification||'')}</td>
+        <td>${fmtN(i.quantity)}</td>
+        <td>¥${fmtN(i.purchase_price)}</td>
+        <td>${fmtN(i.sales_price)}</td>
+        <td>¥${fmtN(i.purchase_total)}</td>
+        <td>${fmtN(i.sales_total)}</td>
+      </tr>`).join('');
+    openModal('detailModal');
+  } catch(e) { toast(e.message,'err'); }
+}
+async function deleteOrder(id) {
+  if (!confirm('Delete this order?')) return;
+  try { await api(`/api/orders/${id}`, {method:'DELETE'}); toast('Deleted'); await loadOrders(); await loadPurchaseOrders(); await loadDashboard(); }
+  catch(e) { toast(e.message,'err'); }
+}
+
+// ══════════════════════════════
+// PURCHASE ORDERS
+// ══════════════════════════════
+function poStatusBadge(s) {
+  const map = { pending:['待发出','badge-standard'], sent:['已发出','badge-confirmed'], confirmed:['已确认','badge-confirmed'], shipped:['已发货','badge-confirmed'], received:['已收货','badge-confirmed'] };
+  const [label, cls] = map[s] || [s, ''];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+async function loadPurchaseOrders() {
+  try { S.purchaseOrders = await api('/api/purchase-orders'); renderPurchaseOrders(); } catch(e){}
+}
+function renderPurchaseOrders() {
+  const q  = (document.getElementById('po-search')?.value||'').toLowerCase();
+  const st = document.getElementById('po-status-filter')?.value||'';
+  const rows = (S.purchaseOrders||[]).filter(p =>
+    (!q  || [p.po_number,p.supplier_name].join(' ').toLowerCase().includes(q)) &&
+    (!st || p.status===st)
+  );
+  const body = document.getElementById('poBody');
+  if (!body) return;
+  if (!rows.length) { body.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="icon">📋</div><p>暂无采购单</p></div></td></tr>'; return; }
+  body.innerHTML = rows.map(p => {
+    const orderInfo = (S.orders||[]).find(o => o.id===p.order_id);
+    return `<tr>
+      <td>${esc(p.po_number||'—')}</td>
+      <td>${esc(p.supplier_name||'—')}</td>
+      <td style="font-size:12px;color:var(--muted)">${esc(orderInfo?.order_number||orderInfo?.customer_name||'—')}</td>
+      <td>${(p.items||[]).length}</td>
+      <td>¥${fmtN(p.total_amount||0)}</td>
+      <td>${poStatusBadge(p.status)}</td>
+      <td>${esc((p.po_date||'').slice(0,10))}</td>
+      <td><div class="actions-cell">
+        <button class="btn btn-sm" onclick="viewPo('${p.id}')">查看</button>
+        <button class="btn btn-sm" onclick="downloadPoPdfQuick('${p.id}')">📄 PDF</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+let _currentPo = null;
+async function viewPo(id) {
+  try {
+    const { purchase_order, items } = await api(`/api/purchase-orders/${id}`);
+    _currentPo = { ...purchase_order, items };
+    const sup = purchase_order.suppliers || {};
+    document.getElementById('poDetailTitle').textContent = `📋 采购单 ${purchase_order.po_number||''}`;
+    const itemRows = (items||[]).map(it => `
+      <tr>
+        <td>${esc(it.product_name_cn||'')}</td>
+        <td>${esc(it.specification||'')}</td>
+        <td>${fmtN(it.quantity)}</td>
+        <td>${esc(it.unit||'pcs')}</td>
+        <td>¥${fmtN(it.purchase_price)}</td>
+        <td>¥${fmtN(it.subtotal)}</td>
+      </tr>`).join('');
+    document.getElementById('poDetailBody').innerHTML = `
+      <div id="poPrintArea" style="padding:8px 0">
+        <div class="form-grid col3" style="margin-bottom:14px">
+          <div><label style="font-size:11px;color:var(--muted)">供应商</label><div><strong>${esc(sup.supplier_name||'')}</strong></div></div>
+          <div><label style="font-size:11px;color:var(--muted)">联系人</label><div>${esc(sup.contact_name||'—')} ${sup.phone?'· '+esc(sup.phone):''}</div></div>
+          <div><label style="font-size:11px;color:var(--muted)">付款条件</label><div>${esc(sup.payment_terms||'—')}</div></div>
+          <div><label style="font-size:11px;color:var(--muted)">采购日期</label><div>${esc((purchase_order.po_date||'').slice(0,10))}</div></div>
+          <div><label style="font-size:11px;color:var(--muted)">期望到货</label><input type="date" id="po-expected" value="${(purchase_order.expected_date||'').slice(0,10)}" style="width:100%"></div>
+          <div><label style="font-size:11px;color:var(--muted)">实际到货</label><input type="date" id="po-actual" value="${(purchase_order.actual_date||'').slice(0,10)}" style="width:100%"></div>
+          <div><label style="font-size:11px;color:var(--muted)">状态</label>
+            <select id="po-status" style="width:100%">
+              <option value="pending" ${purchase_order.status==='pending'?'selected':''}>待发出</option>
+              <option value="sent" ${purchase_order.status==='sent'?'selected':''}>已发出</option>
+              <option value="confirmed" ${purchase_order.status==='confirmed'?'selected':''}>已确认</option>
+              <option value="shipped" ${purchase_order.status==='shipped'?'selected':''}>已发货</option>
+              <option value="received" ${purchase_order.status==='received'?'selected':''}>已收货</option>
+            </select>
+          </div>
+          <div><label style="font-size:11px;color:var(--muted)">总金额</label><div><strong style="color:var(--p1)">¥${fmtN(purchase_order.total_amount||0)}</strong></div></div>
+          <div class="form-full"><label style="font-size:11px;color:var(--muted)">备注</label><input type="text" id="po-remarks" value="${esc(purchase_order.remarks||'')}" style="width:100%"></div>
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>产品</th><th>规格</th><th>数量</th><th>单位</th><th>单价</th><th>小计</th></tr></thead>
+          <tbody>${itemRows}</tbody>
+        </table></div>
+      </div>`;
+    openModal('poDetailModal');
+  } catch(e) { toast(e.message,'err'); }
+}
+async function savePoStatus() {
+  if (!_currentPo) return;
+  try {
+    await api(`/api/purchase-orders/${_currentPo.id}`, {
+      method:'PUT',
+      body: JSON.stringify({
+        status: document.getElementById('po-status').value,
+        expected_date: document.getElementById('po-expected').value || null,
+        actual_date: document.getElementById('po-actual').value || null,
+        remarks: document.getElementById('po-remarks').value,
+      })
+    });
+    toast('已保存');
+    closeModal('poDetailModal');
+    await loadPurchaseOrders();
+  } catch(e) { toast(e.message,'err'); }
+}
+async function downloadPoPdf() {
+  if (!_currentPo) return;
+  await renderAndDownloadPoPdf(_currentPo);
+}
+async function downloadPoPdfQuick(id) {
+  try {
+    const { purchase_order, items } = await api(`/api/purchase-orders/${id}`);
+    await renderAndDownloadPoPdf({ ...purchase_order, items });
+  } catch(e) { toast(e.message,'err'); }
+}
+async function renderAndDownloadPoPdf(po) {
+  const sup = po.suppliers || {};
+  const itemRows = (po.items||[]).map((it,idx) => `
+    <tr>
+      <td style="padding:8px;border:1px solid #ccc;text-align:center">${idx+1}</td>
+      <td style="padding:8px;border:1px solid #ccc">${esc(it.product_name_cn||'')}</td>
+      <td style="padding:8px;border:1px solid #ccc">${esc(it.specification||'')}</td>
+      <td style="padding:8px;border:1px solid #ccc;text-align:right">${fmtN(it.quantity)}</td>
+      <td style="padding:8px;border:1px solid #ccc;text-align:center">${esc(it.unit||'pcs')}</td>
+      <td style="padding:8px;border:1px solid #ccc;text-align:right">¥${fmtN(it.purchase_price)}</td>
+      <td style="padding:8px;border:1px solid #ccc;text-align:right">¥${fmtN(it.subtotal)}</td>
+    </tr>`).join('');
+  const html = `
+    <div style="padding:30px;font-family:'Microsoft YaHei',sans-serif;color:#333;background:#fff;width:780px">
+      <h1 style="text-align:center;font-size:24px;margin-bottom:8px">采 购 单</h1>
+      <h2 style="text-align:center;font-size:14px;color:#666;margin-bottom:24px;font-weight:normal">PURCHASE ORDER</h2>
+      <table style="width:100%;margin-bottom:18px;font-size:13px">
+        <tr><td style="padding:6px 0;width:120px;color:#888">采购单号</td><td><strong>${esc(po.po_number||'')}</strong></td>
+            <td style="padding:6px 0;width:120px;color:#888">采购日期</td><td><strong>${esc((po.po_date||'').slice(0,10))}</strong></td></tr>
+        <tr><td style="padding:6px 0;color:#888">供应商</td><td><strong>${esc(sup.supplier_name||'')}</strong></td>
+            <td style="padding:6px 0;color:#888">联系人</td><td>${esc(sup.contact_name||'—')}</td></tr>
+        <tr><td style="padding:6px 0;color:#888">电话</td><td>${esc(sup.phone||'—')}</td>
+            <td style="padding:6px 0;color:#888">邮箱</td><td>${esc(sup.email||'—')}</td></tr>
+        <tr><td style="padding:6px 0;color:#888">付款条件</td><td colspan="3">${esc(sup.payment_terms||'—')}</td></tr>
+        <tr><td style="padding:6px 0;color:#888">期望到货</td><td>${esc((po.expected_date||'').slice(0,10)||'—')}</td>
+            <td style="padding:6px 0;color:#888">状态</td><td>${esc(po.status||'—')}</td></tr>
+      </table>
+      <table style="width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px">
+        <thead><tr style="background:#10B981;color:#fff">
+          <th style="padding:10px;border:1px solid #10B981;width:40px">#</th>
+          <th style="padding:10px;border:1px solid #10B981">产品名称</th>
+          <th style="padding:10px;border:1px solid #10B981">规格</th>
+          <th style="padding:10px;border:1px solid #10B981;width:70px">数量</th>
+          <th style="padding:10px;border:1px solid #10B981;width:60px">单位</th>
+          <th style="padding:10px;border:1px solid #10B981;width:90px">单价</th>
+          <th style="padding:10px;border:1px solid #10B981;width:110px">小计</th>
+        </tr></thead>
+        <tbody>${itemRows}</tbody>
+        <tfoot><tr>
+          <td colspan="6" style="padding:10px;border:1px solid #ccc;text-align:right;font-weight:bold">合计 Total:</td>
+          <td style="padding:10px;border:1px solid #ccc;text-align:right;font-weight:bold;color:#10B981">¥${fmtN(po.total_amount||0)}</td>
+        </tr></tfoot>
+      </table>
+      ${po.remarks?`<div style="margin-top:18px;padding:12px;background:#f9f9f9;border-left:3px solid #10B981;font-size:12.5px"><strong>备注：</strong>${esc(po.remarks)}</div>`:''}
+      <div style="margin-top:32px;display:flex;justify-content:space-between;font-size:12px;color:#666">
+        <div>采购方签字 / Buyer:_________________________</div>
+        <div>供方确认 / Supplier:_________________________</div>
+      </div>
+      <div style="margin-top:18px;text-align:center;font-size:11px;color:#aaa">TPKELE CRM · 自动生成于 ${new Date().toLocaleString('zh-CN')}</div>
+    </div>`;
+  const wrap = document.createElement('div');
+  wrap.style.position='fixed'; wrap.style.left='-9999px'; wrap.innerHTML = html;
+  document.body.appendChild(wrap);
+  try {
+    if (window.html2pdf) {
+      await html2pdf().set({
+        margin: 8, filename: `${po.po_number||'PO'}-${(po.suppliers?.supplier_name||'').replace(/\s+/g,'-')}.pdf`,
+        image: { type:'jpeg', quality:0.95 }, html2canvas:{ scale:2 }, jsPDF:{ unit:'mm', format:'a4', orientation:'portrait' }
+      }).from(wrap.firstElementChild).save();
+      toast('PDF 已下载');
+    } else { toast('html2pdf 库未加载','err'); }
+  } finally {
+    document.body.removeChild(wrap);
+  }
 }
 
 // ══════════════════════════════
@@ -1759,189 +2524,17 @@ function convertInquiryToOrder(id) {
 }
 
 // ══════════════════════════════
-// ORDERS
+// ORDERS (legacy block removed — see ORDERS v2 above)
+// Keep helper used by docs / quick-export dropdowns:
 // ══════════════════════════════
-async function loadOrders() {
-  try {
-    S.orders = await api('/api/orders');
-    renderOrders();
-    populateOrderSelects();
-  } catch(e) { toast(e.message,'err'); }
-}
-function renderOrders() {
-  const qc  = document.getElementById('or-customer').value.toLowerCase();
-  const qd  = document.getElementById('or-date').value;
-  const qm  = document.getElementById('or-month').value;
-  const qst = document.getElementById('or-status').value;
-  const rows = S.orders.filter(o =>
-    (!qc  || (o.customer_name||'').toLowerCase().includes(qc)) &&
-    (!qd  || (o.order_date||'').slice(0,10) === qd) &&
-    (!qm  || (o.order_date||'').startsWith(qm)) &&
-    (!qst || o.order_status === qst)
-  );
-  const body = document.getElementById('orBody');
-  document.getElementById('orStatus').textContent = rows.length + ' orders';
-  if (!rows.length) { body.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="icon">🛒</div><p>No orders found</p></div></td></tr>'; return; }
-  body.innerHTML = rows.map(o => {
-    const products = (o.items||[]).map(i=>i.product_name_cn||'').filter(Boolean).join(' / ').slice(0,30);
-    return `<tr>
-      <td data-label="Date">${esc(o.order_date||'')}</td>
-      <td data-label="Customer"><strong>${esc(o.customer_name||'')}</strong></td>
-      <td data-label="Products">${esc(products||'—')}</td>
-      <td data-label="Sales">${fmt(o.sales_total)}</td>
-      <td data-label="Purchase">${fmt(o.purchase_total)}</td>
-      <td data-label="Profit" style="color:${o.profit>=0?'var(--primary)':'var(--danger)'}">${fmt(o.profit)}</td>
-      <td data-label="Status"><span class="badge badge-${o.order_status||'confirmed'}">${esc(o.order_status||'confirmed')}</span></td>
-      <td data-label=""><div class="actions-cell">
-        <button class="btn btn-sm" onclick="viewOrderDetail('${o.id}')">Detail</button>
-        <button class="btn btn-sm" onclick="editOrder('${o.id}')">Edit</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteOrder('${o.id}')">Delete</button>
-      </div></td>
-    </tr>`;
-  }).join('');
-}
-
 function populateOrderSelects() {
-  const opts = S.orders.map(o=>`<option value="${o.id}">${esc(o.order_date||'')} - ${esc(o.customer_name||'')}</option>`).join('');
-  document.getElementById('doc-order').innerHTML = '<option value="">— Select an order —</option>' + opts;
-  document.getElementById('qe-order').innerHTML  = '<option value="">Select order...</option>' + opts;
+  const opts = (S.orders||[]).map(o=>`<option value="${o.id}">${esc(o.order_date||'')} - ${esc(o.customer_name||'')}</option>`).join('');
+  const docOrder = document.getElementById('doc-order');
+  if (docOrder) docOrder.innerHTML = '<option value="">— Select an order —</option>' + opts;
+  const qeOrder = document.getElementById('qe-order');
+  if (qeOrder) qeOrder.innerHTML = '<option value="">Select order...</option>' + opts;
 }
-
-function openOrderModal() {
-  document.getElementById('om-id').value = '';
-  document.getElementById('orderForm').reset();
-  document.getElementById('om-date').value     = today();
-  document.getElementById('om-status').value   = 'confirmed';
-  document.getElementById('om-currency').value = 'USD';
-  document.getElementById('orderModalTitle').textContent = 'New Order';
-  document.getElementById('orderItems').innerHTML = '';
-  addOrderItem();
-  recalcOrder();
-  openModal('orderModal');
-}
-
-function editOrder(id) {
-  const o = S.orders.find(x=>x.id===id); if (!o) return;
-  document.getElementById('orderModalTitle').textContent = 'Edit Order';
-  document.getElementById('om-id').value       = o.id;
-  document.getElementById('om-customer').value = o.customer_name||'';
-  document.getElementById('om-date').value     = (o.order_date||'').slice(0,10);
-  document.getElementById('om-shipping').value = o.shipping_fee||0;
-  document.getElementById('om-status').value   = o.order_status||'confirmed';
-  document.getElementById('om-currency').value = o.currency||'USD';
-  document.getElementById('om-remarks').value  = o.remarks||'';
-  document.getElementById('orderItems').innerHTML = '';
-  const items = o.items||[];
-  if (items.length) items.forEach(item => addOrderItem(item));
-  else addOrderItem();
-  recalcOrder();
-  openModal('orderModal');
-}
-
-function addOrderItem(data={}) {
-  const container = document.getElementById('orderItems');
-  const div = document.createElement('div');
-  div.className = 'item-row';
-  div.innerHTML = `
-    <div class="field"><label>CN Name</label><input type="text" name="cn_name" value="${esc(data.product_name_cn||'')}" placeholder="中文名称" required></div>
-    <div class="field"><label>EN Name</label><input type="text" name="en_name" value="${esc(data.product_name_en||'')}" placeholder="English name"></div>
-    <div class="field"><label>Description</label><input type="text" name="spec" value="${esc(data.specification||'')}" placeholder="规格型号"></div>
-    <div class="field"><label>Qty</label><input type="number" name="qty" value="${data.quantity||1}" min="0" step="0.01" class="calc-trig" oninput="recalcOrder()"></div>
-    <div class="field"><label>Purchase $</label><input type="number" name="pp" value="${data.purchase_price||0}" min="0" step="0.01" class="calc-trig" oninput="recalcOrder()"></div>
-    <div class="field"><label>Sales $</label><input type="number" name="sp" value="${data.sales_price||0}" min="0" step="0.01" class="calc-trig" oninput="recalcOrder()"></div>
-    <button type="button" class="item-remove" onclick="removeOrderItem(this)">×</button>`;
-  container.appendChild(div);
-}
-
-function removeOrderItem(btn) {
-  const rows = document.querySelectorAll('#orderItems .item-row');
-  if (rows.length > 1) { btn.closest('.item-row').remove(); recalcOrder(); }
-}
-
-function recalcOrder() {
-  let pTotal = 0, sTotal = 0;
-  document.querySelectorAll('#orderItems .item-row').forEach(row => {
-    const qty = parseFloat(row.querySelector('[name="qty"]').value)||0;
-    const pp  = parseFloat(row.querySelector('[name="pp"]').value)||0;
-    const sp  = parseFloat(row.querySelector('[name="sp"]').value)||0;
-    pTotal += qty * pp;
-    sTotal += qty * sp;
-  });
-  const shipping = parseFloat(document.getElementById('om-shipping').value)||0;
-  document.getElementById('cs-p').textContent      = fmt(pTotal);
-  document.getElementById('cs-s').textContent      = fmt(sTotal + shipping);
-  document.getElementById('cs-profit').textContent = fmt(sTotal - pTotal);
-}
-
-async function saveOrder(e) {
-  e.preventDefault();
-  const id = document.getElementById('om-id').value;
-  const items = [];
-  document.querySelectorAll('#orderItems .item-row').forEach(row => {
-    const qty = parseFloat(row.querySelector('[name="qty"]').value)||0;
-    const pp  = parseFloat(row.querySelector('[name="pp"]').value)||0;
-    const sp  = parseFloat(row.querySelector('[name="sp"]').value)||0;
-    items.push({
-      product_name_cn: row.querySelector('[name="cn_name"]').value,
-      product_name_en: row.querySelector('[name="en_name"]').value,
-      specification:   row.querySelector('[name="spec"]').value,
-      quantity:        qty, purchase_price: pp, sales_price: sp,
-      purchase_total:  qty*pp, sales_total: qty*sp,
-    });
-  });
-  let pTotal=0, sTotal=0;
-  items.forEach(i=>{ pTotal+=i.purchase_total; sTotal+=i.sales_total; });
-  const shipping = parseFloat(document.getElementById('om-shipping').value)||0;
-  const payload = {
-    customer_name: document.getElementById('om-customer').value,
-    order_date:    document.getElementById('om-date').value,
-    shipping_fee:  shipping,
-    currency:      document.getElementById('om-currency').value,
-    order_status:  document.getElementById('om-status').value,
-    remarks:       document.getElementById('om-remarks').value,
-    purchase_total: pTotal,
-    sales_total:    sTotal + shipping,
-    sales_without_shipping: sTotal,
-    profit:         sTotal - pTotal,
-    items,
-  };
-  try {
-    if (id) await api(`/api/orders/${id}`, { method:'PUT', body:JSON.stringify(payload) });
-    else    await api('/api/orders',        { method:'POST', body:JSON.stringify(payload) });
-    closeModal('orderModal');
-    toast(id ? 'Order updated' : 'Order saved');
-    await loadOrders();
-    await loadDashboard();
-  } catch(err) { toast(err.message,'err'); }
-}
-
-async function viewOrderDetail(id) {
-  try {
-    const { order, items } = await api(`/api/orders/${id}`);
-    document.getElementById('detailSub').textContent = `${order.customer_name||''} · ${order.order_date||''}`;
-    document.getElementById('dtSales').textContent   = fmt(order.sales_total);
-    document.getElementById('dtProfit').textContent  = fmt(order.profit);
-    const body = document.getElementById('detailBody');
-    body.innerHTML = (items||[]).map(i=>`
-      <tr>
-        <td>${esc(i.product_name_cn||'')}</td>
-        <td>${esc(i.product_name_en||'')}</td>
-        <td>${esc(i.specification||'')}</td>
-        <td>${fmtN(i.quantity)}</td>
-        <td>${fmt(i.purchase_price)}</td>
-        <td>${fmt(i.sales_price)}</td>
-        <td>${fmt(i.purchase_total)}</td>
-        <td>${fmt(i.sales_total)}</td>
-      </tr>`).join('');
-    openModal('detailModal');
-  } catch(e) { toast(e.message,'err'); }
-}
-
-async function deleteOrder(id) {
-  if (!confirm('Delete this order?')) return;
-  try { await api(`/api/orders/${id}`, {method:'DELETE'}); toast('Deleted'); await loadOrders(); await loadDashboard(); }
-  catch(e) { toast(e.message,'err'); }
-}
+function populateDocOrderDropdown() { populateOrderSelects(); }
 
 // ══════════════════════════════
 // DOCUMENTS & EXPORT
@@ -2349,7 +2942,8 @@ async function init() {
   if (!token()) { location.href = '/index.html'; return; }
   setLang(S.lang);
   loadSettings();
-  await Promise.all([loadOrders(), loadCustomers(), loadProducts(), loadSuppliers(), loadInquiries()]);
+  await Promise.all([loadCustomers(), loadSuppliers()]);
+  await Promise.all([loadOrders(), loadProducts(), loadInquiries(), loadPurchaseOrders()]);
   await loadDashboard();
 }
 
