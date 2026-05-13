@@ -1480,8 +1480,10 @@ async function createPurchaseOrdersForOrder(orderId, items) {
   return created;
 }
 
-async function writePriceHistoryAndUpdateProducts(orderId, customerId, currency, items) {
+async function writePriceHistoryAndUpdateProducts(orderId, customerId, currency, items, exchangeRate) {
   const today = new Date().toISOString().slice(0,10);
+  const rate = Number(exchangeRate) > 0 ? Number(exchangeRate) : 7.2;
+  const isRmb = (currency === 'RMB' || currency === 'CNY');
   const histRows = [];
   for (const it of items) {
     if (!it.product_id) continue;
@@ -1508,14 +1510,15 @@ async function writePriceHistoryAndUpdateProducts(orderId, customerId, currency,
         customer_id: customerId || null,
       });
     }
-    // 更新产品最近价
+    // 更新产品最近价（统一以 RMB 计量，下游数据看板按 RMB 抓取）
     const update = { updated_at: new Date().toISOString() };
     if (Number(it.purchase_price)) {
       update.last_purchase_price = Number(it.purchase_price);
       update.last_purchase_date  = today;
     }
     if (Number(it.sales_price)) {
-      update.last_sales_price = Number(it.sales_price);
+      const priceRmb = isRmb ? Number(it.sales_price) : Number(it.sales_price) * rate;
+      update.last_sales_price = +priceRmb.toFixed(2);
       update.last_sales_date  = today;
     }
     await sb(`products?id=eq.${it.product_id}`, { method:'PATCH', body: JSON.stringify(update) }).catch(()=>{});
@@ -1576,7 +1579,7 @@ app.post('/api/orders/v2', auth, async (req, res) => {
     }
 
     // 写价格历史 + 更新产品最近价（异步容错）
-    await writePriceHistoryAndUpdateProducts(orderId, customer_id, currency, itemRows);
+    await writePriceHistoryAndUpdateProducts(orderId, customer_id, currency, itemRows, exchange_rate);
 
     // 自动按供应商拆分采购单
     const purchaseOrders = await createPurchaseOrdersForOrder(orderId, itemRows);

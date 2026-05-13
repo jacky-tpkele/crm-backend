@@ -1686,7 +1686,7 @@ function renderProducts() {
   if (!rows.length) { body.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="icon">📦</div><p>No products found</p></div></td></tr>'; return; }
   body.innerHTML = rows.map(p => {
     const lastP = p.last_purchase_price ? `¥${fmtN(p.last_purchase_price)}` : '—';
-    const lastS = p.last_sales_price ? `${fmtN(p.last_sales_price)}` : '—';
+    const lastS = p.last_sales_price ? `¥${fmtN(p.last_sales_price)}` : '—';
     const defSale = [p.default_sales_price_usd?`$${fmtN(p.default_sales_price_usd)}`:'',p.default_sales_price_rmb?`¥${fmtN(p.default_sales_price_rmb)}`:''].filter(Boolean).join(' / ') || '—';
     return `
     <tr>
@@ -1922,7 +1922,7 @@ async function viewProduct(id) {
         <div><label style="font-size:11px;color:var(--muted)">默认销售价(USD)</label><div>${product.default_sales_price_usd?'$'+fmtN(product.default_sales_price_usd):'—'}</div></div>
         <div><label style="font-size:11px;color:var(--muted)">默认销售价(RMB)</label><div>${product.default_sales_price_rmb?'¥'+fmtN(product.default_sales_price_rmb):'—'}</div></div>
         <div><label style="font-size:11px;color:var(--muted)">最近采购</label><div>${product.last_purchase_price?'¥'+fmtN(product.last_purchase_price)+' · '+(product.last_purchase_date||''):'—'}</div></div>
-        <div><label style="font-size:11px;color:var(--muted)">最近销售</label><div>${product.last_sales_price?'$'+fmtN(product.last_sales_price)+' · '+(product.last_sales_date||''):'—'}</div></div>
+        <div><label style="font-size:11px;color:var(--muted)">最近销售</label><div>${product.last_sales_price?'¥'+fmtN(product.last_sales_price)+' · '+(product.last_sales_date||''):'—'}</div></div>
       </div>
       <h3 style="font-size:13px;margin:8px 0">🏭 关联供应商</h3>
       <div class="tbl-wrap"><table><thead><tr><th>优先级</th><th>供应商</th><th>供方型号</th><th>采购价</th><th>交期</th></tr></thead><tbody>${supplierTable}</tbody></table></div>
