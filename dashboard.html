@@ -956,8 +956,11 @@ tr:hover .del-row-btn{display:inline-block}
         <div class="field"><label>认证</label><input type="text" id="pm-cert"></div>
         <div class="field"><label>默认交期</label><input type="text" id="pm-lead" placeholder="如 15 days"></div>
         <div class="field"><label>默认采购价 (RMB) *</label><input type="number" id="pm-pp" step="0.01" value="0"></div>
-        <div class="field"><label>默认销售价 (USD)</label><input type="number" id="pm-sp-usd" step="0.01" placeholder="选填"></div>
-        <div class="field"><label>默认销售价 (RMB)</label><input type="number" id="pm-sp-rmb" step="0.01" placeholder="选填"></div>
+        <div class="field"><label>默认销售价 (USD) <span style="color:var(--muted);font-weight:300">⇄ 自动联动</span></label><input type="number" id="pm-sp-usd" step="0.01" placeholder="填这个会自动算 RMB" onblur="syncSalesPrice('usd')"></div>
+        <div class="field"><label>默认销售价 (RMB) <span style="color:var(--muted);font-weight:300">⇄ 自动联动</span></label><input type="number" id="pm-sp-rmb" step="0.01" placeholder="填这个会自动算 USD" onblur="syncSalesPrice('rmb')"></div>
+        <div class="field" style="grid-column:1/-1;font-size:11.5px;color:var(--muted);margin-top:-6px">
+          💡 销售价 USD 与 RMB 任填其一即可，离开输入框时按当日实时汇率自动补齐另一列；保存时也会再次校准。当日 USD→CNY: <span id="pm-fx-display" style="color:var(--p1);font-weight:600">加载中...</span>
+        </div>
         <div class="field"><label>产品图片URL</label><input type="text" id="pm-image" placeholder="https://..."></div>
       </div>
       <div class="items-section" style="margin-top:14px">
@@ -1712,7 +1715,60 @@ function openProductModal() {
   S._editingProductLinks = [];
   addProductSupplierRow();
   openModal('productModal');
+  refreshPmFxDisplay();
 }
+
+/* ── 实时 USD→CNY 汇率（供产品销售价 USD/RMB 联动用，5 分钟缓存 + 多源兜底） ── */
+let _fxCache = { rate: null, ts: 0 };
+async function getUsdCnyRate(force) {
+  const now = Date.now();
+  if (!force && _fxCache.rate && (now - _fxCache.ts) < 5*60*1000) return _fxCache.rate;
+  // 优先用顶部徽章已加载的值
+  const topEl = document.getElementById('fxRate');
+  if (topEl) {
+    const v = parseFloat(topEl.textContent);
+    if (v > 0) { _fxCache = { rate: v, ts: now }; return v; }
+  }
+  const sources = [
+    async () => { const r = await fetch('https://api.frankfurter.dev/v1/latest?base=USD&symbols=CNY',{cache:'no-store'}); const j = await r.json(); return j?.rates?.CNY; },
+    async () => { const r = await fetch('https://open.er-api.com/v6/latest/USD',{cache:'no-store'}); const j = await r.json(); return j?.rates?.CNY; },
+    async () => { const r = await fetch('https://api.exchangerate-api.com/v4/latest/USD',{cache:'no-store'}); const j = await r.json(); return j?.rates?.CNY; },
+  ];
+  for (const fn of sources) {
+    try {
+      const rate = await Promise.race([fn(), new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),5000))]);
+      if (rate && rate > 0) { _fxCache = { rate: +rate, ts: now }; return +rate; }
+    } catch(_){}
+  }
+  return 7.2; // 兜底
+}
+async function refreshPmFxDisplay() {
+  const el = document.getElementById('pm-fx-display');
+  if (!el) return;
+  el.textContent = '加载中...';
+  const rate = await getUsdCnyRate();
+  el.textContent = `¥${rate.toFixed(4)} / USD`;
+}
+/* USD/RMB 销售价联动：哪个有值就用当日汇率算另一个；两个都有就尊重用户填的 */
+async function syncSalesPrice(source) {
+  const usdEl = document.getElementById('pm-sp-usd');
+  const rmbEl = document.getElementById('pm-sp-rmb');
+  if (!usdEl || !rmbEl) return;
+  const usd = parseFloat(usdEl.value);
+  const rmb = parseFloat(rmbEl.value);
+  const hasU = usd > 0, hasR = rmb > 0;
+  if (!hasU && !hasR) return; // 都没填，不动
+  const rate = await getUsdCnyRate();
+  if (source === 'usd' && hasU && !hasR) {
+    rmbEl.value = (usd * rate).toFixed(2);
+  } else if (source === 'rmb' && hasR && !hasU) {
+    usdEl.value = (rmb / rate).toFixed(2);
+  } else if (source === 'save') {
+    if (hasU && !hasR) rmbEl.value = (usd * rate).toFixed(2);
+    else if (hasR && !hasU) usdEl.value = (rmb / rate).toFixed(2);
+  }
+}
+
 async function editProduct(id) {
   try {
     const { product, suppliers } = await api(`/api/products/${id}/full`);
@@ -1737,6 +1793,7 @@ async function editProduct(id) {
       suppliers.forEach(link => addProductSupplierRow(link));
     } else addProductSupplierRow();
     openModal('productModal');
+    refreshPmFxDisplay();
   } catch(e) { toast(e.message,'err'); }
 }
 function addProductSupplierRow(link={}) {
@@ -1761,6 +1818,8 @@ function addProductSupplierRow(link={}) {
 async function saveProduct(e) {
   e.preventDefault();
   const id = document.getElementById('pm-id').value;
+  // 提交前再校准一次，确保 USD/RMB 两列都有值
+  await syncSalesPrice('save');
   const payload = {
     product_code:           document.getElementById('pm-code').value,
     category:               document.getElementById('pm-category').value,
