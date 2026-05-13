@@ -469,13 +469,49 @@ async function trackShipment(cardId, trackingNumber) {
   }
   box.dataset.num = num;
   box.style.display = 'block';
-  box.innerHTML = `<div class="trace-loading">正在查询 ${esc(num)} ...</div>`;
+  // 取已记忆的手机尾号（顺丰用）
+  const savedPhone = sessionStorage.getItem('kd100_phone_' + num) || '';
+  await doTrackQuery(box, num, savedPhone);
+}
+
+async function doTrackQuery(box, num, phone) {
+  box.innerHTML = `<div class="trace-loading">正在查询 ${esc(num)}${phone?' (尾号 '+esc(phone)+')':''} ...</div>`;
+  let data = null, ok = false;
   try {
-    const data = await api(`/api/track?num=${encodeURIComponent(num)}`);
-    renderTrace(box, data);
+    const r = await fetch(`/api/track?num=${encodeURIComponent(num)}${phone?'&phone='+encodeURIComponent(phone):''}`, { headers: { Authorization: 'Bearer ' + TOKEN }});
+    data = await r.json();
+    ok = r.ok;
   } catch (e) {
-    box.innerHTML = `<div class="trace-error">查询失败：${esc(e.message||'未知错误')} <button class="btn btn-sm" style="margin-left:8px" onclick="window.open('https://www.kuaidi100.com/chaxun?nu=${encodeURIComponent(num)}','_blank','noopener')">打开快递100手动查</button></div>`;
+    box.innerHTML = `<div class="trace-error">网络错误：${esc(e.message||'')} <button class="btn btn-sm" style="margin-left:8px" onclick="window.open('https://www.kuaidi100.com/chaxun?nu=${encodeURIComponent(num)}','_blank','noopener')">打开快递100手动查</button></div>`;
+    return;
   }
+  if (ok) { renderTrace(box, data); return; }
+  if (data && data.need_phone) {
+    box.innerHTML = `
+      <div class="trace-error" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        🔒 顺丰需要收件人/寄件人手机后 4 位
+        <input type="text" maxlength="4" pattern="\\d{4}" placeholder="后4位" id="phone-input-${esc(num)}" style="width:72px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--panel-2);color:var(--text);font-size:12px" />
+        <button class="btn btn-sm" onclick="submitTrackPhone('${esc(num).replace(/'/g,"\\'")}','${box.id}')">确定查询</button>
+      </div>`;
+    const inp = document.getElementById('phone-input-' + num);
+    if (inp) { inp.focus(); inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') submitTrackPhone(num, box.id); }); }
+    return;
+  }
+  if (data && data.need_carrier) {
+    box.innerHTML = `<div class="trace-error">未能识别承运商，请点「编辑」补填承运商后重试 <button class="btn btn-sm" style="margin-left:8px" onclick="window.open('https://www.kuaidi100.com/chaxun?nu=${encodeURIComponent(num)}','_blank','noopener')">打开快递100手动查</button></div>`;
+    return;
+  }
+  box.innerHTML = `<div class="trace-error">查询失败：${esc((data&&data.message)||'未知错误')} <button class="btn btn-sm" style="margin-left:8px" onclick="window.open('https://www.kuaidi100.com/chaxun?nu=${encodeURIComponent(num)}','_blank','noopener')">打开快递100手动查</button></div>`;
+}
+
+function submitTrackPhone(num, boxId) {
+  const inp = document.getElementById('phone-input-' + num);
+  if (!inp) return;
+  const phone = (inp.value||'').trim();
+  if (!/^\d{4}$/.test(phone)) { toast('请输入 4 位数字', 'err'); inp.focus(); return; }
+  sessionStorage.setItem('kd100_phone_' + num, phone);
+  const box = document.getElementById(boxId);
+  if (box) doTrackQuery(box, num, phone);
 }
 function renderTrace(box, data) {
   const stateColor = data.delivered ? '#10B981' : '#34D399';

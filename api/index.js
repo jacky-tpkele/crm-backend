@@ -1675,9 +1675,30 @@ async function kd100AutoDetect(num) {
   return null;
 }
 
+// 本地前缀识别兜底（autonumber 不可用 / 限频时）
+function detectCarrierLocal(num) {
+  const n = String(num||'').trim().toUpperCase();
+  if (!n) return null;
+  if (/^SF/.test(n)) return 'shunfeng';
+  if (/^JT/.test(n)) return 'jtexpress';
+  if (/^YT\d{10,}$/.test(n)) return 'yuantong';
+  if (/^YD\d{10,}$/.test(n)) return 'yunda';
+  if (/^(ZT|ZTO)/.test(n)) return 'zhongtong';
+  if (/^STO/.test(n)) return 'shentong';
+  if (/^[A-Z]{2}\d{9}[A-Z]{2}$/.test(n)) return 'ems';
+  if (/^1Z[0-9A-Z]{16}$/.test(n)) return 'ups';
+  // 纯数字按长度推测国内主流
+  if (/^(31|33|35|36|37|38|39|43|45|55)\d{11,13}$/.test(n)) return 'yunda';
+  if (/^(75|78)\d{10,12}$/.test(n)) return 'zhongtong';
+  if (/^(77|88)\d{10,12}$/.test(n)) return 'shentong';
+  return null;
+}
+
 // 实时查件（快递100 poll/query.do）
-async function kd100Query(com, num) {
-  const param = JSON.stringify({ com, num, resultv2: '4' });
+async function kd100Query(com, num, phone) {
+  const paramObj = { com, num, resultv2: '4' };
+  if (phone) paramObj.phone = phone;
+  const param = JSON.stringify(paramObj);
   const sign  = crypto.createHash('md5').update(param + KD100_KEY + KD100_CUSTOMER).digest('hex').toUpperCase();
   const body  = new URLSearchParams({ customer: KD100_CUSTOMER, sign, param }).toString();
   const r = await fetch('https://poll.kuaidi100.com/poll/query.do', {
@@ -1693,20 +1714,26 @@ app.get('/api/track', auth, async (req, res) => {
     if (!KD100_KEY || !KD100_CUSTOMER) {
       return res.status(500).json({ message: '后端未配置 KUAIDI100_KEY / KUAIDI100_CUSTOMER 环境变量' });
     }
-    const num = String(req.query.num || '').trim();
-    let com   = String(req.query.com || '').trim();
+    const num   = String(req.query.num   || '').trim();
+    const phone = String(req.query.phone || '').trim();
+    let com     = String(req.query.com   || '').trim();
     if (!num) return res.status(400).json({ message: '缺少单号 num' });
 
-    const cacheKey = `${com||'auto'}:${num}`;
+    const cacheKey = `${com||'auto'}:${num}:${phone}`;
     const cached = _cacheGet(cacheKey);
     if (cached) return res.json({ ...cached, _cached: true });
 
     if (!com || com === 'auto') {
-      com = await kd100AutoDetect(num);
-      if (!com) return res.status(404).json({ message: '未能识别承运商，请在物流记录里填承运商后重试' });
+      com = await kd100AutoDetect(num) || detectCarrierLocal(num);
+      if (!com) return res.status(404).json({ message: '未能识别承运商，请在物流记录里填承运商后重试', need_carrier: true });
     }
 
-    const raw = await kd100Query(com, num);
+    // 顺丰强制需要手机后 4 位
+    if (com === 'shunfeng' && !phone) {
+      return res.status(400).json({ message: '顺丰查件需要收件人/寄件人手机后 4 位', need_phone: true, carrier_code: com });
+    }
+
+    const raw = await kd100Query(com, num, phone);
     // raw: { message, status:'200/201/...', state, condition, data:[{time, context, ftime, areaCode, areaName}], com, nu, ischeck }
     if (raw.status && String(raw.status) !== '200') {
       return res.status(400).json({ message: raw.message || '查询失败', raw });
