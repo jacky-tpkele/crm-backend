@@ -51,7 +51,7 @@
 
 ## 🥈 第 2 梯队 — 性能 / 可维护性（数据量起来再做）
 
-### T2.1 列表分页 + 服务端搜索  🟥
+### T2.1 列表分页 + 服务端搜索  🟩
 **问题**：`/api/orders`、`/api/products`、`/api/customers` 一次返回全量。数据上千后明显卡。
 **做法**：所有列表接口加 `?page=N&limit=50&q=keyword`，前端改成分页器。
 **预估**：1 天
@@ -62,7 +62,7 @@
 **预估**：半天 + Supabase 配置 15 分钟
 **触发条件**：产品数 > 30 后做
 
-### T2.3 清理 3 套创建订单 + 5 条遗留路由  🟥
+### T2.3 清理 3 套创建订单 + 5 条遗留路由  🟩
 **问题**：`POST /api/orders` + `POST /api/save-order` + `POST /api/orders/v2` 三套并存。`/suppliers`、`/orders-full`、`/order-detail/*`、`/orders/*`、`/delete-order/*` 5 条无前缀路由也还在 vercel.json 里 rewrite。
 **做法**：保留 `/api/orders/v2`（最新）+ 标准 RESTful `/api/*`，删除其他；同步清 vercel.json。
 **预估**：半天 + 仔细测一遍

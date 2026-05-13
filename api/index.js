@@ -178,7 +178,14 @@ app.get('/api/dashboard/trends', auth, async (req, res) => {
 // 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 app.get('/api/customers', auth, async (req, res) => {
   try {
-    const data = await sb('customers?select=*&is_deleted=eq.false&order=created_at.desc');
+    const { limit = 1000, offset = 0, q = '' } = req.query;
+    let url = 'customers?select=*&is_deleted=eq.false&order=created_at.desc';
+    if (q) {
+      const esc = encodeURIComponent(`%${q}%`);
+      url += `&or=(customer_name.ilike.${esc},country.ilike.${esc},email.ilike.${esc},whatsapp.ilike.${esc})`;
+    }
+    url += `&limit=${Number(limit)||1000}&offset=${Number(offset)||0}`;
+    const data = await sb(url);
     res.json(data);
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
@@ -212,7 +219,14 @@ app.delete('/api/customers/:id', auth, async (req, res) => {
 // 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 app.get('/api/products', auth, async (req, res) => {
   try {
-    const data = await sb('products?select=*&is_deleted=eq.false&order=created_at.desc');
+    const { limit = 1000, offset = 0, q = '' } = req.query;
+    let url = 'products?select=*&is_deleted=eq.false&order=created_at.desc';
+    if (q) {
+      const esc = encodeURIComponent(`%${q}%`);
+      url += `&or=(product_code.ilike.${esc},product_name_cn.ilike.${esc},product_name_en.ilike.${esc},specification.ilike.${esc})`;
+    }
+    url += `&limit=${Number(limit)||1000}&offset=${Number(offset)||0}`;
+    const data = await sb(url);
     res.json(data);
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
@@ -246,7 +260,14 @@ app.delete('/api/products/:id', auth, async (req, res) => {
 // 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 app.get('/api/suppliers', auth, async (req, res) => {
   try {
-    const data = await sb('suppliers?select=*&is_deleted=eq.false&order=created_at.desc');
+    const { limit = 1000, offset = 0, q = '' } = req.query;
+    let url = 'suppliers?select=*&is_deleted=eq.false&order=created_at.desc';
+    if (q) {
+      const esc = encodeURIComponent(`%${q}%`);
+      url += `&or=(supplier_name.ilike.${esc},contact_name.ilike.${esc},phone.ilike.${esc},email.ilike.${esc})`;
+    }
+    url += `&limit=${Number(limit)||1000}&offset=${Number(offset)||0}`;
+    const data = await sb(url);
     res.json(data);
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
@@ -275,33 +296,9 @@ app.delete('/api/suppliers/:id', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// backward-compat GET /suppliers (old orders.html)
-app.get('/suppliers', auth, async (req, res) => {
-  try {
-    const data = await sb('suppliers?select=*&is_deleted=eq.false&order=created_at.desc');
-    res.json(data);
-  } catch (e) { res.status(500).json({ message: e.message }); }
-});
+// （已清理：旧的无前缀 /suppliers GET/POST/DELETE，前端不再使用）
 
-app.post('/suppliers', auth, async (req, res) => {
-  try {
-    const { product_image_data, product_name, specification, supplier_name, contact_name, phone } = req.body;
-    const data = await sb('suppliers?select=*', {
-      method: 'POST', headers: { 'Prefer': 'return=representation' },
-      body: JSON.stringify({ supplier_name, contact_name, phone, notes: [product_name, specification].filter(Boolean).join(' - '), product_image_data }),
-    });
-    res.json({ success: true, data: data[0] });
-  } catch (e) { res.status(500).json({ message: e.message }); }
-});
-
-app.delete('/suppliers/:id', auth, async (req, res) => {
-  try {
-    await sb(`suppliers?id=eq.${req.params.id}`, { method: 'PATCH', body: JSON.stringify({ is_deleted: true }) });
-    res.json({ success: true });
-  } catch (e) { res.status(500).json({ message: e.message }); }
-});
-
-// 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
+// ────────────────────────────────────────────────────────────────────
 // INQUIRIES
 // 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 app.get('/api/inquiries', auth, async (req, res) => {
@@ -338,8 +335,17 @@ app.delete('/api/inquiries/:id', auth, async (req, res) => {
 // 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // ORDERS
 // 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
-async function fetchOrdersWithItems() {
-  const orders = await sb('orders?select=*&is_deleted=eq.false&order=order_date.desc');
+async function fetchOrdersWithItems(filters = {}) {
+  const { limit = 500, offset = 0, q = '', status = '' } = filters;
+  let url = 'orders?select=*&is_deleted=eq.false&order=order_date.desc';
+  if (q) {
+    // PostgREST or() — 模糊搜索客户名 / 订单号 / 备注
+    const esc = encodeURIComponent(`%${q}%`);
+    url += `&or=(customer_name.ilike.${esc},order_number.ilike.${esc},remarks.ilike.${esc})`;
+  }
+  if (status) url += `&order_status=eq.${encodeURIComponent(status)}`;
+  url += `&limit=${Number(limit)||500}&offset=${Number(offset)||0}`;
+  const orders = await sb(url);
   if (!orders.length) return orders;
   const ids = orders.map(o => o.id).join(',');
   const items = await sb(`order_items?order_id=in.(${ids})&select=*`);
@@ -347,7 +353,7 @@ async function fetchOrdersWithItems() {
 }
 
 app.get('/api/orders', auth, async (req, res) => {
-  try { res.json(await fetchOrdersWithItems()); }
+  try { res.json(await fetchOrdersWithItems(req.query)); }
   catch (e) { res.status(500).json({ message: e.message }); }
 });
 
@@ -387,54 +393,6 @@ app.get('/api/orders/:id/shipped-summary', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-app.post('/api/orders', auth, async (req, res) => {
-  const { customer_name, customer_id, order_date, shipping_fee, currency, order_status, remarks,
-          purchase_total, sales_total, sales_without_shipping, profit, items } = req.body;
-  try {
-    const orderArr = await sb('orders?select=id', {
-      method: 'POST', headers: { 'Prefer': 'return=representation' },
-      body: JSON.stringify({
-        customer_name, customer_id, order_date,
-        shipping_fee:  Number(shipping_fee||0),
-        purchase_total: Number(purchase_total||0),
-        sales_total:    Number(sales_total||0),
-        sales_without_shipping: Number(sales_without_shipping||0),
-        profit:         Number(profit||0),
-        currency:       currency||'USD',
-        order_status:   order_status||'confirmed',
-        remarks:        remarks||'',
-      }),
-    });
-    const orderId = orderArr[0].id;
-    if (items?.length) {
-      await sb('order_items', {
-        method: 'POST',
-        body: JSON.stringify(items.map(it => ({ ...it, order_id: orderId }))),
-      });
-    }
-    res.json({ success: true, id: orderId });
-  } catch (e) { res.status(500).json({ message: e.message }); }
-});
-
-app.put('/api/orders/:id', auth, async (req, res) => {
-  try {
-    const { items, ...orderData } = req.body;
-    const orderId = req.params.id;
-    await sb(`orders?id=eq.${orderId}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ ...orderData, updated_at: new Date().toISOString() }),
-    });
-    if (items?.length) {
-      await sb(`order_items?order_id=eq.${orderId}`, { method: 'DELETE' });
-      await sb('order_items', {
-        method: 'POST',
-        body: JSON.stringify(items.map(it => ({ ...it, order_id: orderId }))),
-      });
-    }
-    res.json({ success: true });
-  } catch (e) { res.status(500).json({ message: e.message }); }
-});
-
 app.delete('/api/orders/:id', auth, async (req, res) => {
   try {
     await sb(`orders?id=eq.${req.params.id}`, { method: 'PATCH', body: JSON.stringify({ is_deleted: true }) });
@@ -442,77 +400,8 @@ app.delete('/api/orders/:id', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// 鈹€鈹€ Backward-compat routes 鈹€鈹€
-app.post('/api/save-order', auth, async (req, res) => {
-  const { customer_name, order_date, shipping_fee, items } = req.body;
-  try {
-    let pTotal = 0, sTotal = 0;
-    (items||[]).forEach(it => {
-      const qty = Number(it.qty||it.quantity||0);
-      pTotal += qty * Number(it.p_price||it.purchase_price||0);
-      sTotal += qty * Number(it.s_price||it.sales_price||0);
-    });
-    const shipping = Number(shipping_fee||0);
-    const orderArr = await sb('orders?select=id', {
-      method: 'POST', headers: { 'Prefer': 'return=representation' },
-      body: JSON.stringify({
-        customer_name, order_date, shipping_fee: shipping,
-        purchase_total: pTotal, sales_total: sTotal + shipping,
-        sales_without_shipping: sTotal, profit: sTotal - pTotal, order_status: 'confirmed',
-      }),
-    });
-    const orderId = orderArr[0].id;
-    await sb('order_items', {
-      method: 'POST',
-      body: JSON.stringify((items||[]).map(it => ({
-        order_id: orderId,
-        product_name_cn: it.cn_name||it.product_name_cn||'',
-        product_name_en: it.en_name||it.product_name_en||'',
-        specification:   it.specification||'',
-        quantity:        Number(it.qty||it.quantity||0),
-        purchase_price:  Number(it.p_price||it.purchase_price||0),
-        sales_price:     Number(it.s_price||it.sales_price||0),
-        purchase_total:  Number(it.qty||it.quantity||0)*Number(it.p_price||it.purchase_price||0),
-        sales_total:     Number(it.qty||it.quantity||0)*Number(it.s_price||it.sales_price||0),
-      }))),
-    });
-    res.json({ success: true, message: '璁㈠崟淇濆瓨鎴愬姛', id: orderId });
-  } catch (e) { res.status(500).json({ success: false, message: e.message }); }
-});
-
-app.get('/orders-full', auth, async (req, res) => {
-  try { res.json(await fetchOrdersWithItems()); }
-  catch (e) { res.status(500).json({ message: e.message }); }
-});
-
-app.get('/order-detail/:id', auth, async (req, res) => {
-  try {
-    const [orderArr, items] = await Promise.all([
-      sb(`orders?id=eq.${req.params.id}&select=*`),
-      sb(`order_items?order_id=eq.${req.params.id}&select=*`),
-    ]);
-    if (!orderArr.length) return res.status(404).json({ message: 'Not found' });
-    res.json({ order: orderArr[0], items });
-  } catch (e) { res.status(500).json({ message: e.message }); }
-});
-
-app.put('/orders/:id', auth, async (req, res) => {
-  try {
-    const { items, ...orderData } = req.body;
-    await sb(`orders?id=eq.${req.params.id}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ ...orderData, updated_at: new Date().toISOString() }),
-    });
-    res.json({ success: true });
-  } catch (e) { res.status(500).json({ message: e.message }); }
-});
-
-app.delete('/delete-order/:id', auth, async (req, res) => {
-  try {
-    await sb(`orders?id=eq.${req.params.id}`, { method: 'PATCH', body: JSON.stringify({ is_deleted: true }) });
-    res.json({ success: true });
-  } catch (e) { res.status(500).json({ message: e.message }); }
-});
+// （已清理：legacy POST/PUT /api/orders、POST /api/save-order、/orders-full、
+//  /order-detail/:id、PUT /orders/:id、DELETE /delete-order/:id — 全部由 /api/orders/v2 + REST /api/orders/:id 取代）
 
 // 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // ANALYTICS

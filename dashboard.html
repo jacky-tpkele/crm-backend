@@ -1623,8 +1623,15 @@ async function initAnalyticsCharts() {
 // ══════════════════════════════
 // CUSTOMERS
 // ══════════════════════════════
-async function loadCustomers() {
-  try { S.customers = await api('/api/customers'); renderCustomers(); } catch(e) { toast(e.message,'err'); }
+async function loadCustomers(opts = {}) {
+  try {
+    const limit = 1000;
+    const offset = opts.append ? (S.customers||[]).length : 0;
+    const data = await api(`/api/customers?limit=${limit}&offset=${offset}`);
+    S.customers = opts.append ? [...(S.customers||[]), ...data] : data;
+    S._customersHasMore = data.length === limit;
+    renderCustomers();
+  } catch(e) { toast(e.message,'err'); }
 }
 function renderCustomers() {
   const q = document.getElementById('cu-search').value.toLowerCase();
@@ -1642,7 +1649,8 @@ function renderCustomers() {
         <button class="btn btn-sm" onclick="editCustomer('${c.id}')">编辑</button>
         <button class="btn btn-sm btn-danger" onclick="deleteCustomer('${c.id}')">删除</button>
       </div></td>
-    </tr>`).join('');
+    </tr>`).join('') +
+    (S._customersHasMore ? `<tr><td colspan="6" style="text-align:center;padding:14px"><a href="javascript:loadCustomers({append:true})" style="color:var(--p1);text-decoration:none;font-weight:600">＋ 加载更多客户 (已显示 ${(S.customers||[]).length} 条)</a></td></tr>` : '');
 }
 function openCustomerModal(id) {
   document.getElementById('cm-id').value = '';
@@ -1696,9 +1704,13 @@ async function deleteCustomer(id) {
 // ══════════════════════════════
 // PRODUCTS v2
 // ══════════════════════════════
-async function loadProducts() {
+async function loadProducts(opts = {}) {
   try {
-    S.products = await api('/api/products');
+    const limit = 1000;
+    const offset = opts.append ? (S.products||[]).length : 0;
+    const data = await api(`/api/products?limit=${limit}&offset=${offset}`);
+    S.products = opts.append ? [...(S.products||[]), ...data] : data;
+    S._productsHasMore = data.length === limit;
     // 加载默认供应商名（lazy join）
     if (S.suppliers?.length) {
       const sMap = new Map(S.suppliers.map(s=>[s.id, s.supplier_name]));
@@ -1732,7 +1744,8 @@ function renderProducts() {
         <button class="btn btn-sm btn-danger" onclick="deleteProduct('${p.id}')">删</button>
       </div></td>
     </tr>`;
-  }).join('');
+  }).join('') +
+  (S._productsHasMore ? `<tr><td colspan="9" style="text-align:center;padding:14px"><a href="javascript:loadProducts({append:true})" style="color:var(--p1);text-decoration:none;font-weight:600">＋ 加载更多产品 (已显示 ${(S.products||[]).length} 条)</a></td></tr>` : '');
 }
 function openProductModal() {
   document.getElementById('pm-id').value = '';
@@ -2044,8 +2057,15 @@ async function viewProduct(id) {
 // ══════════════════════════════
 // SUPPLIERS v2
 // ══════════════════════════════
-async function loadSuppliers() {
-  try { S.suppliers = await api('/api/suppliers'); renderSuppliers(); } catch(e) { toast(e.message,'err'); }
+async function loadSuppliers(opts = {}) {
+  try {
+    const limit = 1000;
+    const offset = opts.append ? (S.suppliers||[]).length : 0;
+    const data = await api(`/api/suppliers?limit=${limit}&offset=${offset}`);
+    S.suppliers = opts.append ? [...(S.suppliers||[]), ...data] : data;
+    S._suppliersHasMore = data.length === limit;
+    renderSuppliers();
+  } catch(e) { toast(e.message,'err'); }
 }
 function renderSuppliers() {
   const q = document.getElementById('su-search').value.toLowerCase();
@@ -2065,7 +2085,8 @@ function renderSuppliers() {
         <button class="btn btn-sm" onclick="editSupplier('${s.id}')">编辑</button>
         <button class="btn btn-sm btn-danger" onclick="deleteSupplier('${s.id}')">删</button>
       </div></td>
-    </tr>`).join('');
+    </tr>`).join('') +
+    (S._suppliersHasMore ? `<tr><td colspan="7" style="text-align:center;padding:14px"><a href="javascript:loadSuppliers({append:true})" style="color:var(--p1);text-decoration:none;font-weight:600">＋ 加载更多供应商 (已显示 ${(S.suppliers||[]).length} 条)</a></td></tr>` : '');
 }
 function openSupplierModal() {
   document.getElementById('sm-id').value = '';
@@ -2254,9 +2275,13 @@ async function pickProduct(productId) {
 // ══════════════════════════════
 // ORDERS v2
 // ══════════════════════════════
-async function loadOrders() {
+async function loadOrders(opts = {}) {
   try {
-    S.orders = await api('/api/orders');
+    const limit = 500;
+    const offset = opts.append ? (S.orders||[]).length : 0;
+    const data = await api(`/api/orders?limit=${limit}&offset=${offset}`);
+    S.orders = opts.append ? [...(S.orders||[]), ...data] : data;
+    S._ordersHasMore = data.length === limit;
     renderOrders();
     populateDocOrderDropdown && populateDocOrderDropdown();
   } catch(e) { toast(e.message,'err'); }
@@ -2294,7 +2319,8 @@ function renderOrders() {
       </div></td>
     </tr>`;
   }).join('');
-  document.getElementById('orStatus').textContent = `共 ${rows.length} 条订单`;
+  document.getElementById('orStatus').innerHTML = `共 ${rows.length} 条订单` +
+    (S._ordersHasMore ? ` <a href="javascript:loadOrders({append:true})" style="margin-left:8px;color:var(--p1);text-decoration:none;font-weight:600">＋ 加载更多 (已显示前 ${(S.orders||[]).length} 条)</a>` : '');
 }
 
 /* 订单全流程 4 步进度条：订单 → 采购单 → 发货 → 全部发完 */
