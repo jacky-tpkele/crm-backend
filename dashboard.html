@@ -359,6 +359,9 @@ tr:hover .del-row-btn{display:inline-block}
 
 /* ── Empty state ── */
 .empty-state{text-align:center;padding:44px 20px;color:var(--muted)}
+.pm-img-drop{display:flex;align-items:center;justify-content:center;min-height:140px;padding:16px;border:2px dashed rgba(16,185,129,.3);border-radius:10px;background:rgba(16,185,129,.04);cursor:pointer;transition:.2s;outline:none}
+.pm-img-drop:hover,.pm-img-drop:focus{border-color:#34D399;background:rgba(16,185,129,.08)}
+.pm-img-drop.drag{border-color:#10B981;background:rgba(16,185,129,.14)}
 .empty-state .icon{font-size:36px;margin-bottom:10px;opacity:.4}
 .empty-state p{font-size:14px}
 
@@ -937,7 +940,7 @@ tr:hover .del-row-btn{display:inline-block}
 </div>
 
 <!-- Product Modal -->
-<div class="modal-backdrop" id="productModal" style="display:none">
+<div class="modal-backdrop" id="productModal" style="display:none" onpaste="pmImgPaste(event)">
   <div class="modal modal-lg">
     <div class="modal-head">
       <h2 id="productModalTitle">新建产品</h2>
@@ -961,7 +964,25 @@ tr:hover .del-row-btn{display:inline-block}
         <div class="field" style="grid-column:1/-1;font-size:11.5px;color:var(--muted);margin-top:-6px">
           💡 销售价 USD 与 RMB 任填其一即可，离开输入框时按当日实时汇率自动补齐另一列；保存时也会再次校准。当日 USD→CNY: <span id="pm-fx-display" style="color:var(--p1);font-weight:600">加载中...</span>
         </div>
-        <div class="field"><label>产品图片URL</label><input type="text" id="pm-image" placeholder="https://..."></div>
+        <div class="field" style="grid-column:1/-1">
+          <label>产品图片</label>
+          <div id="pm-img-drop" class="pm-img-drop" tabindex="0"
+               onclick="document.getElementById('pm-img-input').click()"
+               ondragover="pmImgDragOver(event)" ondragleave="pmImgDragLeave(event)" ondrop="pmImgDrop(event)"
+               onpaste="pmImgPaste(event)">
+            <img id="pm-img-preview" style="display:none;max-height:140px;border-radius:8px">
+            <div id="pm-img-hint" style="text-align:center;color:var(--muted);font-size:13px;line-height:1.6">
+              📷 点击选择 / 拖拽 / <kbd style="background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);padding:1px 6px;border-radius:4px;color:#34D399;font-family:inherit;font-size:11px">Ctrl+V</kbd> 粘贴图片<br>
+              <span style="font-size:11.5px">支持 JPG / PNG / WEBP，自动压缩到 800px / ~100KB</span>
+            </div>
+          </div>
+          <input type="file" id="pm-img-input" accept="image/*" style="display:none" onchange="pmImgPickFile(event)">
+          <input type="hidden" id="pm-image">
+          <div style="display:flex;gap:8px;margin-top:6px">
+            <button type="button" class="btn btn-sm" onclick="pmImgClear()" id="pm-img-clear" style="display:none">✕ 移除图片</button>
+            <span id="pm-img-status" style="font-size:11.5px;color:var(--muted);align-self:center"></span>
+          </div>
+        </div>
       </div>
       <div class="items-section" style="margin-top:14px">
         <h3>📦 关联供应商（可多家）</h3>
@@ -1714,8 +1735,81 @@ function openProductModal() {
   document.getElementById('pmSupplierLinks').innerHTML = '';
   S._editingProductLinks = [];
   addProductSupplierRow();
+  pmImgClear();
   openModal('productModal');
   refreshPmFxDisplay();
+}
+
+/* ── 产品图片：拖拽 / 点击 / Ctrl+V 粘贴上传 + 客户端压缩 (max 800px, JPEG q=0.8) ── */
+function pmImgDragOver(e){ e.preventDefault(); e.currentTarget.classList.add('drag'); }
+function pmImgDragLeave(e){ e.currentTarget.classList.remove('drag'); }
+function pmImgDrop(e){
+  e.preventDefault(); e.currentTarget.classList.remove('drag');
+  const f = e.dataTransfer.files?.[0];
+  if (f && f.type.startsWith('image/')) pmImgCompressAndSet(f);
+}
+function pmImgPickFile(e){
+  const f = e.target.files?.[0];
+  if (f) pmImgCompressAndSet(f);
+}
+function pmImgPaste(e){
+  const items = e.clipboardData?.items || [];
+  for (const it of items) {
+    if (it.type.startsWith('image/')) {
+      const f = it.getAsFile();
+      if (f) { e.preventDefault(); pmImgCompressAndSet(f); return; }
+    }
+  }
+}
+function pmImgClear(){
+  document.getElementById('pm-image').value = '';
+  const prev = document.getElementById('pm-img-preview');
+  prev.src = ''; prev.style.display = 'none';
+  document.getElementById('pm-img-hint').style.display = '';
+  document.getElementById('pm-img-clear').style.display = 'none';
+  document.getElementById('pm-img-status').textContent = '';
+  const inp = document.getElementById('pm-img-input'); if (inp) inp.value = '';
+}
+async function pmImgCompressAndSet(file){
+  const status = document.getElementById('pm-img-status');
+  status.textContent = '处理中...';
+  try {
+    const dataUrl = await pmCompressImage(file, 800, 0.82);
+    document.getElementById('pm-image').value = dataUrl;
+    const prev = document.getElementById('pm-img-preview');
+    prev.src = dataUrl; prev.style.display = 'block';
+    document.getElementById('pm-img-hint').style.display = 'none';
+    document.getElementById('pm-img-clear').style.display = '';
+    const kb = Math.round(dataUrl.length * 0.75 / 1024); // base64 体积近似
+    status.textContent = `已压缩 · 约 ${kb} KB`;
+  } catch(e) {
+    status.textContent = '处理失败：' + (e.message||'');
+  }
+}
+function pmCompressImage(file, maxSize, quality){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('读取失败'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('图片解码失败'));
+      img.onload = () => {
+        let w = img.naturalWidth, h = img.naturalHeight;
+        if (w > maxSize || h > maxSize) {
+          if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+          else        { w = Math.round(w * maxSize / h); h = maxSize; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#fff'; ctx.fillRect(0,0,w,h); // PNG 透明转白底，避免 jpeg 黑底
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 /* ── 实时 USD→CNY 汇率（供产品销售价 USD/RMB 联动用，5 分钟缓存 + 多源兜底） ── */
@@ -1785,7 +1879,15 @@ async function editProduct(id) {
     document.getElementById('pm-sp-rmb').value   = product.default_sales_price_rmb||'';
     document.getElementById('pm-hs').value       = product.hs_code||'';
     document.getElementById('pm-cert').value     = product.certification||'';
-    document.getElementById('pm-image').value    = product.image_url||'';
+    pmImgClear();
+    if (product.image_url) {
+      document.getElementById('pm-image').value = product.image_url;
+      const prev = document.getElementById('pm-img-preview');
+      prev.src = product.image_url; prev.style.display = 'block';
+      document.getElementById('pm-img-hint').style.display = 'none';
+      document.getElementById('pm-img-clear').style.display = '';
+      document.getElementById('pm-img-status').textContent = '已加载';
+    }
     document.getElementById('pm-lead').value     = product.default_lead_time||'';
     document.getElementById('pmSupplierLinks').innerHTML = '';
     S._editingProductLinks = (suppliers||[]).map(s => s.id);
