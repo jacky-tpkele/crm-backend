@@ -103,6 +103,47 @@ function auth(req, res, next) {
   }
 }
 
+// ────────────────────────────────────────────────────────────────────
+// 回收站：列出软删除记录 + 一键恢复
+// ────────────────────────────────────────────────────────────────────
+const RECYCLE_TABLES = {
+  customers: { label: '客户',   nameField: 'customer_name', extraSelect: 'country,email,whatsapp' },
+  products:  { label: '产品',   nameField: 'product_name_cn', extraSelect: 'product_code,product_name_en,specification' },
+  suppliers: { label: '供应商', nameField: 'supplier_name', extraSelect: 'supplier_code,contact_name,phone' },
+  orders:    { label: '订单',   nameField: 'customer_name', extraSelect: 'order_number,order_date,sales_total,currency' },
+  logistics: { label: '物流',   nameField: 'tracking_number', extraSelect: 'carrier,order_name,shipping_date' },
+};
+app.get('/api/recycle-bin', auth, async (req, res) => {
+  try {
+    const out = {};
+    for (const [t, meta] of Object.entries(RECYCLE_TABLES)) {
+      const fields = ['id', meta.nameField, meta.extraSelect, 'updated_at', 'created_at'].filter(Boolean).join(',');
+      const data = await sb(`${t}?is_deleted=eq.true&select=${fields}&order=updated_at.desc&limit=200`).catch(() => []);
+      out[t] = { label: meta.label, name_field: meta.nameField, items: data };
+    }
+    res.json(out);
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.post('/api/recycle-bin/restore', auth, async (req, res) => {
+  try {
+    const { type, id } = req.body || {};
+    if (!RECYCLE_TABLES[type] || !id) return res.status(400).json({ message: '参数错误' });
+    await sb(`${type}?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify({ is_deleted: false, updated_at: new Date().toISOString() }) });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.delete('/api/recycle-bin/purge', auth, async (req, res) => {
+  try {
+    const { type, id } = req.body || {};
+    if (!RECYCLE_TABLES[type] || !id) return res.status(400).json({ message: '参数错误' });
+    // 真正物理删除（彻底清除）。注意：可能因外键约束失败（如订单仍有 line items 引用产品）
+    await sb(`${type}?id=eq.${id}`, { method: 'DELETE' });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
 // 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // AUTH
 // 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲

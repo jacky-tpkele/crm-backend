@@ -6,6 +6,7 @@
 <title>TPKELE CRM Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -502,6 +503,9 @@ tr:hover .del-row-btn{display:inline-block}
       <div class="nav-item" onclick="location.href='email.html'">
         <span class="nav-icon">✉</span><span class="nav-label">邮件</span>
       </div>
+      <div class="nav-item" onclick="openRecycleBin()">
+        <span class="nav-icon">♻</span><span class="nav-label">回收站</span>
+      </div>
     </div>
 
     <div class="nav-item" data-sec="settings">
@@ -622,6 +626,8 @@ tr:hover .del-row-btn{display:inline-block}
       <div class="card">
         <div class="card-head">
           <input type="text" id="cu-search" data-i18n-ph="phSearchCu" placeholder="Name / country / email..." oninput="renderCustomers()" style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:9px 14px;color:var(--text);font-size:13px;outline:none;width:260px">
+          <button class="btn" onclick="exportExcel('customers')" title="导出 Excel">📥 导出</button>
+          <button class="btn" onclick="importExcel('customers')" title="从 Excel 批量导入">📤 导入</button>
           <button class="btn btn-primary" data-i18n="btnNewCustomerCard" onclick="openCustomerModal()">＋ New Customer</button>
         </div>
         <div class="tbl-wrap">
@@ -642,6 +648,8 @@ tr:hover .del-row-btn{display:inline-block}
       <div class="card">
         <div class="card-head">
           <input type="text" id="pr-search" data-i18n-ph="phSearchPr" placeholder="Code / name / spec..." oninput="renderProducts()" style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:9px 14px;color:var(--text);font-size:13px;outline:none;width:260px">
+          <button class="btn" onclick="exportExcel('products')" title="导出 Excel">📥 导出</button>
+          <button class="btn" onclick="importExcel('products')" title="从 Excel 批量导入">📤 导入</button>
           <button class="btn btn-primary" data-i18n="btnNewProductCard" onclick="openProductModal()">＋ New Product</button>
         </div>
         <div class="tbl-wrap">
@@ -662,6 +670,8 @@ tr:hover .del-row-btn{display:inline-block}
       <div class="card">
         <div class="card-head">
           <input type="text" id="su-search" data-i18n-ph="phSearchSu" placeholder="Name / contact / phone..." oninput="renderSuppliers()" style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:9px 14px;color:var(--text);font-size:13px;outline:none;width:260px">
+          <button class="btn" onclick="exportExcel('suppliers')" title="导出 Excel">📥 导出</button>
+          <button class="btn" onclick="importExcel('suppliers')" title="从 Excel 批量导入">📤 导入</button>
           <button class="btn btn-primary" data-i18n="btnNewSupplierCard" onclick="openSupplierModal()">＋ New Supplier</button>
         </div>
         <div class="tbl-wrap">
@@ -695,6 +705,7 @@ tr:hover .del-row-btn{display:inline-block}
               <option value="completed" data-i18n="stCompleted">Completed</option>
             </select>
           </div>
+          <button class="btn" onclick="exportExcel('orders')" title="导出当前订单到 Excel">📥 导出</button>
           <button class="btn btn-primary" data-i18n="btnNewOrderCard" onclick="openOrderModal()">＋ New Order</button>
         </div>
         <div class="tbl-wrap">
@@ -1175,6 +1186,24 @@ tr:hover .del-row-btn{display:inline-block}
   </div>
 </div>
 
+<!-- 回收站 Modal -->
+<div class="modal-backdrop" id="recycleModal" style="display:none" onclick="closeOnBackdrop(event,'recycleModal')">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <div>
+        <h2>♻ 回收站</h2>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">最近软删除的记录 · 点「恢复」可一键还原 · 「彻底删除」不可撤销</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('recycleModal')">×</button>
+    </div>
+    <div id="recycleBody" style="max-height:65vh;overflow-y:auto"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="loadRecycleBin()">刷新</button>
+      <button class="btn" onclick="closeModal('recycleModal')">关闭</button>
+    </div>
+  </div>
+</div>
+
 <!-- AI Settings Modal -->
 <!-- AI Settings modal removed — now in ai.html -->
 
@@ -1391,6 +1420,274 @@ function toast(msg, type='ok') {
 }
 
 function closeOnBackdrop(e, id) { if (e.target === e.currentTarget) closeModal(id); }
+
+// ── 回收站 ──
+async function openRecycleBin() {
+  openModal('recycleModal');
+  await loadRecycleBin();
+}
+async function loadRecycleBin() {
+  const body = document.getElementById('recycleBody');
+  body.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted)">加载中...</div>';
+  try {
+    const data = await api('/api/recycle-bin');
+    const sections = Object.entries(data).filter(([t, s]) => s.items && s.items.length);
+    if (!sections.length) {
+      body.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">🎉 回收站是空的</div>';
+      return;
+    }
+    body.innerHTML = sections.map(([t, s]) => `
+      <details ${s.items.length<=10?'open':''} style="margin-bottom:8px;border:1px solid var(--border);border-radius:8px;background:var(--panel-2)">
+        <summary style="padding:10px 14px;cursor:pointer;font-weight:600;color:#34D399">${esc(s.label)} <span style="color:var(--muted);font-weight:300;font-size:12px">(${s.items.length})</span></summary>
+        <div style="padding:0 14px 10px">
+          <table style="width:100%;font-size:12px">
+            <thead><tr style="color:var(--muted);text-align:left">
+              <th style="padding:6px 0">名称</th><th>明细</th><th>删除时间</th><th style="text-align:right;min-width:170px">操作</th>
+            </tr></thead>
+            <tbody>
+              ${s.items.map(it => {
+                const main = it[s.name_field] || '(未命名)';
+                const extras = Object.entries(it).filter(([k,v]) => !['id', s.name_field, 'updated_at', 'created_at', 'is_deleted'].includes(k) && v).map(([k,v])=>esc(String(v))).slice(0,3).join(' · ');
+                return `<tr>
+                  <td style="padding:6px 8px 6px 0;color:var(--text)">${esc(main)}</td>
+                  <td style="padding:6px 8px 6px 0;color:var(--muted)">${extras||'—'}</td>
+                  <td style="padding:6px 8px 6px 0;color:var(--muted)">${esc((it.updated_at||'').slice(0,16).replace('T',' '))}</td>
+                  <td style="padding:6px 0;text-align:right">
+                    <button class="btn btn-sm" onclick="restoreItem('${t}','${it.id}')">↩ 恢复</button>
+                    <button class="btn btn-sm btn-danger" onclick="purgeItem('${t}','${it.id}','${esc(main).replace(/'/g,'')}')">彻底删</button>
+                  </td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </details>
+    `).join('');
+  } catch (e) {
+    body.innerHTML = `<div style="color:#fca5a5;padding:20px">加载失败：${esc(e.message||'')}</div>`;
+  }
+}
+async function restoreItem(type, id) {
+  try {
+    await api('/api/recycle-bin/restore', { method:'POST', body: JSON.stringify({ type, id }) });
+    toast('已恢复');
+    await loadRecycleBin();
+    // 顺手刷一下对应列表
+    if (type === 'customers') await loadCustomers();
+    else if (type === 'products') await loadProducts();
+    else if (type === 'suppliers') await loadSuppliers();
+    else if (type === 'orders') await loadOrders();
+  } catch (e) { toast(e.message, 'err'); }
+}
+async function purgeItem(type, id, name) {
+  if (!confirm(`确定要彻底删除「${name}」吗？\n此操作不可撤销，且可能因外键约束失败。`)) return;
+  try {
+    await api('/api/recycle-bin/purge', { method:'DELETE', body: JSON.stringify({ type, id }) });
+    toast('已彻底删除');
+    await loadRecycleBin();
+  } catch (e) { toast('删除失败：' + e.message, 'err'); }
+}
+
+// ══════════════════════════════
+// Excel 导入 / 导出
+// ══════════════════════════════
+const EXCEL_SCHEMA = {
+  customers: {
+    label: '客户',
+    fields: [
+      { key:'customer_name', header:'客户名称 *', required:true },
+      { key:'country',       header:'国家' },
+      { key:'email',         header:'邮箱' },
+      { key:'whatsapp',      header:'WhatsApp' },
+      { key:'payment_terms', header:'付款条件' },
+      { key:'shipping_address', header:'收货地址' },
+      { key:'customer_level',   header:'客户等级' },
+      { key:'notes',         header:'备注' },
+    ],
+    src: () => S.customers,
+  },
+  products: {
+    label: '产品',
+    fields: [
+      { key:'product_code',    header:'产品编号' },
+      { key:'category',        header:'分类' },
+      { key:'product_name_cn', header:'中文名 *', required:true },
+      { key:'product_name_en', header:'英文名' },
+      { key:'specification',   header:'规格' },
+      { key:'unit',            header:'单位' },
+      { key:'hs_code',         header:'HS 编码' },
+      { key:'certification',   header:'认证' },
+      { key:'default_purchase_price',   header:'默认采购价 RMB', num:true },
+      { key:'default_sales_price_usd',  header:'默认销售价 USD', num:true },
+      { key:'default_sales_price_rmb',  header:'默认销售价 RMB', num:true },
+      { key:'default_lead_time',header:'默认交期' },
+    ],
+    src: () => S.products,
+  },
+  suppliers: {
+    label: '供应商',
+    fields: [
+      { key:'supplier_code', header:'供应商编号' },
+      { key:'supplier_name', header:'供应商名称 *', required:true },
+      { key:'contact_name',  header:'联系人' },
+      { key:'phone',         header:'电话' },
+      { key:'email',         header:'邮箱' },
+      { key:'address',       header:'地址' },
+      { key:'payment_terms', header:'付款条件' },
+      { key:'status',        header:'状态' },
+      { key:'notes',         header:'备注' },
+    ],
+    src: () => S.suppliers,
+  },
+  orders: {
+    label: '订单',
+    fields: [
+      { key:'order_number',  header:'订单号' },
+      { key:'order_date',    header:'下单日期' },
+      { key:'customer_name', header:'客户' },
+      { key:'currency',      header:'币种' },
+      { key:'exchange_rate', header:'汇率', num:true },
+      { key:'sales_total',   header:'销售总额', num:true },
+      { key:'purchase_total',header:'采购总额', num:true },
+      { key:'profit_rmb',    header:'利润 RMB', num:true },
+      { key:'profit_rate',   header:'利润率%', num:true },
+      { key:'order_status',  header:'状态' },
+      { key:'remarks',       header:'备注' },
+    ],
+    src: () => S.orders,
+    importDisabled: true, // 订单含 line items 结构复杂，暂不支持导入
+  },
+};
+
+function exportExcel(type) {
+  const meta = EXCEL_SCHEMA[type];
+  if (!meta) return;
+  const rows = (meta.src()||[]).map(r => {
+    const row = {};
+    meta.fields.forEach(f => { row[f.header] = r[f.key] ?? ''; });
+    return row;
+  });
+  if (!rows.length) { toast('当前列表无数据', 'err'); return; }
+  const ws = XLSX.utils.json_to_sheet(rows);
+  // 列宽自适应（粗略）
+  ws['!cols'] = meta.fields.map(f => ({ wch: Math.max(f.header.length*2, 12) }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, meta.label);
+  const ts = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, `${meta.label}_${ts}.xlsx`);
+  toast(`已导出 ${rows.length} 条`);
+}
+
+function importExcel(type) {
+  const meta = EXCEL_SCHEMA[type];
+  if (!meta) return;
+  if (meta.importDisabled) { toast('订单导入暂不支持（含明细结构）', 'err'); return; }
+  // 用一个临时 input 触发选择
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = '.xlsx,.xls,.csv';
+  inp.onchange = async (e) => {
+    const f = e.target.files?.[0]; if (!f) return;
+    try {
+      const buf = await f.arrayBuffer();
+      const wb = XLSX.read(buf, { type:'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { defval:'' });
+      if (!rows.length) { toast('Excel 是空的', 'err'); return; }
+      showImportPreview(type, meta, rows);
+    } catch (err) { toast('解析失败：' + err.message, 'err'); }
+  };
+  inp.click();
+}
+
+function showImportPreview(type, meta, rows) {
+  // 按列名匹配（header → key）
+  const headerToKey = {};
+  meta.fields.forEach(f => { headerToKey[f.header] = f.key; });
+  const normalized = rows.map((r, idx) => {
+    const out = { __row: idx + 2 };  // Excel 行号（含表头）
+    Object.entries(r).forEach(([h, v]) => {
+      const k = headerToKey[h] || headerToKey[h.replace(/[\s*]+/g,'')] || h;
+      if (meta.fields.find(f => f.key === k)) out[k] = v;
+    });
+    return out;
+  });
+  // 校验必填
+  const required = meta.fields.filter(f => f.required).map(f => f.key);
+  const errors = [];
+  normalized.forEach(r => {
+    required.forEach(k => { if (!r[k] || String(r[k]).trim()==='') errors.push(`行 ${r.__row}：「${meta.fields.find(f=>f.key===k).header}」不能为空`); });
+  });
+
+  const previewHtml = `
+    <div style="font-size:13px;color:var(--text);margin-bottom:10px">
+      📋 共解析 <strong style="color:#34D399">${normalized.length}</strong> 行${errors.length?` · <span style="color:#fca5a5">${errors.length} 处错误</span>`:''}
+    </div>
+    ${errors.length ? `<div style="max-height:120px;overflow-y:auto;padding:8px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:6px;font-size:11.5px;color:#fca5a5;margin-bottom:10px">${errors.slice(0,20).map(esc).join('<br>')}${errors.length>20?'<br>...（剩余 '+(errors.length-20)+' 条）':''}</div>`:''}
+    <div style="max-height:50vh;overflow:auto;border:1px solid var(--border);border-radius:8px">
+      <table style="width:100%;font-size:11.5px">
+        <thead style="position:sticky;top:0;background:var(--panel);z-index:1">
+          <tr>${meta.fields.map(f=>`<th style="padding:6px 8px;text-align:left;color:var(--muted);border-bottom:1px solid var(--border)">${esc(f.header)}</th>`).join('')}</tr>
+        </thead>
+        <tbody>
+          ${normalized.slice(0,200).map(r=>`<tr>${meta.fields.map(f=>{
+            const v = r[f.key]; const bad = f.required && (!v||String(v).trim()==='');
+            return `<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);${bad?'color:#fca5a5':'color:var(--text)'}">${esc(String(v??''))}</td>`;
+          }).join('')}</tr>`).join('')}
+        </tbody>
+      </table>
+      ${normalized.length>200?`<div style="text-align:center;padding:10px;color:var(--muted);font-size:11.5px">仅显示前 200 行预览</div>`:''}
+    </div>`;
+
+  const html = `
+    <div class="modal-backdrop" id="importPreviewModal" style="display:flex" onclick="if(event.target===event.currentTarget) closeImportPreview()">
+      <div class="modal modal-lg">
+        <div class="modal-head">
+          <h2>导入 ${esc(meta.label)} 预览</h2>
+          <button class="modal-close" onclick="closeImportPreview()">×</button>
+        </div>
+        ${previewHtml}
+        <div class="modal-footer">
+          <button class="btn" onclick="closeImportPreview()">取消</button>
+          <button class="btn btn-primary" ${errors.length?'disabled style="opacity:.4;cursor:not-allowed"':''} onclick="confirmImport('${type}', ${normalized.length})">确认导入 ${normalized.length} 条</button>
+        </div>
+      </div>
+    </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+  window._pendingImport = { type, rows: normalized.map(r => { const { __row, ...rest } = r; return rest; }) };
+}
+function closeImportPreview() {
+  document.getElementById('importPreviewModal')?.remove();
+  window._pendingImport = null;
+}
+async function confirmImport(type, count) {
+  const data = window._pendingImport;
+  if (!data || data.type !== type) return;
+  const btn = document.querySelector('#importPreviewModal .btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = '导入中 0 / ' + count; }
+  let ok = 0, fail = 0;
+  const failures = [];
+  // 串行 POST（保证报错信息清晰；批量优化以后再说）
+  for (let i = 0; i < data.rows.length; i++) {
+    const row = data.rows[i];
+    // 数字字段强转
+    const meta = EXCEL_SCHEMA[type];
+    meta.fields.forEach(f => { if (f.num && row[f.key] !== '' && row[f.key] != null) row[f.key] = Number(row[f.key])||0; });
+    try {
+      await api(`/api/${type}`, { method:'POST', body: JSON.stringify(row) });
+      ok++;
+    } catch (e) {
+      fail++; failures.push(`行 ${i+2}: ${e.message}`);
+    }
+    if (btn) btn.textContent = `导入中 ${ok+fail} / ${count}`;
+  }
+  toast(`导入完成：成功 ${ok} 条${fail?'，失败 '+fail+' 条':''}`, fail?'err':'ok');
+  if (failures.length) console.warn('导入失败明细：\n' + failures.join('\n'));
+  closeImportPreview();
+  if (type === 'customers') await loadCustomers();
+  else if (type === 'products') await loadProducts();
+  else if (type === 'suppliers') await loadSuppliers();
+}
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 function openModal(id) { document.getElementById(id).style.display = 'flex'; }
 
