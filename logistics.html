@@ -333,7 +333,27 @@ async function loadAll() {
     S.orders    = orders;
     renderList();
     populateOrderSelect();
+    handleHashFocus();
   } catch(e) { toast(e.message, 'err'); }
+}
+// 全局搜索点物流单时带的 #单号 → 自动填到搜索框 + 高亮该卡片
+function handleHashFocus() {
+  const h = decodeURIComponent((location.hash||'').replace(/^#/, '')).trim();
+  if (!h) return;
+  const inp = document.getElementById('searchInput');
+  if (inp) { inp.value = h; renderList(); }
+  setTimeout(() => {
+    const cards = document.querySelectorAll('.log-card');
+    cards.forEach(c => {
+      if (c.querySelector('.tracking-num')?.textContent.includes(h)) {
+        c.scrollIntoView({ behavior:'smooth', block:'center' });
+        c.style.transition = 'box-shadow .3s, border-color .3s';
+        c.style.boxShadow = '0 0 0 3px rgba(16,185,129,.5)';
+        c.style.borderColor = '#10B981';
+        setTimeout(() => { c.style.boxShadow = ''; c.style.borderColor = ''; }, 2500);
+      }
+    });
+  }, 200);
 }
 
 function populateOrderSelect() {

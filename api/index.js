@@ -11,9 +11,28 @@ app.use(express.json({ limit: '20mb' }));
 
 const SB_URL  = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SB_KEY  = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const SECRET  = process.env.JWT_SECRET   || 'xhon-crm-secret-2025';
-const CRM_USER= process.env.CRM_USERNAME || 'TPKELE';
-const CRM_PASS= process.env.CRM_PASSWORD || '662255';
+
+// ──────────────────────────────────────────
+// 安全启动校验：环境变量必须存在，否则拒绝运行
+// 没有这层防线，攻击者会用历史默认密钥/密码直接登录
+// ──────────────────────────────────────────
+function assertEnv(name, opts = {}) {
+  const v = process.env[name];
+  if (!v) {
+    const msg = `[SECURITY] 启动失败：环境变量 ${name} 未设置。请到 Vercel → Settings → Environment Variables 补上。`;
+    console.error(msg);
+    throw new Error(msg);
+  }
+  if (opts.minLength && v.length < opts.minLength) {
+    console.warn(`[SECURITY-WARN] 环境变量 ${name} 长度 ${v.length} < 推荐 ${opts.minLength}，安全性较弱。建议尽快更新为更长的随机字符串。`);
+  }
+  return v;
+}
+const SECRET   = assertEnv('JWT_SECRET', { minLength: 32 });
+const CRM_USER = assertEnv('CRM_USERNAME');
+const CRM_PASS = assertEnv('CRM_PASSWORD', { minLength: 6 });
+// VAULT_ENCRYPTION_KEY 保持回退到 SECRET（如果之前没单独设过，密码保险柜里的现有数据是用 SECRET 加密的，
+// 强制独立 key 会让历史数据解不开。建议你后期单独设它，但先不强制。）
 const VAULT_KEY = crypto
   .createHash('sha256')
   .update(process.env.VAULT_ENCRYPTION_KEY || SECRET)

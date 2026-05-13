@@ -359,6 +359,12 @@ tr:hover .del-row-btn{display:inline-block}
 
 /* ── Empty state ── */
 .empty-state{text-align:center;padding:44px 20px;color:var(--muted)}
+/* 订单全流程迷你进度条 */
+.flow-row{display:inline-flex;align-items:center;min-width:90px}
+.flow-dot{width:9px;height:9px;border-radius:50%;background:#244841;border:2px solid #162623;display:inline-block;flex-shrink:0;transition:.2s}
+.flow-dot.ok{background:#10B981;box-shadow:0 0 6px rgba(16,185,129,.5)}
+.flow-line{flex:1;height:2px;background:rgba(36,72,65,.6);min-width:14px}
+.flow-line.ok{background:#10B981}
 .pm-img-drop{display:flex;align-items:center;justify-content:center;min-height:140px;padding:16px;border:2px dashed rgba(16,185,129,.3);border-radius:10px;background:rgba(16,185,129,.04);cursor:pointer;transition:.2s;outline:none}
 .pm-img-drop:hover,.pm-img-drop:focus{border-color:#34D399;background:rgba(16,185,129,.08)}
 .pm-img-drop.drag{border-color:#10B981;background:rgba(16,185,129,.14)}
@@ -518,7 +524,8 @@ tr:hover .del-row-btn{display:inline-block}
     <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileSidebar()">☰</button>
     <div class="search-wrap">
       <span class="si">🔍</span>
-      <input type="text" id="globalSearch" data-i18n-ph="phGlobalSearch" placeholder="Search orders, customers..." autocomplete="off">
+      <input type="text" id="globalSearch" data-i18n-ph="phGlobalSearch" placeholder="搜索订单/客户/产品/供应商/询盘/物流  ⌘ K  /  Ctrl+K" autocomplete="off">
+      <kbd id="searchKbd" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.32);color:#34D399;padding:2px 7px;border-radius:5px;font-size:11px;font-family:inherit;pointer-events:none;letter-spacing:.5px">Ctrl K</kbd>
       <div class="search-dropdown" id="searchDropdown"></div>
     </div>
     <a href="doc-maker.html" target="_blank" style="padding:7px 14px;border:1px solid rgba(0,190,255,0.3);border-radius:8px;background:rgba(0,180,255,0.06);color:rgba(0,210,255,0.85);font-size:13px;text-decoration:none;white-space:nowrap;transition:.2s" onmouseover="this.style.background='rgba(0,190,255,0.14)'" onmouseout="this.style.background='rgba(0,180,255,0.06)'">📝 手动制作文件</a>
@@ -693,7 +700,7 @@ tr:hover .del-row-btn{display:inline-block}
         <div class="tbl-wrap">
           <table>
             <thead><tr>
-              <th data-i18n="thDate">Date</th><th data-i18n="thCustomer">Customer</th><th data-i18n="navProducts">Products</th><th data-i18n="thSalesAmt">Sales</th><th data-i18n="thPurchaseAmt">Purchase</th><th data-i18n="thProfit">Profit</th><th data-i18n="thStatus">Status</th><th data-i18n="thActions">Actions</th>
+              <th data-i18n="thDate">Date</th><th data-i18n="thCustomer">Customer</th><th data-i18n="navProducts">Products</th><th data-i18n="thSalesAmt">Sales</th><th data-i18n="thPurchaseAmt">Purchase</th><th data-i18n="thProfit">Profit</th><th data-i18n="thStatus">Status</th><th>流程</th><th data-i18n="thActions">Actions</th>
             </tr></thead>
             <tbody id="orBody"></tbody>
           </table>
@@ -2270,6 +2277,7 @@ function renderOrders() {
   body.innerHTML = rows.map(o => {
     const itemsLabel = (o.items||[]).map(i=>esc(i.product_name_cn||i.product_name_en)).slice(0,2).join(', ') + ((o.items||[]).length>2?`...+${(o.items||[]).length-2}`:'');
     const cur = o.currency||'USD';
+    const flow = orderFlowSteps(o);
     return `<tr>
       <td data-label="Date">${esc((o.order_date||'').slice(0,10))}<div style="font-size:11px;color:var(--muted)">${esc(o.order_number||'')}</div></td>
       <td data-label="Customer">${esc(o.customer_name||'—')}</td>
@@ -2278,6 +2286,7 @@ function renderOrders() {
       <td data-label="Purchase">¥${fmtN(o.purchase_total||0)}</td>
       <td data-label="Profit" style="color:${(o.profit_rmb||0)>=0?'var(--p1)':'var(--danger)'}">¥${fmtN(o.profit_rmb||0)}<div style="font-size:11px;color:var(--muted)">${o.profit_rate||0}%</div></td>
       <td data-label="Status"><span class="badge badge-${o.order_status||'confirmed'}">${esc(o.order_status||'confirmed')}</span></td>
+      <td data-label="Flow">${flow}</td>
       <td data-label=""><div class="actions-cell">
         <button class="btn btn-sm" onclick="viewOrderDetail('${o.id}')">详情</button>
         <button class="btn btn-sm" onclick="editOrder('${o.id}')">编辑</button>
@@ -2286,6 +2295,32 @@ function renderOrders() {
     </tr>`;
   }).join('');
   document.getElementById('orStatus').textContent = `共 ${rows.length} 条订单`;
+}
+
+/* 订单全流程 4 步进度条：订单 → 采购单 → 发货 → 全部发完 */
+function orderFlowSteps(o) {
+  const hasOrder = true;
+  const hasPo    = (S.purchaseOrders||[]).some(p => p.order_id === o.id);
+  const orderLogs = (S.logistics||[]).filter(l => l.order_id === o.id);
+  const hasShip  = orderLogs.length > 0;
+  // 全部发完 = 所有 line item 已发数量 ≥ 订单数量
+  let fullyShipped = false;
+  if (hasShip && (o.items||[]).length) {
+    const shippedMap = {};
+    orderLogs.forEach(l => (l.shipment_items||[]).forEach(it => {
+      shippedMap[it.product_id] = (shippedMap[it.product_id]||0) + Number(it.quantity||0);
+    }));
+    fullyShipped = (o.items||[]).every(i => (shippedMap[i.product_id]||0) >= Number(i.quantity||0));
+  }
+  const steps = [
+    { ok: hasOrder, label: '订单' },
+    { ok: hasPo,    label: '采购' },
+    { ok: hasShip,  label: '发货' },
+    { ok: fullyShipped, label: '完成' },
+  ];
+  return `<div class="flow-row" title="${steps.map(s=>s.label+(s.ok?'✓':'✗')).join(' · ')}">
+    ${steps.map((s,i) => `<span class="flow-dot ${s.ok?'ok':''}"></span>${i<3?'<span class="flow-line '+(s.ok?'ok':'')+'"></span>':''}`).join('')}
+  </div>`;
 }
 function populateOrderCustomerDropdown() {
   const sel = document.getElementById('om-customer-select');
@@ -3197,12 +3232,29 @@ function exportCSV(order) {
 (function() {
   const inp  = document.getElementById('globalSearch');
   const drop = document.getElementById('searchDropdown');
+  const kbd  = document.getElementById('searchKbd');
 
   inp.addEventListener('input', doGlobalSearch);
-  inp.addEventListener('keydown', e => { if (e.key === 'Escape') closeGlobalSearch(); });
+  inp.addEventListener('focus', () => { if (kbd) kbd.style.display = 'none'; if (inp.value.trim()) doGlobalSearch(); });
+  inp.addEventListener('blur',  () => setTimeout(()=>{ if (!drop.classList.contains('open') && kbd) kbd.style.display = ''; }, 150));
+  inp.addEventListener('keydown', e => { if (e.key === 'Escape') { closeGlobalSearch(); inp.blur(); } });
   document.addEventListener('click', e => { if (!e.target.closest('.search-wrap')) closeGlobalSearch(); });
 
-  function closeGlobalSearch() { drop.classList.remove('open'); inp.value = ''; }
+  // ⌘K / Ctrl+K 全局快捷键聚焦搜索
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+      e.preventDefault();
+      inp.focus();
+      inp.select();
+    }
+    // 「/」也能聚焦（GitHub 风格），前提是当前焦点不在 input/textarea 里
+    if (e.key === '/' && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)) {
+      e.preventDefault();
+      inp.focus();
+    }
+  });
+
+  function closeGlobalSearch() { drop.classList.remove('open'); if (kbd) kbd.style.display = ''; }
 
   function doGlobalSearch() {
     const q = inp.value.trim().toLowerCase();
@@ -3224,6 +3276,9 @@ function exportCSV(order) {
       { key:'inquiries', icon:'📋', label: zh?'询盘':'Inquiries',
         items: S.inquiries.filter(i => [i.customer_name,i.notes].join(' ').toLowerCase().includes(q))
           .slice(0,4).map(i => ({ id:i.id, title:i.customer_name||'—', sub:(i.inquiry_date||'').slice(0,10)+(i.notes?' · '+i.notes.slice(0,30):'') })) },
+      { key:'logistics', icon:'📦', label: zh?'物流':'Logistics',
+        items: (S.logistics||[]).filter(l => [l.tracking_number,l.carrier,l.order_name].join(' ').toLowerCase().includes(q))
+          .slice(0,4).map(l => ({ id:l.id, title:l.tracking_number||'—', sub:[l.carrier,l.order_name,(l.shipping_date||'').slice(0,10)].filter(Boolean).join(' · ') })) },
     ].filter(s => s.items.length > 0);
 
     if (!sections.length) {
@@ -3244,6 +3299,13 @@ function exportCSV(order) {
 
   window.gotoResult = function(sec, id) {
     closeGlobalSearch();
+    if (sec === 'logistics') {
+      // 物流单独立页，新标签页打开 + URL hash 传单号定位
+      const item = (S.logistics||[]).find(x => x.id === id);
+      const num = item?.tracking_number || '';
+      window.open('logistics.html' + (num ? '#' + encodeURIComponent(num) : ''), '_blank');
+      return;
+    }
     navigate(sec);
     setTimeout(() => {
       const btn = document.querySelector(`#sec-${sec} [onclick*="${id}"]`);
@@ -3267,8 +3329,12 @@ async function init() {
   setLang(S.lang);
   loadSettings();
   await Promise.all([loadCustomers(), loadSuppliers()]);
-  await Promise.all([loadOrders(), loadProducts(), loadInquiries(), loadPurchaseOrders()]);
+  await Promise.all([loadOrders(), loadProducts(), loadInquiries(), loadPurchaseOrders(), loadLogisticsForSearch()]);
   await loadDashboard();
+}
+// 仪表盘只为全局搜索拉一份物流摘要（轻量）
+async function loadLogisticsForSearch() {
+  try { S.logistics = await api('/api/logistics'); } catch(_) { S.logistics = []; }
 }
 
 init().catch(e => { console.error(e); if (e.message?.includes('401')) logout(); });
