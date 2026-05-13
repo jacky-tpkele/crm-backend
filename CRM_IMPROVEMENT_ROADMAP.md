@@ -112,10 +112,18 @@
 - 客户开发建议
 **预估**：3~5 天
 
-### T4.3 多用户多角色  ⬜
-- `users` 表 + `role` 列（admin / sales / purchase）
-- 前端按角色显示不同模块/操作
-**预估**：2~3 天
+### T4.3 多用户多角色  ⬜（**结构已预留 🟩 / 业务过滤未做**）
+- ✅ users 表已建（admin/sales/purchase/viewer 4 种角色）
+- ✅ JWT 携带 user_id + role
+- ✅ 业务表已加 created_by 列（customers/products/suppliers/orders/logistics/inquiries/purchase_orders）
+- ✅ POST 端点自动写入 created_by
+- ✅ /api/users + /api/users/me + requireRole 中间件
+- ✅ 前端顶栏显示当前用户名 + 角色徽章
+- ⬜ 真正多用户启用：后端按角色过滤数据（admin 看全部 / sales 只看自己 created_by 的 / purchase 只看采购单）
+- ⬜ 用户管理 UI（侧栏「团队成员」页）
+- ⬜ 业务员维度的报表分析
+
+**预估**：2~3 天（剩余部分）
 
 ---
 
@@ -132,6 +140,7 @@
 | 2026-05-14 | T2.3 清理 legacy 路由 | `eb7db40` |
 | 2026-05-14 | T3.2 回收站 | `cc3ff1f` |
 | 2026-05-14 | T3.3 Excel 导入/导出 | `cc3ff1f` |
+| 2026-05-14 | T4.3-prep 多用户结构预留（schema + 后端 + JWT + 顶栏） | 待 |
 
 ---
 

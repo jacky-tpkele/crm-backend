@@ -147,14 +147,126 @@ app.delete('/api/recycle-bin/purge', auth, async (req, res) => {
 // 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // AUTH
 // 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
-app.post('/api/login', (req, res) => {
+// AUTH + USER MANAGEMENT
+// ────────────────────────────────────────────────────────────────────
+// 多用户结构预留：当前只有管理员（环境变量配置），但 schema 和后端
+// 都已支持 users 表 + role + created_by。未来加角色 sales/purchase 时
+// 只需 INSERT users 行 + 在路由里加 requireRole 即可。
+// ────────────────────────────────────────────────────────────────────
+
+let _adminUserCache = null;
+async function ensureAdminUser() {
+  if (_adminUserCache) return _adminUserCache;
+  const username = encodeURIComponent(CRM_USER);
+  const existing = await sb(`users?username=eq.${username}&select=*`).catch(() => []);
+  if (existing.length) {
+    // 强制 role=admin，保持环境变量账号永远是管理员
+    if (existing[0].role !== 'admin' || !existing[0].is_active) {
+      await sb(`users?id=eq.${existing[0].id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ role: 'admin', is_active: true, updated_at: new Date().toISOString() }),
+      }).catch(()=>{});
+    }
+    _adminUserCache = { ...existing[0], role: 'admin', is_active: true };
+    return _adminUserCache;
+  }
+  const created = await sb('users?select=*', {
+    method: 'POST', headers: { 'Prefer': 'return=representation' },
+    body: JSON.stringify({
+      username: CRM_USER,
+      display_name: 'Administrator',
+      role: 'admin',
+      is_active: true,
+    }),
+  }).catch(() => null);
+  if (created && created[0]) { _adminUserCache = created[0]; return _adminUserCache; }
+  // bootstrap 失败兜底（数据库不可达等）：返回内存伪 user，让登录还能用
+  return { id: null, username: CRM_USER, role: 'admin', display_name: 'Administrator' };
+}
+
+app.post('/api/login', async (req, res) => {
   const { username, password } = req.body || {};
   if (!username || !password)
     return res.status(400).json({ message: 'Username and password required' });
   if (username !== CRM_USER || password !== CRM_PASS)
     return res.status(401).json({ message: 'Invalid credentials' });
-  const token = jwt.sign({ username }, SECRET, { expiresIn: '7d' });
-  res.json({ token, username });
+  const u = await ensureAdminUser();
+  // 异步更新 last_login（不阻塞返回）
+  if (u.id) sb(`users?id=eq.${u.id}`, { method:'PATCH', body: JSON.stringify({ last_login_at: new Date().toISOString() }) }).catch(()=>{});
+  const token = jwt.sign(
+    { user_id: u.id, username: u.username, role: u.role || 'admin' },
+    SECRET, { expiresIn: '7d' }
+  );
+  res.json({
+    token, username: u.username,
+    user: { id: u.id, username: u.username, role: u.role || 'admin', display_name: u.display_name || u.username },
+  });
+});
+
+// 角色权限中间件：requireRole('admin') 或 requireRole('admin','sales')
+function requireRole(...roles) {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({ message: '权限不足 / Insufficient permissions' });
+    }
+    next();
+  };
+}
+
+// 当前登录用户信息
+app.get('/api/users/me', auth, async (req, res) => {
+  try {
+    if (!req.user.user_id) {
+      return res.json({ id: null, username: req.user.username, role: req.user.role, display_name: req.user.username });
+    }
+    const rows = await sb(`users?id=eq.${req.user.user_id}&select=id,username,display_name,role,email,phone,is_active,last_login_at,created_at`);
+    if (!rows.length) return res.json({ id: null, username: req.user.username, role: req.user.role, display_name: req.user.username });
+    res.json(rows[0]);
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 用户列表（管理员用，预留给以后的"团队成员"页面）
+app.get('/api/users', auth, requireRole('admin'), async (req, res) => {
+  try {
+    const data = await sb('users?is_deleted=eq.false&select=id,username,display_name,role,email,is_active,last_login_at,created_at&order=created_at.desc');
+    res.json(data);
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 创建/更新/停用用户（管理员预留接口，目前没前端 UI 调用，但结构已通）
+app.post('/api/users', auth, requireRole('admin'), async (req, res) => {
+  try {
+    const { username, display_name, role, email, phone } = req.body || {};
+    if (!username || !role) return res.status(400).json({ message: 'username & role required' });
+    if (!['admin','sales','purchase','viewer'].includes(role)) return res.status(400).json({ message: 'invalid role' });
+    const data = await sb('users?select=*', {
+      method:'POST', headers:{'Prefer':'return=representation'},
+      body: JSON.stringify({ username, display_name, role, email, phone, is_active: true }),
+    });
+    res.json({ success: true, user: data[0] });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.patch('/api/users/:id', auth, requireRole('admin'), async (req, res) => {
+  try {
+    const allowed = ['display_name','role','email','phone','is_active'];
+    const patch = {};
+    for (const k of allowed) if (k in req.body) patch[k] = req.body[k];
+    patch.updated_at = new Date().toISOString();
+    await sb(`users?id=eq.${req.params.id}`, { method:'PATCH', body: JSON.stringify(patch) });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.delete('/api/users/:id', auth, requireRole('admin'), async (req, res) => {
+  try {
+    // 不允许删除自己 / 不允许删除环境变量管理员
+    if (req.params.id === req.user.user_id) return res.status(400).json({ message: 'Cannot delete yourself' });
+    const rows = await sb(`users?id=eq.${req.params.id}&select=username`);
+    if (rows[0]?.username === CRM_USER) return res.status(400).json({ message: 'Cannot delete the env-bound admin' });
+    await sb(`users?id=eq.${req.params.id}`, { method:'PATCH', body: JSON.stringify({ is_deleted: true, is_active: false, updated_at: new Date().toISOString() }) });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
 // 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
@@ -233,9 +345,11 @@ app.get('/api/customers', auth, async (req, res) => {
 
 app.post('/api/customers', auth, async (req, res) => {
   try {
+    const payload = { ...req.body };
+    if (req.user.user_id && !payload.created_by) payload.created_by = req.user.user_id;
     const data = await sb('customers?select=*', {
       method: 'POST', headers: { 'Prefer': 'return=representation' },
-      body: JSON.stringify(req.body),
+      body: JSON.stringify(payload),
     });
     res.json({ success: true, data: data[0] });
   } catch (e) { res.status(500).json({ message: e.message }); }
@@ -274,9 +388,11 @@ app.get('/api/products', auth, async (req, res) => {
 
 app.post('/api/products', auth, async (req, res) => {
   try {
+    const payload = { ...req.body };
+    if (req.user.user_id && !payload.created_by) payload.created_by = req.user.user_id;
     const data = await sb('products?select=*', {
       method: 'POST', headers: { 'Prefer': 'return=representation' },
-      body: JSON.stringify(req.body),
+      body: JSON.stringify(payload),
     });
     res.json({ success: true, data: data[0] });
   } catch (e) { res.status(500).json({ message: e.message }); }
@@ -315,9 +431,11 @@ app.get('/api/suppliers', auth, async (req, res) => {
 
 app.post('/api/suppliers', auth, async (req, res) => {
   try {
+    const payload = { ...req.body };
+    if (req.user.user_id && !payload.created_by) payload.created_by = req.user.user_id;
     const data = await sb('suppliers?select=*', {
       method: 'POST', headers: { 'Prefer': 'return=representation' },
-      body: JSON.stringify(req.body),
+      body: JSON.stringify(payload),
     });
     res.json({ success: true, data: data[0] });
   } catch (e) { res.status(500).json({ message: e.message }); }
@@ -351,9 +469,11 @@ app.get('/api/inquiries', auth, async (req, res) => {
 
 app.post('/api/inquiries', auth, async (req, res) => {
   try {
+    const payload = { ...req.body };
+    if (req.user.user_id && !payload.created_by) payload.created_by = req.user.user_id;
     const data = await sb('inquiries?select=*', {
       method: 'POST', headers: { 'Prefer': 'return=representation' },
-      body: JSON.stringify(req.body),
+      body: JSON.stringify(payload),
     });
     res.json({ success: true, data: data[0] });
   } catch (e) { res.status(500).json({ message: e.message }); }
@@ -994,16 +1114,18 @@ app.get('/api/logistics', auth, async (req, res) => {
 app.post('/api/logistics', auth, async (req, res) => {
   try {
     const { order_id, order_name, tracking_number, carrier, weight, volume, shipping_date, estimated_arrival, notes, shipment_items } = req.body;
+    const payload = {
+      order_id: order_id || null, order_name: order_name || '',
+      tracking_number: tracking_number || '', carrier: carrier || '',
+      weight: weight || null, volume: volume || null,
+      shipping_date: shipping_date || null, estimated_arrival: estimated_arrival || null,
+      notes: notes || '',
+      shipment_items: Array.isArray(shipment_items) ? shipment_items : [],
+    };
+    if (req.user.user_id) payload.created_by = req.user.user_id;
     const data = await sb('logistics?select=id', {
       method: 'POST', headers: { 'Prefer': 'return=representation' },
-      body: JSON.stringify({
-        order_id: order_id || null, order_name: order_name || '',
-        tracking_number: tracking_number || '', carrier: carrier || '',
-        weight: weight || null, volume: volume || null,
-        shipping_date: shipping_date || null, estimated_arrival: estimated_arrival || null,
-        notes: notes || '',
-        shipment_items: Array.isArray(shipment_items) ? shipment_items : [],
-      }),
+      body: JSON.stringify(payload),
     });
     res.json({ success: true, id: data[0].id });
   } catch (e) { res.status(500).json({ message: e.message }); }
@@ -1525,6 +1647,7 @@ app.post('/api/orders/v2', auth, async (req, res) => {
         exchange_rate: Number(exchange_rate || 7.2),
         order_status: order_status || 'confirmed',
         remarks: remarks || '',
+        ...(req.user.user_id ? { created_by: req.user.user_id } : {}),
         ...totals,
       }),
     });

@@ -542,6 +542,7 @@ tr:hover .del-row-btn{display:inline-block}
         <button class="user-btn" id="userBtn" onclick="toggleUserMenu()">
           <div class="user-avatar" id="userAvatar">T</div>
           <span id="userNameDisplay">TPKELE</span>
+          <span class="role-badge" id="userRoleBadge" style="display:none;font-size:10px;padding:1px 6px;border-radius:999px;margin-left:6px;background:rgba(16,185,129,.18);color:#34D399;border:1px solid rgba(16,185,129,.35);font-weight:600;letter-spacing:.5px">ADMIN</span>
           <span style="color:var(--muted)">▾</span>
         </button>
         <div class="user-dropdown" id="userDropdown">
@@ -1694,6 +1695,7 @@ function openModal(id) { document.getElementById(id).style.display = 'flex'; }
 function logout() {
   localStorage.removeItem('crm_token');
   localStorage.removeItem('crm_username');
+  localStorage.removeItem('crm_user');
   location.href = '/index.html';
 }
 
@@ -1792,9 +1794,33 @@ function loadSettings() {
   if (s.address) document.getElementById('set-address').value = s.address;
   if (s.email)   document.getElementById('set-email').value   = s.email;
   const un = localStorage.getItem('crm_username') || 'TPKELE';
-  document.getElementById('setUsername').textContent = un;
-  document.getElementById('userNameDisplay').textContent = un;
-  document.getElementById('userAvatar').textContent = un[0].toUpperCase();
+  let user = null;
+  try { user = JSON.parse(localStorage.getItem('crm_user')||'null'); } catch(_){}
+  const display = user?.display_name || user?.username || un;
+  document.getElementById('setUsername').textContent = display;
+  document.getElementById('userNameDisplay').textContent = display;
+  document.getElementById('userAvatar').textContent = (display||'A')[0].toUpperCase();
+  // 角色徽章
+  const roleBadge = document.getElementById('userRoleBadge');
+  if (roleBadge && user?.role) {
+    roleBadge.style.display = '';
+    roleBadge.textContent = user.role.toUpperCase();
+    const colors = {
+      admin:    { bg:'rgba(16,185,129,.18)',  fg:'#34D399', bd:'rgba(16,185,129,.35)' },
+      sales:    { bg:'rgba(110,231,183,.16)', fg:'#6EE7B7', bd:'rgba(110,231,183,.3)' },
+      purchase: { bg:'rgba(251,191,36,.14)',  fg:'#fde68a', bd:'rgba(251,191,36,.3)' },
+      viewer:   { bg:'rgba(148,163,184,.18)', fg:'#cbd5e1', bd:'rgba(148,163,184,.3)' },
+    };
+    const c = colors[user.role] || colors.viewer;
+    roleBadge.style.background = c.bg;
+    roleBadge.style.color = c.fg;
+    roleBadge.style.borderColor = c.bd;
+  }
+  // 异步刷一次后端，更新到最新（如果 admin 改过 display_name 或角色）
+  fetch('/api/users/me', { headers: { Authorization: 'Bearer ' + (localStorage.getItem('crm_token')||'') }})
+    .then(r => r.ok ? r.json() : null)
+    .then(u => { if (u && u.id) { localStorage.setItem('crm_user', JSON.stringify(u)); }})
+    .catch(()=>{});
 }
 
 // ══════════════════════════════

@@ -392,6 +392,7 @@ async function doLogin(e) {
     if (!res.ok || !data.token) throw new Error(data.message || T[cl].er);
     localStorage.setItem('crm_token', data.token);
     if (data.username) localStorage.setItem('crm_username', data.username);
+    if (data.user) localStorage.setItem('crm_user', JSON.stringify(data.user));
     location.href = '/dashboard.html';
   } catch (ex) {
     err.textContent = ex.message || T[cl].er;
