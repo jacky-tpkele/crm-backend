@@ -54,6 +54,23 @@ a{color:inherit;text-decoration:none}
 .card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
 .tracking-num{font-size:15px;font-weight:700;color:var(--text);word-break:break-all}
 .carrier-name{font-size:12px;color:var(--muted);margin-top:2px}
+/* 物流轨迹时间轴 */
+.trace-box{margin-bottom:12px;padding:12px;background:rgba(16,185,129,.04);border:1px solid rgba(16,185,129,.18);border-radius:10px;animation:slideDown .2s ease}
+@keyframes slideDown{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.trace-loading,.trace-error{font-size:12.5px;color:var(--muted);padding:8px 4px}
+.trace-error{color:#fca5a5}
+.trace-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.trace-state{padding:2px 10px;border-radius:999px;font-size:11px;font-weight:600}
+.trace-timeline{list-style:none;padding:0;margin:0;position:relative}
+.trace-timeline li{position:relative;padding:0 0 14px 20px;font-size:12px}
+.trace-timeline li:last-child{padding-bottom:0}
+.trace-timeline li .dot{position:absolute;left:3px;top:5px;width:8px;height:8px;border-radius:50%;background:#244841;border:2px solid #162623;z-index:2}
+.trace-timeline li.latest .dot{background:#34D399;box-shadow:0 0 8px rgba(52,211,153,.6)}
+.trace-timeline li .line{position:absolute;left:6px;top:11px;bottom:0;width:1px;background:rgba(36,72,65,.6)}
+.trace-timeline li:last-child .line{display:none}
+.trace-timeline li .ctx{color:var(--text);line-height:1.5}
+.trace-timeline li.latest .ctx{color:#E6F4EF;font-weight:600}
+.trace-timeline li .meta{color:var(--muted);font-size:11px;margin-top:2px}
 .status-badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;flex-shrink:0}
 .status-transit{background:rgba(34,211,238,.1);color:var(--cyan);border:1px solid rgba(34,211,238,.25)}
 .status-arrived{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.25)}
@@ -344,7 +361,7 @@ function renderList() {
         <div>
           <div class="tracking-num">
             ${esc(l.tracking_number || '—')}
-            ${l.tracking_number ? `<button class="btn btn-sm" style="margin-left:8px;vertical-align:middle;padding:2px 10px;font-size:11.5px" onclick="trackShipment('${esc(l.tracking_number).replace(/'/g,"\\'")}','${esc(l.carrier||'')}')" title="在快递100查询物流状态">🔍 查询</button>` : ''}
+            ${l.tracking_number ? `<button class="btn btn-sm" style="margin-left:8px;vertical-align:middle;padding:2px 10px;font-size:11.5px" onclick="trackShipment('${l.id}','${esc(l.tracking_number).replace(/'/g,"\\'")}')" title="查询实时物流轨迹">🔍 查询</button>` : ''}
           </div>
           <div class="carrier-name">${esc(l.carrier || '承运商未填写')}</div>
         </div>
@@ -358,6 +375,7 @@ function renderList() {
         <div class="info-item"><span class="info-label">体积</span><span class="info-value">${l.volume ? l.volume + ' CBM' : '—'}</span></div>
       </div>
       ${l.notes ? `<div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">${esc(l.notes)}</div>` : ''}
+      <div id="trace-${l.id}" class="trace-box" style="display:none"></div>
       <div class="card-actions">
         <button class="btn btn-sm" onclick="openModal('${l.id}')">编辑</button>
         <button class="btn btn-sm btn-danger" onclick="deleteLogistic('${l.id}')">删除</button>
@@ -438,40 +456,53 @@ async function deleteLogistic(id) {
   } catch(e) { toast(e.message, 'err'); }
 }
 
-// ── 物流查询：根据单号特征自动识别承运商，跳转到对应官网或快递100 ──
-function detectCarrierCode(num) {
-  const n = (num||'').trim().toUpperCase();
-  if (!n) return null;
-  // 国际
-  if (/^1Z[0-9A-Z]{16}$/.test(n)) return { code:'ups', name:'UPS', url:`https://www.ups.com/track?tracknum=${n}` };
-  if (/^[0-9]{12}$/.test(n) && n.startsWith('9')) return { code:'fedex', name:'FedEx', url:`https://www.fedex.com/fedextrack/?trknbr=${n}` };
-  if (/^[A-Z]{2}\d{9}[A-Z]{2}$/.test(n)) return { code:'ems', name:'EMS / 邮政', url:`https://www.ems.com.cn/queryList?mailNum=${n}` };
-  // 国内（按单号前缀的常见规律 + 长度）
-  if (/^SF/.test(n) || /^SF\d+/.test(n)) return { code:'shunfeng', name:'顺丰速运', url:`https://www.sf-express.com/chn/sc/dynamic_function/waybill/#search/bill-number/${n}` };
-  if (/^JT/.test(n)) return { code:'jtexpress', name:'极兔速递', url:`https://www.jtexpress.com.cn/index/waybill/trace.html?waybillNo=${n}` };
-  if (/^YT\d{12}$/.test(n) || /^YT\d{10}$/.test(n)) return { code:'yuantong', name:'圆通速递', url:`https://www.yto.net.cn/api/index.html?number=${n}` };
-  if (/^(31|33|35|36|37|38|39|43|45|55)\d{11,13}$/.test(n)) return { code:'yunda', name:'韵达速递', url:`https://www.yundaex.com/cn/index.php?moduleName=Track_Single&number=${n}` };
-  if (/^(75|78)\d{10,12}$/.test(n)) return { code:'zhongtong', name:'中通快递', url:`https://www.zto.com/express/expressCheck.html?txtbill=${n}` };
-  if (/^(77|88)\d{10,12}$/.test(n)) return { code:'shentong', name:'申通快递', url:`https://www.sto.cn/chaxun/index.shtml?wen=${n}` };
-  return null;
-}
-
-function trackShipment(trackingNumber, carrierHint) {
-  const n = (trackingNumber||'').trim();
-  if (!n) { toast('物流单号为空', 'err'); return; }
-  const detected = detectCarrierCode(n);
-  // 通用入口：快递100，自动识别 100+ 国内外承运商
-  const universalUrl = `https://www.kuaidi100.com/chaxun?nu=${encodeURIComponent(n)}`;
-  // 简单选择：识别到承运商→直接跳官方查件，否则走快递100通用查询
-  if (detected) {
-    if (confirm(`已识别为「${detected.name}」\n\n确定 → 跳官方查件页\n取消 → 用快递100通用查询`)) {
-      window.open(detected.url, '_blank', 'noopener');
-    } else {
-      window.open(universalUrl, '_blank', 'noopener');
-    }
-  } else {
-    window.open(universalUrl, '_blank', 'noopener');
+// ── 物流查件：调后端 /api/track（快递100代理），内联展开时间轴 ──
+async function trackShipment(cardId, trackingNumber) {
+  const num = (trackingNumber||'').trim();
+  if (!num) { toast('物流单号为空', 'err'); return; }
+  const box = document.getElementById('trace-' + cardId);
+  if (!box) return;
+  // 二次点击 = 收起
+  if (box.style.display !== 'none' && box.dataset.num === num) {
+    box.style.display = 'none';
+    return;
   }
+  box.dataset.num = num;
+  box.style.display = 'block';
+  box.innerHTML = `<div class="trace-loading">正在查询 ${esc(num)} ...</div>`;
+  try {
+    const data = await api(`/api/track?num=${encodeURIComponent(num)}`);
+    renderTrace(box, data);
+  } catch (e) {
+    box.innerHTML = `<div class="trace-error">查询失败：${esc(e.message||'未知错误')} <button class="btn btn-sm" style="margin-left:8px" onclick="window.open('https://www.kuaidi100.com/chaxun?nu=${encodeURIComponent(num)}','_blank','noopener')">打开快递100手动查</button></div>`;
+  }
+}
+function renderTrace(box, data) {
+  const stateColor = data.delivered ? '#10B981' : '#34D399';
+  const traces = (data.traces || []);
+  if (!traces.length) {
+    box.innerHTML = `<div class="trace-error">暂无轨迹数据 ${data._cached?'<span style="color:var(--muted);font-size:11px">(缓存)</span>':''}</div>`;
+    return;
+  }
+  box.innerHTML = `
+    <div class="trace-head">
+      <span class="trace-state" style="background:${stateColor}1f;color:${stateColor};border:1px solid ${stateColor}66">${esc(data.state_text||'状态未知')}</span>
+      <span style="color:var(--muted);font-size:11.5px">${esc(data.carrier_code||'')} · ${esc(data.tracking_number||'')}</span>
+      ${data._cached ? '<span style="color:var(--muted);font-size:11px;margin-left:6px">(5分钟缓存)</span>' : ''}
+    </div>
+    <ul class="trace-timeline">
+      ${traces.map((t,i) => `
+        <li class="${i===0?'latest':''}">
+          <div class="dot"></div>
+          <div class="line"></div>
+          <div class="content">
+            <div class="ctx">${esc(t.context||'')}</div>
+            <div class="meta">${esc(t.time||'')} ${t.location?'· '+esc(t.location):''}</div>
+          </div>
+        </li>
+      `).join('')}
+    </ul>
+  `;
 }
 
 // ── Image Upload ──

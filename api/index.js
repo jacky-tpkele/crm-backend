@@ -1649,4 +1649,83 @@ app.put('/api/orders/v2/:id', auth, async (req, res) => {
 
 
 
+// ────────────────────────────────────────────────────────────────────
+// 物流查件（快递100 实时接口代理）
+// ────────────────────────────────────────────────────────────────────
+const KD100_KEY      = process.env.KUAIDI100_KEY;
+const KD100_CUSTOMER = process.env.KUAIDI100_CUSTOMER;
+
+// 简单内存缓存：同一单号 5 分钟内不重复查（省查询次数）
+const _trackCache = new Map();
+function _cacheGet(k) {
+  const v = _trackCache.get(k);
+  if (!v) return null;
+  if (Date.now() - v.ts > 5*60*1000) { _trackCache.delete(k); return null; }
+  return v.data;
+}
+function _cacheSet(k, data) { _trackCache.set(k, { ts: Date.now(), data }); }
+
+// 通过单号自动识别承运商编码（快递100 autonumber 接口）
+async function kd100AutoDetect(num) {
+  try {
+    const r = await fetch(`https://www.kuaidi100.com/autonumber/auto?num=${encodeURIComponent(num)}&key=${KD100_KEY}`);
+    const j = await r.json();
+    if (Array.isArray(j) && j.length) return j[0].comCode;
+  } catch (_) {}
+  return null;
+}
+
+// 实时查件（快递100 poll/query.do）
+async function kd100Query(com, num) {
+  const param = JSON.stringify({ com, num, resultv2: '4' });
+  const sign  = crypto.createHash('md5').update(param + KD100_KEY + KD100_CUSTOMER).digest('hex').toUpperCase();
+  const body  = new URLSearchParams({ customer: KD100_CUSTOMER, sign, param }).toString();
+  const r = await fetch('https://poll.kuaidi100.com/poll/query.do', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body,
+  });
+  return await r.json();
+}
+
+app.get('/api/track', auth, async (req, res) => {
+  try {
+    if (!KD100_KEY || !KD100_CUSTOMER) {
+      return res.status(500).json({ message: '后端未配置 KUAIDI100_KEY / KUAIDI100_CUSTOMER 环境变量' });
+    }
+    const num = String(req.query.num || '').trim();
+    let com   = String(req.query.com || '').trim();
+    if (!num) return res.status(400).json({ message: '缺少单号 num' });
+
+    const cacheKey = `${com||'auto'}:${num}`;
+    const cached = _cacheGet(cacheKey);
+    if (cached) return res.json({ ...cached, _cached: true });
+
+    if (!com || com === 'auto') {
+      com = await kd100AutoDetect(num);
+      if (!com) return res.status(404).json({ message: '未能识别承运商，请在物流记录里填承运商后重试' });
+    }
+
+    const raw = await kd100Query(com, num);
+    // raw: { message, status:'200/201/...', state, condition, data:[{time, context, ftime, areaCode, areaName}], com, nu, ischeck }
+    if (raw.status && String(raw.status) !== '200') {
+      return res.status(400).json({ message: raw.message || '查询失败', raw });
+    }
+    const out = {
+      carrier_code: raw.com || com,
+      tracking_number: raw.nu || num,
+      state: raw.state,           // 0=在途 1=揽收 2=疑难 3=签收 4=退签 5=派件 6=退回 7=转投
+      state_text: ({ '0':'在途','1':'已揽收','2':'疑难件','3':'已签收','4':'退签','5':'派件中','6':'退回','7':'转投','10':'待清关','11':'清关中','12':'已清关','13':'清关异常','14':'拒签' })[String(raw.state)] || '未知',
+      delivered: String(raw.state) === '3',
+      traces: (raw.data || []).map(d => ({
+        time: d.ftime || d.time,
+        context: d.context,
+        location: d.areaName || '',
+      })),
+    };
+    _cacheSet(cacheKey, out);
+    res.json(out);
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
 module.exports = app;
