@@ -343,6 +343,31 @@ app.get('/api/orders/:id', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
+// 订单的「已发货汇总」：合并该订单所有物流单的 shipment_items，按 product_id 聚合
+app.get('/api/orders/:id/shipped-summary', auth, async (req, res) => {
+  try {
+    const logs = await sb(`logistics?order_id=eq.${req.params.id}&is_deleted=eq.false&select=id,tracking_number,carrier,shipment_items,shipping_date`);
+    const summary = {}; // { product_id: { shipped_qty, shipments:[{logistics_id, tracking_number, qty}] } }
+    for (const l of logs) {
+      const items = Array.isArray(l.shipment_items) ? l.shipment_items : [];
+      for (const it of items) {
+        if (!it.product_id) continue;
+        const q = Number(it.quantity || 0);
+        if (!summary[it.product_id]) summary[it.product_id] = { shipped_qty: 0, shipments: [] };
+        summary[it.product_id].shipped_qty += q;
+        summary[it.product_id].shipments.push({
+          logistics_id: l.id,
+          tracking_number: l.tracking_number,
+          carrier: l.carrier,
+          shipping_date: l.shipping_date,
+          quantity: q,
+        });
+      }
+    }
+    res.json(summary);
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
 app.post('/api/orders', auth, async (req, res) => {
   const { customer_name, customer_id, order_date, shipping_fee, currency, order_status, remarks,
           purchase_total, sales_total, sales_without_shipping, profit, items } = req.body;
@@ -1019,7 +1044,7 @@ app.get('/api/logistics', auth, async (req, res) => {
 
 app.post('/api/logistics', auth, async (req, res) => {
   try {
-    const { order_id, order_name, tracking_number, carrier, weight, volume, shipping_date, estimated_arrival, notes } = req.body;
+    const { order_id, order_name, tracking_number, carrier, weight, volume, shipping_date, estimated_arrival, notes, shipment_items } = req.body;
     const data = await sb('logistics?select=id', {
       method: 'POST', headers: { 'Prefer': 'return=representation' },
       body: JSON.stringify({
@@ -1028,6 +1053,7 @@ app.post('/api/logistics', auth, async (req, res) => {
         weight: weight || null, volume: volume || null,
         shipping_date: shipping_date || null, estimated_arrival: estimated_arrival || null,
         notes: notes || '',
+        shipment_items: Array.isArray(shipment_items) ? shipment_items : [],
       }),
     });
     res.json({ success: true, id: data[0].id });
@@ -1036,7 +1062,7 @@ app.post('/api/logistics', auth, async (req, res) => {
 
 app.put('/api/logistics/:id', auth, async (req, res) => {
   try {
-    const { order_id, order_name, tracking_number, carrier, weight, volume, shipping_date, estimated_arrival, notes } = req.body;
+    const { order_id, order_name, tracking_number, carrier, weight, volume, shipping_date, estimated_arrival, notes, shipment_items } = req.body;
     await sb(`logistics?id=eq.${req.params.id}`, {
       method: 'PATCH',
       body: JSON.stringify({
@@ -1045,6 +1071,7 @@ app.put('/api/logistics/:id', auth, async (req, res) => {
         weight: weight || null, volume: volume || null,
         shipping_date: shipping_date || null, estimated_arrival: estimated_arrival || null,
         notes: notes || '',
+        shipment_items: Array.isArray(shipment_items) ? shipment_items : [],
       }),
     });
     res.json({ success: true });

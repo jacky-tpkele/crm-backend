@@ -1136,7 +1136,7 @@ tr:hover .del-row-btn{display:inline-block}
     <div class="tbl-wrap">
       <table>
         <thead><tr>
-          <th data-i18n="thCNNameD">CN Name</th><th data-i18n="thENNameD">EN Name</th><th data-i18n="thSpecD">Spec</th><th data-i18n="thQtyD">Qty</th><th data-i18n="thPurchaseD">Purchase</th><th data-i18n="thSalesD">Sales</th><th data-i18n="thPTotalD">P.Total</th><th data-i18n="thSTotalD">S.Total</th>
+          <th data-i18n="thCNNameD">CN Name</th><th data-i18n="thENNameD">EN Name</th><th data-i18n="thSpecD">Spec</th><th data-i18n="thQtyD">Qty</th><th data-i18n="thPurchaseD">Purchase</th><th data-i18n="thSalesD">Sales</th><th data-i18n="thPTotalD">P.Total</th><th data-i18n="thSTotalD">S.Total</th><th>发货进度</th>
         </tr></thead>
         <tbody id="detailBody"></tbody>
       </table>
@@ -2428,12 +2428,30 @@ async function saveOrder(e) {
 }
 async function viewOrderDetail(id) {
   try {
-    const { order, items } = await api(`/api/orders/${id}`);
+    const [{ order, items }, shipped] = await Promise.all([
+      api(`/api/orders/${id}`),
+      api(`/api/orders/${id}/shipped-summary`).catch(()=>({})),
+    ]);
     document.getElementById('detailSub').textContent = `${order.order_number||''} · ${order.customer_name||''} · ${order.order_date||''}`;
     document.getElementById('dtSales').textContent   = `${order.currency||'USD'} ${fmtN(order.sales_total)}`;
     document.getElementById('dtProfit').textContent  = `¥${fmtN(order.profit_rmb||0)} (${order.profit_rate||0}%)`;
+    // 整单履约率
+    let totalOrdered = 0, totalShipped = 0;
+    (items||[]).forEach(i => {
+      totalOrdered += Number(i.quantity)||0;
+      totalShipped += Number(shipped[i.product_id]?.shipped_qty)||0;
+    });
+    const overallPct = totalOrdered > 0 ? Math.min(100, Math.round(totalShipped/totalOrdered*100)) : 0;
+    const subEl = document.getElementById('detailSub');
+    subEl.innerHTML = `${esc(order.order_number||'')} · ${esc(order.customer_name||'')} · ${esc(order.order_date||'')} <span style="margin-left:10px;padding:2px 10px;border-radius:999px;font-size:11px;background:${overallPct>=100?'rgba(16,185,129,.16)':'rgba(110,231,183,.1)'};color:${overallPct>=100?'#10B981':'#6EE7B7'};border:1px solid ${overallPct>=100?'rgba(16,185,129,.4)':'rgba(110,231,183,.3)'}">${overallPct>=100?'✅ 已全部发货':'📦 履约 '+overallPct+'%'}</span>`;
     const body = document.getElementById('detailBody');
-    body.innerHTML = (items||[]).map(i=>`
+    body.innerHTML = (items||[]).map(i=>{
+      const ordered = Number(i.quantity)||0;
+      const sh = Number(shipped[i.product_id]?.shipped_qty)||0;
+      const pct = ordered>0 ? Math.min(100, Math.round(sh/ordered*100)) : 0;
+      const color = pct>=100 ? '#10B981' : (pct>0 ? '#6EE7B7' : '#9DB5AC');
+      const label = pct>=100 ? `✅ ${sh}/${ordered}` : `${sh} / ${ordered}`;
+      return `
       <tr>
         <td>${esc(i.product_name_cn||'')}</td>
         <td>${esc(i.product_name_en||'')}</td>
@@ -2443,7 +2461,12 @@ async function viewOrderDetail(id) {
         <td>${fmtN(i.sales_price)}</td>
         <td>¥${fmtN(i.purchase_total)}</td>
         <td>${fmtN(i.sales_total)}</td>
-      </tr>`).join('');
+        <td style="min-width:130px">
+          <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:${color}">${label}</div>
+          <div style="height:4px;background:rgba(36,72,65,.5);border-radius:2px;overflow:hidden;margin-top:3px"><div style="height:100%;width:${pct}%;background:${color};transition:.3s"></div></div>
+        </td>
+      </tr>`;
+    }).join('');
     openModal('detailModal');
   } catch(e) { toast(e.message,'err'); }
 }

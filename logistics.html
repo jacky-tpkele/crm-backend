@@ -54,6 +54,9 @@ a{color:inherit;text-decoration:none}
 .card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
 .tracking-num{font-size:15px;font-weight:700;color:var(--text);word-break:break-all}
 .carrier-name{font-size:12px;color:var(--muted);margin-top:2px}
+/* 物流卡片：本批产品 chips */
+.ship-line{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px}
+.ship-chip{display:inline-block;padding:3px 9px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.32);color:#6EE7B7;border-radius:999px;font-size:11.5px;line-height:1.4;white-space:nowrap}
 /* 物流轨迹时间轴 */
 .trace-box{margin-bottom:12px;padding:12px;background:rgba(16,185,129,.04);border:1px solid rgba(16,185,129,.18);border-radius:10px;animation:slideDown .2s ease}
 @keyframes slideDown{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
@@ -250,13 +253,21 @@ a{color:inherit;text-decoration:none}
     <div class="form-grid">
       <div class="field">
         <label>关联订单</label>
-        <select id="f-order">
+        <select id="f-order" onchange="onOrderChange()">
           <option value="">— 不关联订单 —</option>
         </select>
       </div>
       <div class="field">
-        <label>关联订单备注（补充说明）</label>
-        <input type="text" id="f-ordername" placeholder="可手动填写订单描述">
+        <label>承运商详情</label>
+        <input type="text" id="f-ordername" placeholder="可选：补充描述（如 寄件人/收件人）" style="display:none">
+      </div>
+    </div>
+    <!-- 本批装了哪些产品（关联订单后才出现） -->
+    <div class="form-grid col1" id="f-shipment-wrap" style="display:none">
+      <div class="field">
+        <label>📦 本批装了哪些产品？（勾选 + 填本次发货数量）</label>
+        <div id="f-shipment-items" style="display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto;padding:8px;border:1px solid var(--border);border-radius:8px;background:rgba(16,185,129,.03)"></div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:4px">💡 默认按订单数量勾上，你可以改数量做分批发货</div>
       </div>
     </div>
     <div class="form-grid col1">
@@ -374,6 +385,12 @@ function renderList() {
         <div class="info-item"><span class="info-label">重量</span><span class="info-value">${l.weight ? l.weight + ' kg' : '—'}</span></div>
         <div class="info-item"><span class="info-label">体积</span><span class="info-value">${l.volume ? l.volume + ' CBM' : '—'}</span></div>
       </div>
+      ${(()=>{
+        const items = Array.isArray(l.shipment_items) ? l.shipment_items : [];
+        if (!items.length) return '';
+        const chips = items.map(it => `<span class="ship-chip">${esc(it.product_name_cn||'未知')} ×${esc(String(it.quantity||0))}</span>`).join('');
+        return `<div class="ship-line"><span style="color:var(--muted);font-size:11.5px;margin-right:4px">📦 本批</span>${chips}</div>`;
+      })()}
       ${l.notes ? `<div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">${esc(l.notes)}</div>` : ''}
       <div id="trace-${l.id}" class="trace-box" style="display:none"></div>
       <div class="card-actions">
@@ -399,6 +416,9 @@ function openModal(id) {
   document.getElementById('f-order').value    = '';
   document.getElementById('f-ordername').value= '';
   document.getElementById('f-notes').value    = '';
+  document.getElementById('f-shipment-wrap').style.display = 'none';
+  document.getElementById('f-shipment-items').innerHTML = '';
+  S._editingShipmentItems = null;
   clearImage();
   if (id) {
     const l = S.logistics.find(x => x.id === id);
@@ -412,9 +432,73 @@ function openModal(id) {
       document.getElementById('f-order').value     = l.order_id || '';
       document.getElementById('f-ordername').value = l.order_name || '';
       document.getElementById('f-notes').value     = l.notes || '';
+      S._editingShipmentItems = Array.isArray(l.shipment_items) ? l.shipment_items : [];
+      if (l.order_id) onOrderChange(); // 触发拉取 + 预勾选
     }
   }
   document.getElementById('logModal').style.display = 'flex';
+}
+
+/* 关联订单变化 → 拉该订单 line items，渲染勾选 + 数量输入 */
+async function onOrderChange() {
+  const orderId = document.getElementById('f-order').value;
+  const wrap = document.getElementById('f-shipment-wrap');
+  const box  = document.getElementById('f-shipment-items');
+  if (!orderId) { wrap.style.display = 'none'; box.innerHTML = ''; return; }
+  wrap.style.display = '';
+  box.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px">加载订单产品中...</div>';
+  try {
+    const { items } = await api(`/api/orders/${orderId}`);
+    if (!items || !items.length) { box.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px">该订单没有产品</div>'; return; }
+    // 已编辑物流单的 shipment_items 预勾选
+    const preselected = S._editingShipmentItems || [];
+    const preMap = new Map(preselected.map(s => [s.product_id, Number(s.quantity)||0]));
+    box.innerHTML = items.map(it => {
+      const pid = it.product_id || '';
+      const orderedQty = Number(it.quantity)||0;
+      const isChecked  = preMap.has(pid);
+      const shipQty    = isChecked ? preMap.get(pid) : orderedQty;
+      return `
+        <label class="ship-row" data-pid="${esc(pid)}" data-name="${esc(it.product_name_cn||'')}" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--panel-2);cursor:pointer">
+          <input type="checkbox" class="ship-check" ${isChecked?'checked':''} onchange="onShipCheckChange(this)" style="width:16px;height:16px;accent-color:#10B981">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;color:var(--text);font-weight:500">${esc(it.product_name_cn||'(未命名)')} ${it.specification?'<span style=\"color:var(--muted);font-size:11.5px;font-weight:300\">· '+esc(it.specification)+'</span>':''}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">订单数量 ${orderedQty} ${it.unit||''}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:11px;color:var(--muted)">本次发</span>
+            <input type="number" class="ship-qty" value="${shipQty}" min="0" max="${orderedQty}" step="1" ${isChecked?'':'disabled'} style="width:70px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:12px;text-align:right">
+            <span style="font-size:11px;color:var(--muted)">/ ${orderedQty}</span>
+          </div>
+        </label>
+      `;
+    }).join('');
+  } catch (e) {
+    box.innerHTML = `<div style="color:#fca5a5;font-size:12px;padding:8px">加载失败：${esc(e.message||'')}</div>`;
+  }
+}
+function onShipCheckChange(cb) {
+  const row = cb.closest('.ship-row');
+  if (!row) return;
+  const qtyInput = row.querySelector('.ship-qty');
+  if (cb.checked) { qtyInput.disabled = false; if (!Number(qtyInput.value)) qtyInput.value = qtyInput.max||1; }
+  else { qtyInput.disabled = true; }
+}
+function collectShipmentItems() {
+  const rows = document.querySelectorAll('#f-shipment-items .ship-row');
+  const out = [];
+  rows.forEach(r => {
+    const cb = r.querySelector('.ship-check');
+    if (!cb || !cb.checked) return;
+    const qty = parseFloat(r.querySelector('.ship-qty').value)||0;
+    if (qty <= 0) return;
+    out.push({
+      product_id: r.dataset.pid,
+      product_name_cn: r.dataset.name,
+      quantity: qty,
+    });
+  });
+  return out;
 }
 
 function closeModal() { document.getElementById('logModal').style.display = 'none'; }
@@ -436,6 +520,7 @@ async function saveLogistic() {
     order_id:           orderId || null,
     order_name:         orderName,
     notes:              document.getElementById('f-notes').value.trim(),
+    shipment_items:     orderId ? collectShipmentItems() : [],
   };
   try {
     const id = document.getElementById('editId').value;
