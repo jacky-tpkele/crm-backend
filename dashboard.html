@@ -583,9 +583,10 @@ tr:hover .del-row-btn{display:inline-block}
         <div class="kpi" onclick="kpiNavigate('year')" style="cursor:pointer"><div class="kpi-label">年度利润 (RMB)</div><div class="kpi-value purple" id="kv-yp">—</div></div>
       </div>
       <div class="quick-actions">
-        <button class="qa-btn primary" data-i18n="btnNewOrder" onclick="openOrderModal()">＋ New Order</button>
-        <button class="qa-btn" data-i18n="btnNewCustomer" onclick="navigate('customers');setTimeout(openCustomerModal,200)">＋ New Customer</button>
-        <button class="qa-btn" data-i18n="btnNewInquiry" onclick="navigate('inquiries');setTimeout(openInquiryModal,200)">＋ New Inquiry</button>
+        <button class="qa-btn" data-i18n="btnNewCustomer" onclick="navigate('customers');setTimeout(openCustomerModal,200)">＋ 新建客户</button>
+        <button class="qa-btn" data-i18n="btnNewSupplier" onclick="navigate('suppliers');setTimeout(openSupplierModal,200)">＋ 新建供应商</button>
+        <button class="qa-btn" data-i18n="btnNewProduct" onclick="navigate('products');setTimeout(openProductModal,200)">＋ 新建产品</button>
+        <button class="qa-btn primary" data-i18n="btnNewOrder" onclick="openOrderModal()">＋ 新建订单</button>
       </div>
     </section>
 
@@ -1236,7 +1237,7 @@ const I18N = {
     dashTitle:'仪表盘', dashSub:'贸易业绩总览',
     kpiMonthOrders:'本月订单', kpiYearOrders:'年度订单', kpiMonthSales:'本月销售额',
     kpiYearSales:'年度销售额', kpiMonthProfit:'本月利润', kpiYearProfit:'年度利润',
-    btnNewOrder:'＋ 新建订单', btnNewCustomer:'＋ 新建客户', btnNewInquiry:'＋ 新建询盘',
+    btnNewOrder:'＋ 新建订单', btnNewCustomer:'＋ 新建客户', btnNewInquiry:'＋ 新建询盘', btnNewSupplier:'＋ 新建供应商', btnNewProduct:'＋ 新建产品',
     chartOrderTrend:'订单趋势（12个月）', chartProfitTrend:'利润趋势（12个月）',
     chartTopProducts:'销售额TOP产品', chartTopCustomers:'销售额TOP客户',
     subInquiries:'管理进来的贸易询盘并转化为订单',
@@ -1363,7 +1364,7 @@ const I18N = {
     kpiMonthOrders:'Monthly Orders', kpiYearOrders:'Annual Orders',
     kpiMonthSales:'Monthly Sales', kpiYearSales:'Annual Sales',
     kpiMonthProfit:'Monthly Profit', kpiYearProfit:'Annual Profit',
-    btnNewOrder:'＋ New Order', btnNewCustomer:'＋ New Customer', btnNewInquiry:'＋ New Inquiry',
+    btnNewOrder:'＋ New Order', btnNewCustomer:'＋ New Customer', btnNewInquiry:'＋ New Inquiry', btnNewSupplier:'＋ New Supplier', btnNewProduct:'＋ New Product',
     chartOrderTrend:'Order Trend (12 months)', chartProfitTrend:'Profit Trend (12 months)',
     chartTopProducts:'Top Products by Sales', chartTopCustomers:'Top Customers by Sales',
     subInquiries:'Manage incoming trade inquiries and convert to orders',
