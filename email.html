@@ -250,10 +250,11 @@ button,input,select,textarea{font:inherit}
 .btn-action:hover{background:#f9fafb !important;border-color:#9ca3af !important;color:#111827 !important}
 .btn-action.danger{border-color:#fca5a5 !important;color:#dc2626 !important}
 .btn-action.danger:hover{background:#fef2f2 !important;border-color:#dc2626 !important;color:#b91c1c !important}
-.reader-body{padding:24px 28px;background:#ffffff !important}
+.reader-body{padding:0 !important;background:#ffffff !important;overflow:hidden}
 .reader-html{color:#1f2937 !important;font-size:14px;line-height:1.75;max-width:880px}
 .reader-html a{color:#2563eb !important}
 .reader-text{color:#1f2937 !important;font-size:13.5px;line-height:1.8;max-width:880px}
+.reader-frame{width:100%;border:none;background:#ffffff;display:block;min-height:400px}
 
 /* Compose（写邮件）— 简洁白底 */
 .compose{background:#ffffff !important;border:none}
@@ -763,10 +764,11 @@ async function openEmail(id, el) {
         </div>
         <div class="reader-body">
           ${email.body_html
-            ? `<div class="reader-html">${sanitizeHtml(email.body_html)}</div>`
-            : `<div class="reader-text">${esc(email.body_text||'（无内容）')}</div>`}
+            ? `<iframe class="reader-frame" id="readerFrame" sandbox="allow-same-origin allow-popups"></iframe>`
+            : `<div class="reader-text" style="padding:24px 28px">${esc(email.body_text||'（无内容）')}</div>`}
         </div>
       </div>`;
+    if (email.body_html) renderHtmlBodyInIframe(email.body_html);
   } catch (e) {
     panel.innerHTML = `<div style="padding:24px;color:var(--danger)">加载失败：${e.message}</div>`;
   }
@@ -775,6 +777,34 @@ async function openEmail(id, el) {
 function sanitizeHtml(html) {
   return html.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<iframe[\s\S]*?<\/iframe>/gi,'')
     .replace(/on\w+="[^"]*"/gi,'').replace(/on\w+='[^']*'/gi,'');
+}
+
+// 把邮件正文渲染到 iframe 里，彻底隔离对方的 CSS（避免暗色背景/绿色 hover 漏到 CRM 主界面）
+function renderHtmlBodyInIframe(html) {
+  const frame = document.getElementById('readerFrame');
+  if (!frame) return;
+  const safe = sanitizeHtml(html || '');
+  const doc = `<!doctype html><html><head><meta charset="utf-8"><base target="_blank">
+<style>
+  html,body{margin:0;padding:20px 28px;background:#ffffff;color:#1f2937;font-family:-apple-system,Segoe UI,"Microsoft YaHei",sans-serif;font-size:14px;line-height:1.75;word-wrap:break-word}
+  a{color:#2563eb}
+  img{max-width:100%;height:auto}
+  table{max-width:100%}
+</style></head><body>${safe}</body></html>`;
+  frame.srcdoc = doc;
+  frame.onload = () => {
+    try {
+      const inner = frame.contentDocument;
+      if (!inner) return;
+      const resize = () => {
+        const h = Math.max(inner.documentElement.scrollHeight, inner.body.scrollHeight, 400);
+        frame.style.height = (h + 20) + 'px';
+      };
+      resize();
+      // 图片加载完再调整一次高度
+      inner.querySelectorAll('img').forEach(img => { img.addEventListener('load', resize); img.addEventListener('error', resize); });
+    } catch(_) {}
+  };
 }
 
 // ── Folder switch ──
