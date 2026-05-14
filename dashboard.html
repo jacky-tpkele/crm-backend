@@ -587,14 +587,6 @@ tr:hover .del-row-btn{display:inline-block}
         <button class="qa-btn" data-i18n="btnNewCustomer" onclick="navigate('customers');setTimeout(openCustomerModal,200)">＋ New Customer</button>
         <button class="qa-btn" data-i18n="btnNewInquiry" onclick="navigate('inquiries');setTimeout(openInquiryModal,200)">＋ New Inquiry</button>
       </div>
-      <div class="charts-row">
-        <div class="chart-card"><h3 data-i18n="chartOrderTrend">Order Trend (12 months)</h3><canvas id="chartOrders"></canvas></div>
-        <div class="chart-card"><h3 data-i18n="chartProfitTrend">Profit Trend (12 months)</h3><canvas id="chartProfit"></canvas></div>
-      </div>
-      <div class="charts-row">
-        <div class="chart-card"><h3 data-i18n="chartTopProducts">Top Products by Sales</h3><canvas id="chartProducts"></canvas></div>
-        <div class="chart-card"><h3 data-i18n="chartTopCustomers">Top Customers by Sales</h3><canvas id="chartCustomers"></canvas></div>
-      </div>
     </section>
 
     <!-- ── INQUIRIES ── -->
@@ -1918,19 +1910,13 @@ function loadSettings() {
 // ══════════════════════════════
 async function loadDashboard() {
   try {
-    const [stats, trends, topP, topC] = await Promise.all([
-      api('/api/dashboard/stats'),
-      api('/api/dashboard/trends'),
-      api('/api/analytics/top-products'),
-      api('/api/analytics/top-customers'),
-    ]);
+    const stats = await api('/api/dashboard/stats');
     document.getElementById('kv-mo').textContent = stats.month_orders  || 0;
     document.getElementById('kv-yo').textContent = stats.year_orders   || 0;
     document.getElementById('kv-ms').textContent = fmtRmb(stats.month_sales);
     document.getElementById('kv-ys').textContent = fmtRmb(stats.year_sales);
     document.getElementById('kv-mp').textContent = fmtRmb(stats.month_profit);
     document.getElementById('kv-yp').textContent = fmtRmb(stats.year_profit);
-    initDashCharts(trends, topP, topC);
   } catch (e) { toast('Load error: '+e.message,'err'); }
 }
 
