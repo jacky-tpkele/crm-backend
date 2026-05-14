@@ -556,7 +556,10 @@ app.get('/api/orders/:id/shipped-summary', auth, async (req, res) => {
 
 app.delete('/api/orders/:id', auth, async (req, res) => {
   try {
+    // 软删除订单
     await sb(`orders?id=eq.${req.params.id}`, { method: 'PATCH', body: JSON.stringify({ is_deleted: true }) });
+    // 同步硬删除该订单关联的采购单（采购单本身没有软删除字段；purchase_order_items 有 ON DELETE CASCADE 会自动清）
+    await sb(`purchase_orders?order_id=eq.${req.params.id}`, { method: 'DELETE' }).catch(() => {});
     res.json({ success: true });
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
@@ -1492,6 +1495,27 @@ app.delete('/api/purchase-orders/:id', auth, async (req, res) => {
   try {
     await sb(`purchase_orders?id=eq.${req.params.id}`, { method:'DELETE' });
     res.json({ success:true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 一次性清理孤儿采购单：order_id 关联到 已删除/不存在 的订单
+app.post('/api/purchase-orders/cleanup-orphans', auth, async (req, res) => {
+  try {
+    const pos = await sb('purchase_orders?select=id,order_id');
+    if (!pos.length) return res.json({ success:true, deleted:0 });
+    const orderIds = [...new Set(pos.map(p => p.order_id).filter(Boolean))];
+    let aliveIds = new Set();
+    if (orderIds.length) {
+      const alive = await sb(`orders?id=in.(${orderIds.join(',')})&is_deleted=eq.false&select=id`);
+      aliveIds = new Set(alive.map(o => o.id));
+    }
+    const orphans = pos.filter(p => p.order_id && !aliveIds.has(p.order_id));
+    let deleted = 0;
+    for (const o of orphans) {
+      await sb(`purchase_orders?id=eq.${o.id}`, { method:'DELETE' }).catch(() => {});
+      deleted++;
+    }
+    res.json({ success:true, deleted });
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 

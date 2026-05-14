@@ -745,6 +745,7 @@ tr:hover .del-row-btn{display:inline-block}
               <option value="received">已收货</option>
             </select>
           </div>
+          <button class="btn" onclick="cleanupOrphanPOs()" title="删除关联订单已被删除的采购单" style="margin-left:auto">🧹 清理孤儿采购单</button>
         </div>
         <div class="tbl-wrap">
           <table>
@@ -3271,6 +3272,14 @@ function poStatusBadge(s) {
 }
 async function loadPurchaseOrders() {
   try { S.purchaseOrders = await api('/api/purchase-orders'); renderPurchaseOrders(); } catch(e){}
+}
+async function cleanupOrphanPOs() {
+  if (!confirm('删除所有「关联订单已被删除」的采购单？此操作不可恢复。')) return;
+  try {
+    const r = await api('/api/purchase-orders/cleanup-orphans', { method:'POST' });
+    toast(`已清理 ${r.deleted||0} 条孤儿采购单`);
+    await loadPurchaseOrders();
+  } catch(e) { toast(e.message,'err'); }
 }
 function renderPurchaseOrders() {
   const q  = (document.getElementById('po-search')?.value||'').toLowerCase();
