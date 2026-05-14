@@ -369,6 +369,13 @@ tr:hover .del-row-btn{display:inline-block}
 .pm-img-drop{display:flex;align-items:center;justify-content:center;min-height:140px;padding:16px;border:2px dashed rgba(16,185,129,.3);border-radius:10px;background:rgba(16,185,129,.04);cursor:pointer;transition:.2s;outline:none}
 .pm-img-drop:hover,.pm-img-drop:focus{border-color:#34D399;background:rgba(16,185,129,.08)}
 .pm-img-drop.drag{border-color:#10B981;background:rgba(16,185,129,.14)}
+.pr-thumb{width:42px;height:42px;border-radius:8px;object-fit:cover;cursor:pointer;display:block;border:1px solid var(--border);background:rgba(255,255,255,.04)}
+.pr-thumb-empty{display:grid;place-items:center;font-size:18px;color:var(--muted)}
+.spec-cell{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;white-space:pre-wrap;max-width:240px;line-height:1.4;font-size:12.5px}
+.spec-hover-trigger{cursor:help}
+.spec-popover{position:fixed;z-index:9999;max-width:420px;background:#0f1f1c;border:1px solid rgba(16,185,129,.4);border-radius:8px;padding:10px 14px;color:#e6f4ef;font-size:12.5px;line-height:1.6;white-space:pre-wrap;box-shadow:0 12px 32px rgba(0,0,0,.6);pointer-events:none}
+.thumb-popover{position:fixed;z-index:9999;background:#0f1f1c;border:1px solid rgba(16,185,129,.4);border-radius:10px;padding:6px;box-shadow:0 12px 32px rgba(0,0,0,.7);pointer-events:none}
+.thumb-popover img{display:block;max-width:240px;max-height:240px;border-radius:6px}
 .empty-state .icon{font-size:36px;margin-bottom:10px;opacity:.4}
 .empty-state p{font-size:14px}
 
@@ -656,7 +663,7 @@ tr:hover .del-row-btn{display:inline-block}
         <div class="tbl-wrap">
           <table>
             <thead><tr>
-              <th>编号</th><th>中文名</th><th>英文名</th><th>规格</th><th>默认供应商</th><th>默认采购¥</th><th>默认销售</th><th>最近(采/销)</th><th>操作</th>
+              <th style="width:54px">图</th><th>编号</th><th>中文名</th><th>英文名</th><th>规格</th><th>品牌</th><th>默认供应商</th><th>默认采购¥</th><th>默认销售</th><th>最近(采/销)</th><th>操作</th>
             </tr></thead>
             <tbody id="prBody"></tbody>
           </table>
@@ -976,13 +983,13 @@ tr:hover .del-row-btn{display:inline-block}
       <input type="hidden" id="pm-id">
       <div class="form-grid col3">
         <div class="field"><label>产品编号</label><input type="text" id="pm-code" placeholder="自动生成或手填"></div>
-        <div class="field"><label>分类</label><input type="text" id="pm-category" placeholder="如 LED灯具"></div>
+        <div class="field"><label>分类</label><input type="text" id="pm-category" list="pm-category-list" placeholder="如 LED灯具，输入即新建"><datalist id="pm-category-list"></datalist></div>
         <div class="field"><label>单位</label><input type="text" id="pm-unit" value="pcs"></div>
         <div class="field"><label>中文名 *</label><input type="text" id="pm-cn" required></div>
         <div class="field"><label>英文名</label><input type="text" id="pm-en"></div>
-        <div class="field"><label>规格</label><input type="text" id="pm-spec"></div>
+        <div class="field"><label>规格</label><textarea id="pm-spec" rows="3" placeholder="可换行，列表会保留格式" style="resize:vertical"></textarea></div>
         <div class="field"><label>HS 编码</label><input type="text" id="pm-hs"></div>
-        <div class="field"><label>认证</label><input type="text" id="pm-cert"></div>
+        <div class="field"><label>品牌</label><input type="text" id="pm-brand" placeholder="如 Philips、欧司朗（无则留空）"></div>
         <div class="field"><label>默认交期</label><input type="text" id="pm-lead" placeholder="如 15 days"></div>
         <div class="field"><label>默认采购价 (RMB) *</label><input type="number" id="pm-pp" step="0.01" value="0"></div>
         <div class="field"><label>默认销售价 (USD) <span style="color:var(--muted);font-weight:300">⇄ 自动联动</span></label><input type="number" id="pm-sp-usd" step="0.01" placeholder="填这个会自动算 RMB" onblur="syncSalesPrice('usd')"></div>
@@ -1599,7 +1606,7 @@ const EXCEL_SCHEMA = {
       { key:'specification',   header:'规格' },
       { key:'unit',            header:'单位' },
       { key:'hs_code',         header:'HS 编码' },
-      { key:'certification',   header:'认证' },
+      { key:'brand',           header:'品牌' },
       { key:'default_purchase_price',   header:'默认采购价 RMB', num:true },
       { key:'default_sales_price_usd',  header:'默认销售价 USD', num:true },
       { key:'default_sales_price_rmb',  header:'默认销售价 RMB', num:true },
@@ -2277,20 +2284,32 @@ async function loadProducts(opts = {}) {
   } catch(e) { toast(e.message,'err'); }
 }
 function renderProducts() {
+  // 同步分类 datalist
+  const cats = [...new Set((S.products||[]).map(p => (p.category||'').trim()).filter(Boolean))].sort();
+  const dl = document.getElementById('pm-category-list');
+  if (dl) dl.innerHTML = cats.map(c => `<option value="${esc(c)}">`).join('');
+
   const q = document.getElementById('pr-search').value.toLowerCase();
-  const rows = S.products.filter(p => !q || [p.product_code,p.product_name_cn,p.product_name_en,p.specification].join(' ').toLowerCase().includes(q));
+  const rows = S.products.filter(p => !q || [p.product_code,p.product_name_cn,p.product_name_en,p.specification,p.brand].join(' ').toLowerCase().includes(q));
   const body = document.getElementById('prBody');
-  if (!rows.length) { body.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="icon">📦</div><p>No products found</p></div></td></tr>'; return; }
+  if (!rows.length) { body.innerHTML = '<tr><td colspan="11"><div class="empty-state"><div class="icon">📦</div><p>No products found</p></div></td></tr>'; return; }
   body.innerHTML = rows.map(p => {
     const lastP = p.last_purchase_price ? `¥${fmtN(p.last_purchase_price)}` : '—';
     const lastS = p.last_sales_price ? `¥${fmtN(p.last_sales_price)}` : '—';
     const defSale = [p.default_sales_price_usd?`$${fmtN(p.default_sales_price_usd)}`:'',p.default_sales_price_rmb?`¥${fmtN(p.default_sales_price_rmb)}`:''].filter(Boolean).join(' / ') || '—';
+    const img = p.image_url
+      ? `<img src="${esc(p.image_url)}" class="pr-thumb" onclick="viewProduct('${p.id}')">`
+      : `<div class="pr-thumb pr-thumb-empty" onclick="viewProduct('${p.id}')">📦</div>`;
+    const specRaw = p.specification || '';
+    const specHover = specRaw ? `<span class="spec-hover-trigger" data-spec="${esc(specRaw)}">${esc(specRaw)}</span>` : '—';
     return `
     <tr>
+      <td data-label="">${img}</td>
       <td data-label="Code">${esc(p.product_code||'—')}</td>
       <td data-label="CN Name"><a href="javascript:viewProduct('${p.id}')" style="color:var(--p1);text-decoration:none">${esc(p.product_name_cn)}</a></td>
       <td data-label="EN Name">${esc(p.product_name_en||'—')}</td>
-      <td data-label="Spec">${esc(p.specification||'—')}</td>
+      <td data-label="Spec"><div class="spec-cell">${specHover}</div></td>
+      <td data-label="Brand">${esc(p.brand||'—')}</td>
       <td data-label="默认供应商">${esc(p._default_supplier_name||'—')}</td>
       <td data-label="默认采购">¥${fmtN(p.default_purchase_price||0)}</td>
       <td data-label="默认销售">${defSale}</td>
@@ -2302,8 +2321,52 @@ function renderProducts() {
       </div></td>
     </tr>`;
   }).join('') +
-  (S._productsHasMore ? `<tr><td colspan="9" style="text-align:center;padding:14px"><a href="javascript:loadProducts({append:true})" style="color:var(--p1);text-decoration:none;font-weight:600">${t('btnLoadMore')} ${t('loadMoreProducts')} (${t('loadMoreShown')} ${(S.products||[]).length} ${t('loadMoreItems')})</a></td></tr>` : '');
+  (S._productsHasMore ? `<tr><td colspan="11" style="text-align:center;padding:14px"><a href="javascript:loadProducts({append:true})" style="color:var(--p1);text-decoration:none;font-weight:600">${t('btnLoadMore')} ${t('loadMoreProducts')} (${t('loadMoreShown')} ${(S.products||[]).length} ${t('loadMoreItems')})</a></td></tr>` : '');
+  bindSpecHover();
+  bindThumbHover();
 }
+
+// 规格悬浮浮层（保留换行）
+let _specPop = null;
+function bindSpecHover() {
+  document.querySelectorAll('.spec-hover-trigger').forEach(el => {
+    el.onmouseenter = (e) => {
+      const text = el.dataset.spec || '';
+      if (!text) return;
+      hideSpecPop();
+      _specPop = document.createElement('div');
+      _specPop.className = 'spec-popover';
+      _specPop.textContent = text;
+      document.body.appendChild(_specPop);
+      const r = el.getBoundingClientRect();
+      _specPop.style.left = Math.max(8, r.left) + 'px';
+      _specPop.style.top  = (r.bottom + 6) + 'px';
+    };
+    el.onmouseleave = hideSpecPop;
+  });
+}
+function hideSpecPop() { if (_specPop) { _specPop.remove(); _specPop = null; } }
+
+// 缩略图悬浮大图预览
+let _thumbPop = null;
+function bindThumbHover() {
+  document.querySelectorAll('.pr-thumb').forEach(el => {
+    if (el.classList.contains('pr-thumb-empty')) return;
+    el.onmouseenter = (e) => {
+      hideThumbPop();
+      _thumbPop = document.createElement('div');
+      _thumbPop.className = 'thumb-popover';
+      const src = el.getAttribute('src');
+      _thumbPop.innerHTML = `<img src="${src}">`;
+      document.body.appendChild(_thumbPop);
+      const r = el.getBoundingClientRect();
+      _thumbPop.style.left = (r.right + 12) + 'px';
+      _thumbPop.style.top  = Math.max(8, r.top - 60) + 'px';
+    };
+    el.onmouseleave = hideThumbPop;
+  });
+}
+function hideThumbPop() { if (_thumbPop) { _thumbPop.remove(); _thumbPop = null; } }
 function openProductModal() {
   document.getElementById('pm-id').value = '';
   document.getElementById('productForm').reset();
@@ -2455,7 +2518,7 @@ async function editProduct(id) {
     document.getElementById('pm-sp-usd').value   = product.default_sales_price_usd||'';
     document.getElementById('pm-sp-rmb').value   = product.default_sales_price_rmb||'';
     document.getElementById('pm-hs').value       = product.hs_code||'';
-    document.getElementById('pm-cert').value     = product.certification||'';
+    document.getElementById('pm-brand').value    = product.brand || product.certification || '';
     pmImgClear();
     if (product.image_url) {
       document.getElementById('pm-image').value = product.image_url;
@@ -2510,7 +2573,7 @@ async function saveProduct(e) {
     default_sales_price_usd: parseFloat(document.getElementById('pm-sp-usd').value)||null,
     default_sales_price_rmb: parseFloat(document.getElementById('pm-sp-rmb').value)||null,
     hs_code:                document.getElementById('pm-hs').value,
-    certification:          document.getElementById('pm-cert').value,
+    brand:                  document.getElementById('pm-brand').value,
     image_url:              document.getElementById('pm-image').value,
     default_lead_time:      document.getElementById('pm-lead').value,
   };
@@ -2592,11 +2655,13 @@ async function viewProduct(id) {
         <td>${fmtN(h.quantity||0)}</td>
       </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:14px">暂无价格历史</td></tr>';
     document.getElementById('pdmBody').innerHTML = `
+      ${product.image_url ? `<div style="margin-bottom:14px;text-align:center;padding:10px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px"><img src="${esc(product.image_url)}" style="max-width:100%;max-height:280px;border-radius:8px"></div>` : ''}
       <div class="form-grid col3" style="margin-bottom:14px">
         <div><label style="font-size:11px;color:var(--muted)">EN</label><div>${esc(product.product_name_en||'—')}</div></div>
-        <div><label style="font-size:11px;color:var(--muted)">规格</label><div>${esc(product.specification||'—')}</div></div>
+        <div><label style="font-size:11px;color:var(--muted)">规格</label><div style="white-space:pre-wrap">${esc(product.specification||'—')}</div></div>
         <div><label style="font-size:11px;color:var(--muted)">单位</label><div>${esc(product.unit||'pcs')}</div></div>
         <div><label style="font-size:11px;color:var(--muted)">HS Code</label><div>${esc(product.hs_code||'—')}</div></div>
+        <div><label style="font-size:11px;color:var(--muted)">品牌</label><div>${esc(product.brand||product.certification||'—')}</div></div>
         <div><label style="font-size:11px;color:var(--muted)">默认采购价</label><div>¥${fmtN(product.default_purchase_price||0)}</div></div>
         <div><label style="font-size:11px;color:var(--muted)">默认销售价(USD)</label><div>${product.default_sales_price_usd?'$'+fmtN(product.default_sales_price_usd):'—'}</div></div>
         <div><label style="font-size:11px;color:var(--muted)">默认销售价(RMB)</label><div>${product.default_sales_price_rmb?'¥'+fmtN(product.default_sales_price_rmb):'—'}</div></div>
