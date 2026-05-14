@@ -235,31 +235,57 @@ button,input,select,textarea{font:inherit}
 .toast.ok{border-color:rgba(74,222,128,.35)}
 .toast.err{border-color:rgba(251,113,133,.35)}
 
-/* Compose UX override: normal email style */
-.compose{padding:16px;background:linear-gradient(180deg,#081225,#030915) !important;border:1px solid #dbe3ef;border-radius:14px;background-color:#fff !important;box-shadow:0 24px 56px rgba(2,6,23,.45)}
-.compose-header{padding:10px 14px !important;border-bottom:1px solid #e5e7eb !important;background:#f8fafc !important}
-.compose-title{font-size:18px !important;font-weight:700 !important;color:#0f172a !important}
-.btn-close,.btn-fs{border:1px solid #cbd5e1 !important;background:#fff !important;color:#334155 !important;border-radius:8px !important}
-.compose-form{padding:0 !important;gap:0 !important;background:#fff !important}
-.field-row{padding:7px 14px !important;border-bottom:1px solid #e5e7eb !important}
-.field-label{font-size:12px !important;color:#475569 !important;font-weight:600 !important;width:46px !important}
-.field-input{font-size:12.5px !important;color:#0f172a !important}
-.field-input::placeholder{color:#94a3b8 !important}
-.compose-editor{min-height:320px !important}
-.table-tools{padding:10px 14px !important;border-top:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;background:#f8fafc}
-.attach-area{border:none !important;padding:0 !important;min-height:36px !important;flex:1}
-.attach-btn,.table-tool-btn{padding:6px 12px !important;border:1px solid #cbd5e1 !important;background:#fff !important;color:#334155 !important;border-radius:8px !important}
-.attach-btn:hover,.table-tool-btn:hover{border-color:#4f46e5 !important;color:#312e81 !important;background:#fff !important}
-.attach-chip{background:#eef2ff !important;border:1px solid #c7d2fe !important;color:#312e81 !important}
-.compose-footer{padding:8px 14px !important;border-top:1px solid #e5e7eb !important;background:#f8fafc !important;justify-content:flex-start !important}
-.btn-send{padding:9px 22px !important;border-radius:10px !important;background:#4f46e5 !important;color:#fff !important;font-size:14px !important;font-weight:700 !important}
-.btn-send:hover{background:#4338ca !important}
-.send-status{font-size:13px !important;color:#64748b !important}
+/* ── 简洁白底邮件风格（Reader + Compose 共享） ── */
+.detail-panel{background:#ffffff !important;color:#111827}
+.detail-placeholder{background:#ffffff;color:#94a3b8}
+
+/* Reader（查看邮件） */
+.reader{background:#ffffff}
+.reader-header{padding:22px 28px 16px;background:#ffffff !important;border-bottom:1px solid #e5e7eb !important}
+.reader-subject{font-size:20px;font-weight:600;color:#111827 !important;margin-bottom:12px}
+.reader-meta{font-size:13px;color:#4b5563 !important;gap:6px 24px}
+.reader-meta strong{color:#111827 !important;font-weight:600}
+.reader-actions{margin-top:16px;gap:10px}
+.btn-action{padding:7px 16px !important;border:1px solid #d1d5db !important;background:#ffffff !important;color:#374151 !important;border-radius:8px !important;font-size:13px !important;cursor:pointer;transition:.15s}
+.btn-action:hover{background:#f9fafb !important;border-color:#9ca3af !important;color:#111827 !important}
+.btn-action.danger{border-color:#fca5a5 !important;color:#dc2626 !important}
+.btn-action.danger:hover{background:#fef2f2 !important;border-color:#dc2626 !important;color:#b91c1c !important}
+.reader-body{padding:24px 28px;background:#ffffff !important}
+.reader-html{color:#1f2937 !important;font-size:14px;line-height:1.75;max-width:880px}
+.reader-html a{color:#2563eb !important}
+.reader-text{color:#1f2937 !important;font-size:13.5px;line-height:1.8;max-width:880px}
+
+/* Compose（写邮件）— 简洁白底 */
+.compose{background:#ffffff !important;border:none}
+.compose-header{padding:14px 22px !important;background:#ffffff !important;border-bottom:1px solid #e5e7eb !important}
+.compose-title{font-size:16px !important;font-weight:600 !important;color:#111827 !important}
+.btn-close,.btn-fs{border:1px solid #d1d5db !important;background:#ffffff !important;color:#4b5563 !important;border-radius:7px !important}
+.btn-close:hover{border-color:#dc2626 !important;color:#dc2626 !important}
+.btn-fs:hover{border-color:#2563eb !important;color:#2563eb !important}
+.compose-form{padding:0 !important;gap:0 !important;background:#ffffff !important}
+.field-row{padding:10px 22px !important;border-bottom:1px solid #e5e7eb !important;background:#ffffff}
+.field-label{font-size:13px !important;color:#6b7280 !important;font-weight:500 !important;width:56px !important}
+.field-input{font-size:13.5px !important;color:#111827 !important;background:transparent !important}
+.field-input::placeholder{color:#9ca3af !important}
+.compose-editor{min-height:320px !important;background:#ffffff}
+.table-tools{padding:8px 22px !important;border-top:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;background:#f9fafb !important}
+.attach-area{border:none !important;padding:8px 22px !important;min-height:auto !important;background:#ffffff;border-bottom:1px solid #e5e7eb}
+.attach-btn,.table-tool-btn{padding:5px 12px !important;border:1px solid #d1d5db !important;background:#ffffff !important;color:#374151 !important;border-radius:6px !important;font-size:12.5px !important}
+.attach-btn:hover,.table-tool-btn:hover{border-color:#2563eb !important;color:#1d4ed8 !important;background:#ffffff !important}
+.attach-chip{background:#f3f4f6 !important;border:1px solid #d1d5db !important;color:#1f2937 !important;border-radius:14px !important;padding:3px 10px !important;font-size:12px !important}
+.attach-chip .rm{color:#6b7280}
+.attach-chip .rm:hover{color:#dc2626}
+.compose-footer{padding:12px 22px !important;background:#ffffff !important;border-top:1px solid #e5e7eb !important;justify-content:flex-start !important}
+.btn-send{padding:8px 22px !important;border-radius:8px !important;background:#2563eb !important;color:#ffffff !important;font-size:13.5px !important;font-weight:600 !important;border:none !important}
+.btn-send:hover{background:#1d4ed8 !important}
+.send-status{font-size:13px !important;color:#6b7280 !important}
 .send-status.ok{color:#16a34a !important}
 .send-status.err{color:#dc2626 !important}
-.tox-tinymce{border:none !important;border-top:1px solid #e5e7eb !important;border-bottom:1px solid #e5e7eb !important;border-radius:0 !important}
-.tox .tox-editor-header{border-bottom:1px solid #e5e7eb !important}
-.tox .tox-toolbar,.tox .tox-toolbar__primary,.tox .tox-toolbar__overflow{background:#fff !important;border:none !important}
+
+/* TinyMCE 工具栏 light */
+.tox-tinymce{border:none !important;border-radius:0 !important}
+.tox .tox-editor-header{border-bottom:1px solid #e5e7eb !important;background:#ffffff !important}
+.tox .tox-toolbar,.tox .tox-toolbar__primary,.tox .tox-toolbar__overflow{background:#ffffff !important;border:none !important}
 .tox .tox-edit-area::before{border:none !important}
 </style>
 <link rel="stylesheet" href="light-theme.css">
@@ -441,6 +467,7 @@ if (!token) location.href = 'login.html';
 
 let currentFolder    = 'INBOX';
 let currentEmailId   = null;
+let currentEmailData = null; // 当前查看的邮件对象（回复/转发/删除按钮用）
 let currentAccountId = null; // null = 使用环境变量默认账号
 let mailEditor       = null;
 let attachments      = [];
@@ -712,6 +739,7 @@ async function openEmail(id, el) {
   try {
     const res   = await apiFetch(`/api/emails/${id}`);
     const email = await res.json();
+    currentEmailData = email;
     if (!email.is_read) {
       apiFetch(`/api/emails/${id}/read`, { method:'PATCH', body: JSON.stringify({ is_read:true }) });
       el?.classList.remove('unread');
@@ -728,9 +756,9 @@ async function openEmail(id, el) {
             <div><strong>时间：</strong>${new Date(email.received_at).toLocaleString('zh-CN')}</div>
           </div>
           <div class="reader-actions">
-            <button class="btn-action" onclick="replyEmail(${JSON.stringify(esc(email.from_address))},${JSON.stringify(esc(email.subject))})">↩ 回复</button>
-            <button class="btn-action" onclick="forwardEmail(${JSON.stringify(esc(email.subject))},${JSON.stringify(esc(email.body_html||email.body_text||''))})">⤷ 转发</button>
-            <button class="btn-action danger" onclick="deleteEmail('${email.id}')">🗑 删除</button>
+            <button class="btn-action" onclick="replyCurrent()">↩ 回复</button>
+            <button class="btn-action" onclick="forwardCurrent()">⤷ 转发</button>
+            <button class="btn-action danger" onclick="deleteCurrent()">🗑 删除</button>
           </div>
         </div>
         <div class="reader-body">
@@ -969,6 +997,20 @@ function replyEmail(to, subject) {
 
 function forwardEmail(subject, body) {
   openCompose({ title:'转发', subject: subject.startsWith('Fwd:')?subject:`Fwd: ${subject}`, body:`<br><br><hr><p><b>--- 转发邮件 ---</b></p>${body}` });
+}
+
+// 简化版：回复/转发/删除当前查看的邮件（避免 inline onclick 转义问题）
+function replyCurrent() {
+  if (!currentEmailData) return;
+  replyEmail(currentEmailData.from_address || '', currentEmailData.subject || '');
+}
+function forwardCurrent() {
+  if (!currentEmailData) return;
+  forwardEmail(currentEmailData.subject || '', currentEmailData.body_html || currentEmailData.body_text || '');
+}
+function deleteCurrent() {
+  if (!currentEmailData) return;
+  deleteEmail(currentEmailData.id);
 }
 
 async function sendEmail() {
