@@ -936,7 +936,11 @@ tr:hover .del-row-btn{display:inline-block}
       <input type="hidden" id="cm-id">
       <div class="form-grid">
         <div class="field form-full"><label data-i18n="lblCustName">Customer Name *</label><input type="text" id="cm-name" required></div>
-        <div class="field"><label data-i18n="lblCustCountry">Country</label><input type="text" id="cm-country"></div>
+        <div class="field" style="position:relative">
+          <label data-i18n="lblCustCountry">Country</label>
+          <input type="text" id="cm-country" autocomplete="off" placeholder="" oninput="filterCountryList()" onfocus="openCountryList()">
+          <div id="cm-country-list" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:240px;overflow-y:auto;background:var(--panel,#0a1628);border:1px solid var(--border);border-radius:8px;margin-top:4px;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.5)"></div>
+        </div>
         <div class="field"><label data-i18n="lblCustEmail">Email</label><input type="email" id="cm-email"></div>
         <div class="field"><label data-i18n="lblCustWhatsApp">WhatsApp</label><input type="text" id="cm-whatsapp"></div>
         <div class="field"><label data-i18n="lblCustPayment">Payment Terms</label><input type="text" id="cm-payment" data-i18n-ph="phCustPayment" placeholder="e.g. T/T 30% deposit"></div>
@@ -947,8 +951,11 @@ tr:hover .del-row-btn{display:inline-block}
             <option value="potential" data-i18n="optPotential">Potential</option>
           </select>
         </div>
-        <div class="field form-full"><label data-i18n="lblCustAddress">Shipping Address</label><textarea id="cm-address"></textarea></div>
-        <div class="field form-full"><label data-i18n="lblCustNotes">Notes</label><textarea id="cm-notes"></textarea></div>
+        <div class="field form-full">
+          <label data-i18n="lblCustAddress">Shipping Address</label>
+          <div id="cm-address-list" style="display:flex;flex-direction:column;gap:8px"></div>
+          <button type="button" class="btn btn-sm" onclick="addAddressRow()" style="margin-top:8px;align-self:flex-start" data-i18n="btnAddAddress">＋ 添加地址</button>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn" data-i18n="btnCancel" onclick="closeModal('customerModal')">取消</button>
@@ -1577,9 +1584,8 @@ const EXCEL_SCHEMA = {
       { key:'email',         header:'邮箱' },
       { key:'whatsapp',      header:'WhatsApp' },
       { key:'payment_terms', header:'付款条件' },
-      { key:'shipping_address', header:'收货地址' },
+      { key:'shipping_address', header:'收货地址', format:(v)=>formatShippingAddress(v,' | ') },
       { key:'customer_level',   header:'客户等级' },
-      { key:'notes',         header:'备注' },
     ],
     src: () => S.customers,
   },
@@ -1641,7 +1647,7 @@ function exportExcel(type) {
   if (!meta) return;
   const rows = (meta.src()||[]).map(r => {
     const row = {};
-    meta.fields.forEach(f => { row[f.header] = r[f.key] ?? ''; });
+    meta.fields.forEach(f => { row[f.header] = f.format ? f.format(r[f.key]) : (r[f.key] ?? ''); });
     return row;
   });
   if (!rows.length) { toast(t('excelEmpty'), 'err'); return; }
@@ -2051,15 +2057,167 @@ function renderCustomers() {
     </tr>`).join('') +
     (S._customersHasMore ? `<tr><td colspan="6" style="text-align:center;padding:14px"><a href="javascript:loadCustomers({append:true})" style="color:var(--p1);text-decoration:none;font-weight:600">${t('btnLoadMore')} ${t('loadMoreCustomers')} (${t('loadMoreShown')} ${(S.customers||[]).length} ${t('loadMoreItems')})</a></td></tr>` : '');
 }
+// ══════════════════════════════
+// 国家列表（中英双语，可搜索）+ 收货地址多条 + 客户表单
+// ══════════════════════════════
+const COUNTRIES = [
+  {en:'China',zh:'中国'},{en:'United States',zh:'美国'},{en:'United Kingdom',zh:'英国'},{en:'Germany',zh:'德国'},{en:'France',zh:'法国'},
+  {en:'Italy',zh:'意大利'},{en:'Spain',zh:'西班牙'},{en:'Portugal',zh:'葡萄牙'},{en:'Netherlands',zh:'荷兰'},{en:'Belgium',zh:'比利时'},
+  {en:'Switzerland',zh:'瑞士'},{en:'Austria',zh:'奥地利'},{en:'Sweden',zh:'瑞典'},{en:'Norway',zh:'挪威'},{en:'Denmark',zh:'丹麦'},
+  {en:'Finland',zh:'芬兰'},{en:'Iceland',zh:'冰岛'},{en:'Ireland',zh:'爱尔兰'},{en:'Poland',zh:'波兰'},{en:'Czech Republic',zh:'捷克'},
+  {en:'Slovakia',zh:'斯洛伐克'},{en:'Hungary',zh:'匈牙利'},{en:'Romania',zh:'罗马尼亚'},{en:'Bulgaria',zh:'保加利亚'},{en:'Greece',zh:'希腊'},
+  {en:'Russia',zh:'俄罗斯'},{en:'Ukraine',zh:'乌克兰'},{en:'Belarus',zh:'白俄罗斯'},{en:'Turkey',zh:'土耳其'},{en:'Cyprus',zh:'塞浦路斯'},
+  {en:'Croatia',zh:'克罗地亚'},{en:'Serbia',zh:'塞尔维亚'},{en:'Slovenia',zh:'斯洛文尼亚'},{en:'Bosnia and Herzegovina',zh:'波黑'},{en:'Albania',zh:'阿尔巴尼亚'},
+  {en:'North Macedonia',zh:'北马其顿'},{en:'Montenegro',zh:'黑山'},{en:'Moldova',zh:'摩尔多瓦'},{en:'Estonia',zh:'爱沙尼亚'},{en:'Latvia',zh:'拉脱维亚'},
+  {en:'Lithuania',zh:'立陶宛'},{en:'Luxembourg',zh:'卢森堡'},{en:'Malta',zh:'马耳他'},{en:'Monaco',zh:'摩纳哥'},{en:'Vatican City',zh:'梵蒂冈'},
+  {en:'Japan',zh:'日本'},{en:'South Korea',zh:'韩国'},{en:'North Korea',zh:'朝鲜'},{en:'Mongolia',zh:'蒙古'},{en:'Taiwan',zh:'台湾'},
+  {en:'Hong Kong',zh:'香港'},{en:'Macau',zh:'澳门'},{en:'Vietnam',zh:'越南'},{en:'Thailand',zh:'泰国'},{en:'Cambodia',zh:'柬埔寨'},
+  {en:'Laos',zh:'老挝'},{en:'Myanmar',zh:'缅甸'},{en:'Malaysia',zh:'马来西亚'},{en:'Singapore',zh:'新加坡'},{en:'Indonesia',zh:'印度尼西亚'},
+  {en:'Philippines',zh:'菲律宾'},{en:'Brunei',zh:'文莱'},{en:'East Timor',zh:'东帝汶'},{en:'India',zh:'印度'},{en:'Pakistan',zh:'巴基斯坦'},
+  {en:'Bangladesh',zh:'孟加拉国'},{en:'Sri Lanka',zh:'斯里兰卡'},{en:'Nepal',zh:'尼泊尔'},{en:'Bhutan',zh:'不丹'},{en:'Maldives',zh:'马尔代夫'},
+  {en:'Afghanistan',zh:'阿富汗'},{en:'Iran',zh:'伊朗'},{en:'Iraq',zh:'伊拉克'},{en:'Syria',zh:'叙利亚'},{en:'Lebanon',zh:'黎巴嫩'},
+  {en:'Israel',zh:'以色列'},{en:'Palestine',zh:'巴勒斯坦'},{en:'Jordan',zh:'约旦'},{en:'Saudi Arabia',zh:'沙特阿拉伯'},{en:'Yemen',zh:'也门'},
+  {en:'Oman',zh:'阿曼'},{en:'United Arab Emirates',zh:'阿联酋'},{en:'Qatar',zh:'卡塔尔'},{en:'Bahrain',zh:'巴林'},{en:'Kuwait',zh:'科威特'},
+  {en:'Kazakhstan',zh:'哈萨克斯坦'},{en:'Uzbekistan',zh:'乌兹别克斯坦'},{en:'Turkmenistan',zh:'土库曼斯坦'},{en:'Tajikistan',zh:'塔吉克斯坦'},{en:'Kyrgyzstan',zh:'吉尔吉斯斯坦'},
+  {en:'Azerbaijan',zh:'阿塞拜疆'},{en:'Armenia',zh:'亚美尼亚'},{en:'Georgia',zh:'格鲁吉亚'},
+  {en:'Canada',zh:'加拿大'},{en:'Mexico',zh:'墨西哥'},{en:'Cuba',zh:'古巴'},{en:'Jamaica',zh:'牙买加'},{en:'Haiti',zh:'海地'},
+  {en:'Dominican Republic',zh:'多米尼加'},{en:'Puerto Rico',zh:'波多黎各'},{en:'Bahamas',zh:'巴哈马'},{en:'Trinidad and Tobago',zh:'特立尼达和多巴哥'},{en:'Barbados',zh:'巴巴多斯'},
+  {en:'Guatemala',zh:'危地马拉'},{en:'Belize',zh:'伯利兹'},{en:'Honduras',zh:'洪都拉斯'},{en:'El Salvador',zh:'萨尔瓦多'},{en:'Nicaragua',zh:'尼加拉瓜'},
+  {en:'Costa Rica',zh:'哥斯达黎加'},{en:'Panama',zh:'巴拿马'},
+  {en:'Brazil',zh:'巴西'},{en:'Argentina',zh:'阿根廷'},{en:'Chile',zh:'智利'},{en:'Colombia',zh:'哥伦比亚'},{en:'Peru',zh:'秘鲁'},
+  {en:'Venezuela',zh:'委内瑞拉'},{en:'Ecuador',zh:'厄瓜多尔'},{en:'Bolivia',zh:'玻利维亚'},{en:'Paraguay',zh:'巴拉圭'},{en:'Uruguay',zh:'乌拉圭'},
+  {en:'Guyana',zh:'圭亚那'},{en:'Suriname',zh:'苏里南'},
+  {en:'Australia',zh:'澳大利亚'},{en:'New Zealand',zh:'新西兰'},{en:'Papua New Guinea',zh:'巴布亚新几内亚'},{en:'Fiji',zh:'斐济'},{en:'Solomon Islands',zh:'所罗门群岛'},
+  {en:'Vanuatu',zh:'瓦努阿图'},{en:'Samoa',zh:'萨摩亚'},{en:'Tonga',zh:'汤加'},{en:'Kiribati',zh:'基里巴斯'},{en:'Micronesia',zh:'密克罗尼西亚'},
+  {en:'Marshall Islands',zh:'马绍尔群岛'},{en:'Palau',zh:'帕劳'},{en:'Nauru',zh:'瑙鲁'},{en:'Tuvalu',zh:'图瓦卢'},
+  {en:'Egypt',zh:'埃及'},{en:'Libya',zh:'利比亚'},{en:'Tunisia',zh:'突尼斯'},{en:'Algeria',zh:'阿尔及利亚'},{en:'Morocco',zh:'摩洛哥'},
+  {en:'Sudan',zh:'苏丹'},{en:'South Sudan',zh:'南苏丹'},{en:'Ethiopia',zh:'埃塞俄比亚'},{en:'Eritrea',zh:'厄立特里亚'},{en:'Djibouti',zh:'吉布提'},
+  {en:'Somalia',zh:'索马里'},{en:'Kenya',zh:'肯尼亚'},{en:'Uganda',zh:'乌干达'},{en:'Tanzania',zh:'坦桑尼亚'},{en:'Rwanda',zh:'卢旺达'},
+  {en:'Burundi',zh:'布隆迪'},{en:'Democratic Republic of the Congo',zh:'刚果（金）'},{en:'Republic of the Congo',zh:'刚果（布）'},{en:'Central African Republic',zh:'中非'},{en:'Cameroon',zh:'喀麦隆'},
+  {en:'Gabon',zh:'加蓬'},{en:'Equatorial Guinea',zh:'赤道几内亚'},{en:'São Tomé and Príncipe',zh:'圣多美和普林西比'},{en:'Chad',zh:'乍得'},{en:'Niger',zh:'尼日尔'},
+  {en:'Nigeria',zh:'尼日利亚'},{en:'Benin',zh:'贝宁'},{en:'Togo',zh:'多哥'},{en:'Ghana',zh:'加纳'},{en:'Côte d\'Ivoire',zh:'科特迪瓦'},
+  {en:'Liberia',zh:'利比里亚'},{en:'Sierra Leone',zh:'塞拉利昂'},{en:'Guinea',zh:'几内亚'},{en:'Guinea-Bissau',zh:'几内亚比绍'},{en:'Senegal',zh:'塞内加尔'},
+  {en:'Gambia',zh:'冈比亚'},{en:'Mauritania',zh:'毛里塔尼亚'},{en:'Mali',zh:'马里'},{en:'Burkina Faso',zh:'布基纳法索'},{en:'Cape Verde',zh:'佛得角'},
+  {en:'Angola',zh:'安哥拉'},{en:'Zambia',zh:'赞比亚'},{en:'Malawi',zh:'马拉维'},{en:'Mozambique',zh:'莫桑比克'},{en:'Madagascar',zh:'马达加斯加'},
+  {en:'Mauritius',zh:'毛里求斯'},{en:'Seychelles',zh:'塞舌尔'},{en:'Comoros',zh:'科摩罗'},{en:'Zimbabwe',zh:'津巴布韦'},{en:'Botswana',zh:'博茨瓦纳'},
+  {en:'Namibia',zh:'纳米比亚'},{en:'South Africa',zh:'南非'},{en:'Lesotho',zh:'莱索托'},{en:'Eswatini',zh:'斯威士兰'},
+];
+
+function getCountryDisplay(c) { return S.lang === 'zh' ? c.zh : c.en; }
+
+function renderCountryList(keyword = '') {
+  const box = document.getElementById('cm-country-list');
+  if (!box) return;
+  const k = String(keyword||'').trim().toLowerCase();
+  const list = COUNTRIES.filter(c => !k || c.en.toLowerCase().includes(k) || c.zh.includes(keyword));
+  if (!list.length) { box.innerHTML = '<div style="padding:10px 14px;color:var(--muted);font-size:13px">无匹配</div>'; return; }
+  box.innerHTML = list.slice(0, 80).map(c => `
+    <div onclick="pickCountry('${c.en.replace(/'/g,"\\'")}','${c.zh}')"
+         style="padding:8px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid rgba(255,255,255,.04);display:flex;justify-content:space-between;gap:10px"
+         onmouseover="this.style.background='rgba(16,185,129,.12)'" onmouseout="this.style.background=''">
+      <span>${esc(getCountryDisplay(c))}</span>
+      <span style="color:var(--muted);font-size:12px">${esc(S.lang==='zh'?c.en:c.zh)}</span>
+    </div>`).join('');
+}
+
+function openCountryList() {
+  const box = document.getElementById('cm-country-list');
+  if (!box) return;
+  box.style.display = '';
+  renderCountryList(document.getElementById('cm-country').value);
+}
+
+function filterCountryList() {
+  const v = document.getElementById('cm-country').value;
+  document.getElementById('cm-country-list').style.display = '';
+  renderCountryList(v);
+}
+
+function pickCountry(en, zh) {
+  const input = document.getElementById('cm-country');
+  input.value = S.lang === 'zh' ? zh : en;
+  document.getElementById('cm-country-list').style.display = 'none';
+}
+
+// 点空白处关闭国家下拉
+document.addEventListener('click', (e) => {
+  const box = document.getElementById('cm-country-list');
+  const inp = document.getElementById('cm-country');
+  if (!box || !inp) return;
+  if (e.target !== inp && !box.contains(e.target)) box.style.display = 'none';
+});
+
+// ── 收货地址多条（{address, phone}）──
+function parseAddresses(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  const s = String(raw).trim();
+  if (s.startsWith('[')) {
+    try { const arr = JSON.parse(s); if (Array.isArray(arr)) return arr; } catch(_){}
+  }
+  // 老数据：纯文本，作为单条地址
+  return [{ address: s, phone: '' }];
+}
+
+function formatShippingAddress(raw, sep = ' / ') {
+  const list = parseAddresses(raw);
+  return list.map(a => {
+    const parts = [];
+    if (a.address) parts.push(a.address);
+    if (a.phone)   parts.push(`Tel: ${a.phone}`);
+    return parts.join(' — ');
+  }).filter(Boolean).join(sep);
+}
+
+function renderAddressRows(list) {
+  const wrap = document.getElementById('cm-address-list');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  (list && list.length ? list : [{address:'',phone:''}]).forEach((item, idx) => {
+    wrap.appendChild(buildAddressRow(item.address || '', item.phone || '', idx));
+  });
+}
+
+function buildAddressRow(address, phone, idx) {
+  const row = document.createElement('div');
+  row.className = 'address-row';
+  row.style.cssText = 'display:grid;grid-template-columns:1fr 180px 32px;gap:8px;align-items:start';
+  row.innerHTML = `
+    <textarea class="addr-text" rows="2" placeholder="${S.lang==='zh'?'收货地址':'Shipping address'}" style="resize:vertical">${esc(address)}</textarea>
+    <input type="text" class="addr-phone" placeholder="${S.lang==='zh'?'电话':'Phone'}" value="${esc(phone)}">
+    <button type="button" class="btn btn-sm btn-danger" title="${S.lang==='zh'?'删除':'Remove'}" onclick="this.closest('.address-row').remove()" style="padding:6px 8px">×</button>
+  `;
+  return row;
+}
+
+function addAddressRow() {
+  const wrap = document.getElementById('cm-address-list');
+  if (!wrap) return;
+  wrap.appendChild(buildAddressRow('', '', wrap.children.length));
+}
+
+function collectAddresses() {
+  const rows = document.querySelectorAll('#cm-address-list .address-row');
+  const out = [];
+  rows.forEach(r => {
+    const address = (r.querySelector('.addr-text')?.value || '').trim();
+    const phone   = (r.querySelector('.addr-phone')?.value || '').trim();
+    if (address || phone) out.push({ address, phone });
+  });
+  return out;
+}
+
 function openCustomerModal(id) {
   document.getElementById('cm-id').value = '';
   document.getElementById('customerForm').reset();
-  document.getElementById('customerModalTitle').textContent = 'New Customer';
+  document.getElementById('customerModalTitle').textContent = S.lang === 'zh' ? '新建客户' : 'New Customer';
+  renderAddressRows([]);
+  document.getElementById('cm-country-list').style.display = 'none';
   openModal('customerModal');
 }
 function editCustomer(id) {
   const c = S.customers.find(x=>x.id===id); if (!c) return;
-  document.getElementById('customerModalTitle').textContent = 'Edit Customer';
+  document.getElementById('customerModalTitle').textContent = S.lang === 'zh' ? '编辑客户' : 'Edit Customer';
   document.getElementById('cm-id').value      = c.id;
   document.getElementById('cm-name').value    = c.customer_name||'';
   document.getElementById('cm-country').value = c.country||'';
@@ -2067,13 +2225,14 @@ function editCustomer(id) {
   document.getElementById('cm-whatsapp').value= c.whatsapp||'';
   document.getElementById('cm-payment').value = c.payment_terms||'';
   document.getElementById('cm-level').value   = c.customer_level||'standard';
-  document.getElementById('cm-address').value = c.shipping_address||'';
-  document.getElementById('cm-notes').value   = c.notes||'';
+  renderAddressRows(parseAddresses(c.shipping_address));
+  document.getElementById('cm-country-list').style.display = 'none';
   openModal('customerModal');
 }
 async function saveCustomer(e) {
   e.preventDefault();
   const id = document.getElementById('cm-id').value;
+  const addrs = collectAddresses();
   const payload = {
     customer_name:    document.getElementById('cm-name').value,
     country:          document.getElementById('cm-country').value,
@@ -2081,8 +2240,7 @@ async function saveCustomer(e) {
     whatsapp:         document.getElementById('cm-whatsapp').value,
     payment_terms:    document.getElementById('cm-payment').value,
     customer_level:   document.getElementById('cm-level').value,
-    shipping_address: document.getElementById('cm-address').value,
-    notes:            document.getElementById('cm-notes').value,
+    shipping_address: addrs.length ? JSON.stringify(addrs) : '',
   };
   try {
     if (id) await api(`/api/customers/${id}`, { method:'PUT', body:JSON.stringify(payload) });
@@ -3434,7 +3592,7 @@ function buildDocHTML(order, docType, lang) {
         </tr>
         <tr>
           <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Address:</td>
-          <td colspan="3" style="border:1px solid #000;padding:5px 8px">${esc(customer.shipping_address||order.shipping_address||'')}</td>
+          <td colspan="3" style="border:1px solid #000;padding:5px 8px">${esc(formatShippingAddress(customer.shipping_address||order.shipping_address||''))}</td>
         </tr>
         <tr>
           <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Tel:</td>
