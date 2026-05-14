@@ -501,10 +501,10 @@ tr:hover .del-row-btn{display:inline-block}
         <span class="nav-icon">◇</span><span class="nav-label" data-i18n="navAI">AI 助手</span>
       </div>
       <div class="nav-item" onclick="location.href='email.html'">
-        <span class="nav-icon">✉</span><span class="nav-label">邮件</span>
+        <span class="nav-icon">✉</span><span class="nav-label" data-i18n="navEmail">邮件</span>
       </div>
       <div class="nav-item" onclick="openRecycleBin()">
-        <span class="nav-icon">♻</span><span class="nav-label">回收站</span>
+        <span class="nav-icon">♻</span><span class="nav-label" data-i18n="navRecycleBin">回收站</span>
       </div>
     </div>
 
@@ -532,9 +532,9 @@ tr:hover .del-row-btn{display:inline-block}
       <kbd id="searchKbd" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.32);color:#34D399;padding:2px 7px;border-radius:5px;font-size:11px;font-family:inherit;pointer-events:none;letter-spacing:.5px">Ctrl K</kbd>
       <div class="search-dropdown" id="searchDropdown"></div>
     </div>
-    <a href="doc-maker.html" target="_blank" style="padding:7px 14px;border:1px solid rgba(0,190,255,0.3);border-radius:8px;background:rgba(0,180,255,0.06);color:rgba(0,210,255,0.85);font-size:13px;text-decoration:none;white-space:nowrap;transition:.2s" onmouseover="this.style.background='rgba(0,190,255,0.14)'" onmouseout="this.style.background='rgba(0,180,255,0.06)'">📝 手动制作文件</a>
-    <a href="logistics.html" target="_blank" style="padding:7px 14px;border:1px solid rgba(74,222,128,0.3);border-radius:8px;background:rgba(74,222,128,0.05);color:rgba(74,222,128,0.9);font-size:13px;text-decoration:none;white-space:nowrap;transition:.2s" onmouseover="this.style.background='rgba(74,222,128,0.14)'" onmouseout="this.style.background='rgba(74,222,128,0.05)'">📦 物流管理</a>
-    <a id="vaultLink" href="password-vault.html" target="_blank" style="padding:7px 14px;border:1px solid rgba(251,191,36,0.35);border-radius:8px;background:rgba(251,191,36,0.07);color:rgba(253,224,71,0.95);font-size:13px;text-decoration:none;white-space:nowrap;transition:.2s" onmouseover="this.style.background='rgba(251,191,36,0.16)'" onmouseout="this.style.background='rgba(251,191,36,0.07)'">Password Vault</a>
+    <a href="doc-maker.html" target="_blank" data-i18n="btnDocMaker" style="padding:7px 14px;border:1px solid rgba(0,190,255,0.3);border-radius:8px;background:rgba(0,180,255,0.06);color:rgba(0,210,255,0.85);font-size:13px;text-decoration:none;white-space:nowrap;transition:.2s" onmouseover="this.style.background='rgba(0,190,255,0.14)'" onmouseout="this.style.background='rgba(0,180,255,0.06)'">📝 手动制作文件</a>
+    <a href="logistics.html" target="_blank" data-i18n="btnLogistics" style="padding:7px 14px;border:1px solid rgba(74,222,128,0.3);border-radius:8px;background:rgba(74,222,128,0.05);color:rgba(74,222,128,0.9);font-size:13px;text-decoration:none;white-space:nowrap;transition:.2s" onmouseover="this.style.background='rgba(74,222,128,0.14)'" onmouseout="this.style.background='rgba(74,222,128,0.05)'">📦 物流管理</a>
+    <a id="vaultLink" href="password-vault.html" target="_blank" data-i18n="btnVault" style="padding:7px 14px;border:1px solid rgba(251,191,36,0.35);border-radius:8px;background:rgba(251,191,36,0.07);color:rgba(253,224,71,0.95);font-size:13px;text-decoration:none;white-space:nowrap;transition:.2s" onmouseover="this.style.background='rgba(251,191,36,0.16)'" onmouseout="this.style.background='rgba(251,191,36,0.07)'">Password Vault</a>
     <div class="header-right">
       <button class="lang-btn" id="langBtn" onclick="toggleLang()">中/EN</button>
       <button class="icon-btn" title="Notifications">🔔</button>
@@ -627,8 +627,8 @@ tr:hover .del-row-btn{display:inline-block}
       <div class="card">
         <div class="card-head">
           <input type="text" id="cu-search" data-i18n-ph="phSearchCu" placeholder="Name / country / email..." oninput="renderCustomers()" style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:9px 14px;color:var(--text);font-size:13px;outline:none;width:260px">
-          <button class="btn" onclick="exportExcel('customers')" title="导出 Excel">📥 导出</button>
-          <button class="btn" onclick="importExcel('customers')" title="从 Excel 批量导入">📤 导入</button>
+          <button class="btn" data-i18n="btnExportExcel" onclick="exportExcel('customers')" title="导出 Excel">📥 导出</button>
+          <button class="btn" data-i18n="btnImportExcel" onclick="importExcel('customers')" title="从 Excel 批量导入">📤 导入</button>
           <button class="btn btn-primary" data-i18n="btnNewCustomerCard" onclick="openCustomerModal()">＋ New Customer</button>
         </div>
         <div class="tbl-wrap">
@@ -649,8 +649,8 @@ tr:hover .del-row-btn{display:inline-block}
       <div class="card">
         <div class="card-head">
           <input type="text" id="pr-search" data-i18n-ph="phSearchPr" placeholder="Code / name / spec..." oninput="renderProducts()" style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:9px 14px;color:var(--text);font-size:13px;outline:none;width:260px">
-          <button class="btn" onclick="exportExcel('products')" title="导出 Excel">📥 导出</button>
-          <button class="btn" onclick="importExcel('products')" title="从 Excel 批量导入">📤 导入</button>
+          <button class="btn" data-i18n="btnExportExcel" onclick="exportExcel('products')" title="导出 Excel">📥 导出</button>
+          <button class="btn" data-i18n="btnImportExcel" onclick="importExcel('products')" title="从 Excel 批量导入">📤 导入</button>
           <button class="btn btn-primary" data-i18n="btnNewProductCard" onclick="openProductModal()">＋ New Product</button>
         </div>
         <div class="tbl-wrap">
@@ -671,8 +671,8 @@ tr:hover .del-row-btn{display:inline-block}
       <div class="card">
         <div class="card-head">
           <input type="text" id="su-search" data-i18n-ph="phSearchSu" placeholder="Name / contact / phone..." oninput="renderSuppliers()" style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:9px 14px;color:var(--text);font-size:13px;outline:none;width:260px">
-          <button class="btn" onclick="exportExcel('suppliers')" title="导出 Excel">📥 导出</button>
-          <button class="btn" onclick="importExcel('suppliers')" title="从 Excel 批量导入">📤 导入</button>
+          <button class="btn" data-i18n="btnExportExcel" onclick="exportExcel('suppliers')" title="导出 Excel">📥 导出</button>
+          <button class="btn" data-i18n="btnImportExcel" onclick="importExcel('suppliers')" title="从 Excel 批量导入">📤 导入</button>
           <button class="btn btn-primary" data-i18n="btnNewSupplierCard" onclick="openSupplierModal()">＋ New Supplier</button>
         </div>
         <div class="tbl-wrap">
@@ -706,13 +706,13 @@ tr:hover .del-row-btn{display:inline-block}
               <option value="completed" data-i18n="stCompleted">Completed</option>
             </select>
           </div>
-          <button class="btn" onclick="exportExcel('orders')" title="导出当前订单到 Excel">📥 导出</button>
+          <button class="btn" data-i18n="btnExportExcel" onclick="exportExcel('orders')" title="导出当前订单到 Excel">📥 导出</button>
           <button class="btn btn-primary" data-i18n="btnNewOrderCard" onclick="openOrderModal()">＋ New Order</button>
         </div>
         <div class="tbl-wrap">
           <table>
             <thead><tr>
-              <th data-i18n="thDate">Date</th><th data-i18n="thCustomer">Customer</th><th data-i18n="navProducts">Products</th><th data-i18n="thSalesAmt">Sales</th><th data-i18n="thPurchaseAmt">Purchase</th><th data-i18n="thProfit">Profit</th><th data-i18n="thStatus">Status</th><th>流程</th><th data-i18n="thActions">Actions</th>
+              <th data-i18n="thDate">Date</th><th data-i18n="thCustomer">Customer</th><th data-i18n="navProducts">Products</th><th data-i18n="thSalesAmt">Sales</th><th data-i18n="thPurchaseAmt">Purchase</th><th data-i18n="thProfit">Profit</th><th data-i18n="thStatus">Status</th><th data-i18n="thFlow">流程</th><th data-i18n="thActions">Actions</th>
             </tr></thead>
             <tbody id="orBody"></tbody>
           </table>
@@ -981,24 +981,24 @@ tr:hover .del-row-btn{display:inline-block}
         <div class="field"><label>默认销售价 (USD) <span style="color:var(--muted);font-weight:300">⇄ 自动联动</span></label><input type="number" id="pm-sp-usd" step="0.01" placeholder="填这个会自动算 RMB" onblur="syncSalesPrice('usd')"></div>
         <div class="field"><label>默认销售价 (RMB) <span style="color:var(--muted);font-weight:300">⇄ 自动联动</span></label><input type="number" id="pm-sp-rmb" step="0.01" placeholder="填这个会自动算 USD" onblur="syncSalesPrice('rmb')"></div>
         <div class="field" style="grid-column:1/-1;font-size:11.5px;color:var(--muted);margin-top:-6px">
-          💡 销售价 USD 与 RMB 任填其一即可，离开输入框时按当日实时汇率自动补齐另一列；保存时也会再次校准。当日 USD→CNY: <span id="pm-fx-display" style="color:var(--p1);font-weight:600">加载中...</span>
+          <span data-i18n="pmFxHint">💡 销售价 USD 与 RMB 任填其一即可，离开输入框时按当日实时汇率自动补齐另一列；保存时也会再次校准。当日 USD→CNY：</span> <span id="pm-fx-display" style="color:var(--p1);font-weight:600">...</span>
         </div>
         <div class="field" style="grid-column:1/-1">
-          <label>产品图片</label>
+          <label data-i18n="pmImgLabel">产品图片</label>
           <div id="pm-img-drop" class="pm-img-drop" tabindex="0"
                onclick="document.getElementById('pm-img-input').click()"
                ondragover="pmImgDragOver(event)" ondragleave="pmImgDragLeave(event)" ondrop="pmImgDrop(event)"
                onpaste="pmImgPaste(event)">
             <img id="pm-img-preview" style="display:none;max-height:140px;border-radius:8px">
             <div id="pm-img-hint" style="text-align:center;color:var(--muted);font-size:13px;line-height:1.6">
-              📷 点击选择 / 拖拽 / <kbd style="background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);padding:1px 6px;border-radius:4px;color:#34D399;font-family:inherit;font-size:11px">Ctrl+V</kbd> 粘贴图片<br>
-              <span style="font-size:11.5px">支持 JPG / PNG / WEBP，自动压缩到 800px / ~100KB</span>
+              <span data-i18n="pmImgHint">📷 点击选择 / 拖拽 / Ctrl+V 粘贴图片</span><br>
+              <span style="font-size:11.5px" data-i18n="pmImgFmt">支持 JPG / PNG / WEBP，自动压缩到 800px / ~100KB</span>
             </div>
           </div>
           <input type="file" id="pm-img-input" accept="image/*" style="display:none" onchange="pmImgPickFile(event)">
           <input type="hidden" id="pm-image">
           <div style="display:flex;gap:8px;margin-top:6px">
-            <button type="button" class="btn btn-sm" onclick="pmImgClear()" id="pm-img-clear" style="display:none">✕ 移除图片</button>
+            <button type="button" class="btn btn-sm" onclick="pmImgClear()" id="pm-img-clear" data-i18n="pmImgRemove" style="display:none">✕ 移除图片</button>
             <span id="pm-img-status" style="font-size:11.5px;color:var(--muted);align-self:center"></span>
           </div>
         </div>
@@ -1176,7 +1176,7 @@ tr:hover .del-row-btn{display:inline-block}
     <div class="tbl-wrap">
       <table>
         <thead><tr>
-          <th data-i18n="thCNNameD">CN Name</th><th data-i18n="thENNameD">EN Name</th><th data-i18n="thSpecD">Spec</th><th data-i18n="thQtyD">Qty</th><th data-i18n="thPurchaseD">Purchase</th><th data-i18n="thSalesD">Sales</th><th data-i18n="thPTotalD">P.Total</th><th data-i18n="thSTotalD">S.Total</th><th>发货进度</th>
+          <th data-i18n="thCNNameD">CN Name</th><th data-i18n="thENNameD">EN Name</th><th data-i18n="thSpecD">Spec</th><th data-i18n="thQtyD">Qty</th><th data-i18n="thPurchaseD">Purchase</th><th data-i18n="thSalesD">Sales</th><th data-i18n="thPTotalD">P.Total</th><th data-i18n="thSTotalD">S.Total</th><th data-i18n="thShipProgress">发货进度</th>
         </tr></thead>
         <tbody id="detailBody"></tbody>
       </table>
@@ -1192,15 +1192,15 @@ tr:hover .del-row-btn{display:inline-block}
   <div class="modal modal-lg">
     <div class="modal-head">
       <div>
-        <h2>♻ 回收站</h2>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px">最近软删除的记录 · 点「恢复」可一键还原 · 「彻底删除」不可撤销</div>
+        <h2 data-i18n="recycleTitle">♻ 回收站</h2>
+        <div data-i18n="recycleSub" style="font-size:12px;color:var(--muted);margin-top:2px">最近软删除的记录 · 点「恢复」可一键还原 · 「彻底删除」不可撤销</div>
       </div>
       <button class="modal-close" onclick="closeModal('recycleModal')">×</button>
     </div>
     <div id="recycleBody" style="max-height:65vh;overflow-y:auto"></div>
     <div class="modal-footer">
-      <button class="btn" onclick="loadRecycleBin()">刷新</button>
-      <button class="btn" onclick="closeModal('recycleModal')">关闭</button>
+      <button class="btn" data-i18n="recycleRefresh" onclick="loadRecycleBin()">刷新</button>
+      <button class="btn" data-i18n="recycleClose" onclick="closeModal('recycleModal')">关闭</button>
     </div>
   </div>
 </div>
@@ -1307,6 +1307,44 @@ const I18N = {
     noCustomers:'未找到客户', noProducts:'未找到产品', noSuppliers:'未找到供应商', noInquiries:'未找到询盘', noOrders:'未找到订单',
     btnEdit:'编辑', btnDelete:'删除', btnDetail:'详情', btnToOrder:'→ 转为订单',
     phSelectOrderDoc:'— 选择订单 —', phSelectOrderQE:'选择订单...',
+    // 新增功能 (T1~T4)
+    navRecycleBin:'回收站', navAI2:'AI 助手', navEmail:'邮件',
+    btnDocMaker:'📝 手动制作文件', btnLogistics:'📦 物流管理', btnVault:'密码保险柜',
+    btnExportExcel:'📥 导出', btnImportExcel:'📤 导入',
+    btnLoadMore:'＋ 加载更多',
+    loadMoreShown:'已显示',
+    loadMoreItems:'条',
+    loadMoreCustomers:'客户', loadMoreProducts:'产品', loadMoreSuppliers:'供应商', loadMoreOrders:'订单',
+    thFlow:'流程', flowOrder:'订单', flowPurchase:'采购', flowShip:'发货', flowDone:'完成',
+    thShipProgress:'发货进度',
+    badgeFullyShipped:'✅ 已全部发货', badgeProgress:'📦 履约',
+    recycleTitle:'♻ 回收站',
+    recycleSub:'最近软删除的记录 · 点「恢复」可一键还原 · 「彻底删除」不可撤销',
+    recycleEmpty:'🎉 回收站是空的',
+    recycleRestore:'↩ 恢复', recyclePurge:'彻底删', recycleRefresh:'刷新', recycleClose:'关闭',
+    recycleColName:'名称', recycleColDetail:'明细', recycleColTime:'删除时间', recycleColAction:'操作',
+    toastRestored:'已恢复',
+    toastPurged:'已彻底删除',
+    toastPurgeFailed:'删除失败：',
+    confirmPurge:'确定要彻底删除「{name}」吗？\n此操作不可撤销，且可能因外键约束失败。',
+    importPreview:'导入预览', importConfirm:'确认导入',
+    importParsed:'共解析', importErrors:'处错误',
+    importing:'导入中', importDone:'导入完成：成功',
+    importFailed:'，失败', importFailedCount:'条',
+    excelOrdersNotImport:'订单导入暂不支持（含明细结构）',
+    excelEmpty:'当前列表无数据',
+    excelExported:'已导出',
+    excelFileEmpty:'Excel 是空的',
+    excelParseFailed:'解析失败：',
+    excelInvalidField:'格式错误',
+    pmImgLabel:'产品图片', pmImgHint:'📷 点击选择 / 拖拽 / Ctrl+V 粘贴图片', pmImgFmt:'支持 JPG / PNG / WEBP，自动压缩到 800px / ~100KB',
+    pmImgRemove:'✕ 移除图片', pmImgLoading:'处理中...', pmImgLoaded:'已加载', pmImgFailed:'处理失败：', pmImgCompressed:'已压缩 · 约',
+    pmFxHint:'💡 销售价 USD 与 RMB 任填其一即可，离开输入框时按当日实时汇率自动补齐另一列；保存时也会再次校准。当日 USD→CNY：',
+    pmFxLink:'⇄ 自动联动', pmFxUsdHint:'填这个会自动算 RMB', pmFxRmbHint:'填这个会自动算 USD',
+    shipPickerTitle:'📦 本批装了哪些产品？（勾选 + 填本次发货数量）',
+    shipPickerHint:'💡 默认按订单数量勾上，你可以改数量做分批发货',
+    shipBatch:'本批',
+    settingsRoleBadge:'角色',
   },
   en: {
     navDashboard:'Dashboard', navInquiries:'Inquiries', navCustomers:'Customers',
@@ -1396,6 +1434,44 @@ const I18N = {
     noCustomers:'No customers found', noProducts:'No products found', noSuppliers:'No suppliers found', noInquiries:'No inquiries found', noOrders:'No orders found',
     btnEdit:'Edit', btnDelete:'Delete', btnDetail:'Detail', btnToOrder:'→ Order',
     phSelectOrderDoc:'— Select an order —', phSelectOrderQE:'Select order...',
+    // New (T1~T4)
+    navRecycleBin:'Recycle Bin', navAI2:'AI Assistant', navEmail:'Email',
+    btnDocMaker:'📝 Doc Maker', btnLogistics:'📦 Logistics', btnVault:'Password Vault',
+    btnExportExcel:'📥 Export', btnImportExcel:'📤 Import',
+    btnLoadMore:'＋ Load more',
+    loadMoreShown:'shown',
+    loadMoreItems:'',
+    loadMoreCustomers:'customers', loadMoreProducts:'products', loadMoreSuppliers:'suppliers', loadMoreOrders:'orders',
+    thFlow:'Flow', flowOrder:'Order', flowPurchase:'PO', flowShip:'Shipped', flowDone:'Done',
+    thShipProgress:'Ship Progress',
+    badgeFullyShipped:'✅ Fully Shipped', badgeProgress:'📦',
+    recycleTitle:'♻ Recycle Bin',
+    recycleSub:'Recently soft-deleted records · Click Restore to bring back · Purge is permanent',
+    recycleEmpty:'🎉 Recycle bin is empty',
+    recycleRestore:'↩ Restore', recyclePurge:'Purge', recycleRefresh:'Refresh', recycleClose:'Close',
+    recycleColName:'Name', recycleColDetail:'Detail', recycleColTime:'Deleted at', recycleColAction:'Action',
+    toastRestored:'Restored',
+    toastPurged:'Permanently deleted',
+    toastPurgeFailed:'Delete failed: ',
+    confirmPurge:'Permanently delete "{name}"?\nThis cannot be undone and may fail due to foreign-key constraints.',
+    importPreview:'Import Preview', importConfirm:'Confirm Import',
+    importParsed:'Parsed', importErrors:'errors',
+    importing:'Importing', importDone:'Import done: success',
+    importFailed:', failed', importFailedCount:'',
+    excelOrdersNotImport:'Order import not supported (line items structure)',
+    excelEmpty:'No data to export',
+    excelExported:'Exported',
+    excelFileEmpty:'Excel file is empty',
+    excelParseFailed:'Parse failed: ',
+    excelInvalidField:'invalid',
+    pmImgLabel:'Product Image', pmImgHint:'📷 Click / drag / Ctrl+V to paste image', pmImgFmt:'JPG / PNG / WEBP, auto compressed to 800px / ~100KB',
+    pmImgRemove:'✕ Remove', pmImgLoading:'Processing...', pmImgLoaded:'Loaded', pmImgFailed:'Failed: ', pmImgCompressed:'Compressed · ~',
+    pmFxHint:'💡 Fill either USD or RMB sales price; the other is auto-calculated by live FX rate on blur/save. Current USD→CNY: ',
+    pmFxLink:'⇄ Auto-sync', pmFxUsdHint:'Filling this auto-fills RMB', pmFxRmbHint:'Filling this auto-fills USD',
+    shipPickerTitle:'📦 Which products in this shipment? (Check + enter shipped qty)',
+    shipPickerHint:'💡 Defaults to full order qty; reduce for partial shipments',
+    shipBatch:'Batch',
+    settingsRoleBadge:'Role',
   }
 };
 
@@ -1432,30 +1508,30 @@ async function loadRecycleBin() {
   body.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted)">加载中...</div>';
   try {
     const data = await api('/api/recycle-bin');
-    const sections = Object.entries(data).filter(([t, s]) => s.items && s.items.length);
+    const sections = Object.entries(data).filter(([tt, s]) => s.items && s.items.length);
     if (!sections.length) {
-      body.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">🎉 回收站是空的</div>';
+      body.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted)">${t('recycleEmpty')}</div>`;
       return;
     }
-    body.innerHTML = sections.map(([t, s]) => `
+    body.innerHTML = sections.map(([tableName, s]) => `
       <details ${s.items.length<=10?'open':''} style="margin-bottom:8px;border:1px solid var(--border);border-radius:8px;background:var(--panel-2)">
         <summary style="padding:10px 14px;cursor:pointer;font-weight:600;color:#34D399">${esc(s.label)} <span style="color:var(--muted);font-weight:300;font-size:12px">(${s.items.length})</span></summary>
         <div style="padding:0 14px 10px">
           <table style="width:100%;font-size:12px">
             <thead><tr style="color:var(--muted);text-align:left">
-              <th style="padding:6px 0">名称</th><th>明细</th><th>删除时间</th><th style="text-align:right;min-width:170px">操作</th>
+              <th style="padding:6px 0">${t('recycleColName')}</th><th>${t('recycleColDetail')}</th><th>${t('recycleColTime')}</th><th style="text-align:right;min-width:170px">${t('recycleColAction')}</th>
             </tr></thead>
             <tbody>
               ${s.items.map(it => {
-                const main = it[s.name_field] || '(未命名)';
+                const main = it[s.name_field] || '—';
                 const extras = Object.entries(it).filter(([k,v]) => !['id', s.name_field, 'updated_at', 'created_at', 'is_deleted'].includes(k) && v).map(([k,v])=>esc(String(v))).slice(0,3).join(' · ');
                 return `<tr>
                   <td style="padding:6px 8px 6px 0;color:var(--text)">${esc(main)}</td>
                   <td style="padding:6px 8px 6px 0;color:var(--muted)">${extras||'—'}</td>
                   <td style="padding:6px 8px 6px 0;color:var(--muted)">${esc((it.updated_at||'').slice(0,16).replace('T',' '))}</td>
                   <td style="padding:6px 0;text-align:right">
-                    <button class="btn btn-sm" onclick="restoreItem('${t}','${it.id}')">↩ 恢复</button>
-                    <button class="btn btn-sm btn-danger" onclick="purgeItem('${t}','${it.id}','${esc(main).replace(/'/g,'')}')">彻底删</button>
+                    <button class="btn btn-sm" onclick="restoreItem('${tableName}','${it.id}')">${t('recycleRestore')}</button>
+                    <button class="btn btn-sm btn-danger" onclick="purgeItem('${tableName}','${it.id}','${esc(main).replace(/'/g,'')}')">${t('recyclePurge')}</button>
                   </td>
                 </tr>`;
               }).join('')}
@@ -1471,7 +1547,7 @@ async function loadRecycleBin() {
 async function restoreItem(type, id) {
   try {
     await api('/api/recycle-bin/restore', { method:'POST', body: JSON.stringify({ type, id }) });
-    toast('已恢复');
+    toast(t('toastRestored'));
     await loadRecycleBin();
     // 顺手刷一下对应列表
     if (type === 'customers') await loadCustomers();
@@ -1481,12 +1557,12 @@ async function restoreItem(type, id) {
   } catch (e) { toast(e.message, 'err'); }
 }
 async function purgeItem(type, id, name) {
-  if (!confirm(`确定要彻底删除「${name}」吗？\n此操作不可撤销，且可能因外键约束失败。`)) return;
+  if (!confirm(t('confirmPurge').replace('{name}', name))) return;
   try {
     await api('/api/recycle-bin/purge', { method:'DELETE', body: JSON.stringify({ type, id }) });
-    toast('已彻底删除');
+    toast(t('toastPurged'));
     await loadRecycleBin();
-  } catch (e) { toast('删除失败：' + e.message, 'err'); }
+  } catch (e) { toast(t('toastPurgeFailed') + e.message, 'err'); }
 }
 
 // ══════════════════════════════
@@ -1568,7 +1644,7 @@ function exportExcel(type) {
     meta.fields.forEach(f => { row[f.header] = r[f.key] ?? ''; });
     return row;
   });
-  if (!rows.length) { toast('当前列表无数据', 'err'); return; }
+  if (!rows.length) { toast(t('excelEmpty'), 'err'); return; }
   const ws = XLSX.utils.json_to_sheet(rows);
   // 列宽自适应（粗略）
   ws['!cols'] = meta.fields.map(f => ({ wch: Math.max(f.header.length*2, 12) }));
@@ -1576,13 +1652,13 @@ function exportExcel(type) {
   XLSX.utils.book_append_sheet(wb, ws, meta.label);
   const ts = new Date().toISOString().slice(0,10);
   XLSX.writeFile(wb, `${meta.label}_${ts}.xlsx`);
-  toast(`已导出 ${rows.length} 条`);
+  toast(`${t('excelExported')} ${rows.length}`);
 }
 
 function importExcel(type) {
   const meta = EXCEL_SCHEMA[type];
   if (!meta) return;
-  if (meta.importDisabled) { toast('订单导入暂不支持（含明细结构）', 'err'); return; }
+  if (meta.importDisabled) { toast(t('excelOrdersNotImport'), 'err'); return; }
   // 用一个临时 input 触发选择
   const inp = document.createElement('input');
   inp.type = 'file';
@@ -1594,9 +1670,9 @@ function importExcel(type) {
       const wb = XLSX.read(buf, { type:'array' });
       const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, { defval:'' });
-      if (!rows.length) { toast('Excel 是空的', 'err'); return; }
+      if (!rows.length) { toast(t('excelFileEmpty'), 'err'); return; }
       showImportPreview(type, meta, rows);
-    } catch (err) { toast('解析失败：' + err.message, 'err'); }
+    } catch (err) { toast(t('excelParseFailed') + err.message, 'err'); }
   };
   inp.click();
 }
@@ -1973,7 +2049,7 @@ function renderCustomers() {
         <button class="btn btn-sm btn-danger" onclick="deleteCustomer('${c.id}')">删除</button>
       </div></td>
     </tr>`).join('') +
-    (S._customersHasMore ? `<tr><td colspan="6" style="text-align:center;padding:14px"><a href="javascript:loadCustomers({append:true})" style="color:var(--p1);text-decoration:none;font-weight:600">＋ 加载更多客户 (已显示 ${(S.customers||[]).length} 条)</a></td></tr>` : '');
+    (S._customersHasMore ? `<tr><td colspan="6" style="text-align:center;padding:14px"><a href="javascript:loadCustomers({append:true})" style="color:var(--p1);text-decoration:none;font-weight:600">${t('btnLoadMore')} ${t('loadMoreCustomers')} (${t('loadMoreShown')} ${(S.customers||[]).length} ${t('loadMoreItems')})</a></td></tr>` : '');
 }
 function openCustomerModal(id) {
   document.getElementById('cm-id').value = '';
@@ -2068,7 +2144,7 @@ function renderProducts() {
       </div></td>
     </tr>`;
   }).join('') +
-  (S._productsHasMore ? `<tr><td colspan="9" style="text-align:center;padding:14px"><a href="javascript:loadProducts({append:true})" style="color:var(--p1);text-decoration:none;font-weight:600">＋ 加载更多产品 (已显示 ${(S.products||[]).length} 条)</a></td></tr>` : '');
+  (S._productsHasMore ? `<tr><td colspan="9" style="text-align:center;padding:14px"><a href="javascript:loadProducts({append:true})" style="color:var(--p1);text-decoration:none;font-weight:600">${t('btnLoadMore')} ${t('loadMoreProducts')} (${t('loadMoreShown')} ${(S.products||[]).length} ${t('loadMoreItems')})</a></td></tr>` : '');
 }
 function openProductModal() {
   document.getElementById('pm-id').value = '';
@@ -2115,7 +2191,7 @@ function pmImgClear(){
 }
 async function pmImgCompressAndSet(file){
   const status = document.getElementById('pm-img-status');
-  status.textContent = '处理中...';
+  status.textContent = t('pmImgLoading');
   try {
     const dataUrl = await pmCompressImage(file, 800, 0.82);
     document.getElementById('pm-image').value = dataUrl;
@@ -2123,10 +2199,10 @@ async function pmImgCompressAndSet(file){
     prev.src = dataUrl; prev.style.display = 'block';
     document.getElementById('pm-img-hint').style.display = 'none';
     document.getElementById('pm-img-clear').style.display = '';
-    const kb = Math.round(dataUrl.length * 0.75 / 1024); // base64 体积近似
-    status.textContent = `已压缩 · 约 ${kb} KB`;
+    const kb = Math.round(dataUrl.length * 0.75 / 1024);
+    status.textContent = `${t('pmImgCompressed')} ${kb} KB`;
   } catch(e) {
-    status.textContent = '处理失败：' + (e.message||'');
+    status.textContent = t('pmImgFailed') + (e.message||'');
   }
 }
 function pmCompressImage(file, maxSize, quality){
@@ -2229,7 +2305,7 @@ async function editProduct(id) {
       prev.src = product.image_url; prev.style.display = 'block';
       document.getElementById('pm-img-hint').style.display = 'none';
       document.getElementById('pm-img-clear').style.display = '';
-      document.getElementById('pm-img-status').textContent = '已加载';
+      document.getElementById('pm-img-status').textContent = t('pmImgLoaded');
     }
     document.getElementById('pm-lead').value     = product.default_lead_time||'';
     document.getElementById('pmSupplierLinks').innerHTML = '';
@@ -2409,7 +2485,7 @@ function renderSuppliers() {
         <button class="btn btn-sm btn-danger" onclick="deleteSupplier('${s.id}')">删</button>
       </div></td>
     </tr>`).join('') +
-    (S._suppliersHasMore ? `<tr><td colspan="7" style="text-align:center;padding:14px"><a href="javascript:loadSuppliers({append:true})" style="color:var(--p1);text-decoration:none;font-weight:600">＋ 加载更多供应商 (已显示 ${(S.suppliers||[]).length} 条)</a></td></tr>` : '');
+    (S._suppliersHasMore ? `<tr><td colspan="7" style="text-align:center;padding:14px"><a href="javascript:loadSuppliers({append:true})" style="color:var(--p1);text-decoration:none;font-weight:600">${t('btnLoadMore')} ${t('loadMoreSuppliers')} (${t('loadMoreShown')} ${(S.suppliers||[]).length} ${t('loadMoreItems')})</a></td></tr>` : '');
 }
 function openSupplierModal() {
   document.getElementById('sm-id').value = '';
@@ -2643,7 +2719,7 @@ function renderOrders() {
     </tr>`;
   }).join('');
   document.getElementById('orStatus').innerHTML = `共 ${rows.length} 条订单` +
-    (S._ordersHasMore ? ` <a href="javascript:loadOrders({append:true})" style="margin-left:8px;color:var(--p1);text-decoration:none;font-weight:600">＋ 加载更多 (已显示前 ${(S.orders||[]).length} 条)</a>` : '');
+    (S._ordersHasMore ? ` <a href="javascript:loadOrders({append:true})" style="margin-left:8px;color:var(--p1);text-decoration:none;font-weight:600">${t('btnLoadMore')} (${t('loadMoreShown')} ${(S.orders||[]).length} ${t('loadMoreItems')})</a>` : '');
 }
 
 /* 订单全流程 4 步进度条：订单 → 采购单 → 发货 → 全部发完 */
@@ -2662,10 +2738,10 @@ function orderFlowSteps(o) {
     fullyShipped = (o.items||[]).every(i => (shippedMap[i.product_id]||0) >= Number(i.quantity||0));
   }
   const steps = [
-    { ok: hasOrder, label: '订单' },
-    { ok: hasPo,    label: '采购' },
-    { ok: hasShip,  label: '发货' },
-    { ok: fullyShipped, label: '完成' },
+    { ok: hasOrder, label: t('flowOrder') },
+    { ok: hasPo,    label: t('flowPurchase') },
+    { ok: hasShip,  label: t('flowShip') },
+    { ok: fullyShipped, label: t('flowDone') },
   ];
   return `<div class="flow-row" title="${steps.map(s=>s.label+(s.ok?'✓':'✗')).join(' · ')}">
     ${steps.map((s,i) => `<span class="flow-dot ${s.ok?'ok':''}"></span>${i<3?'<span class="flow-line '+(s.ok?'ok':'')+'"></span>':''}`).join('')}
@@ -2929,7 +3005,7 @@ async function viewOrderDetail(id) {
     });
     const overallPct = totalOrdered > 0 ? Math.min(100, Math.round(totalShipped/totalOrdered*100)) : 0;
     const subEl = document.getElementById('detailSub');
-    subEl.innerHTML = `${esc(order.order_number||'')} · ${esc(order.customer_name||'')} · ${esc(order.order_date||'')} <span style="margin-left:10px;padding:2px 10px;border-radius:999px;font-size:11px;background:${overallPct>=100?'rgba(16,185,129,.16)':'rgba(110,231,183,.1)'};color:${overallPct>=100?'#10B981':'#6EE7B7'};border:1px solid ${overallPct>=100?'rgba(16,185,129,.4)':'rgba(110,231,183,.3)'}">${overallPct>=100?'✅ 已全部发货':'📦 履约 '+overallPct+'%'}</span>`;
+    subEl.innerHTML = `${esc(order.order_number||'')} · ${esc(order.customer_name||'')} · ${esc(order.order_date||'')} <span style="margin-left:10px;padding:2px 10px;border-radius:999px;font-size:11px;background:${overallPct>=100?'rgba(16,185,129,.16)':'rgba(110,231,183,.1)'};color:${overallPct>=100?'#10B981':'#6EE7B7'};border:1px solid ${overallPct>=100?'rgba(16,185,129,.4)':'rgba(110,231,183,.3)'}">${overallPct>=100?t('badgeFullyShipped'):t('badgeProgress')+' '+overallPct+'%'}</span>`;
     const body = document.getElementById('detailBody');
     body.innerHTML = (items||[]).map(i=>{
       const ordered = Number(i.quantity)||0;
