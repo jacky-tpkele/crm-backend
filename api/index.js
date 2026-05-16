@@ -276,12 +276,16 @@ app.get('/api/dashboard/stats', auth, async (req, res) => {
   try {
     const month = new Date().toISOString().slice(0, 7);
     const year  = new Date().getFullYear().toString();
-    const orders = await sb('orders?select=order_date,sales_total,profit,profit_rmb,currency,exchange_rate&is_deleted=eq.false');
+    const orders = await sb('orders?select=order_date,sales_total,profit,profit_rmb,currency,exchange_rate,settlement_rate,actual_profit,actual_profit_rmb&is_deleted=eq.false');
     const mO = orders.filter(o => (o.order_date||'').startsWith(month));
     const yO = orders.filter(o => (o.order_date||'').startsWith(year));
-    // 全部换算成 RMB 统计
-    const salesRmb  = o => Number(o.sales_total||0) * (o.currency==='RMB' ? 1 : (Number(o.exchange_rate)||7.2));
-    const profitRmb = o => Number(o.profit_rmb || (o.currency==='RMB' ? Number(o.profit||0) : Number(o.profit||0) * (Number(o.exchange_rate)||7.2)));
+    // 优先用结算后的实际值；销售额 RMB = sales × (结算汇率 ?? 录入汇率)
+    const effRate = o => Number(o.settlement_rate || o.exchange_rate || 7.2);
+    const salesRmb  = o => Number(o.sales_total||0) * (o.currency==='RMB' ? 1 : effRate(o));
+    const profitRmb = o => {
+      if (o.actual_profit_rmb != null) return Number(o.actual_profit_rmb);
+      return Number(o.profit_rmb || (o.currency==='RMB' ? Number(o.profit||0) : Number(o.profit||0) * (Number(o.exchange_rate)||7.2)));
+    };
     const sumF = (arr, f) => arr.reduce((a, o) => a + f(o), 0);
     res.json({
       month_orders:  mO.length,
@@ -297,7 +301,7 @@ app.get('/api/dashboard/stats', auth, async (req, res) => {
 
 app.get('/api/dashboard/trends', auth, async (req, res) => {
   try {
-    const orders = await sb('orders?select=order_date,sales_total,profit,profit_rmb,currency,exchange_rate&is_deleted=eq.false');
+    const orders = await sb('orders?select=order_date,sales_total,profit,profit_rmb,currency,exchange_rate,settlement_rate,actual_profit,actual_profit_rmb&is_deleted=eq.false');
     const now = new Date();
     const months = Array.from({ length: 12 }, (_, i) => {
       const d = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
@@ -308,9 +312,11 @@ app.get('/api/dashboard/trends', auth, async (req, res) => {
     orders.forEach(o => {
       const m = (o.order_date||'').slice(0, 7);
       if (map[m]) {
-        const rate = Number(o.exchange_rate)||7.2;
+        const rate = Number(o.settlement_rate || o.exchange_rate)||7.2;
         const sRmb = Number(o.sales_total||0) * (o.currency==='RMB'?1:rate);
-        const pRmb = Number(o.profit_rmb || (o.currency==='RMB' ? Number(o.profit||0) : Number(o.profit||0)*rate));
+        const pRmb = o.actual_profit_rmb != null
+          ? Number(o.actual_profit_rmb)
+          : Number(o.profit_rmb || (o.currency==='RMB' ? Number(o.profit||0) : Number(o.profit||0)*rate));
         map[m].sales  += sRmb;
         map[m].profit += pRmb;
         map[m].count++;
@@ -551,6 +557,85 @@ app.get('/api/orders/:id/shipped-summary', auth, async (req, res) => {
       }
     }
     res.json(summary);
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// ────────────────────────────────────────────────────────────────────
+// 订单汇率结算：按结算日汇率重算实际利润（写入 actual_profit_* 字段）
+// 业务：USD 订单的 sales_total 不变，purchase_total（RMB）不变，只重算 RMB 利润
+// 重复结算合法，新值覆盖旧值
+// ────────────────────────────────────────────────────────────────────
+function calcSettlement(order, rate) {
+  const sales = Number(order.sales_total || 0);                  // 销售币种
+  const purchase = Number(order.purchase_total || 0);            // RMB
+  const r = Number(rate);
+  if (!(r > 0)) throw new Error('结算汇率必须 > 0');
+  const isRmb = (order.currency === 'RMB' || order.currency === 'CNY');
+  if (isRmb) {
+    // RMB 订单不受汇率影响，但允许写入以保留结算日记录
+    const profit = +(sales - purchase).toFixed(2);
+    return {
+      actual_profit: profit,
+      actual_profit_rmb: profit,
+      actual_profit_rate: sales > 0 ? +(profit / sales * 100).toFixed(2) : 0,
+    };
+  }
+  // 销售币种利润 = sales − purchase/rate
+  const profitSales = +(sales - purchase / r).toFixed(2);
+  // RMB 利润 = sales × rate − purchase
+  const profitRmb = +(sales * r - purchase).toFixed(2);
+  const profitRate = sales > 0 ? +(profitSales / sales * 100).toFixed(2) : 0;
+  return {
+    actual_profit: profitSales,
+    actual_profit_rmb: profitRmb,
+    actual_profit_rate: profitRate,
+  };
+}
+
+app.post('/api/orders/:id/settle', auth, async (req, res) => {
+  try {
+    const { rate, date } = req.body || {};
+    if (!rate || Number(rate) <= 0) return res.status(400).json({ message: '结算汇率必须 > 0' });
+    const arr = await sb(`orders?id=eq.${req.params.id}&select=*`);
+    if (!arr.length) return res.status(404).json({ message: '订单不存在' });
+    const order = arr[0];
+    const calc = calcSettlement(order, rate);
+    const patch = {
+      settlement_rate: Number(rate),
+      settlement_date: date || new Date().toISOString().slice(0, 10),
+      ...calc,
+      updated_at: new Date().toISOString(),
+    };
+    await sb(`orders?id=eq.${req.params.id}`, { method: 'PATCH', body: JSON.stringify(patch) });
+    res.json({ success: true, ...patch });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 批量结算：body { ids: [], rate, date }
+app.post('/api/orders/settle-batch', auth, async (req, res) => {
+  try {
+    const { ids, rate, date } = req.body || {};
+    if (!Array.isArray(ids) || !ids.length) return res.status(400).json({ message: '请选择至少一个订单' });
+    if (!rate || Number(rate) <= 0) return res.status(400).json({ message: '结算汇率必须 > 0' });
+    const orders = await sb(`orders?id=in.(${ids.join(',')})&select=*`);
+    const dt = date || new Date().toISOString().slice(0, 10);
+    let ok = 0, skipped = 0;
+    for (const o of orders) {
+      try {
+        const calc = calcSettlement(o, rate);
+        await sb(`orders?id=eq.${o.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            settlement_rate: Number(rate),
+            settlement_date: dt,
+            ...calc,
+            updated_at: new Date().toISOString(),
+          }),
+        });
+        ok++;
+      } catch (_) { skipped++; }
+    }
+    res.json({ success: true, settled: ok, skipped });
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 

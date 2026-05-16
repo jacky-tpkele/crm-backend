@@ -707,6 +707,7 @@ tr:hover .del-row-btn{display:inline-block}
             </select>
           </div>
           <button class="btn" data-i18n="btnExportExcel" onclick="exportExcel('orders')" title="导出当前订单到 Excel">📥 导出</button>
+          <button class="btn" onclick="openBatchSettleModal()" title="按今日汇率批量重算 USD 订单的实际利润">💱 批量结算</button>
           <button class="btn btn-primary" data-i18n="btnNewOrderCard" onclick="openOrderModal()">＋ New Order</button>
         </div>
         <div class="tbl-wrap">
@@ -895,6 +896,36 @@ tr:hover .del-row-btn{display:inline-block}
       <button class="btn" onclick="closeModal('poDetailModal')">关闭</button>
       <button class="btn btn-primary" id="poSaveBtn" onclick="savePoStatus()">💾 保存状态</button>
       <button class="btn" onclick="downloadPoPdf()">📄 下载 PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 汇率结算 Modal（单笔）══ -->
+<div class="modal-backdrop" id="settleModal" style="display:none" onclick="closeOnBackdrop(event,'settleModal')">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>💱 按当日汇率结算订单</h2>
+      <button class="modal-close" onclick="closeModal('settleModal')">×</button>
+    </div>
+    <div id="settleBody" style="padding:0 0 14px"></div>
+    <div class="modal-footer">
+      <button type="button" class="btn" onclick="closeModal('settleModal')">取消</button>
+      <button type="button" class="btn btn-primary" onclick="confirmSettle()">💾 保存结算</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 批量结算 Modal ══ -->
+<div class="modal-backdrop" id="batchSettleModal" style="display:none" onclick="closeOnBackdrop(event,'batchSettleModal')">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <h2>💱 批量结算 USD 订单</h2>
+      <button class="modal-close" onclick="closeModal('batchSettleModal')">×</button>
+    </div>
+    <div id="batchSettleBody" style="padding:0 0 14px"></div>
+    <div class="modal-footer">
+      <button type="button" class="btn" onclick="closeModal('batchSettleModal')">取消</button>
+      <button type="button" class="btn btn-primary" onclick="confirmBatchSettle()">💾 批量保存结算</button>
     </div>
   </div>
 </div>
@@ -2912,17 +2943,28 @@ function renderOrders() {
   body.innerHTML = rows.map(o => {
     const itemsLabel = (o.items||[]).map(i=>esc(i.product_name_cn||i.product_name_en)).slice(0,2).join(', ') + ((o.items||[]).length>2?`...+${(o.items||[]).length-2}`:'');
     const cur = o.currency||'USD';
+    const isRmb = (cur === 'RMB' || cur === 'CNY');
+    const settled = o.settlement_rate != null && o.actual_profit_rmb != null;
+    const displayProfit = settled ? Number(o.actual_profit_rmb) : Number(o.profit_rmb||0);
+    const displayRate   = settled ? Number(o.actual_profit_rate||0) : Number(o.profit_rate||0);
+    const profitColor   = displayProfit >= 0 ? 'var(--p1)' : 'var(--danger)';
+    const settleBadge = isRmb
+      ? '<span style="font-size:10px;color:var(--muted)">RMB</span>'
+      : settled
+        ? `<span class="badge" style="background:rgba(16,185,129,.15);color:#34D399;border:1px solid rgba(16,185,129,.35);font-size:10px;padding:1px 6px" title="结算汇率 ${Number(o.settlement_rate).toFixed(4)} @ ${o.settlement_date||''}">✓ 已结算</span>`
+        : '<span class="badge" style="background:rgba(251,191,36,.12);color:#fde68a;border:1px solid rgba(251,191,36,.3);font-size:10px;padding:1px 6px" title="按录入汇率显示，可点 💱 按今日汇率重算">⏳ 待结算</span>';
     return `<tr>
       <td data-label="Date">${esc((o.order_date||'').slice(0,10))}<div style="font-size:11px;color:var(--muted)">${esc(o.order_number||'')}</div></td>
       <td data-label="Customer">${esc(o.customer_name||'—')}</td>
       <td data-label="Products" style="font-size:12px">${itemsLabel||'—'}</td>
       <td data-label="Sales">${cur} ${fmtN(o.sales_total||0)}</td>
       <td data-label="Purchase">¥${fmtN(o.purchase_total||0)}</td>
-      <td data-label="Profit" style="color:${(o.profit_rmb||0)>=0?'var(--p1)':'var(--danger)'}">¥${fmtN(o.profit_rmb||0)}<div style="font-size:11px;color:var(--muted)">${o.profit_rate||0}%</div></td>
+      <td data-label="Profit" style="color:${profitColor}">¥${fmtN(displayProfit)}<div style="font-size:11px;color:var(--muted)">${displayRate||0}% ${settleBadge}</div></td>
       <td data-label="Status"><span class="badge badge-${o.order_status||'confirmed'}">${esc(o.order_status||'confirmed')}</span></td>
       <td data-label=""><div class="actions-cell">
         <button class="btn btn-sm" onclick="viewOrderDetail('${o.id}')">详情</button>
         <button class="btn btn-sm" onclick="editOrder('${o.id}')">编辑</button>
+        ${isRmb ? '' : `<button class="btn btn-sm" title="按今日汇率重算实际利润" onclick="openSettleModal('${o.id}')">💱</button>`}
         <button class="btn btn-sm btn-danger" onclick="deleteOrder('${o.id}')">删</button>
       </div></td>
     </tr>`;
@@ -3197,6 +3239,210 @@ async function saveOrder(e) {
     await loadDashboard();
   } catch(err) { toast(err.message,'err'); }
 }
+
+// ══════════════════════════════════════════════
+// 汇率结算（单笔 + 批量）
+// ══════════════════════════════════════════════
+let _settlingOrderId = null;
+
+async function openSettleModal(orderId) {
+  const o = (S.orders||[]).find(x => x.id === orderId);
+  if (!o) return toast('订单未找到', 'err');
+  if (o.currency === 'RMB' || o.currency === 'CNY') return toast('RMB 订单无需结算', 'err');
+  _settlingOrderId = orderId;
+  const body = document.getElementById('settleBody');
+  body.innerHTML = `
+    <div style="padding:10px 4px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;margin-bottom:14px">
+        <div><label style="color:var(--muted);font-size:11px">订单</label><div>${esc(o.order_number||'')} · ${esc(o.customer_name||'')}</div></div>
+        <div><label style="color:var(--muted);font-size:11px">销售币种</label><div>${o.currency||'USD'}</div></div>
+        <div><label style="color:var(--muted);font-size:11px">销售额</label><div>${o.currency} ${fmtN(o.sales_total||0)}</div></div>
+        <div><label style="color:var(--muted);font-size:11px">采购额 (RMB · 不受汇率影响)</label><div>¥${fmtN(o.purchase_total||0)}</div></div>
+      </div>
+
+      <div style="padding:10px 12px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;margin-bottom:12px">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:6px">📌 录入时基准</div>
+        <div style="display:flex;justify-content:space-between;font-size:13px">
+          <span>汇率 <b style="color:var(--p1)">${Number(o.exchange_rate||7.2).toFixed(4)}</b></span>
+          <span>利润 <b style="color:var(--p1)">¥${fmtN(o.profit_rmb||0)} (${o.profit_rate||0}%)</b></span>
+        </div>
+      </div>
+
+      <div style="padding:10px 12px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.3);border-radius:8px">
+        <div style="font-size:12px;color:#34D399;margin-bottom:8px">💱 按当日汇率结算</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field"><label>结算汇率 (USD→CNY)</label><input type="number" id="st-rate" step="0.0001" oninput="updateSettlePreview()"></div>
+          <div class="field"><label>结算日期</label><input type="date" id="st-date" value="${new Date().toISOString().slice(0,10)}"></div>
+        </div>
+        <div id="st-preview" style="font-size:13px"></div>
+      </div>
+
+      ${o.settlement_rate ? `<div style="margin-top:10px;font-size:12px;color:var(--muted)">⓵ 上次结算：汇率 ${Number(o.settlement_rate).toFixed(4)} @ ${o.settlement_date||''}，实际利润 ¥${fmtN(o.actual_profit_rmb||0)} (${o.actual_profit_rate||0}%)</div>` : ''}
+    </div>
+  `;
+  openModal('settleModal');
+  try {
+    const rate = await getUsdCnyRate(true);
+    document.getElementById('st-rate').value = Number(rate).toFixed(4);
+    updateSettlePreview();
+  } catch(_) {}
+}
+
+function updateSettlePreview() {
+  const o = (S.orders||[]).find(x => x.id === _settlingOrderId);
+  if (!o) return;
+  const r = parseFloat(document.getElementById('st-rate').value);
+  const preview = document.getElementById('st-preview');
+  if (!r || r <= 0) { preview.innerHTML = '<span style="color:var(--muted)">请输入有效汇率</span>'; return; }
+  const sales = Number(o.sales_total||0);
+  const purchase = Number(o.purchase_total||0);
+  const newProfitRmb = +(sales * r - purchase).toFixed(2);
+  const newProfitSales = +(sales - purchase/r).toFixed(2);
+  const newRate = sales > 0 ? +(newProfitSales/sales*100).toFixed(2) : 0;
+  const oldProfitRmb = Number(o.profit_rmb||0);
+  const diff = +(newProfitRmb - oldProfitRmb).toFixed(2);
+  const diffColor = diff >= 0 ? 'var(--p1)' : 'var(--danger)';
+  const diffIcon  = diff >= 0 ? '↑' : '↓';
+  preview.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span>实际利润 <b style="color:${newProfitRmb>=0?'var(--p1)':'var(--danger)'};font-size:15px">¥${fmtN(newProfitRmb)}</b> <span style="color:var(--muted)">(${newRate}%)</span></span>
+      <span style="color:${diffColor};font-size:12px">${diffIcon} 汇率差 ¥${fmtN(Math.abs(diff))}</span>
+    </div>`;
+}
+
+async function confirmSettle() {
+  if (!_settlingOrderId) return;
+  const rate = parseFloat(document.getElementById('st-rate').value);
+  const date = document.getElementById('st-date').value;
+  if (!rate || rate <= 0) return toast('请输入有效汇率', 'err');
+  try {
+    await api(`/api/orders/${_settlingOrderId}/settle`, { method:'POST', body: JSON.stringify({ rate, date }) });
+    closeModal('settleModal');
+    toast('已按 ' + Number(rate).toFixed(4) + ' 汇率结算');
+    _settlingOrderId = null;
+    await loadOrders();
+    if (typeof loadDashboard === 'function') loadDashboard();
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+async function openBatchSettleModal() {
+  const usdOrders = (S.orders||[]).filter(o => o.currency !== 'RMB' && o.currency !== 'CNY');
+  if (!usdOrders.length) return toast('当前没有 USD 订单', 'err');
+  const body = document.getElementById('batchSettleBody');
+  body.innerHTML = `
+    <div style="padding:0 4px">
+      <div style="padding:10px 12px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.3);border-radius:8px;margin-bottom:14px">
+        <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end">
+          <div class="field"><label>结算汇率 (USD→CNY)</label><input type="number" id="bst-rate" step="0.0001" oninput="updateBatchPreview()"></div>
+          <div class="field"><label>结算日期</label><input type="date" id="bst-date" value="${new Date().toISOString().slice(0,10)}"></div>
+          <div><label style="font-size:11px;color:var(--muted)">已选</label><div id="bst-count" style="font-weight:600;padding:6px 0">0 笔</div></div>
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:var(--muted)">汇率默认从实时接口拉取，可手动改</div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <button type="button" class="btn btn-sm" onclick="bstSelectAll(true)">全选</button>
+        <button type="button" class="btn btn-sm" onclick="bstSelectAll(false)">取消全选</button>
+        <button type="button" class="btn btn-sm" onclick="bstSelectUnsettled()">仅选未结算</button>
+        <span style="margin-left:auto;color:var(--muted);font-size:12px;align-self:center">共 ${usdOrders.length} 笔 USD 订单</span>
+      </div>
+
+      <div class="tbl-wrap" style="max-height:420px;overflow-y:auto">
+        <table>
+          <thead><tr><th style="width:30px"><input type="checkbox" id="bst-all" onchange="bstSelectAll(this.checked)"></th><th>订单</th><th>客户</th><th>销售额</th><th>录入利润</th><th>状态</th><th>新利润预览</th></tr></thead>
+          <tbody id="bst-rows"></tbody>
+        </table>
+      </div>
+    </div>
+  `;
+  openModal('batchSettleModal');
+  try {
+    const rate = await getUsdCnyRate(true);
+    document.getElementById('bst-rate').value = Number(rate).toFixed(4);
+  } catch(_) {}
+  renderBatchRows(usdOrders);
+  updateBatchPreview();
+}
+
+function renderBatchRows(orders) {
+  const tbody = document.getElementById('bst-rows');
+  tbody.innerHTML = orders.map(o => {
+    const settled = o.settlement_rate != null;
+    const tag = settled
+      ? `<span style="font-size:10px;color:#34D399">✓ 已结算@${Number(o.settlement_rate).toFixed(4)}</span>`
+      : '<span style="font-size:10px;color:#fde68a">⏳ 待结算</span>';
+    return `<tr data-oid="${o.id}">
+      <td><input type="checkbox" class="bst-cb" value="${o.id}" onchange="updateBatchPreview()"></td>
+      <td style="font-size:12px">${esc(o.order_number||'')}<div style="color:var(--muted);font-size:11px">${esc((o.order_date||'').slice(0,10))}</div></td>
+      <td>${esc(o.customer_name||'')}</td>
+      <td>${o.currency} ${fmtN(o.sales_total||0)}</td>
+      <td>¥${fmtN(o.profit_rmb||0)}</td>
+      <td>${tag}</td>
+      <td class="bst-preview">—</td>
+    </tr>`;
+  }).join('');
+}
+
+function bstSelectAll(check) {
+  const flag = (check === undefined) ? true : !!check;
+  document.querySelectorAll('.bst-cb').forEach(cb => { cb.checked = flag; });
+  const all = document.getElementById('bst-all');
+  if (all) all.checked = flag;
+  updateBatchPreview();
+}
+
+function bstSelectUnsettled() {
+  document.querySelectorAll('#bst-rows tr').forEach(tr => {
+    const id = tr.getAttribute('data-oid');
+    const o = (S.orders||[]).find(x => x.id === id);
+    const cb = tr.querySelector('.bst-cb');
+    if (cb) cb.checked = !!(o && o.settlement_rate == null);
+  });
+  updateBatchPreview();
+}
+
+function updateBatchPreview() {
+  const r = parseFloat(document.getElementById('bst-rate')?.value || 0);
+  const rows = document.querySelectorAll('#bst-rows tr');
+  let count = 0;
+  rows.forEach(tr => {
+    const id = tr.getAttribute('data-oid');
+    const o = (S.orders||[]).find(x => x.id === id);
+    const cb = tr.querySelector('.bst-cb');
+    const cell = tr.querySelector('.bst-preview');
+    if (!o || !cell) return;
+    if (cb && cb.checked) count++;
+    if (r > 0) {
+      const sales = Number(o.sales_total||0);
+      const purchase = Number(o.purchase_total||0);
+      const newRmb = +(sales * r - purchase).toFixed(2);
+      const diff = +(newRmb - Number(o.profit_rmb||0)).toFixed(2);
+      const color = diff >= 0 ? 'var(--p1)' : 'var(--danger)';
+      cell.innerHTML = `¥${fmtN(newRmb)} <span style="color:${color};font-size:11px">(${diff>=0?'+':''}${fmtN(diff)})</span>`;
+    } else {
+      cell.textContent = '—';
+    }
+  });
+  const cnt = document.getElementById('bst-count');
+  if (cnt) cnt.textContent = `${count} 笔`;
+}
+
+async function confirmBatchSettle() {
+  const rate = parseFloat(document.getElementById('bst-rate').value);
+  const date = document.getElementById('bst-date').value;
+  if (!rate || rate <= 0) return toast('请输入有效汇率', 'err');
+  const ids = [...document.querySelectorAll('.bst-cb:checked')].map(cb => cb.value);
+  if (!ids.length) return toast('请至少勾选一笔订单', 'err');
+  if (!confirm(`确定按汇率 ${Number(rate).toFixed(4)} 重算 ${ids.length} 笔订单的实际利润？已结算的订单将被覆盖。`)) return;
+  try {
+    const r = await api('/api/orders/settle-batch', { method:'POST', body: JSON.stringify({ ids, rate, date }) });
+    closeModal('batchSettleModal');
+    toast(`已结算 ${r.settled||0} 笔` + (r.skipped ? `（跳过 ${r.skipped}）` : ''));
+    await loadOrders();
+    if (typeof loadDashboard === 'function') loadDashboard();
+  } catch(e) { toast(e.message, 'err'); }
+}
+
 async function viewOrderDetail(id) {
   try {
     const [{ order, items }, shipped] = await Promise.all([
