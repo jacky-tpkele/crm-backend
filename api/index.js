@@ -503,14 +503,13 @@ app.delete('/api/inquiries/:id', auth, async (req, res) => {
 // ORDERS
 // 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 async function fetchOrdersWithItems(filters = {}) {
-  const { limit = 500, offset = 0, q = '', status = '' } = filters;
+  const { limit = 500, offset = 0, q = '' } = filters;
   let url = 'orders?select=*&is_deleted=eq.false&order=order_date.desc';
   if (q) {
     // PostgREST or() — 模糊搜索客户名 / 订单号 / 备注
     const esc = encodeURIComponent(`%${q}%`);
     url += `&or=(customer_name.ilike.${esc},order_number.ilike.${esc},remarks.ilike.${esc})`;
   }
-  if (status) url += `&order_status=eq.${encodeURIComponent(status)}`;
   url += `&limit=${Number(limit)||500}&offset=${Number(offset)||0}`;
   const orders = await sb(url);
   if (!orders.length) return orders;
@@ -1739,11 +1738,11 @@ app.post('/api/orders/v2', auth, async (req, res) => {
   try {
     const {
       customer_name, customer_id, order_date, shipping_fee, currency, exchange_rate,
-      order_status, remarks, items
+      order_number, remarks, items
     } = req.body;
     const itemList = Array.isArray(items) ? items : [];
     const totals = await recalcOrderTotals(itemList, shipping_fee, exchange_rate);
-    const orderNumber = await genOrderNumber();
+    const orderNumber = (order_number && String(order_number).trim()) || await genOrderNumber();
 
     const orderArr = await sb('orders?select=id', {
       method:'POST', headers:{ 'Prefer':'return=representation' },
@@ -1754,7 +1753,6 @@ app.post('/api/orders/v2', auth, async (req, res) => {
         shipping_fee: Number(shipping_fee||0),
         currency: currency || 'USD',
         exchange_rate: Number(exchange_rate || 7.2),
-        order_status: order_status || 'confirmed',
         remarks: remarks || '',
         ...(req.user.user_id ? { created_by: req.user.user_id } : {}),
         ...totals,
@@ -1801,24 +1799,22 @@ app.put('/api/orders/v2/:id', auth, async (req, res) => {
     const orderId = req.params.id;
     const {
       customer_name, customer_id, order_date, shipping_fee, currency, exchange_rate,
-      order_status, remarks, items
+      order_number, remarks, items
     } = req.body;
     const itemList = Array.isArray(items) ? items : [];
     const totals = await recalcOrderTotals(itemList, shipping_fee, exchange_rate);
 
-    await sb(`orders?id=eq.${orderId}`, {
-      method:'PATCH',
-      body: JSON.stringify({
-        customer_name, customer_id: customer_id || null,
-        order_date, shipping_fee: Number(shipping_fee||0),
-        currency: currency || 'USD',
-        exchange_rate: Number(exchange_rate || 7.2),
-        order_status: order_status || 'confirmed',
-        remarks: remarks || '',
-        ...totals,
-        updated_at: new Date().toISOString(),
-      }),
-    });
+    const patch = {
+      customer_name, customer_id: customer_id || null,
+      order_date, shipping_fee: Number(shipping_fee||0),
+      currency: currency || 'USD',
+      exchange_rate: Number(exchange_rate || 7.2),
+      remarks: remarks || '',
+      ...totals,
+      updated_at: new Date().toISOString(),
+    };
+    if (order_number && String(order_number).trim()) patch.order_number = String(order_number).trim();
+    await sb(`orders?id=eq.${orderId}`, { method:'PATCH', body: JSON.stringify(patch) });
 
     // 重写明细
     await sb(`order_items?order_id=eq.${orderId}`, { method:'DELETE' });

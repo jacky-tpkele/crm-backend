@@ -696,15 +696,6 @@ tr:hover .del-row-btn{display:inline-block}
             <input type="text" id="or-customer" data-i18n-ph="phSearchOr" placeholder="Customer..." oninput="renderOrders()">
             <input type="date" id="or-date" onchange="renderOrders()">
             <input type="month" id="or-month" onchange="renderOrders()">
-            <select id="or-status" onchange="renderOrders()">
-              <option value="" data-i18n="allStatus">All Status</option>
-              <option value="draft" data-i18n="stDraft">Draft</option>
-              <option value="quoted" data-i18n="stQuoted2">Quoted</option>
-              <option value="confirmed" data-i18n="stConfirmed">Confirmed</option>
-              <option value="producing" data-i18n="stProducing">Producing</option>
-              <option value="shipped" data-i18n="stShipped">Shipped</option>
-              <option value="completed" data-i18n="stCompleted">Completed</option>
-            </select>
           </div>
           <button class="btn" data-i18n="btnExportExcel" onclick="exportExcel('orders')" title="导出当前订单到 Excel">📥 导出</button>
           <button class="btn" onclick="openBatchSettleModal()" title="按今日汇率批量重算 USD 订单的实际利润">💱 批量结算</button>
@@ -713,7 +704,7 @@ tr:hover .del-row-btn{display:inline-block}
         <div class="tbl-wrap">
           <table>
             <thead><tr>
-              <th data-i18n="thDate">Date</th><th data-i18n="thCustomer">Customer</th><th data-i18n="navProducts">Products</th><th data-i18n="thSalesAmt">Sales</th><th data-i18n="thPurchaseAmt">Purchase</th><th data-i18n="thProfit">Profit</th><th data-i18n="thStatus">Status</th><th data-i18n="thActions">Actions</th>
+              <th data-i18n="thDate">Date</th><th>订单编号</th><th data-i18n="thCustomer">Customer</th><th data-i18n="navProducts">Products</th><th data-i18n="thSalesAmt">Sales</th><th data-i18n="thPurchaseAmt">Purchase</th><th data-i18n="thProfit">Profit</th><th data-i18n="thActions">Actions</th>
             </tr></thead>
             <tbody id="orBody"></tbody>
           </table>
@@ -807,7 +798,6 @@ tr:hover .del-row-btn{display:inline-block}
         <div class="chart-card"><h3 data-i18n="chartMonthlyRevenue">Monthly Revenue</h3><canvas id="chartAnalytics1"></canvas></div>
         <div class="chart-card"><h3 data-i18n="chartTop10Customers">Top 10 Customers</h3><canvas id="chartAnalytics2"></canvas></div>
         <div class="chart-card"><h3 data-i18n="chartTop10Products">Top 10 Products</h3><canvas id="chartAnalytics3"></canvas></div>
-        <div class="chart-card"><h3 data-i18n="chartOrderStatus">Order Status Distribution</h3><canvas id="chartAnalytics4"></canvas></div>
       </div>
     </section>
 
@@ -1149,6 +1139,7 @@ tr:hover .del-row-btn{display:inline-block}
         </div>
         <div class="field"><label>客户名称（可改）</label><input type="text" id="om-customer" required></div>
         <div class="field"><label>订单日期 *</label><input type="date" id="om-date" required onchange="fetchExchangeRate()"></div>
+        <div class="field"><label>订单编号 <span style="font-size:11px;color:var(--muted)">留空自动生成</span></label><input type="text" id="om-number" placeholder="如 PO-12345（可选）"></div>
         <div class="field"><label>币种</label>
           <select id="om-currency" onchange="fetchExchangeRate();onCurrencyChange()">
             <option value="USD">USD</option><option value="RMB">RMB</option>
@@ -1160,16 +1151,6 @@ tr:hover .del-row-btn{display:inline-block}
           <button type="button" class="btn btn-sm" onclick="toggleRateEdit()" title="手动修改">✎</button></div>
         </div>
         <div class="field"><label>运费（销售币种）</label><input type="number" id="om-shipping" value="0" step="0.01" oninput="recalcOrder()"></div>
-        <div class="field"><label>订单状态</label>
-          <select id="om-status">
-            <option value="draft">草稿</option>
-            <option value="quoted">已报价</option>
-            <option value="confirmed" selected>已确认</option>
-            <option value="producing">生产中</option>
-            <option value="shipped">已发货</option>
-            <option value="completed">已完成</option>
-          </select>
-        </div>
         <div class="field form-full"><label>备注</label><input type="text" id="om-remarks"></div>
       </div>
       <div class="items-section">
@@ -1666,7 +1647,6 @@ const EXCEL_SCHEMA = {
       { key:'purchase_total',header:'采购总额', num:true },
       { key:'profit_rmb',    header:'利润 RMB', num:true },
       { key:'profit_rate',   header:'利润率%', num:true },
-      { key:'order_status',  header:'状态' },
       { key:'remarks',       header:'备注' },
     ],
     src: () => S.orders,
@@ -2037,15 +2017,6 @@ async function initAnalyticsCharts() {
       S.charts.a3 = new Chart(document.getElementById('chartAnalytics3'), {
         type:'bar', data:{ labels:topP.map(p=>p.name.slice(0,12)), datasets:[{label:'Sales',data:topP.map(p=>p.sales),backgroundColor:'rgba(110,231,183,.6)',borderRadius:4}] },
         options:{responsive:true,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{color:'rgba(255,255,255,.04)'}},y:{grid:{display:false}}}}
-      });
-    }
-    const statusCounts = {};
-    S.orders.forEach(o=>{ statusCounts[o.order_status||'confirmed'] = (statusCounts[o.order_status||'confirmed']||0)+1; });
-    if (Object.keys(statusCounts).length) {
-      S.charts.a4 = new Chart(document.getElementById('chartAnalytics4'), {
-        type:'doughnut',
-        data:{ labels:Object.keys(statusCounts), datasets:[{data:Object.values(statusCounts),backgroundColor:['#10B981','#34D399','#6EE7B7','#A7F3D0','#059669','#047857']}] },
-        options:{responsive:true,plugins:{legend:{position:'right'}}}
       });
     }
   } catch(e) { console.error(e); }
@@ -2931,12 +2902,10 @@ function renderOrders() {
   const q   = (document.getElementById('or-customer').value||'').toLowerCase();
   const d   = document.getElementById('or-date').value;
   const m   = document.getElementById('or-month').value;
-  const st  = document.getElementById('or-status').value;
   const rows = (S.orders||[]).filter(o =>
-    (!q  || (o.customer_name||'').toLowerCase().includes(q)) &&
+    (!q  || (o.customer_name||'').toLowerCase().includes(q) || (o.order_number||'').toLowerCase().includes(q)) &&
     (!d  || (o.order_date||'').slice(0,10)===d) &&
-    (!m  || (o.order_date||'').slice(0,7)===m) &&
-    (!st || o.order_status===st)
+    (!m  || (o.order_date||'').slice(0,7)===m)
   );
   const body = document.getElementById('orBody');
   if (!rows.length) { body.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="icon">📋</div><p>No orders found</p></div></td></tr>'; return; }
@@ -2954,13 +2923,13 @@ function renderOrders() {
         ? `<span class="badge" style="background:rgba(16,185,129,.15);color:#34D399;border:1px solid rgba(16,185,129,.35);font-size:10px;padding:1px 6px" title="结算汇率 ${Number(o.settlement_rate).toFixed(4)} @ ${o.settlement_date||''}">✓ 已结算</span>`
         : '<span class="badge" style="background:rgba(251,191,36,.12);color:#fde68a;border:1px solid rgba(251,191,36,.3);font-size:10px;padding:1px 6px" title="按录入汇率显示，可点 💱 按今日汇率重算">⏳ 待结算</span>';
     return `<tr>
-      <td data-label="Date">${esc((o.order_date||'').slice(0,10))}<div style="font-size:11px;color:var(--muted)">${esc(o.order_number||'')}</div></td>
+      <td data-label="Date">${esc((o.order_date||'').slice(0,10))}</td>
+      <td data-label="Order#" style="font-size:12px">${esc(o.order_number||'—')}</td>
       <td data-label="Customer">${esc(o.customer_name||'—')}</td>
       <td data-label="Products" style="font-size:12px">${itemsLabel||'—'}</td>
       <td data-label="Sales">${cur} ${fmtN(o.sales_total||0)}</td>
       <td data-label="Purchase">¥${fmtN(o.purchase_total||0)}</td>
       <td data-label="Profit" style="color:${profitColor}">¥${fmtN(displayProfit)}<div style="font-size:11px;color:var(--muted)">${displayRate||0}% ${settleBadge}</div></td>
-      <td data-label="Status"><span class="badge badge-${o.order_status||'confirmed'}">${esc(o.order_status||'confirmed')}</span></td>
       <td data-label=""><div class="actions-cell">
         <button class="btn btn-sm" onclick="viewOrderDetail('${o.id}')">详情</button>
         <button class="btn btn-sm" onclick="editOrder('${o.id}')">编辑</button>
@@ -3015,7 +2984,7 @@ function openOrderModal() {
   document.getElementById('om-id').value = '';
   document.getElementById('orderForm').reset();
   document.getElementById('om-date').value     = today();
-  document.getElementById('om-status').value   = 'confirmed';
+  document.getElementById('om-number').value   = '';
   document.getElementById('om-currency').value = 'USD';
   document.getElementById('om-rate').value     = 7.20;
   document.getElementById('om-rate').readOnly  = true;
@@ -3104,8 +3073,8 @@ async function editOrder(id) {
     document.getElementById('om-customer-select').value = order.customer_id || '';
     document.getElementById('om-customer').value = order.customer_name||'';
     document.getElementById('om-date').value     = (order.order_date||'').slice(0,10);
+    document.getElementById('om-number').value   = order.order_number||'';
     document.getElementById('om-shipping').value = order.shipping_fee||0;
-    document.getElementById('om-status').value   = order.order_status||'confirmed';
     document.getElementById('om-currency').value = order.currency||'USD';
     document.getElementById('om-rate').value     = order.exchange_rate||7.20;
     document.getElementById('om-remarks').value  = order.remarks||'';
@@ -3220,10 +3189,10 @@ async function saveOrder(e) {
     customer_id:    document.getElementById('om-customer-select').value || null,
     customer_name:  document.getElementById('om-customer').value,
     order_date:     document.getElementById('om-date').value,
+    order_number:   document.getElementById('om-number').value.trim() || undefined,
     shipping_fee:   parseFloat(document.getElementById('om-shipping').value)||0,
     currency:       document.getElementById('om-currency').value,
     exchange_rate:  parseFloat(document.getElementById('om-rate').value)||7.2,
-    order_status:   document.getElementById('om-status').value,
     remarks:        document.getElementById('om-remarks').value,
     items,
   };
