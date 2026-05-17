@@ -56,9 +56,21 @@ button,input,select,textarea{font:inherit}
 .field select option{background:var(--panel)}
 
 /* Preview area */
-.preview-wrap{padding:24px;display:flex;justify-content:center}
+.preview-wrap{padding:24px;display:flex;justify-content:center;padding-right:200px}
 .preview-paper{background:#fff;color:#000;width:800px;max-width:100%;padding:28px;box-shadow:0 4px 32px rgba(0,0,0,.6);font-family:Arial,sans-serif;font-size:12px;line-height:1.4}
 .preview-paper *{color:#000}
+
+/* Right-side floating toolbar */
+.table-toolbar{position:fixed;right:20px;top:50%;transform:translateY(-50%);width:150px;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px;display:none;flex-direction:column;gap:6px;z-index:50;box-shadow:0 8px 32px rgba(0,0,0,.5);max-height:80vh;overflow-y:auto}
+.table-toolbar.show{display:flex}
+.table-toolbar h4{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:4px 0 2px;padding-top:6px;border-top:1px solid var(--border)}
+.table-toolbar h4:first-child{border-top:none;padding-top:0}
+.tb-btn{width:100%;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:11.5px;cursor:pointer;transition:.15s;text-align:left;white-space:nowrap}
+.tb-btn:hover{border-color:var(--p1);color:var(--p1);background:rgba(16,185,129,.06)}
+.tb-btn.danger{color:var(--danger);border-color:rgba(251,113,133,.3)}
+.tb-btn.danger:hover{background:rgba(251,113,133,.08)}
+.tb-btn.primary{background:var(--p1);color:#000;border-color:var(--p1);font-weight:600}
+.tb-btn.primary:hover{background:#34D399}
 
 /* Editable cells */
 [contenteditable="true"]{outline:none;cursor:text;min-width:16px;transition:background .15s}
@@ -128,11 +140,26 @@ tr:hover .del-row-btn{display:inline-block}
       </div>
     </div>
 
-    <!-- Action bar -->
-    <div class="action-bar" id="actionBar" style="display:none">
-      <button class="btn" onclick="toggleEdit()" id="btnEdit" data-i18n="btnEdit">Edit</button>
-      <button class="btn btn-primary" onclick="downloadPDF()" data-i18n="btnDownload">Download PDF</button>
-      <button class="btn" onclick="addRow()" id="btnAddRow" style="display:none" data-i18n="btnAddRow">+ Add Row</button>
+    <!-- Right-side floating table toolbar -->
+    <div class="table-toolbar" id="tableToolbar">
+      <h4 data-i18n="tbFile">文件</h4>
+      <button class="tb-btn primary" onclick="downloadPDF()" data-i18n="btnDownload">⬇ 下载 PDF</button>
+      <button class="tb-btn" onclick="toggleEdit()" id="btnEdit" data-i18n="btnEdit">✏ 编辑模式</button>
+      <h4 data-i18n="tbRows">行操作</h4>
+      <button class="tb-btn" onclick="addRow()">＋ 添加行</button>
+      <button class="tb-btn" onclick="insertRowAbove()">↑ 上方插入行</button>
+      <button class="tb-btn" onclick="insertRowBelow()">↓ 下方插入行</button>
+      <button class="tb-btn danger" onclick="deleteRow()">✕ 删除当前行</button>
+      <h4 data-i18n="tbCols">列操作</h4>
+      <button class="tb-btn" onclick="insertColLeft()">← 左侧插入列</button>
+      <button class="tb-btn" onclick="insertColRight()">→ 右侧插入列</button>
+      <button class="tb-btn danger" onclick="deleteCol()">✕ 删除当前列</button>
+      <h4 data-i18n="tbMerge">合并/拆分</h4>
+      <button class="tb-btn" onclick="mergeCells()">⊞ 合并单元格</button>
+      <button class="tb-btn" onclick="splitCell()">⊟ 拆分单元格</button>
+      <h4 data-i18n="tbOther">其他</h4>
+      <button class="tb-btn" onclick="clearCell()">⌫ 清空单元格</button>
+      <button class="tb-btn" onclick="addTable()">⊞ 插入新表格</button>
     </div>
 
     <!-- Preview -->
@@ -268,8 +295,7 @@ async function generateDoc() {
 
   document.getElementById('docPaper').innerHTML = html;
   document.getElementById('previewWrap').style.display = '';
-  document.getElementById('actionBar').style.display = 'flex';
-  document.getElementById('btnAddRow').style.display = docType === 'packing' ? '' : 'none';
+  document.getElementById('tableToolbar').classList.add('show');
   editMode = false;
 }
 // PI Template
@@ -518,33 +544,210 @@ function renderPacking(order, customer, lang) {
 function toggleEdit() {
   editMode = !editMode;
   const paper = document.getElementById('docPaper');
-  const cells = paper.querySelectorAll('[contenteditable]');
+  const cells = paper.querySelectorAll('td, th');
   cells.forEach(c => c.contentEditable = editMode ? 'true' : 'false');
-  document.getElementById('btnEdit').textContent = editMode ? (currentLang === 'zh' ? '完成编辑' : 'Done Editing') : (currentLang === 'zh' ? '编辑' : 'Edit');
+  document.getElementById('btnEdit').textContent = editMode
+    ? (currentLang === 'zh' ? '✅ 完成编辑' : '✅ Done')
+    : (currentLang === 'zh' ? '✏ 编辑模式' : '✏ Edit');
 }
 
 function addRow() {
   const tbody = document.getElementById('productTbody');
   if (!tbody) return;
-  const docType = document.getElementById('selDocType').value;
+  const firstRow = tbody.querySelector('tr');
+  const cols = firstRow ? firstRow.cells.length : 7;
   const tr = document.createElement('tr');
-  if (docType === 'packing') {
-    tr.innerHTML = `
-      <td style="border:1px solid #000;padding:5px 8px;height:26px" contenteditable="true">&nbsp;</td>
-      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
-      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
-      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
-      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
-      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
-      <td class="del-col"><button class="del-row-btn" onclick="this.closest('tr').remove()">x</button></td>`;
-  } else {
-    const cols = docType === 'pi' ? 7 : 6;
-    tr.innerHTML = Array(cols).fill(0).map(() =>
-      `<td style="border:1px solid #000;padding:5px 8px;height:26px" contenteditable="true">&nbsp;</td>`
-    ).join('');
-  }
+  tr.innerHTML = Array(cols).fill(0).map(() =>
+    `<td style="border:1px solid #000;padding:5px 8px;height:26px" contenteditable="true">&nbsp;</td>`
+  ).join('');
   tbody.appendChild(tr);
-  showToast(currentLang === 'zh' ? '已添加行' : 'Row added', 'ok');
+}
+
+// ── 获取当前选中的单元格 ──
+function getActiveCell() {
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return null;
+  let node = sel.anchorNode;
+  while (node && node.tagName !== 'TD' && node.tagName !== 'TH') node = node.parentElement;
+  if (!node) return null;
+  const paper = document.getElementById('docPaper');
+  if (!paper.contains(node)) return null;
+  return node;
+}
+
+function getActiveRow() {
+  const cell = getActiveCell();
+  return cell ? cell.closest('tr') : null;
+}
+
+function getActiveTable() {
+  const cell = getActiveCell();
+  return cell ? cell.closest('table') : null;
+}
+
+// ── 行操作 ──
+function insertRowAbove() {
+  const row = getActiveRow();
+  if (!row) return showToast(currentLang==='zh'?'请先点击表格中的单元格':'Click a cell first','err');
+  const newRow = row.cloneNode(true);
+  newRow.querySelectorAll('td,th').forEach(c => { c.textContent = ''; c.contentEditable = 'true'; });
+  row.parentNode.insertBefore(newRow, row);
+}
+
+function insertRowBelow() {
+  const row = getActiveRow();
+  if (!row) return showToast(currentLang==='zh'?'请先点击表格中的单元格':'Click a cell first','err');
+  const newRow = row.cloneNode(true);
+  newRow.querySelectorAll('td,th').forEach(c => { c.textContent = ''; c.contentEditable = 'true'; });
+  row.parentNode.insertBefore(newRow, row.nextSibling);
+}
+
+function deleteRow() {
+  const row = getActiveRow();
+  if (!row) return showToast(currentLang==='zh'?'请先点击表格中的单元格':'Click a cell first','err');
+  row.remove();
+}
+
+// ── 列操作 ──
+function getCellIndex(cell) {
+  let idx = 0;
+  let prev = cell.previousElementSibling;
+  while (prev) { idx += (prev.colSpan || 1); prev = prev.previousElementSibling; }
+  return idx;
+}
+
+function insertColLeft() {
+  const cell = getActiveCell();
+  if (!cell) return showToast(currentLang==='zh'?'请先点击单元格':'Click a cell first','err');
+  const table = cell.closest('table');
+  const colIdx = getCellIndex(cell);
+  table.querySelectorAll('tr').forEach(tr => {
+    let cumIdx = 0;
+    for (const c of tr.cells) {
+      if (cumIdx === colIdx) {
+        const td = document.createElement(c.tagName.toLowerCase() === 'th' ? 'th' : 'td');
+        td.style.cssText = 'border:1px solid #000;padding:5px 8px';
+        td.contentEditable = 'true';
+        td.innerHTML = '&nbsp;';
+        tr.insertBefore(td, c);
+        break;
+      }
+      cumIdx += (c.colSpan || 1);
+      if (cumIdx > colIdx) break;
+    }
+  });
+}
+
+function insertColRight() {
+  const cell = getActiveCell();
+  if (!cell) return showToast(currentLang==='zh'?'请先点击单元格':'Click a cell first','err');
+  const table = cell.closest('table');
+  const colIdx = getCellIndex(cell) + (cell.colSpan || 1);
+  table.querySelectorAll('tr').forEach(tr => {
+    let cumIdx = 0;
+    let inserted = false;
+    for (const c of tr.cells) {
+      cumIdx += (c.colSpan || 1);
+      if (cumIdx === colIdx) {
+        const td = document.createElement(c.tagName.toLowerCase() === 'th' ? 'th' : 'td');
+        td.style.cssText = 'border:1px solid #000;padding:5px 8px';
+        td.contentEditable = 'true';
+        td.innerHTML = '&nbsp;';
+        tr.insertBefore(td, c.nextSibling);
+        inserted = true;
+        break;
+      }
+    }
+    if (!inserted) {
+      const td = document.createElement('td');
+      td.style.cssText = 'border:1px solid #000;padding:5px 8px';
+      td.contentEditable = 'true';
+      td.innerHTML = '&nbsp;';
+      tr.appendChild(td);
+    }
+  });
+}
+
+function deleteCol() {
+  const cell = getActiveCell();
+  if (!cell) return showToast(currentLang==='zh'?'请先点击单元格':'Click a cell first','err');
+  const table = cell.closest('table');
+  const colIdx = getCellIndex(cell);
+  table.querySelectorAll('tr').forEach(tr => {
+    let cumIdx = 0;
+    for (const c of [...tr.cells]) {
+      if (cumIdx === colIdx) { c.remove(); break; }
+      cumIdx += (c.colSpan || 1);
+      if (cumIdx > colIdx) break;
+    }
+  });
+}
+
+// ── 合并/拆分 ──
+function mergeCells() {
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return showToast(currentLang==='zh'?'请先选中多个单元格（按住鼠标拖选）':'Select multiple cells first','err');
+  const paper = document.getElementById('docPaper');
+  const cells = paper.querySelectorAll('td[contenteditable]:focus-within, td.merge-selected, th[contenteditable]:focus-within, th.merge-selected');
+  if (cells.length < 2) {
+    // 尝试用 selection range 找
+    const range = sel.getRangeAt(0);
+    const container = range.commonAncestorContainer;
+    const tr = container.closest ? container.closest('tr') : null;
+    if (!tr) return showToast(currentLang==='zh'?'请在同一行选中多个单元格':'Select cells in same row','err');
+    // 简单合并：当前单元格向右合并一格
+    const cell = getActiveCell();
+    if (!cell || !cell.nextElementSibling) return showToast(currentLang==='zh'?'右侧没有可合并的单元格':'No cell to merge right','err');
+    const next = cell.nextElementSibling;
+    const content = cell.innerHTML + ' ' + next.innerHTML;
+    cell.innerHTML = content.replace(/&nbsp;/g,'').trim() || '&nbsp;';
+    cell.colSpan = (cell.colSpan || 1) + (next.colSpan || 1);
+    next.remove();
+    showToast(currentLang==='zh'?'已合并':'Merged');
+    return;
+  }
+}
+
+function splitCell() {
+  const cell = getActiveCell();
+  if (!cell) return showToast(currentLang==='zh'?'请先点击要拆分的单元格':'Click a merged cell','err');
+  const span = cell.colSpan || 1;
+  if (span <= 1) return showToast(currentLang==='zh'?'该单元格未合并，无法拆分':'Cell is not merged','err');
+  cell.colSpan = 1;
+  for (let i = 1; i < span; i++) {
+    const td = document.createElement(cell.tagName.toLowerCase());
+    td.style.cssText = 'border:1px solid #000;padding:5px 8px';
+    td.contentEditable = 'true';
+    td.innerHTML = '&nbsp;';
+    cell.parentNode.insertBefore(td, cell.nextSibling);
+  }
+  showToast(currentLang==='zh'?'已拆分':'Split');
+}
+
+function clearCell() {
+  const cell = getActiveCell();
+  if (!cell) return showToast(currentLang==='zh'?'请先点击单元格':'Click a cell first','err');
+  cell.innerHTML = '&nbsp;';
+}
+
+function addTable() {
+  const paper = document.getElementById('docPaper');
+  const rows = parseInt(prompt(currentLang==='zh'?'行数：':'Rows:','3'))||3;
+  const cols = parseInt(prompt(currentLang==='zh'?'列数：':'Columns:','4'))||4;
+  const table = document.createElement('table');
+  table.style.cssText = 'width:100%;border-collapse:collapse;margin-top:12px';
+  for (let r = 0; r < rows; r++) {
+    const tr = document.createElement('tr');
+    for (let c = 0; c < cols; c++) {
+      const td = document.createElement('td');
+      td.style.cssText = 'border:1px solid #000;padding:5px 8px';
+      td.contentEditable = 'true';
+      td.innerHTML = '&nbsp;';
+      tr.appendChild(td);
+    }
+    table.appendChild(tr);
+  }
+  paper.appendChild(table);
 }
 
 async function downloadPDF() {
