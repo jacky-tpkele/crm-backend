@@ -17,7 +17,7 @@
   --primary:#ffffff;--primary-dim:rgba(255,255,255,0.12);
   --cyan:#8fc8ff;--purple:#6d88ff;
   --danger:#fb7185;--warn:#fbbf24;--success:#4ade80;
-  --shadow:0 20px 60px rgba(0,0,0,.7);--radius:14px;--sb:240px;
+  --shadow:0 20px 60px rgba(0,0,0,.7);--radius:14px;--sb:180px;
 }
 html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
 a{color:inherit;text-decoration:none}
@@ -409,7 +409,7 @@ tr:hover .del-row-btn{display:inline-block}
 /* ── Responsive ── */
 @media(max-width:1100px){.charts-row,.charts-row-3{grid-template-columns:1fr}.analytics-grid{grid-template-columns:1fr}}
 @media(max-width:768px){
-  .sidebar{position:fixed;left:-240px;top:0;height:100%;z-index:100;transition:.25s}
+  .sidebar{position:fixed;left:-180px;top:0;height:100%;z-index:100;transition:.25s}
   .sidebar.mobile-open{left:0}
   .main{width:100%}
   .mobile-menu-btn{display:flex}
@@ -966,24 +966,19 @@ tr:hover .del-row-btn{display:inline-block}
     <form id="customerForm" onsubmit="saveCustomer(event)">
       <input type="hidden" id="cm-id">
       <div class="form-grid">
-        <div class="field form-full"><label data-i18n="lblCustName">Customer Name *</label><input type="text" id="cm-name" required></div>
+        <div class="field form-full"><label data-i18n="lblCustName">Company Name *</label><input type="text" id="cm-name" required placeholder="公司名称（对应 PI 的 TO:）"></div>
+        <div class="field"><label>联系人 (ATTN)</label><input type="text" id="cm-contact" placeholder="对应 PI 的 ATTN"></div>
         <div class="field" style="position:relative">
           <label data-i18n="lblCustCountry">Country</label>
           <input type="text" id="cm-country" autocomplete="off" placeholder="" oninput="filterCountryList()" onfocus="openCountryList()">
           <div id="cm-country-list" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:240px;overflow-y:auto;background:var(--panel,#0a1628);border:1px solid var(--border);border-radius:8px;margin-top:4px;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.5)"></div>
         </div>
         <div class="field"><label data-i18n="lblCustEmail">Email</label><input type="email" id="cm-email"></div>
-        <div class="field"><label data-i18n="lblCustWhatsApp">WhatsApp</label><input type="text" id="cm-whatsapp"></div>
+        <div class="field"><label data-i18n="lblCustWhatsApp">WhatsApp / Tel</label><input type="text" id="cm-whatsapp"></div>
         <div class="field"><label data-i18n="lblCustPayment">Payment Terms</label><input type="text" id="cm-payment" data-i18n-ph="phCustPayment" placeholder="e.g. T/T 30% deposit"></div>
-        <div class="field"><label data-i18n="lblCustLevel">Customer Level</label>
-          <select id="cm-level">
-            <option value="standard" data-i18n="optStandard">Standard</option>
-            <option value="vip" data-i18n="optVIP">VIP</option>
-            <option value="potential" data-i18n="optPotential">Potential</option>
-          </select>
-        </div>
+        <div class="field"><label>贸易方式 (Delivery Term)</label><input type="text" id="cm-delivery-term" placeholder="如 FOB Ningbo / CIF"></div>
         <div class="field form-full">
-          <label data-i18n="lblCustAddress">Shipping Address</label>
+          <label data-i18n="lblCustAddress">Address</label>
           <div id="cm-address-list" style="display:flex;flex-direction:column;gap:8px"></div>
           <button type="button" class="btn btn-sm" onclick="addAddressRow()" style="margin-top:8px;align-self:flex-start" data-i18n="btnAddAddress">＋ 添加地址</button>
         </div>
@@ -2226,11 +2221,12 @@ function editCustomer(id) {
   document.getElementById('customerModalTitle').textContent = S.lang === 'zh' ? '编辑客户' : 'Edit Customer';
   document.getElementById('cm-id').value      = c.id;
   document.getElementById('cm-name').value    = c.customer_name||'';
+  document.getElementById('cm-contact').value = c.contact_person||'';
   document.getElementById('cm-country').value = c.country||'';
   document.getElementById('cm-email').value   = c.email||'';
   document.getElementById('cm-whatsapp').value= c.whatsapp||'';
   document.getElementById('cm-payment').value = c.payment_terms||'';
-  document.getElementById('cm-level').value   = c.customer_level||'standard';
+  document.getElementById('cm-delivery-term').value = c.delivery_term||'';
   renderAddressRows(parseAddresses(c.shipping_address));
   document.getElementById('cm-country-list').style.display = 'none';
   openModal('customerModal');
@@ -2241,11 +2237,12 @@ async function saveCustomer(e) {
   const addrs = collectAddresses();
   const payload = {
     customer_name:    document.getElementById('cm-name').value,
+    contact_person:   document.getElementById('cm-contact').value,
     country:          document.getElementById('cm-country').value,
     email:            document.getElementById('cm-email').value,
     whatsapp:         document.getElementById('cm-whatsapp').value,
     payment_terms:    document.getElementById('cm-payment').value,
-    customer_level:   document.getElementById('cm-level').value,
+    delivery_term:    document.getElementById('cm-delivery-term').value,
     shipping_address: addrs.length ? JSON.stringify(addrs) : '',
   };
   try {
@@ -3827,123 +3824,93 @@ function buildDocHTML(order, docType, lang) {
   const isZh  = lang === 'zh';
   const items = order.items || [];
 
-  // ── PI 专用模板（匹配 CI China 格式）──
+  // ── PI 专用模板（匹配 Pl.xlsx 格式：黑字白底简洁版）──
   if (docType === 'pi') {
     const d = new Date(order.order_date || Date.now());
-    const dateStr = `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
-    const invNo = `INV-${(order.id||'').slice(0,6).toUpperCase()}`;
+    const dateStr = `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}/${d.getFullYear()}`;
+    const invNo = order.order_number || `INV-${(order.id||'').slice(0,6).toUpperCase()}`;
+    const customer = S.customers?.find(c=>c.id===order.customer_id)||{};
+    const addr = formatShippingAddress(customer.shipping_address||'');
     const piRows = items.map(it => `
       <tr>
-        <td style="border:1px solid #000;padding:5px 8px">${esc(it.product_name_en||it.product_name_cn||'')}</td>
-        <td style="border:1px solid #000;padding:5px 8px">${esc(it.specification||'')}</td>
-        <td style="border:1px solid #000;padding:5px 8px;text-align:center">${it.quantity||''}</td>
-        <td style="border:1px solid #000;padding:5px 8px;text-align:right">${it.sales_price?'$'+Number(it.sales_price).toFixed(2):''}</td>
-        <td style="border:1px solid #000;padding:5px 8px;text-align:right">${it.sales_total?'$'+Number(it.sales_total).toFixed(2):''}</td>
+        <td contenteditable="true" style="border:1px solid #000;padding:5px 8px">${esc(it.product_name_en||it.product_name_cn||'')}</td>
+        <td contenteditable="true" style="border:1px solid #000;padding:5px 8px;text-align:center">${it.quantity||''}</td>
+        <td contenteditable="true" style="border:1px solid #000;padding:5px 8px">&nbsp;</td>
+        <td contenteditable="true" style="border:1px solid #000;padding:5px 8px">&nbsp;</td>
+        <td contenteditable="true" style="border:1px solid #000;padding:5px 8px">&nbsp;</td>
+        <td contenteditable="true" style="border:1px solid #000;padding:5px 8px">&nbsp;</td>
+        <td contenteditable="true" style="border:1px solid #000;padding:5px 8px">&nbsp;</td>
       </tr>`).join('');
-    // 补空行至少 6 行
-    const emptyCount = Math.max(0, 6 - items.length);
-    const emptyRows  = Array(emptyCount).fill(`
+    const emptyCount = Math.max(0, 4 - items.length);
+    const emptyRows = Array(emptyCount).fill(`
       <tr>
-        <td style="border:1px solid #000;padding:5px 8px;height:24px">&nbsp;</td>
-        <td style="border:1px solid #000;padding:5px 8px">&nbsp;</td>
-        <td style="border:1px solid #000;padding:5px 8px">&nbsp;</td>
-        <td style="border:1px solid #000;padding:5px 8px">&nbsp;</td>
-        <td style="border:1px solid #000;padding:5px 8px">&nbsp;</td>
+        <td contenteditable="true" style="border:1px solid #000;padding:5px 8px;height:24px">&nbsp;</td>
+        <td contenteditable="true" style="border:1px solid #000;padding:5px 8px">&nbsp;</td>
+        <td contenteditable="true" style="border:1px solid #000;padding:5px 8px">&nbsp;</td>
+        <td contenteditable="true" style="border:1px solid #000;padding:5px 8px">&nbsp;</td>
+        <td contenteditable="true" style="border:1px solid #000;padding:5px 8px">&nbsp;</td>
+        <td contenteditable="true" style="border:1px solid #000;padding:5px 8px">&nbsp;</td>
+        <td contenteditable="true" style="border:1px solid #000;padding:5px 8px">&nbsp;</td>
       </tr>`).join('');
-    const total = Number(order.sales_total||0).toFixed(2);
-    const customer = S.customers?.find(c=>c.id===order.customer_id)||{};
     return `
-    <div style="font-family:Arial,sans-serif;max-width:780px;margin:0 auto;color:#000;font-size:12px">
-      <!-- 公司名称 -->
-      <div style="text-align:center;margin-bottom:6px">
-        <div style="font-size:22px;font-weight:bold">${esc(co.company||'Company Name')}</div>
+    <div style="font-family:Arial,sans-serif;max-width:780px;margin:0 auto;color:#000;font-size:12px;background:#fff;padding:20px">
+      <!-- 公司抬头 -->
+      <div style="text-align:center;margin-bottom:4px">
+        <div style="font-size:16px;font-weight:bold">${esc(co.company||'Wenzhou Hetao Electric Co., Ltd.')}</div>
         <div style="font-size:10.5px;color:#333;margin-top:2px">${esc(co.address||'')}</div>
       </div>
-      <!-- Invoice 标题 -->
-      <div style="text-align:center;font-size:15px;font-weight:bold;border:1px solid #000;padding:4px 0;margin-bottom:0">Invoice</div>
-      <!-- 客户信息 -->
-      <table style="width:100%;border-collapse:collapse;border-left:1px solid #000;border-right:1px solid #000">
+      <!-- 标题 -->
+      <div style="text-align:center;font-size:14px;font-weight:bold;padding:6px 0;margin:8px 0;border-top:2px solid #000;border-bottom:1px solid #000">Packing List</div>
+      <!-- 客户信息区 -->
+      <table style="width:100%;border-collapse:collapse;margin-bottom:0">
         <tr>
-          <td style="border:1px solid #000;padding:5px 8px;width:14%;font-weight:600">To:</td>
-          <td style="border:1px solid #000;padding:5px 8px;width:52%">${esc(order.customer_name||'')}</td>
-          <td style="border:1px solid #000;padding:5px 8px;width:14%;font-weight:600;text-align:right">DATE:</td>
-          <td style="border:1px solid #000;padding:5px 8px;width:20%">${dateStr}</td>
+          <td style="border:1px solid #000;padding:5px 8px;width:12%;font-weight:600">To:</td>
+          <td contenteditable="true" style="border:1px solid #000;padding:5px 8px;width:48%">${esc(order.customer_name||'')}</td>
+          <td style="border:1px solid #000;padding:5px 8px;width:16%;font-weight:600">DATE:</td>
+          <td contenteditable="true" style="border:1px solid #000;padding:5px 8px;width:24%">${dateStr}</td>
         </tr>
         <tr>
-          <td style="border:1px solid #000;padding:5px 8px;font-weight:600">ATTN:</td>
-          <td colspan="3" style="border:1px solid #000;padding:5px 8px">&nbsp;</td>
+          <td style="border:1px solid #000;padding:5px 8px;font-weight:600">ATTN：</td>
+          <td contenteditable="true" style="border:1px solid #000;padding:5px 8px">${esc(customer.contact_person||'')}</td>
+          <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Proforma Invoice No：</td>
+          <td contenteditable="true" style="border:1px solid #000;padding:5px 8px">${esc(invNo)}</td>
         </tr>
         <tr>
           <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Address:</td>
-          <td colspan="3" style="border:1px solid #000;padding:5px 8px">${esc(formatShippingAddress(customer.shipping_address||order.shipping_address||''))}</td>
+          <td contenteditable="true" style="border:1px solid #000;padding:5px 8px">${esc(addr)}</td>
+          <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Delivery Term</td>
+          <td contenteditable="true" style="border:1px solid #000;padding:5px 8px">${esc(customer.delivery_term||'')}</td>
         </tr>
         <tr>
-          <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Tel:</td>
-          <td style="border:1px solid #000;padding:5px 8px">${esc(customer.whatsapp||'')}</td>
-          <td colspan="2" style="border:1px solid #000;padding:5px 8px;text-align:right;font-weight:600">Commercial Invoice No：${invNo}</td>
+          <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Tel :</td>
+          <td contenteditable="true" colspan="3" style="border:1px solid #000;padding:5px 8px">${esc(customer.whatsapp||'')}</td>
         </tr>
       </table>
       <!-- 产品表格 -->
       <table style="width:100%;border-collapse:collapse;margin-top:0">
         <thead>
-          <tr style="text-align:center;font-weight:bold;font-size:12px">
-            <th style="border:1px solid #000;padding:6px;width:24%">Product Name</th>
-            <th style="border:1px solid #000;padding:6px;width:34%">Description</th>
-            <th style="border:1px solid #000;padding:6px;width:12%">Quantity(pcs)</th>
-            <th style="border:1px solid #000;padding:6px;width:15%">UNIT PRICE</th>
-            <th style="border:1px solid #000;padding:6px;width:15%">AMOUNT</th>
+          <tr style="text-align:center;font-weight:bold;font-size:11.5px">
+            <th style="border:1px solid #000;padding:6px;width:28%">Product Name</th>
+            <th style="border:1px solid #000;padding:6px;width:10%">Quantity<br>(pcs)</th>
+            <th style="border:1px solid #000;padding:6px;width:12%">Package</th>
+            <th style="border:1px solid #000;padding:6px;width:14%">Net Weight (kg)</th>
+            <th style="border:1px solid #000;padding:6px;width:14%">Gross Weight (kg)</th>
+            <th style="border:1px solid #000;padding:6px;width:12%">&nbsp;</th>
+            <th style="border:1px solid #000;padding:6px;width:10%">CBM</th>
           </tr>
         </thead>
         <tbody>${piRows}${emptyRows}</tbody>
         <tfoot>
           <tr>
-            <td colspan="4" style="border:1px solid #000;padding:6px;text-align:center;font-weight:bold">TOTAL:</td>
-            <td style="border:1px solid #000;padding:6px;background:#f4b942;font-weight:bold;text-align:center">US$${total}</td>
+            <td style="border:1px solid #000;padding:6px;font-weight:bold">TOTAL:</td>
+            <td contenteditable="true" style="border:1px solid #000;padding:6px;text-align:center;font-weight:bold">${items.reduce((a,i)=>a+Number(i.quantity||0),0)}</td>
+            <td contenteditable="true" style="border:1px solid #000;padding:6px">&nbsp;</td>
+            <td contenteditable="true" style="border:1px solid #000;padding:6px">&nbsp;</td>
+            <td contenteditable="true" style="border:1px solid #000;padding:6px">&nbsp;</td>
+            <td contenteditable="true" style="border:1px solid #000;padding:6px">&nbsp;</td>
+            <td contenteditable="true" style="border:1px solid #000;padding:6px">&nbsp;</td>
           </tr>
         </tfoot>
-      </table>
-      <!-- 税务说明 -->
-      <div style="text-align:center;padding:5px 4px;font-size:11px;border:1px solid #000;border-top:none">
-        Taxes and Duties: All Taxes, duties, license and bank charges payable should be borne by you.
-      </div>
-      <div style="text-align:center;padding:4px;font-size:11px">
-        You can tt the money to our company account :
-      </div>
-      <!-- 银行信息（固定） -->
-      <table style="width:100%;border-collapse:collapse;font-size:11.5px">
-        <tr><td colspan="2" style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:4px 8px">BANK INFORMATION:</td></tr>
-        <tr>
-          <td style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:3px 8px;width:28%">Account Name</td>
-          <td style="border:1px solid #000;padding:3px 8px">Wenzhou Hetao Electric Co., Ltd.</td>
-        </tr>
-        <tr>
-          <td style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:3px 8px">Account No.</td>
-          <td style="border:1px solid #000;padding:3px 8px">330501202010000008156</td>
-        </tr>
-        <tr>
-          <td style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:3px 8px">Bank</td>
-          <td style="border:1px solid #000;padding:3px 8px">ZHEJIANG TAILONG COMMERCIAL BANK</td>
-        </tr>
-        <tr>
-          <td style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:3px 8px">Country/Region</td>
-          <td style="border:1px solid #000;padding:3px 8px">China</td>
-        </tr>
-        <tr>
-          <td style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:3px 8px">Bank Address</td>
-          <td style="border:1px solid #000;padding:3px 8px">188 NANGUAN ROAD, LUQIAO DISTRICT, TAIZHOU, ZHEJIANG PROVINCE</td>
-        </tr>
-        <tr>
-          <td style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:3px 8px">SWIFT</td>
-          <td style="border:1px solid #000;padding:3px 8px">ZJTLCNBHXXX</td>
-        </tr>
-        <tr>
-          <td style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:3px 8px">Clearing system</td>
-          <td style="border:1px solid #000;padding:3px 8px">SWIFT</td>
-        </tr>
-        <tr>
-          <td style="background:#b8cce4;font-weight:bold;border:1px solid #000;padding:3px 8px">Payment and delivery methods</td>
-          <td style="border:1px solid #000;padding:3px 8px">Delivery within 3-5 working days after 100% payment</td>
-        </tr>
       </table>
     </div>`;
   }
