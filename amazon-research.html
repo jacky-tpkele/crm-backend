@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TPKELE CRM - Amazon Research</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#000509;--panel:#060f20;--panel2:#0a1628;
+  --border:rgba(0,190,255,0.12);--border-h:rgba(0,220,255,0.38);
+  --text:#ddf0ff;--muted:#4d7390;--muted2:#7aa4c0;
+  --primary:#00c8f0;--p1:#10B981;
+  --danger:#fb7185;--success:#4ade80;--warning:#fbbf24;
+  --shadow:0 20px 60px rgba(0,0,0,.7);--radius:14px;--sb:220px;
+}
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+button,input,select,textarea{font:inherit}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:rgba(16,185,129,0.15);border-radius:4px}
+
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:var(--sb);flex-shrink:0;height:100%;background:linear-gradient(180deg,rgba(3,8,20,.99),rgba(2,5,13,.99));border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sb-logo{display:flex;align-items:center;gap:12px;padding:18px 16px;border-bottom:1px solid var(--border)}
+.logo-text{font-size:15px;font-weight:700;letter-spacing:1px}
+.logo-text span{color:var(--primary)}
+.sb-nav{flex:1;overflow-y:auto;padding:10px 0}
+.nav-group{padding:8px 16px 4px;font-size:10px;font-weight:600;color:rgba(16,185,129,.22);text-transform:uppercase;letter-spacing:.8px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;transition:.15s;white-space:nowrap;color:var(--muted2);font-size:13.5px;font-weight:500;border-left:3px solid transparent}
+.nav-item:hover{background:rgba(16,185,129,0.05);color:var(--text)}
+.nav-item.active{background:rgba(16,185,129,0.08);color:var(--primary);border-left-color:var(--primary)}
+.nav-icon{font-size:17px;flex-shrink:0;width:22px;text-align:center}
+
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.header{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-shrink:0}
+.header h1{font-size:18px;font-weight:600;flex:1}
+.btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:13px;cursor:pointer;transition:.15s;white-space:nowrap}
+.btn:hover{border-color:var(--p1);color:var(--p1)}
+.btn-primary{background:var(--p1);color:#000;border-color:var(--p1);font-weight:600}
+.btn-primary:hover{background:#34D399}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:6px}
+.btn-danger{border-color:rgba(251,113,133,.4);color:var(--danger)}
+.btn-danger:hover{background:rgba(251,113,133,.1)}
+.btn-warning{border-color:rgba(251,191,36,.4);color:var(--warning)}
+.btn-warning:hover{background:rgba(251,191,36,.1)}
+.lang-btn{padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:12px;cursor:pointer}
+
+.workspace{flex:1;overflow-y:auto;padding:20px 24px}
+
+/* Cards */
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:18px}
+.card-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.card-title{font-size:14px;font-weight:600;flex:1}
+
+/* Competitor Cards Grid */
+.comp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+.comp-card{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:16px;transition:.15s;cursor:default}
+.comp-card:hover{border-color:rgba(16,185,129,.3)}
+.comp-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.comp-img{width:56px;height:56px;border-radius:8px;object-fit:cover;border:1px solid var(--border);background:rgba(255,255,255,.04)}
+.comp-img-empty{width:56px;height:56px;border-radius:8px;display:grid;place-items:center;font-size:24px;background:rgba(255,255,255,.04);border:1px solid var(--border)}
+.comp-info{flex:1;min-width:0}
+.comp-title{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.comp-meta{font-size:11.5px;color:var(--muted);margin-top:2px}
+.comp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.comp-stat{text-align:center;padding:6px;background:rgba(255,255,255,.02);border-radius:6px;border:1px solid rgba(255,255,255,.04)}
+.comp-stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.comp-stat-value{font-size:14px;font-weight:700;margin-top:2px}
+.comp-notes{font-size:12px;color:var(--muted2);margin-bottom:10px;line-height:1.5}
+.comp-actions{display:flex;gap:6px;flex-wrap:wrap}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0}
+.tab{padding:8px 16px;font-size:13px;color:var(--muted2);cursor:pointer;border-bottom:2px solid transparent;transition:.15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--p1);border-bottom-color:var(--p1);font-weight:600}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* Table */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px 12px;color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
+td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04)}
+
+/* Form */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11.5px;color:var(--muted2);font-weight:500}
+.field input,.field select,.field textarea{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;outline:none;transition:.15s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--p1)}
+
+/* Modal */
+.modal-backdrop{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);display:none;place-items:center}
+.modal-backdrop.open{display:grid}
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:14px;width:640px;max-width:95vw;max-height:90vh;display:flex;flex-direction:column;box-shadow:var(--shadow)}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-head h2{font-size:15px;font-weight:600}
+.modal-close{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-size:16px;display:grid;place-items:center}
+.modal-body{padding:18px 20px;overflow-y:auto;flex:1}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:13px;color:var(--text);display:none;align-items:center;gap:10px;box-shadow:var(--shadow)}
+.toast.show{display:flex}
+.toast.ok{border-color:rgba(74,222,128,.35)}
+.toast.err{border-color:rgba(251,113,133,.35)}
+
+/* History panel */
+.history-panel{margin-top:16px;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
+.history-panel h3{font-size:14px;font-weight:600;margin-bottom:12px}
+.history-close{float:right;cursor:pointer;color:var(--muted2);font-size:14px;border:1px solid var(--border);border-radius:6px;padding:2px 8px;background:transparent}
+.history-close:hover{color:var(--text)}
+
+/* Competition badges */
+.badge-low{background:rgba(74,222,128,.12);color:#4ade80;border:1px solid rgba(74,222,128,.3);padding:2px 8px;border-radius:12px;font-size:11px}
+.badge-medium{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.3);padding:2px 8px;border-radius:12px;font-size:11px}
+.badge-high{background:rgba(251,113,133,.15);color:#fb7185;border:1px solid rgba(251,113,133,.35);padding:2px 8px;border-radius:12px;font-size:11px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="logo-text">TP<span>KELE</span></div>
+  </div>
+  <div class="sb-nav">
+    <div class="nav-group" data-i18n="navMain">主菜单</div>
+    <div class="nav-item" onclick="location.href='dashboard.html'"><span class="nav-icon">📊</span><span data-i18n="navDashboard">仪表盘</span></div>
+    <div class="nav-item" onclick="location.href='dashboard.html'"><span class="nav-icon">◍</span><span data-i18n="navOrders">订单管理</span></div>
+    <div class="nav-group" data-i18n="navAmazon">亚马逊运营</div>
+    <div class="nav-item" onclick="location.href='amazon-inventory.html'"><span class="nav-icon">📦</span><span data-i18n="navInventory">库存智能补货</span></div>
+    <div class="nav-item" onclick="location.href='amazon-ads.html'"><span class="nav-icon">📢</span><span data-i18n="navAds">广告管理</span></div>
+    <div class="nav-item active"><span class="nav-icon">🔍</span><span data-i18n="navResearch">竞品调研</span></div>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+  <header class="header">
+    <h1 data-i18n="pageTitle">🔍 竞品调研</h1>
+    <button class="btn btn-primary" onclick="openCompetitorModal()" data-i18n="btnAddCompetitor">＋ 添加竞品</button>
+    <button class="btn" onclick="loadData()" data-i18n="btnRefresh">↻ 刷新</button>
+    <button class="lang-btn" onclick="toggleLang()">中/EN</button>
+  </header>
+
+  <div class="workspace">
+    <div class="tabs">
+      <div class="tab active" data-tab="competitors" onclick="switchTab('competitors')" data-i18n="tabCompetitors">竞品追踪</div>
+      <div class="tab" data-tab="keywords" onclick="switchTab('keywords')" data-i18n="tabKeywords">关键词库</div>
+    </div>
+
+    <!-- Tab: Competitors -->
+    <div class="tab-content active" id="tab-competitors">
+      <div id="competitorCards">
+        <div style="text-align:center;padding:60px;color:var(--muted)">
+          <div style="font-size:36px;margin-bottom:12px">🔍</div>
+          <p data-i18n="emptyCompetitors">加载中...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Keywords -->
+    <div class="tab-content" id="tab-keywords">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title" data-i18n="kwTitle">关键词库</span>
+          <button class="btn" onclick="openBatchKwModal()" data-i18n="btnBatchKw">📤 批量添加</button>
+          <button class="btn btn-primary" onclick="openKwModal()" data-i18n="btnAddKw">＋ 添加关键词</button>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th data-i18n="thKeyword">关键词</th>
+              <th data-i18n="thSource">来源</th>
+              <th data-i18n="thVolume">搜索量</th>
+              <th data-i18n="thCompetition">竞争度</th>
+              <th data-i18n="thBid">建议出价</th>
+              <th data-i18n="thRank">我们排名</th>
+              <th>ASIN</th>
+              <th data-i18n="thNotes">备注</th>
+              <th data-i18n="thActions">操作</th>
+            </tr></thead>
+            <tbody id="kwTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Competitor Modal -->
+<div class="modal-backdrop" id="compModal" onclick="if(event.target===this)closeCompModal()">
+  <div class="modal">
+    <div class="modal-head"><h2 id="compModalTitle">添加竞品</h2><button class="modal-close" onclick="closeCompModal()">×</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field"><label>ASIN *</label><input id="fc-asin" placeholder="B0XXXXXXXX"></div>
+        <div class="field"><label data-i18n="lblBrand">品牌</label><input id="fc-brand"></div>
+        <div class="field" style="grid-column:1/-1"><label data-i18n="lblTitle">标题 *</label><input id="fc-title"></div>
+        <div class="field" style="grid-column:1/-1"><label data-i18n="lblImageUrl">图片URL</label><input id="fc-image" placeholder="https://..."></div>
+        <div class="field"><label data-i18n="lblPrice">价格($)</label><input id="fc-price" type="number" step="0.01"></div>
+        <div class="field"><label>BSR</label><input id="fc-bsr" type="number"></div>
+        <div class="field"><label data-i18n="lblReviews">评论数</label><input id="fc-reviews" type="number"></div>
+        <div class="field"><label data-i18n="lblRating">评分</label><input id="fc-rating" type="number" step="0.1" min="0" max="5"></div>
+        <div class="field" style="grid-column:1/-1"><label data-i18n="lblCategory">类目</label><input id="fc-category"></div>
+        <div class="field" style="grid-column:1/-1"><label data-i18n="lblNotes">备注</label><textarea id="fc-notes" rows="2"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" id="compDeleteBtn" style="display:none;margin-right:auto" onclick="deleteCompetitor(editingCompId);closeCompModal()" data-i18n="btnDelete">删除</button>
+      <button class="btn" onclick="closeCompModal()" data-i18n="btnCancel">取消</button>
+      <button class="btn btn-primary" onclick="saveCompetitor()" data-i18n="btnSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Keyword Modal -->
+<div class="modal-backdrop" id="kwModal" onclick="if(event.target===this)closeKwModal()">
+  <div class="modal">
+    <div class="modal-head"><h2 id="kwModalTitle">添加关键词</h2><button class="modal-close" onclick="closeKwModal()">×</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field" style="grid-column:1/-1"><label data-i18n="thKeyword">关键词 *</label><input id="fk-keyword"></div>
+        <div class="field"><label data-i18n="thSource">来源</label>
+          <select id="fk-source">
+            <option value="manual">Manual</option>
+            <option value="brand_analytics">Brand Analytics</option>
+            <option value="sellersprite">Sellersprite</option>
+            <option value="helium10">Helium10</option>
+          </select>
+        </div>
+        <div class="field"><label data-i18n="thVolume">搜索量</label><input id="fk-volume" type="number"></div>
+        <div class="field"><label data-i18n="thCompetition">竞争度</label>
+          <select id="fk-competition">
+            <option value="">--</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+        <div class="field"><label data-i18n="thBid">建议出价($)</label><input id="fk-bid" type="number" step="0.01"></div>
+        <div class="field"><label data-i18n="thRank">我们排名</label><input id="fk-rank" type="number"></div>
+        <div class="field"><label>ASIN</label><input id="fk-asin" placeholder="关联竞品ASIN"></div>
+        <div class="field" style="grid-column:1/-1"><label data-i18n="lblNotes">备注</label><textarea id="fk-notes" rows="2"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" id="kwDeleteBtn" style="display:none;margin-right:auto" onclick="deleteKeyword(editingKwId);closeKwModal()" data-i18n="btnDelete">删除</button>
+      <button class="btn" onclick="closeKwModal()" data-i18n="btnCancel">取消</button>
+      <button class="btn btn-primary" onclick="saveKeyword()" data-i18n="btnSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Batch Keyword Modal -->
+<div class="modal-backdrop" id="batchKwModal" onclick="if(event.target===this)closeBatchKwModal()">
+  <div class="modal" style="width:500px">
+    <div class="modal-head"><h2 data-i18n="modalBatchKw">批量添加关键词</h2><button class="modal-close" onclick="closeBatchKwModal()">×</button></div>
+    <div class="modal-body">
+      <p style="font-size:12.5px;color:var(--muted2);margin-bottom:10px" data-i18n="batchKwHint">每行一个关键词，其他字段默认为空</p>
+      <textarea id="fkb-text" rows="12" style="width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:12.5px;font-family:monospace;resize:vertical" placeholder="wireless earbuds&#10;bluetooth headphones&#10;noise cancelling"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeBatchKwModal()" data-i18n="btnCancel">取消</button>
+      <button class="btn btn-primary" onclick="saveBatchKeywords()" data-i18n="btnImport">导入</button>
+    </div>
+  </div>
+</div>
+
+<!-- History Modal -->
+<div class="modal-backdrop" id="historyModal" onclick="if(event.target===this)closeHistoryModal()">
+  <div class="modal" style="width:700px">
+    <div class="modal-head"><h2 id="historyModalTitle">价格/BSR 历史</h2><button class="modal-close" onclick="closeHistoryModal()">×</button></div>
+    <div class="modal-body">
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th data-i18n="thDate">日期</th>
+            <th data-i18n="lblPrice">价格($)</th>
+            <th>BSR</th>
+            <th data-i18n="lblReviews">评论数</th>
+          </tr></thead>
+          <tbody id="historyTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeHistoryModal()" data-i18n="btnClose">关闭</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+const token = localStorage.getItem('crm_token');
+if (!token) location.href = 'login.html';
+
+let lang = localStorage.getItem('crm_lang') || 'zh';
+let competitors = [];
+let keywords = [];
+
+const I18N = {
+  zh: {
+    pageTitle:'🔍 竞品调研', navMain:'主菜单', navDashboard:'仪表盘', navOrders:'订单管理',
+    navAmazon:'亚马逊运营', navInventory:'库存智能补货', navAds:'广告管理', navResearch:'竞品调研',
+    btnAddCompetitor:'＋ 添加竞品', btnRefresh:'↻ 刷新',
+    tabCompetitors:'竞品追踪', tabKeywords:'关键词库',
+    emptyCompetitors:'暂无竞品数据，点击添加开始追踪',
+    kwTitle:'关键词库', btnBatchKw:'📤 批量添加', btnAddKw:'＋ 添加关键词',
+    thKeyword:'关键词', thSource:'来源', thVolume:'搜索量', thCompetition:'竞争度',
+    thBid:'建议出价', thRank:'我们排名', thNotes:'备注', thActions:'操作', thDate:'日期',
+    lblBrand:'品牌', lblTitle:'标题', lblImageUrl:'图片URL', lblPrice:'价格($)',
+    lblReviews:'评论数', lblRating:'评分', lblCategory:'类目', lblNotes:'备注',
+    modalAddComp:'添加竞品', modalEditComp:'编辑竞品', modalAddKw:'添加关键词', modalEditKw:'编辑关键词',
+    modalBatchKw:'批量添加关键词', batchKwHint:'每行一个关键词，其他字段默认为空',
+    btnSave:'保存', btnCancel:'取消', btnDelete:'删除', btnClose:'关闭', btnImport:'导入',
+    btnSnapshot:'📸 快照', btnHistory:'📈 历史', btnEdit:'编辑',
+    historyTitle:'价格/BSR 历史', noHistory:'暂无历史数据',
+    snapshotOk:'快照已保存', snapshotErr:'快照失败',
+  },
+  en: {
+    pageTitle:'🔍 Competitor Research', navMain:'Main Menu', navDashboard:'Dashboard', navOrders:'Orders',
+    navAmazon:'Amazon Operations', navInventory:'Smart Inventory', navAds:'Ad Manager', navResearch:'Research',
+    btnAddCompetitor:'＋ Add Competitor', btnRefresh:'↻ Refresh',
+    tabCompetitors:'Competitor Tracking', tabKeywords:'Keyword Library',
+    emptyCompetitors:'No competitors yet. Add one to start tracking.',
+    kwTitle:'Keyword Library', btnBatchKw:'📤 Batch Add', btnAddKw:'＋ Add Keyword',
+    thKeyword:'Keyword', thSource:'Source', thVolume:'Volume', thCompetition:'Competition',
+    thBid:'Suggested Bid', thRank:'Our Rank', thNotes:'Notes', thActions:'Actions', thDate:'Date',
+    lblBrand:'Brand', lblTitle:'Title', lblImageUrl:'Image URL', lblPrice:'Price($)',
+    lblReviews:'Reviews', lblRating:'Rating', lblCategory:'Category', lblNotes:'Notes',
+    modalAddComp:'Add Competitor', modalEditComp:'Edit Competitor', modalAddKw:'Add Keyword', modalEditKw:'Edit Keyword',
+    modalBatchKw:'Batch Add Keywords', batchKwHint:'One keyword per line. Other fields default to empty.',
+    btnSave:'Save', btnCancel:'Cancel', btnDelete:'Delete', btnClose:'Close', btnImport:'Import',
+    btnSnapshot:'📸 Snapshot', btnHistory:'📈 History', btnEdit:'Edit',
+    historyTitle:'Price/BSR History', noHistory:'No history data yet',
+    snapshotOk:'Snapshot saved', snapshotErr:'Snapshot failed',
+  }
+};
+
+function t(key) { return I18N[lang]?.[key] || I18N.zh[key] || key; }
+function toggleLang() { lang = lang === 'zh' ? 'en' : 'zh'; localStorage.setItem('crm_lang', lang); applyI18n(); }
+function applyI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.dataset.i18n; if (I18N[lang]?.[k]) el.textContent = I18N[lang][k]; });
+  renderCompetitors(); renderKeywords();
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtN(n) { return Number(n||0).toLocaleString('en-US',{maximumFractionDigits:2}); }
+
+async function api(path, opts={}) {
+  const res = await fetch(path, { ...opts, headers:{ 'Authorization':'Bearer '+token, 'Content-Type':'application/json', ...(opts.headers||{}) }, body: opts.body ? (typeof opts.body==='string'?opts.body:JSON.stringify(opts.body)) : undefined });
+  if (res.status === 401) { localStorage.removeItem('crm_token'); location.href='login.html'; }
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Request failed');
+  return data;
+}
+
+function showToast(msg, type='ok') { const el=document.getElementById('toast'); el.textContent=(type==='ok'?'✓ ':'✗ ')+msg; el.className=`toast show ${type}`; setTimeout(()=>el.className='toast',3000); }
+
+// === Tab Switch ===
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab===tab));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id===`tab-${tab}`));
+}
+
+// === Data Loading ===
+async function loadData() {
+  try {
+    const [compRes, kwRes] = await Promise.all([
+      api('/api/amazon/competitors'),
+      api('/api/amazon/keywords')
+    ]);
+    competitors = Array.isArray(compRes) ? compRes : (compRes.data || []);
+    keywords = Array.isArray(kwRes) ? kwRes : (kwRes.data || []);
+    renderCompetitors(); renderKeywords();
+  } catch(e) { showToast(e.message,'err'); }
+}
+
+// === Render Competitors ===
+function renderCompetitors() {
+  const el = document.getElementById('competitorCards');
+  if (!competitors.length) {
+    el.innerHTML = `<div style="text-align:center;padding:60px;color:var(--muted)"><div style="font-size:36px;margin-bottom:12px">🔍</div><p>${t('emptyCompetitors')}</p></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="comp-grid">${competitors.map(c => {
+    const img = c.image_url ? `<img class="comp-img" src="${esc(c.image_url)}" onerror="this.outerHTML='<div class=comp-img-empty>📦</div>'">` : `<div class="comp-img-empty">📦</div>`;
+    return `
+    <div class="comp-card">
+      <div class="comp-header">
+        ${img}
+        <div class="comp-info">
+          <div class="comp-title">${esc(c.title||'Untitled')}</div>
+          <div class="comp-meta">${esc(c.asin)} ${c.brand?'· '+esc(c.brand):''} ${c.category?'· '+esc(c.category):''}</div>
+        </div>
+      </div>
+      <div class="comp-stats">
+        <div class="comp-stat"><div class="comp-stat-label">${t('lblPrice')}</div><div class="comp-stat-value">$${fmtN(c.price)}</div></div>
+        <div class="comp-stat"><div class="comp-stat-label">BSR</div><div class="comp-stat-value">${c.bsr?fmtN(c.bsr):'—'}</div></div>
+        <div class="comp-stat"><div class="comp-stat-label">${t('lblReviews')}</div><div class="comp-stat-value">${c.reviews?fmtN(c.reviews):'—'}</div></div>
+        <div class="comp-stat"><div class="comp-stat-label">${t('lblRating')}</div><div class="comp-stat-value">${c.rating||'—'}</div></div>
+        <div class="comp-stat"><div class="comp-stat-label">ASIN</div><div class="comp-stat-value" style="font-size:11px">${esc(c.asin)}</div></div>
+        <div class="comp-stat"><div class="comp-stat-label">${t('lblCategory')}</div><div class="comp-stat-value" style="font-size:11px">${esc(c.category||'—')}</div></div>
+      </div>
+      ${c.notes?`<div class="comp-notes">📝 ${esc(c.notes)}</div>`:''}
+      <div class="comp-actions">
+        <button class="btn btn-sm" onclick="editCompetitor('${c.id}')">${t('btnEdit')}</button>
+        <button class="btn btn-sm btn-warning" onclick="takeSnapshot('${c.id}')">${t('btnSnapshot')}</button>
+        <button class="btn btn-sm" onclick="viewHistory('${esc(c.asin)}','${esc(c.title||c.asin)}')">${t('btnHistory')}</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteCompetitor('${c.id}')">${t('btnDelete')}</button>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// === Render Keywords ===
+function renderKeywords() {
+  const body = document.getElementById('kwTableBody');
+  if (!keywords.length) { body.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--muted)">—</td></tr>'; return; }
+  body.innerHTML = keywords.map(k => {
+    const compBadge = k.competition ? `<span class="badge-${k.competition}">${k.competition}</span>` : '—';
+    return `<tr>
+      <td style="font-weight:500">${esc(k.keyword)}</td>
+      <td>${esc(k.source||'—')}</td>
+      <td>${k.search_volume?fmtN(k.search_volume):'—'}</td>
+      <td>${compBadge}</td>
+      <td>${k.suggested_bid?'$'+fmtN(k.suggested_bid):'—'}</td>
+      <td>${k.our_rank||'—'}</td>
+      <td style="font-size:11px">${esc(k.competitor_asin||'—')}</td>
+      <td style="font-size:12px;color:var(--muted2)">${esc(k.notes||'')}</td>
+      <td>
+        <button class="btn btn-sm" onclick="editKeyword('${k.id}')">✎</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteKeyword('${k.id}')">×</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// === Competitor Modal ===
+let editingCompId = null;
+function openCompetitorModal(id) {
+  editingCompId = id || null;
+  const c = id ? competitors.find(x=>String(x.id)===String(id)) : null;
+  document.getElementById('compModalTitle').textContent = c ? t('modalEditComp') : t('modalAddComp');
+  document.getElementById('fc-asin').value = c?.asin || '';
+  document.getElementById('fc-brand').value = c?.brand || '';
+  document.getElementById('fc-title').value = c?.title || '';
+  document.getElementById('fc-image').value = c?.image_url || '';
+  document.getElementById('fc-price').value = c?.price || '';
+  document.getElementById('fc-bsr').value = c?.bsr || '';
+  document.getElementById('fc-reviews').value = c?.reviews || '';
+  document.getElementById('fc-rating').value = c?.rating || '';
+  document.getElementById('fc-category').value = c?.category || '';
+  document.getElementById('fc-notes').value = c?.notes || '';
+  document.getElementById('compDeleteBtn').style.display = c ? '' : 'none';
+  document.getElementById('compModal').classList.add('open');
+}
+function editCompetitor(id) { openCompetitorModal(id); }
+function closeCompModal() { document.getElementById('compModal').classList.remove('open'); editingCompId=null; }
+
+async function saveCompetitor() {
+  const payload = {
+    asin: document.getElementById('fc-asin').value.trim(),
+    title: document.getElementById('fc-title').value.trim(),
+    brand: document.getElementById('fc-brand').value.trim(),
+    image_url: document.getElementById('fc-image').value.trim(),
+    price: parseFloat(document.getElementById('fc-price').value)||0,
+    bsr: parseInt(document.getElementById('fc-bsr').value)||0,
+    reviews: parseInt(document.getElementById('fc-reviews').value)||0,
+    rating: parseFloat(document.getElementById('fc-rating').value)||0,
+    category: document.getElementById('fc-category').value.trim(),
+    notes: document.getElementById('fc-notes').value.trim(),
+  };
+  if (!payload.asin || !payload.title) return showToast('ASIN 和标题必填','err');
+  try {
+    if (editingCompId) await api(`/api/amazon/competitors/${editingCompId}`, { method:'PUT', body:payload });
+    else await api('/api/amazon/competitors', { method:'POST', body:payload });
+    closeCompModal(); showToast(t('btnSave')+'✓'); loadData();
+  } catch(e) { showToast(e.message,'err'); }
+}
+
+async function deleteCompetitor(id) {
+  if (!confirm('确定删除？')) return;
+  try { await api(`/api/amazon/competitors/${id}`, {method:'DELETE'}); showToast(t('btnDelete')+'✓'); loadData(); } catch(e) { showToast(e.message,'err'); }
+}
+
+// === Snapshot ===
+async function takeSnapshot(id) {
+  try {
+    await api(`/api/amazon/competitors/${id}/snapshot`, { method:'POST' });
+    showToast(t('snapshotOk'));
+  } catch(e) { showToast(t('snapshotErr')+': '+e.message,'err'); }
+}
+
+// === History ===
+async function viewHistory(asin, title) {
+  document.getElementById('historyModalTitle').textContent = `${t('historyTitle')} — ${title}`;
+  document.getElementById('historyTableBody').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">...</td></tr>';
+  document.getElementById('historyModal').classList.add('open');
+  try {
+    const res = await api(`/api/amazon/competitor-history/${asin}`);
+    const rows = Array.isArray(res) ? res : (res.data || []);
+    const body = document.getElementById('historyTableBody');
+    if (!rows.length) { body.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">${t('noHistory')}</td></tr>`; return; }
+    body.innerHTML = rows.sort((a,b)=>(b.snapshot_date||b.created_at||'').localeCompare(a.snapshot_date||a.created_at||'')).map(r => `<tr>
+      <td>${r.snapshot_date||r.created_at||'—'}</td>
+      <td>$${fmtN(r.price)}</td>
+      <td>${r.bsr?fmtN(r.bsr):'—'}</td>
+      <td>${r.reviews?fmtN(r.reviews):'—'}</td>
+    </tr>`).join('');
+  } catch(e) { showToast(e.message,'err'); }
+}
+function closeHistoryModal() { document.getElementById('historyModal').classList.remove('open'); }
+
+// === Keyword Modal ===
+let editingKwId = null;
+function openKwModal(id) {
+  editingKwId = id || null;
+  const k = id ? keywords.find(x=>String(x.id)===String(id)) : null;
+  document.getElementById('kwModalTitle').textContent = k ? t('modalEditKw') : t('modalAddKw');
+  document.getElementById('fk-keyword').value = k?.keyword || '';
+  document.getElementById('fk-source').value = k?.source || 'manual';
+  document.getElementById('fk-volume').value = k?.search_volume || '';
+  document.getElementById('fk-competition').value = k?.competition || '';
+  document.getElementById('fk-bid').value = k?.suggested_bid || '';
+  document.getElementById('fk-rank').value = k?.our_rank || '';
+  document.getElementById('fk-asin').value = k?.competitor_asin || '';
+  document.getElementById('fk-notes').value = k?.notes || '';
+  document.getElementById('kwDeleteBtn').style.display = k ? '' : 'none';
+  document.getElementById('kwModal').classList.add('open');
+}
+function editKeyword(id) { openKwModal(id); }
+function closeKwModal() { document.getElementById('kwModal').classList.remove('open'); editingKwId=null; }
+
+async function saveKeyword() {
+  const payload = {
+    keyword: document.getElementById('fk-keyword').value.trim(),
+    source: document.getElementById('fk-source').value,
+    search_volume: parseInt(document.getElementById('fk-volume').value)||null,
+    competition: document.getElementById('fk-competition').value || null,
+    suggested_bid: parseFloat(document.getElementById('fk-bid').value)||null,
+    our_rank: parseInt(document.getElementById('fk-rank').value)||null,
+    competitor_asin: document.getElementById('fk-asin').value.trim() || null,
+    notes: document.getElementById('fk-notes').value.trim(),
+  };
+  if (!payload.keyword) return showToast('关键词必填','err');
+  try {
+    if (editingKwId) await api(`/api/amazon/keywords/${editingKwId}`, { method:'PUT', body:payload });
+    else await api('/api/amazon/keywords', { method:'POST', body:payload });
+    closeKwModal(); showToast(t('btnSave')+'✓'); loadData();
+  } catch(e) { showToast(e.message,'err'); }
+}
+
+async function deleteKeyword(id) {
+  if (!confirm('确定删除？')) return;
+  try { await api(`/api/amazon/keywords/${id}`, {method:'DELETE'}); showToast(t('btnDelete')+'✓'); loadData(); } catch(e) { showToast(e.message,'err'); }
+}
+
+// === Batch Keywords ===
+function openBatchKwModal() { document.getElementById('batchKwModal').classList.add('open'); document.getElementById('fkb-text').value=''; }
+function closeBatchKwModal() { document.getElementById('batchKwModal').classList.remove('open'); }
+
+async function saveBatchKeywords() {
+  const text = document.getElementById('fkb-text').value.trim();
+  if (!text) return showToast('请输入关键词','err');
+  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
+  let success = 0, fail = 0;
+  for (const keyword of lines) {
+    try {
+      await api('/api/amazon/keywords', { method:'POST', body:{ keyword, source:'manual' } });
+      success++;
+    } catch(e) { fail++; }
+  }
+  closeBatchKwModal();
+  showToast(`导入完成: ${success} 成功${fail?', '+fail+' 失败':''}`);
+  loadData();
+}
+
+// === Init ===
+applyI18n();
+loadData();
+</script>
+</body>
+</html>

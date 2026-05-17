@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TPKELE CRM - Amazon Ads</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#000509;--panel:#060f20;--panel2:#0a1628;
+  --border:rgba(0,190,255,0.12);--border-h:rgba(0,220,255,0.38);
+  --text:#ddf0ff;--muted:#4d7390;--muted2:#7aa4c0;
+  --primary:#00c8f0;--p1:#10B981;
+  --danger:#fb7185;--success:#4ade80;--warning:#fbbf24;
+  --shadow:0 20px 60px rgba(0,0,0,.7);--radius:14px;--sb:220px;
+}
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+button,input,select,textarea{font:inherit}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:rgba(16,185,129,0.15);border-radius:4px}
+
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:var(--sb);flex-shrink:0;height:100%;background:linear-gradient(180deg,rgba(3,8,20,.99),rgba(2,5,13,.99));border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sb-logo{display:flex;align-items:center;gap:12px;padding:18px 16px;border-bottom:1px solid var(--border)}
+.logo-text{font-size:15px;font-weight:700;letter-spacing:1px}
+.logo-text span{color:var(--primary)}
+.sb-nav{flex:1;overflow-y:auto;padding:10px 0}
+.nav-group{padding:8px 16px 4px;font-size:10px;font-weight:600;color:rgba(16,185,129,.22);text-transform:uppercase;letter-spacing:.8px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;transition:.15s;white-space:nowrap;color:var(--muted2);font-size:13.5px;font-weight:500;border-left:3px solid transparent}
+.nav-item:hover{background:rgba(16,185,129,0.05);color:var(--text)}
+.nav-item.active{background:rgba(16,185,129,0.08);color:var(--primary);border-left-color:var(--primary)}
+.nav-icon{font-size:17px;flex-shrink:0;width:22px;text-align:center}
+
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.header{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-shrink:0}
+.header h1{font-size:18px;font-weight:600;flex:1}
+.btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:13px;cursor:pointer;transition:.15s;white-space:nowrap}
+.btn:hover{border-color:var(--p1);color:var(--p1)}
+.btn-primary{background:var(--p1);color:#000;border-color:var(--p1);font-weight:600}
+.btn-primary:hover{background:#34D399}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:6px}
+.btn-danger{border-color:rgba(251,113,133,.4);color:var(--danger)}
+.btn-danger:hover{background:rgba(251,113,133,.1)}
+.lang-btn{padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:12px;cursor:pointer}
+
+.workspace{flex:1;overflow-y:auto;padding:20px 24px}
+
+/* Cards */
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:18px}
+.card-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.card-title{font-size:14px;font-weight:600;flex:1}
+
+/* Summary Cards */
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px}
+.summary-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
+.summary-card .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.summary-card .value{font-size:22px;font-weight:700}
+
+/* Table */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px 12px;color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
+td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04)}
+
+/* Form */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11.5px;color:var(--muted2);font-weight:500}
+.field input,.field select,.field textarea{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;outline:none;transition:.15s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--p1)}
+
+/* Modal */
+.modal-backdrop{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);display:none;place-items:center}
+.modal-backdrop.open{display:grid}
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:14px;width:640px;max-width:95vw;max-height:90vh;display:flex;flex-direction:column;box-shadow:var(--shadow)}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-head h2{font-size:15px;font-weight:600}
+.modal-close{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-size:16px;display:grid;place-items:center}
+.modal-body{padding:18px 20px;overflow-y:auto;flex:1}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:13px;color:var(--text);display:none;align-items:center;gap:10px;box-shadow:var(--shadow)}
+.toast.show{display:flex}
+.toast.ok{border-color:rgba(74,222,128,.35)}
+.toast.err{border-color:rgba(251,113,133,.35)}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0}
+.tab{padding:8px 16px;font-size:13px;color:var(--muted2);cursor:pointer;border-bottom:2px solid transparent;transition:.15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--p1);border-bottom-color:var(--p1);font-weight:600}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* ACoS colors */
+.acos-green{color:var(--success)}
+.acos-yellow{color:var(--warning)}
+.acos-red{color:var(--danger)}
+
+/* Suggestions */
+.suggestion-item{padding:10px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;font-size:13px;display:flex;align-items:center;gap:10px}
+.suggestion-item .icon{font-size:18px}
+.suggestion-item .text{flex:1;line-height:1.5}
+
+/* Rule card */
+.rule-card{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px}
+.rule-card .rule-info{flex:1}
+.rule-card .rule-name{font-size:14px;font-weight:600;margin-bottom:4px}
+.rule-card .rule-desc{font-size:12px;color:var(--muted2);line-height:1.5}
+.rule-card .rule-actions{display:flex;gap:8px}
+
+/* Negative keyword tag */
+.neg-tag{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:rgba(251,113,133,.08);border:1px solid rgba(251,113,133,.25);border-radius:20px;font-size:12px;color:var(--danger);margin:4px}
+.neg-tag button{background:none;border:none;color:var(--danger);cursor:pointer;font-size:14px;padding:0;line-height:1}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="logo-text">TP<span>KELE</span></div>
+  </div>
+  <div class="sb-nav">
+    <div class="nav-group" data-i18n="navMain">主菜单</div>
+    <div class="nav-item" onclick="location.href='dashboard.html'"><span class="nav-icon">📊</span><span data-i18n="navDashboard">仪表盘</span></div>
+    <div class="nav-item" onclick="location.href='dashboard.html'"><span class="nav-icon">◍</span><span data-i18n="navOrders">订单管理</span></div>
+    <div class="nav-group" data-i18n="navAmazon">亚马逊运营</div>
+    <div class="nav-item" onclick="location.href='amazon-inventory.html'"><span class="nav-icon">📦</span><span data-i18n="navInventory">库存智能补货</span></div>
+    <div class="nav-item active"><span class="nav-icon">📢</span><span data-i18n="navAds">广告管理</span></div>
+    <div class="nav-item" onclick="location.href='amazon-research.html'"><span class="nav-icon">🔍</span><span data-i18n="navResearch">选品调研</span></div>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+  <header class="header">
+    <h1 data-i18n="pageTitle">📢 广告管理</h1>
+    <button class="btn" onclick="loadAllData()" data-i18n="btnRefresh">↻ 刷新</button>
+    <button class="lang-btn" onclick="toggleLang()">中/EN</button>
+  </header>
+
+  <div class="workspace">
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" data-tab="dashboard" onclick="switchTab('dashboard')" data-i18n="tabAdDashboard">广告看板</div>
+      <div class="tab" data-tab="rules" onclick="switchTab('rules')" data-i18n="tabBidRules">调价规则</div>
+      <div class="tab" data-tab="entry" onclick="switchTab('entry')" data-i18n="tabDataEntry">数据录入</div>
+    </div>
+
+    <!-- Tab: Ad Dashboard -->
+    <div class="tab-content active" id="tab-dashboard">
+      <div id="summaryCards" class="summary-grid"></div>
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title" data-i18n="kwTableTitle">关键词表现</span>
+          <div class="field" style="flex-direction:row;align-items:center;gap:8px">
+            <label style="font-size:12px" data-i18n="lblDaysRange">天数:</label>
+            <select id="dashDays" onchange="loadDashboard()" style="background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:12px">
+              <option value="7">7</option><option value="14">14</option><option value="30">30</option>
+            </select>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th data-i18n="thKeyword">关键词</th><th data-i18n="thImpressions">展示</th><th data-i18n="thClicks">点击</th>
+              <th data-i18n="thSpend">花费</th><th data-i18n="thSales">销售额</th><th data-i18n="thOrders">订单</th>
+              <th>ACoS</th><th>CTR</th><th>CVR</th><th>CPC</th>
+            </tr></thead>
+            <tbody id="kwTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title" data-i18n="suggestionsTitle">优化建议</span></div>
+        <div id="suggestionsContainer"><p style="color:var(--muted);font-size:13px" data-i18n="loadingSuggestions">加载中...</p></div>
+      </div>
+    </div>
+
+    <!-- Tab: Bid Rules -->
+    <div class="tab-content" id="tab-rules">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title" data-i18n="rulesTitle">调价规则列表</span>
+          <button class="btn btn-primary" onclick="openRuleModal()" data-i18n="btnAddRule">＋ 添加规则</button>
+        </div>
+        <div id="rulesContainer"><p style="color:var(--muted);font-size:13px">加载中...</p></div>
+      </div>
+    </div>
+
+    <!-- Tab: Data Entry -->
+    <div class="tab-content" id="tab-entry">
+      <!-- Single Entry -->
+      <div class="card">
+        <div class="card-head"><span class="card-title" data-i18n="singleEntryTitle">单条录入</span></div>
+        <div class="form-grid">
+          <div class="field"><label data-i18n="lblCampaign">广告活动</label><input id="fe-campaign" placeholder="Campaign Name"></div>
+          <div class="field"><label data-i18n="lblAdGroup">广告组</label><input id="fe-adgroup" placeholder="Ad Group"></div>
+          <div class="field"><label data-i18n="lblKeyword">关键词</label><input id="fe-keyword" placeholder="keyword"></div>
+          <div class="field"><label data-i18n="lblMatchType">匹配类型</label>
+            <select id="fe-match"><option value="exact">Exact</option><option value="phrase">Phrase</option><option value="broad">Broad</option></select>
+          </div>
+          <div class="field"><label data-i18n="lblAdDate">日期</label><input id="fe-date" type="date"></div>
+          <div class="field"><label data-i18n="thImpressions">展示</label><input id="fe-impressions" type="number" placeholder="0"></div>
+          <div class="field"><label data-i18n="thClicks">点击</label><input id="fe-clicks" type="number" placeholder="0"></div>
+          <div class="field"><label data-i18n="thSpend">花费($)</label><input id="fe-spend" type="number" step="0.01" placeholder="0"></div>
+          <div class="field"><label data-i18n="thSales">销售额($)</label><input id="fe-sales" type="number" step="0.01" placeholder="0"></div>
+          <div class="field"><label data-i18n="thOrders">订单</label><input id="fe-orders" type="number" placeholder="0"></div>
+        </div>
+        <div style="margin-top:14px"><button class="btn btn-primary" onclick="submitSingleAd()" data-i18n="btnSubmit">提交</button></div>
+      </div>
+
+      <!-- Batch Entry -->
+      <div class="card">
+        <div class="card-head"><span class="card-title" data-i18n="batchEntryTitle">批量粘贴</span></div>
+        <p style="font-size:12px;color:var(--muted2);margin-bottom:10px" data-i18n="batchHint">每行一条，Tab或逗号分隔：campaign, ad_group, keyword, match_type, date, impressions, clicks, spend, sales, orders</p>
+        <textarea id="fe-batch" rows="8" style="width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:12.5px;font-family:monospace;resize:vertical" placeholder="Campaign1&#9;AdGroup1&#9;keyword1&#9;exact&#9;2026-05-15&#9;1000&#9;50&#9;25.00&#9;100.00&#9;3"></textarea>
+        <div style="margin-top:14px"><button class="btn btn-primary" onclick="submitBatchAds()" data-i18n="btnBatchSubmit">批量提交</button></div>
+      </div>
+
+      <!-- Negative Keywords -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title" data-i18n="negKwTitle">否定关键词</span>
+        </div>
+        <div style="display:flex;gap:10px;margin-bottom:14px">
+          <input id="fe-negkw" style="flex:1;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px" placeholder="输入否定关键词">
+          <select id="fe-negmatch" style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px">
+            <option value="negative_exact">Negative Exact</option><option value="negative_phrase">Negative Phrase</option>
+          </select>
+          <button class="btn btn-primary" onclick="addNegativeKw()" data-i18n="btnAdd">添加</button>
+        </div>
+        <div id="negKwContainer"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Rule Modal -->
+<div class="modal-backdrop" id="ruleModal" onclick="if(event.target===this)closeRuleModal()">
+  <div class="modal">
+    <div class="modal-head"><h2 id="ruleModalTitle">添加规则</h2><button class="modal-close" onclick="closeRuleModal()">×</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field" style="grid-column:1/-1"><label data-i18n="lblRuleName">规则名称</label><input id="fr-name" placeholder="如：高ACoS降价"></div>
+        <div class="field"><label data-i18n="lblMetric">指标</label>
+          <select id="fr-metric"><option value="acos">ACoS</option><option value="cvr">CVR</option><option value="spend_no_sale">花费无出单</option></select>
+        </div>
+        <div class="field"><label data-i18n="lblOperator">运算符</label>
+          <select id="fr-operator"><option value=">">&gt;</option><option value="<">&lt;</option><option value=">=">&gt;=</option></select>
+        </div>
+        <div class="field"><label data-i18n="lblThreshold">阈值(%)</label><input id="fr-threshold" type="number" step="0.1" placeholder="35"></div>
+        <div class="field"><label data-i18n="lblDays">天数</label><input id="fr-days" type="number" value="7"></div>
+        <div class="field"><label data-i18n="lblMinClicks">最少点击</label><input id="fr-minclicks" type="number" value="10"></div>
+        <div class="field"><label data-i18n="lblActionType">动作类型</label>
+          <select id="fr-action"><option value="decrease_bid">降低竞价</option><option value="increase_bid">提高竞价</option><option value="add_negative">加否定词</option><option value="pause">暂停</option></select>
+        </div>
+        <div class="field"><label data-i18n="lblActionValue">调整幅度(%)</label><input id="fr-value" type="number" step="1" placeholder="10"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeRuleModal()" data-i18n="btnCancel">取消</button>
+      <button class="btn btn-primary" onclick="saveRule()" data-i18n="btnSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+const token = localStorage.getItem('crm_token');
+if (!token) location.href = 'login.html';
+
+let lang = localStorage.getItem('crm_lang') || 'zh';
+let editingRuleId = null;
+
+const I18N = {
+  zh: {
+    pageTitle:'📢 广告管理', navMain:'主菜单', navDashboard:'仪表盘', navOrders:'订单管理',
+    navAmazon:'亚马逊运营', navInventory:'库存智能补货', navAds:'广告管理', navResearch:'选品调研',
+    btnRefresh:'↻ 刷新', tabAdDashboard:'广告看板', tabBidRules:'调价规则', tabDataEntry:'数据录入',
+    kwTableTitle:'关键词表现', lblDaysRange:'天数:', suggestionsTitle:'优化建议', loadingSuggestions:'加载中...',
+    thKeyword:'关键词', thImpressions:'展示', thClicks:'点击', thSpend:'花费', thSales:'销售额', thOrders:'订单',
+    rulesTitle:'调价规则列表', btnAddRule:'＋ 添加规则',
+    singleEntryTitle:'单条录入', batchEntryTitle:'批量粘贴', negKwTitle:'否定关键词',
+    lblCampaign:'广告活动', lblAdGroup:'广告组', lblKeyword:'关键词', lblMatchType:'匹配类型', lblAdDate:'日期',
+    batchHint:'每行一条，Tab或逗号分隔：campaign, ad_group, keyword, match_type, date, impressions, clicks, spend, sales, orders',
+    btnSubmit:'提交', btnBatchSubmit:'批量提交', btnAdd:'添加', btnSave:'保存', btnCancel:'取消', btnDelete:'删除',
+    lblRuleName:'规则名称', lblMetric:'指标', lblOperator:'运算符', lblThreshold:'阈值(%)',
+    lblDays:'天数', lblMinClicks:'最少点击', lblActionType:'动作类型', lblActionValue:'调整幅度(%)',
+    modalAddRule:'添加规则', modalEditRule:'编辑规则',
+    summarySpend:'总花费', summarySales:'总销售额', summaryAcos:'ACoS', summaryRoas:'ROAS', summaryCtr:'CTR', summaryCvr:'CVR',
+    noRules:'暂无规则', noSuggestions:'暂无建议', noData:'暂无数据',
+    actionDecrease:'降低竞价', actionIncrease:'提高竞价', actionNegative:'加否定词', actionPause:'暂停',
+    metricAcos:'ACoS', metricCvr:'CVR', metricSpendNoSale:'花费无出单',
+  },
+  en: {
+    pageTitle:'📢 Ad Management', navMain:'Main Menu', navDashboard:'Dashboard', navOrders:'Orders',
+    navAmazon:'Amazon Operations', navInventory:'Smart Inventory', navAds:'Ads', navResearch:'Research',
+    btnRefresh:'↻ Refresh', tabAdDashboard:'Ad Dashboard', tabBidRules:'Bid Rules', tabDataEntry:'Data Entry',
+    kwTableTitle:'Keyword Performance', lblDaysRange:'Days:', suggestionsTitle:'Optimization Suggestions', loadingSuggestions:'Loading...',
+    thKeyword:'Keyword', thImpressions:'Impressions', thClicks:'Clicks', thSpend:'Spend', thSales:'Sales', thOrders:'Orders',
+    rulesTitle:'Bid Rule List', btnAddRule:'＋ Add Rule',
+    singleEntryTitle:'Single Entry', batchEntryTitle:'Batch Paste', negKwTitle:'Negative Keywords',
+    lblCampaign:'Campaign', lblAdGroup:'Ad Group', lblKeyword:'Keyword', lblMatchType:'Match Type', lblAdDate:'Date',
+    batchHint:'One per line, tab/comma separated: campaign, ad_group, keyword, match_type, date, impressions, clicks, spend, sales, orders',
+    btnSubmit:'Submit', btnBatchSubmit:'Batch Submit', btnAdd:'Add', btnSave:'Save', btnCancel:'Cancel', btnDelete:'Delete',
+    lblRuleName:'Rule Name', lblMetric:'Metric', lblOperator:'Operator', lblThreshold:'Threshold(%)',
+    lblDays:'Days', lblMinClicks:'Min Clicks', lblActionType:'Action Type', lblActionValue:'Adjustment(%)',
+    modalAddRule:'Add Rule', modalEditRule:'Edit Rule',
+    summarySpend:'Total Spend', summarySales:'Total Sales', summaryAcos:'ACoS', summaryRoas:'ROAS', summaryCtr:'CTR', summaryCvr:'CVR',
+    noRules:'No rules yet', noSuggestions:'No suggestions', noData:'No data',
+    actionDecrease:'Decrease Bid', actionIncrease:'Increase Bid', actionNegative:'Add Negative', actionPause:'Pause',
+    metricAcos:'ACoS', metricCvr:'CVR', metricSpendNoSale:'Spend No Sale',
+  }
+};
+
+function t(key) { return I18N[lang]?.[key] || I18N.zh[key] || key; }
+function toggleLang() { lang = lang === 'zh' ? 'en' : 'zh'; localStorage.setItem('crm_lang', lang); applyI18n(); }
+function applyI18n() { document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.dataset.i18n; if (I18N[lang]?.[k]) el.textContent = I18N[lang][k]; }); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtN(n,d=2) { return Number(n||0).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}); }
+function fmtPct(n) { return fmtN(n,1)+'%'; }
+
+function showToast(msg, type='ok') { const el=document.getElementById('toast'); el.textContent=(type==='ok'?'✓ ':'✗ ')+msg; el.className=`toast show ${type}`; setTimeout(()=>el.className='toast',3000); }
+
+async function api(path, opts={}) {
+  const res = await fetch(path, { ...opts, headers:{ 'Authorization':'Bearer '+token, 'Content-Type':'application/json', ...(opts.headers||{}) }, body: opts.body ? (typeof opts.body==='string'?opts.body:JSON.stringify(opts.body)) : undefined });
+  if (res.status === 401) { localStorage.removeItem('crm_token'); location.href='login.html'; }
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Request failed');
+  return data;
+}
+
+// === Tab Switch ===
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab===tab));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id===`tab-${tab}`));
+}
+// === Dashboard ===
+async function loadDashboard() {
+  const days = document.getElementById('dashDays').value;
+  try {
+    const [summary, adsData, suggestions] = await Promise.all([
+      api(`/api/amazon/ads/summary?days=${days}`),
+      api(`/api/amazon/ads?days=${days}`),
+      api('/api/amazon/ad-rules/suggestions')
+    ]);
+    renderSummary(summary);
+    renderKwTable(adsData);
+    renderSuggestions(suggestions);
+  } catch(e) { showToast(e.message,'err'); }
+}
+
+function renderSummary(s) {
+  const el = document.getElementById('summaryCards');
+  const acosClass = (s.acos||0)<20?'acos-green':(s.acos||0)<=35?'acos-yellow':'acos-red';
+  el.innerHTML = `
+    <div class="summary-card"><div class="label">${t('summarySpend')}</div><div class="value">$${fmtN(s.total_spend)}</div></div>
+    <div class="summary-card"><div class="label">${t('summarySales')}</div><div class="value">$${fmtN(s.total_sales)}</div></div>
+    <div class="summary-card"><div class="label">${t('summaryAcos')}</div><div class="value ${acosClass}">${fmtPct(s.acos)}</div></div>
+    <div class="summary-card"><div class="label">${t('summaryRoas')}</div><div class="value">${fmtN(s.roas,1)}x</div></div>
+    <div class="summary-card"><div class="label">${t('summaryCtr')}</div><div class="value">${fmtPct(s.ctr)}</div></div>
+    <div class="summary-card"><div class="label">${t('summaryCvr')}</div><div class="value">${fmtPct(s.cvr)}</div></div>
+  `;
+}
+
+function renderKwTable(data) {
+  const body = document.getElementById('kwTableBody');
+  if (!data || !data.length) { body.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--muted)">${t('noData')}</td></tr>`; return; }
+  const sorted = [...data].sort((a,b) => (b.spend||0)-(a.spend||0));
+  body.innerHTML = sorted.map(r => {
+    const acos = r.spend && r.sales ? (r.spend/r.sales*100) : 0;
+    const ctr = r.impressions ? (r.clicks/r.impressions*100) : 0;
+    const cvr = r.clicks ? (r.orders/r.clicks*100) : 0;
+    const cpc = r.clicks ? (r.spend/r.clicks) : 0;
+    const acosClass = acos<20?'acos-green':acos<=35?'acos-yellow':'acos-red';
+    return `<tr>
+      <td>${esc(r.keyword)}</td><td>${fmtN(r.impressions,0)}</td><td>${fmtN(r.clicks,0)}</td>
+      <td>$${fmtN(r.spend)}</td><td>$${fmtN(r.sales)}</td><td>${r.orders||0}</td>
+      <td class="${acosClass}">${fmtPct(acos)}</td><td>${fmtPct(ctr)}</td><td>${fmtPct(cvr)}</td><td>$${fmtN(cpc)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderSuggestions(data) {
+  const el = document.getElementById('suggestionsContainer');
+  if (!data || !data.length) { el.innerHTML = `<p style="color:var(--muted);font-size:13px">${t('noSuggestions')}</p>`; return; }
+  el.innerHTML = data.map(s => {
+    const icon = s.action_type==='decrease_bid'?'⬇️':s.action_type==='increase_bid'?'⬆️':s.action_type==='add_negative'?'🚫':'⏸️';
+    const actionText = t(`action${s.action_type==='decrease_bid'?'Decrease':s.action_type==='increase_bid'?'Increase':s.action_type==='add_negative'?'Negative':'Pause'}`);
+    return `<div class="suggestion-item"><span class="icon">${icon}</span><span class="text"><strong>${esc(s.keyword||s.rule_name||'')}</strong> — ${actionText} ${s.action_value?s.action_value+'%':''} <span style="color:var(--muted)">(${esc(s.reason||'')})</span></span></div>`;
+  }).join('');
+}
+
+// === Rules ===
+async function loadRules() {
+  try {
+    const rules = await api('/api/amazon/ad-rules');
+    renderRules(rules);
+  } catch(e) { showToast(e.message,'err'); }
+}
+
+function renderRules(rules) {
+  const el = document.getElementById('rulesContainer');
+  if (!rules || !rules.length) { el.innerHTML = `<p style="color:var(--muted);font-size:13px">${t('noRules')}</p>`; return; }
+  const metricLabels = {acos:t('metricAcos'), cvr:t('metricCvr'), spend_no_sale:t('metricSpendNoSale')};
+  const actionLabels = {decrease_bid:t('actionDecrease'), increase_bid:t('actionIncrease'), add_negative:t('actionNegative'), pause:t('actionPause')};
+  el.innerHTML = rules.map(r => `
+    <div class="rule-card">
+      <div class="rule-info">
+        <div class="rule-name">${esc(r.rule_name)}</div>
+        <div class="rule-desc">${metricLabels[r.metric]||r.metric} ${esc(r.operator)} ${r.threshold}% (${r.days}d, min ${r.min_clicks} clicks) → ${actionLabels[r.action_type]||r.action_type} ${r.action_value||''}%</div>
+      </div>
+      <div class="rule-actions">
+        <button class="btn btn-sm" onclick="editRule('${r.id}',${JSON.stringify(JSON.stringify(r))})">✎</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteRule('${r.id}')">×</button>
+      </div>
+    </div>
+  `).join('');
+}
+// === Rule Modal ===
+function openRuleModal(ruleData) {
+  editingRuleId = ruleData?.id || null;
+  document.getElementById('ruleModalTitle').textContent = editingRuleId ? t('modalEditRule') : t('modalAddRule');
+  document.getElementById('fr-name').value = ruleData?.rule_name || '';
+  document.getElementById('fr-metric').value = ruleData?.metric || 'acos';
+  document.getElementById('fr-operator').value = ruleData?.operator || '>';
+  document.getElementById('fr-threshold').value = ruleData?.threshold || '';
+  document.getElementById('fr-days').value = ruleData?.days || 7;
+  document.getElementById('fr-minclicks').value = ruleData?.min_clicks || 10;
+  document.getElementById('fr-action').value = ruleData?.action_type || 'decrease_bid';
+  document.getElementById('fr-value').value = ruleData?.action_value || '';
+  document.getElementById('ruleModal').classList.add('open');
+}
+function editRule(id, jsonStr) { try { openRuleModal({id,...JSON.parse(jsonStr)}); } catch(e){} }
+function closeRuleModal() { document.getElementById('ruleModal').classList.remove('open'); editingRuleId=null; }
+
+async function saveRule() {
+  const payload = {
+    rule_name: document.getElementById('fr-name').value.trim(),
+    metric: document.getElementById('fr-metric').value,
+    operator: document.getElementById('fr-operator').value,
+    threshold: parseFloat(document.getElementById('fr-threshold').value)||0,
+    days: parseInt(document.getElementById('fr-days').value)||7,
+    min_clicks: parseInt(document.getElementById('fr-minclicks').value)||10,
+    action_type: document.getElementById('fr-action').value,
+    action_value: parseFloat(document.getElementById('fr-value').value)||0,
+  };
+  if (!payload.rule_name) return showToast('规则名称必填','err');
+  try {
+    if (editingRuleId) await api(`/api/amazon/ad-rules/${editingRuleId}`, {method:'PUT', body:payload});
+    else await api('/api/amazon/ad-rules', {method:'POST', body:payload});
+    closeRuleModal(); showToast('已保存'); loadRules();
+  } catch(e) { showToast(e.message,'err'); }
+}
+
+async function deleteRule(id) {
+  if (!confirm('确定删除此规则？')) return;
+  try { await api(`/api/amazon/ad-rules/${id}`, {method:'DELETE'}); showToast('已删除'); loadRules(); } catch(e) { showToast(e.message,'err'); }
+}
+
+// === Data Entry ===
+async function submitSingleAd() {
+  const payload = {
+    campaign_name: document.getElementById('fe-campaign').value.trim(),
+    ad_group: document.getElementById('fe-adgroup').value.trim(),
+    keyword: document.getElementById('fe-keyword').value.trim(),
+    match_type: document.getElementById('fe-match').value,
+    ad_date: document.getElementById('fe-date').value,
+    impressions: parseInt(document.getElementById('fe-impressions').value)||0,
+    clicks: parseInt(document.getElementById('fe-clicks').value)||0,
+    spend: parseFloat(document.getElementById('fe-spend').value)||0,
+    sales: parseFloat(document.getElementById('fe-sales').value)||0,
+    orders: parseInt(document.getElementById('fe-orders').value)||0,
+  };
+  if (!payload.keyword || !payload.ad_date) return showToast('关键词和日期必填','err');
+  try {
+    await api('/api/amazon/ads', {method:'POST', body:payload});
+    showToast('已提交');
+    document.getElementById('fe-campaign').value=''; document.getElementById('fe-adgroup').value='';
+    document.getElementById('fe-keyword').value=''; document.getElementById('fe-impressions').value='';
+    document.getElementById('fe-clicks').value=''; document.getElementById('fe-spend').value='';
+    document.getElementById('fe-sales').value=''; document.getElementById('fe-orders').value='';
+  } catch(e) { showToast(e.message,'err'); }
+}
+
+async function submitBatchAds() {
+  const text = document.getElementById('fe-batch').value.trim();
+  if (!text) return showToast('请粘贴数据','err');
+  const lines = text.split('\n').filter(Boolean);
+  const rows = lines.map(line => {
+    const p = line.split(/[\t,]+/).map(s=>s.trim());
+    return { campaign_name:p[0], ad_group:p[1], keyword:p[2], match_type:p[3], ad_date:p[4], impressions:parseInt(p[5])||0, clicks:parseInt(p[6])||0, spend:parseFloat(p[7])||0, sales:parseFloat(p[8])||0, orders:parseInt(p[9])||0 };
+  }).filter(r => r.keyword && r.ad_date);
+  if (!rows.length) return showToast('无有效数据','err');
+  try {
+    const r = await api('/api/amazon/ads/batch', {method:'POST', body:{rows}});
+    showToast(`已导入 ${r.count||rows.length} 条`);
+    document.getElementById('fe-batch').value='';
+  } catch(e) { showToast(e.message,'err'); }
+}
+
+// === Negative Keywords ===
+async function loadNegativeKws() {
+  try {
+    const data = await api('/api/amazon/negative-keywords');
+    renderNegativeKws(data);
+  } catch(e) { showToast(e.message,'err'); }
+}
+
+function renderNegativeKws(data) {
+  const el = document.getElementById('negKwContainer');
+  if (!data || !data.length) { el.innerHTML = `<p style="color:var(--muted);font-size:13px">${t('noData')}</p>`; return; }
+  el.innerHTML = data.map(k => `<span class="neg-tag">${esc(k.keyword)} <span style="color:var(--muted);font-size:10px">(${k.match_type||'exact'})</span><button onclick="deleteNegKw('${k.id}')">×</button></span>`).join('');
+}
+
+async function addNegativeKw() {
+  const keyword = document.getElementById('fe-negkw').value.trim();
+  const match_type = document.getElementById('fe-negmatch').value;
+  if (!keyword) return showToast('请输入关键词','err');
+  try {
+    await api('/api/amazon/negative-keywords', {method:'POST', body:{keyword, match_type}});
+    document.getElementById('fe-negkw').value='';
+    showToast('已添加'); loadNegativeKws();
+  } catch(e) { showToast(e.message,'err'); }
+}
+
+async function deleteNegKw(id) {
+  try { await api(`/api/amazon/negative-keywords/${id}`, {method:'DELETE'}); showToast('已删除'); loadNegativeKws(); } catch(e) { showToast(e.message,'err'); }
+}
+
+// === Init ===
+async function loadAllData() {
+  await Promise.all([loadDashboard(), loadRules(), loadNegativeKws()]);
+}
+
+document.getElementById('fe-date').value = new Date().toISOString().slice(0,10);
+applyI18n();
+loadAllData();
+</script>
+</body>
+</html>

@@ -2217,4 +2217,235 @@ app.get('/api/amazon/replenishment', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
+// ════════════════════════════════════════════════════════════
+// AMAZON 广告管理
+// ════════════════════════════════════════════════════════════
+
+// 广告每日数据 CRUD
+app.get('/api/amazon/ads', auth, async (req, res) => {
+  try {
+    const { days = 30 } = req.query;
+    const since = new Date(Date.now() - Number(days)*86400000).toISOString().slice(0,10);
+    const data = await sb(`amazon_ad_daily?ad_date=gte.${since}&order=ad_date.desc,campaign_name.asc`);
+    res.json(data);
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.post('/api/amazon/ads', auth, async (req, res) => {
+  try {
+    const data = await sb('amazon_ad_daily?select=id', {
+      method:'POST', headers:{ 'Prefer':'return=representation' },
+      body: JSON.stringify(req.body),
+    });
+    res.json({ success:true, id: data[0]?.id });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.post('/api/amazon/ads/batch', auth, async (req, res) => {
+  try {
+    const { rows } = req.body || {};
+    if (!Array.isArray(rows) || !rows.length) return res.status(400).json({ message: 'rows required' });
+    await sb('amazon_ad_daily', { method:'POST', body: JSON.stringify(rows) });
+    res.json({ success:true, count: rows.length });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 广告汇总统计
+app.get('/api/amazon/ads/summary', auth, async (req, res) => {
+  try {
+    const { days = 7 } = req.query;
+    const since = new Date(Date.now() - Number(days)*86400000).toISOString().slice(0,10);
+    const data = await sb(`amazon_ad_daily?ad_date=gte.${since}&select=*`);
+    const byKw = {};
+    let totalSpend=0, totalSales=0, totalClicks=0, totalImpressions=0, totalOrders=0;
+    data.forEach(r => {
+      totalSpend += Number(r.spend||0);
+      totalSales += Number(r.sales||0);
+      totalClicks += Number(r.clicks||0);
+      totalImpressions += Number(r.impressions||0);
+      totalOrders += Number(r.orders||0);
+      const k = r.keyword || '(auto)';
+      if (!byKw[k]) byKw[k] = { keyword:k, spend:0, sales:0, clicks:0, impressions:0, orders:0, days:0 };
+      byKw[k].spend += Number(r.spend||0);
+      byKw[k].sales += Number(r.sales||0);
+      byKw[k].clicks += Number(r.clicks||0);
+      byKw[k].impressions += Number(r.impressions||0);
+      byKw[k].orders += Number(r.orders||0);
+      byKw[k].days++;
+    });
+    const keywords = Object.values(byKw).map(k => ({
+      ...k,
+      acos: k.sales > 0 ? +(k.spend/k.sales*100).toFixed(2) : 0,
+      ctr: k.impressions > 0 ? +(k.clicks/k.impressions*100).toFixed(2) : 0,
+      cvr: k.clicks > 0 ? +(k.orders/k.clicks*100).toFixed(2) : 0,
+      cpc: k.clicks > 0 ? +(k.spend/k.clicks).toFixed(2) : 0,
+    })).sort((a,b) => b.spend - a.spend);
+    res.json({
+      total: { spend:+totalSpend.toFixed(2), sales:+totalSales.toFixed(2), clicks:totalClicks, impressions:totalImpressions, orders:totalOrders,
+        acos: totalSales>0 ? +(totalSpend/totalSales*100).toFixed(2) : 0,
+        roas: totalSpend>0 ? +(totalSales/totalSpend).toFixed(2) : 0,
+        ctr: totalImpressions>0 ? +(totalClicks/totalImpressions*100).toFixed(2) : 0,
+        cvr: totalClicks>0 ? +(totalOrders/totalClicks*100).toFixed(2) : 0,
+      },
+      keywords,
+    });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 规则引擎 CRUD
+app.get('/api/amazon/ad-rules', auth, async (req, res) => {
+  try { res.json(await sb('amazon_ad_rules?order=created_at.desc')); }
+  catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.post('/api/amazon/ad-rules', auth, async (req, res) => {
+  try {
+    const data = await sb('amazon_ad_rules?select=*', { method:'POST', headers:{'Prefer':'return=representation'}, body:JSON.stringify(req.body) });
+    res.json({ success:true, data:data[0] });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.put('/api/amazon/ad-rules/:id', auth, async (req, res) => {
+  try { await sb(`amazon_ad_rules?id=eq.${req.params.id}`, { method:'PATCH', body:JSON.stringify(req.body) }); res.json({success:true}); }
+  catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.delete('/api/amazon/ad-rules/:id', auth, async (req, res) => {
+  try { await sb(`amazon_ad_rules?id=eq.${req.params.id}`, { method:'DELETE' }); res.json({success:true}); }
+  catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 规则引擎执行：分析数据 → 生成调整建议
+app.get('/api/amazon/ad-rules/suggestions', auth, async (req, res) => {
+  try {
+    const rules = await sb('amazon_ad_rules?is_active=eq.true&select=*');
+    if (!rules.length) return res.json([]);
+    const maxDays = Math.max(...rules.map(r => Number(r.days||3)));
+    const since = new Date(Date.now() - maxDays*86400000).toISOString().slice(0,10);
+    const data = await sb(`amazon_ad_daily?ad_date=gte.${since}&select=*`);
+    const suggestions = [];
+    for (const rule of rules) {
+      const d = Number(rule.days||3);
+      const cutoff = new Date(Date.now() - d*86400000).toISOString().slice(0,10);
+      const filtered = data.filter(r => r.ad_date >= cutoff);
+      const byKw = {};
+      filtered.forEach(r => {
+        const k = `${r.campaign_name}||${r.keyword||'(auto)'}`;
+        if (!byKw[k]) byKw[k] = { campaign:r.campaign_name, keyword:r.keyword||'(auto)', spend:0, sales:0, clicks:0, orders:0, days:0 };
+        byKw[k].spend += Number(r.spend||0);
+        byKw[k].sales += Number(r.sales||0);
+        byKw[k].clicks += Number(r.clicks||0);
+        byKw[k].orders += Number(r.orders||0);
+        byKw[k].days++;
+      });
+      for (const kw of Object.values(byKw)) {
+        if (kw.clicks < Number(rule.min_clicks||0)) continue;
+        const acos = kw.sales > 0 ? kw.spend/kw.sales*100 : (kw.spend > 0 ? 999 : 0);
+        const cvr = kw.clicks > 0 ? kw.orders/kw.clicks*100 : 0;
+        let metricVal = 0;
+        if (rule.metric === 'acos') metricVal = acos;
+        else if (rule.metric === 'cvr') metricVal = cvr;
+        else if (rule.metric === 'spend_no_sale') metricVal = (kw.orders === 0 && kw.spend > 0) ? kw.spend : 0;
+        let triggered = false;
+        if (rule.operator === '>' && metricVal > Number(rule.threshold)) triggered = true;
+        if (rule.operator === '<' && metricVal < Number(rule.threshold)) triggered = true;
+        if (rule.operator === '>=' && metricVal >= Number(rule.threshold)) triggered = true;
+        if (triggered) {
+          suggestions.push({
+            rule_id: rule.id, rule_name: rule.rule_name,
+            campaign: kw.campaign, keyword: kw.keyword,
+            metric: rule.metric, metric_value: +metricVal.toFixed(2),
+            action_type: rule.action_type, action_value: Number(rule.action_value),
+            spend: +kw.spend.toFixed(2), sales: +kw.sales.toFixed(2), clicks: kw.clicks, orders: kw.orders,
+          });
+        }
+      }
+    }
+    res.json(suggestions);
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 否定关键词
+app.get('/api/amazon/negative-keywords', auth, async (req, res) => {
+  try { res.json(await sb('amazon_negative_keywords?order=added_at.desc')); }
+  catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.post('/api/amazon/negative-keywords', auth, async (req, res) => {
+  try { await sb('amazon_negative_keywords', { method:'POST', body:JSON.stringify(req.body) }); res.json({success:true}); }
+  catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.delete('/api/amazon/negative-keywords/:id', auth, async (req, res) => {
+  try { await sb(`amazon_negative_keywords?id=eq.${req.params.id}`, { method:'DELETE' }); res.json({success:true}); }
+  catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// ════════════════════════════════════════════════════════════
+// AMAZON 竞对调研
+// ════════════════════════════════════════════════════════════
+
+// 竞品 ASIN CRUD
+app.get('/api/amazon/competitors', auth, async (req, res) => {
+  try { res.json(await sb('amazon_competitors?is_active=eq.true&order=created_at.desc&select=*')); }
+  catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.post('/api/amazon/competitors', auth, async (req, res) => {
+  try {
+    const data = await sb('amazon_competitors?select=*', { method:'POST', headers:{'Prefer':'return=representation'}, body:JSON.stringify(req.body) });
+    res.json({ success:true, data:data[0] });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.put('/api/amazon/competitors/:id', auth, async (req, res) => {
+  try { await sb(`amazon_competitors?id=eq.${req.params.id}`, { method:'PATCH', body:JSON.stringify({...req.body, updated_at:new Date().toISOString()}) }); res.json({success:true}); }
+  catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.delete('/api/amazon/competitors/:id', auth, async (req, res) => {
+  try { await sb(`amazon_competitors?id=eq.${req.params.id}`, { method:'PATCH', body:JSON.stringify({is_active:false}) }); res.json({success:true}); }
+  catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 竞品历史快照
+app.post('/api/amazon/competitors/:id/snapshot', auth, async (req, res) => {
+  try {
+    const comp = await sb(`amazon_competitors?id=eq.${req.params.id}&select=asin,price,bsr,reviews,rating`);
+    if (!comp.length) return res.status(404).json({ message:'Not found' });
+    const c = comp[0];
+    const today = new Date().toISOString().slice(0,10);
+    await sb('amazon_competitor_history', { method:'POST', body:JSON.stringify({ asin:c.asin, snapshot_date:today, price:c.price, bsr:c.bsr, reviews:c.reviews, rating:c.rating }) });
+    res.json({ success:true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.get('/api/amazon/competitor-history/:asin', auth, async (req, res) => {
+  try { res.json(await sb(`amazon_competitor_history?asin=eq.${req.params.asin}&order=snapshot_date.desc&limit=90`)); }
+  catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 关键词库 CRUD
+app.get('/api/amazon/keywords', auth, async (req, res) => {
+  try { res.json(await sb('amazon_keywords?is_active=eq.true&order=created_at.desc&select=*')); }
+  catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.post('/api/amazon/keywords', auth, async (req, res) => {
+  try {
+    const data = await sb('amazon_keywords?select=*', { method:'POST', headers:{'Prefer':'return=representation'}, body:JSON.stringify(req.body) });
+    res.json({ success:true, data:data[0] });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.put('/api/amazon/keywords/:id', auth, async (req, res) => {
+  try { await sb(`amazon_keywords?id=eq.${req.params.id}`, { method:'PATCH', body:JSON.stringify({...req.body, updated_at:new Date().toISOString()}) }); res.json({success:true}); }
+  catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.delete('/api/amazon/keywords/:id', auth, async (req, res) => {
+  try { await sb(`amazon_keywords?id=eq.${req.params.id}`, { method:'PATCH', body:JSON.stringify({is_active:false}) }); res.json({success:true}); }
+  catch (e) { res.status(500).json({ message: e.message }); }
+});
+
 module.exports = app;
