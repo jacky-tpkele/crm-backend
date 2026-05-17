@@ -143,6 +143,8 @@ td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04)}
   <header class="header">
     <h1 data-i18n="pageTitle">🔍 竞品调研</h1>
     <button class="btn btn-primary" onclick="openCompetitorModal()" data-i18n="btnAddCompetitor">＋ 添加竞品</button>
+    <button class="btn" onclick="lookupAsin()" data-i18n="btnLookup">🔎 ASIN 自动抓取</button>
+    <button class="btn" onclick="refreshAll()" data-i18n="btnRefreshAll">🔄 全部刷新</button>
     <button class="btn" onclick="loadData()" data-i18n="btnRefresh">↻ 刷新</button>
     <button class="lang-btn" onclick="toggleLang()">中/EN</button>
   </header>
@@ -308,7 +310,7 @@ const I18N = {
   zh: {
     pageTitle:'🔍 竞品调研', navMain:'主菜单', navDashboard:'仪表盘', navOrders:'订单管理',
     navAmazon:'亚马逊运营', navInventory:'库存智能补货', navAds:'广告管理', navResearch:'竞品调研',
-    btnAddCompetitor:'＋ 添加竞品', btnRefresh:'↻ 刷新',
+    btnAddCompetitor:'＋ 添加竞品', btnRefresh:'↻ 刷新', btnLookup:'🔎 ASIN 自动抓取', btnRefreshAll:'🔄 全部刷新',
     tabCompetitors:'竞品追踪', tabKeywords:'关键词库',
     emptyCompetitors:'暂无竞品数据，点击添加开始追踪',
     kwTitle:'关键词库', btnBatchKw:'📤 批量添加', btnAddKw:'＋ 添加关键词',
@@ -326,7 +328,7 @@ const I18N = {
   en: {
     pageTitle:'🔍 Competitor Research', navMain:'Main Menu', navDashboard:'Dashboard', navOrders:'Orders',
     navAmazon:'Amazon Operations', navInventory:'Smart Inventory', navAds:'Ad Manager', navResearch:'Research',
-    btnAddCompetitor:'＋ Add Competitor', btnRefresh:'↻ Refresh',
+    btnAddCompetitor:'＋ Add Competitor', btnRefresh:'↻ Refresh', btnLookup:'🔎 ASIN Lookup', btnRefreshAll:'🔄 Refresh All',
     tabCompetitors:'Competitor Tracking', tabKeywords:'Keyword Library',
     emptyCompetitors:'No competitors yet. Add one to start tracking.',
     kwTitle:'Keyword Library', btnBatchKw:'📤 Batch Add', btnAddKw:'＋ Add Keyword',
@@ -580,6 +582,51 @@ async function saveBatchKeywords() {
   closeBatchKwModal();
   showToast(`导入完成: ${success} 成功${fail?', '+fail+' 失败':''}`);
   loadData();
+}
+
+// === ASIN 自动抓取 ===
+async function lookupAsin() {
+  const asin = prompt(lang==='zh' ? '输入竞品 ASIN（如 B0XXXXXXXX）：' : 'Enter competitor ASIN (e.g. B0XXXXXXXX):');
+  if (!asin || !asin.trim()) return;
+  showToast(lang==='zh' ? '正在抓取 Amazon 产品页...' : 'Fetching Amazon product page...', 'ok');
+  try {
+    const r = await api('/api/amazon/competitors/lookup', { method:'POST', body:{ asin: asin.trim() } });
+    if (!r.success || !r.data) throw new Error(r.message || 'Failed');
+    const d = r.data;
+    // 自动添加到竞品列表
+    await api('/api/amazon/competitors', { method:'POST', body:{
+      asin: d.asin, title: d.title||'', brand: d.brand||'', image_url: d.image_url||'',
+      price: d.price||null, bsr: d.bsr||null, reviews: d.reviews||null, rating: d.rating||null,
+      category: d.category||'',
+    }});
+    showToast(lang==='zh' ? `已添加: ${d.title||d.asin}` : `Added: ${d.title||d.asin}`);
+    loadData();
+  } catch(e) {
+    showToast((lang==='zh'?'抓取失败: ':'Lookup failed: ') + e.message, 'err');
+  }
+}
+
+// === 全部刷新（自动抓取所有竞品最新数据 + 变化提醒）===
+async function refreshAll() {
+  if (!competitors.length) return showToast(lang==='zh'?'暂无竞品可刷新':'No competitors to refresh','err');
+  showToast(lang==='zh' ? `正在刷新 ${competitors.length} 个竞品...` : `Refreshing ${competitors.length} competitors...`, 'ok');
+  try {
+    const r = await api('/api/amazon/competitors/refresh-all', { method:'POST' });
+    let msg = lang==='zh' ? `已更新 ${r.updated} 个竞品` : `Updated ${r.updated} competitors`;
+    if (r.alerts && r.alerts.length) {
+      msg += '\n\n' + (lang==='zh'?'⚠️ 异常变化：':'⚠️ Alerts:');
+      r.alerts.forEach(a => {
+        const typeLabel = {price:lang==='zh'?'价格':'Price', bsr:'BSR', reviews:lang==='zh'?'评论':'Reviews'}[a.type]||a.type;
+        msg += `\n• ${a.asin} ${typeLabel}: ${a.old} → ${a.new} (${a.change})`;
+      });
+      alert(msg);
+    } else {
+      showToast(msg);
+    }
+    loadData();
+  } catch(e) {
+    showToast((lang==='zh'?'刷新失败: ':'Refresh failed: ') + e.message, 'err');
+  }
 }
 
 // === Init ===

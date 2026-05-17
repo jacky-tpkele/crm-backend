@@ -2448,4 +2448,116 @@ app.delete('/api/amazon/keywords/:id', auth, async (req, res) => {
   catch (e) { res.status(500).json({ message: e.message }); }
 });
 
+// ─────────────────────────────────────────────
+// ASIN 自动抓取：从 Amazon 产品页解析基本信息
+// ─────────────────────────────────────────────
+async function scrapeAsin(asin, marketplace = 'us') {
+  const domains = { us:'www.amazon.com', uk:'www.amazon.co.uk', de:'www.amazon.de', jp:'www.amazon.co.jp' };
+  const domain = domains[marketplace] || domains.us;
+  const url = `https://${domain}/dp/${asin}`;
+  try {
+    const r = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept': 'text/html,application/xhtml+xml',
+      },
+    });
+    if (!r.ok) return { error: `HTTP ${r.status}` };
+    const html = await r.text();
+
+    const extract = (pattern) => { const m = html.match(pattern); return m ? m[1].trim() : ''; };
+
+    const title = extract(/<span[^>]*id="productTitle"[^>]*>([\s\S]*?)<\/span>/) || extract(/<title>(.*?)<\/title>/);
+    const priceStr = extract(/class="a-price-whole"[^>]*>([\d,]+)/) || extract(/priceAmount.*?>([\d,.]+)/);
+    const price = parseFloat((priceStr||'').replace(/,/g,'')) || null;
+    const ratingStr = extract(/(\d+\.?\d*)\s*out of\s*5/i) || extract(/(\d+\.?\d*)\s*颗星/);
+    const rating = parseFloat(ratingStr) || null;
+    const reviewsStr = extract(/(\d[\d,]*)\s*(?:global\s*)?ratings/i) || extract(/(\d[\d,]*)\s*个评分/);
+    const reviews = parseInt((reviewsStr||'').replace(/,/g,'')) || null;
+    const bsrStr = extract(/Best Sellers Rank.*?#([\d,]+)/i) || extract(/商品の売れ筋ランキング.*?(\d[\d,]*)/);
+    const bsr = parseInt((bsrStr||'').replace(/,/g,'')) || null;
+    const brand = extract(/Brand.*?<\/td>\s*<td[^>]*>\s*<span[^>]*>(.*?)<\/span>/i) || extract(/brand.*?">(.*?)</i);
+    const imgMatch = html.match(/"hiRes":"(https:\/\/[^"]+)"/);
+    const image_url = imgMatch ? imgMatch[1] : (extract(/id="landingImage"[^>]*src="([^"]+)"/) || '');
+    const category = extract(/Best Sellers Rank.*?in\s*<a[^>]*>(.*?)<\/a>/i) || '';
+
+    return { title: title.replace(/<[^>]+>/g,'').trim(), price, rating, reviews, bsr, brand: brand.replace(/<[^>]+>/g,'').trim(), image_url, category: category.replace(/<[^>]+>/g,'').trim() };
+  } catch (e) {
+    return { error: e.message };
+  }
+}
+
+// 输入 ASIN 自动抓取信息
+app.post('/api/amazon/competitors/lookup', auth, async (req, res) => {
+  try {
+    const { asin, marketplace } = req.body || {};
+    if (!asin) return res.status(400).json({ message: 'ASIN required' });
+    const data = await scrapeAsin(asin.trim(), marketplace);
+    if (data.error) return res.status(500).json({ message: `抓取失败: ${data.error}` });
+    res.json({ success: true, data: { asin: asin.trim(), ...data } });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 全部竞品自动刷新（每日定时调用 or 手动触发）
+app.post('/api/amazon/competitors/refresh-all', auth, async (req, res) => {
+  try {
+    const comps = await sb('amazon_competitors?is_active=eq.true&select=id,asin');
+    if (!comps.length) return res.json({ success:true, updated:0, alerts:[] });
+    const today = new Date().toISOString().slice(0,10);
+    let updated = 0;
+    const alerts = [];
+
+    for (const comp of comps) {
+      try {
+        const data = await scrapeAsin(comp.asin);
+        if (data.error) continue;
+
+        // 获取上次快照做对比
+        const lastSnap = await sb(`amazon_competitor_history?asin=eq.${comp.asin}&order=snapshot_date.desc&limit=1`).catch(()=>[]);
+        const prev = lastSnap[0] || {};
+
+        // 更新竞品主记录
+        const patch = { updated_at: new Date().toISOString() };
+        if (data.title) patch.title = data.title;
+        if (data.price != null) patch.price = data.price;
+        if (data.bsr != null) patch.bsr = data.bsr;
+        if (data.reviews != null) patch.reviews = data.reviews;
+        if (data.rating != null) patch.rating = data.rating;
+        if (data.brand) patch.brand = data.brand;
+        if (data.image_url) patch.image_url = data.image_url;
+        if (data.category) patch.category = data.category;
+        await sb(`amazon_competitors?id=eq.${comp.id}`, { method:'PATCH', body:JSON.stringify(patch) });
+
+        // 保存快照
+        await sb('amazon_competitor_history', { method:'POST', body:JSON.stringify({
+          asin: comp.asin, snapshot_date: today,
+          price: data.price, bsr: data.bsr, reviews: data.reviews, rating: data.rating,
+        })}).catch(()=>{});
+
+        // 变化检测
+        if (prev.price && data.price) {
+          const priceDiff = ((data.price - prev.price) / prev.price * 100);
+          if (Math.abs(priceDiff) > 5) {
+            alerts.push({ asin:comp.asin, type:'price', old:prev.price, new:data.price, change:`${priceDiff>0?'+':''}${priceDiff.toFixed(1)}%` });
+          }
+        }
+        if (prev.bsr && data.bsr) {
+          const bsrDiff = ((data.bsr - prev.bsr) / prev.bsr * 100);
+          if (Math.abs(bsrDiff) > 20) {
+            alerts.push({ asin:comp.asin, type:'bsr', old:prev.bsr, new:data.bsr, change:`${bsrDiff>0?'+':''}${bsrDiff.toFixed(1)}%` });
+          }
+        }
+        if (prev.reviews && data.reviews && (data.reviews - prev.reviews) > 10) {
+          alerts.push({ asin:comp.asin, type:'reviews', old:prev.reviews, new:data.reviews, change:`+${data.reviews-prev.reviews}` });
+        }
+
+        updated++;
+      } catch(_) {}
+    }
+
+    res.json({ success:true, updated, alerts });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
 module.exports = app;
