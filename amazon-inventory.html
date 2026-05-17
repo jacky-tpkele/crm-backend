@@ -124,9 +124,10 @@ td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04)}
     <div class="nav-item" onclick="location.href='dashboard.html'"><span class="nav-icon">📊</span><span data-i18n="navDashboard">仪表盘</span></div>
     <div class="nav-item" onclick="location.href='dashboard.html'"><span class="nav-icon">◍</span><span data-i18n="navOrders">订单管理</span></div>
     <div class="nav-group" data-i18n="navAmazon">亚马逊运营</div>
+    <div class="nav-item" onclick="location.href='amazon-margin.html'"><span class="nav-icon">💰</span><span data-i18n="navMargin">产品毛利</span></div>
     <div class="nav-item active"><span class="nav-icon">📦</span><span data-i18n="navInventory">库存智能补货</span></div>
-    <div class="nav-item" onclick="location.href='amazon-ads.html'"><span class="nav-icon">📢</span><span data-i18n="navAds">广告管理</span></div>
     <div class="nav-item" onclick="location.href='amazon-research.html'"><span class="nav-icon">🔍</span><span data-i18n="navResearch">竞对调研</span></div>
+    <div class="nav-item" onclick="location.href='amazon-ads.html'"><span class="nav-icon">📢</span><span data-i18n="navAds">广告管理</span></div>
   </div>
 </div>
 
@@ -353,10 +354,31 @@ async function api(path, opts={}) {
 function showToast(msg, type='ok') { const t=document.getElementById('toast'); t.textContent=(type==='ok'?'✓ ':'✗ ')+msg; t.className=`toast show ${type}`; setTimeout(()=>t.className='toast',3000); }
 
 // === Data Loading ===
+let marginByAsin = {};
+let marginBySku = {};
 async function loadData() {
   try {
     skuData = await api('/api/amazon/replenishment');
     salesData = await api('/api/amazon/sales?days=60');
+    // 拉毛利数据用于联动展示（失败不影响主流程）
+    try {
+      const margins = await api('/api/amazon/margin-items');
+      marginByAsin = {};
+      marginBySku = {};
+      // 同步取一次全局配置以便计算
+      const cfg = await api('/api/amazon/op-config').catch(()=>({exchange_rate:7.2,commission_rate:15,freight_per_kg:7.5}));
+      for (const m of margins) {
+        const rate = Number(m.exchange_rate || cfg.exchange_rate);
+        const cr = Number(m.commission_rate || cfg.commission_rate)/100;
+        const fr = Number(m.freight_per_kg || cfg.freight_per_kg);
+        const rmbSale = Number(m.sale_price_usd||0)*rate;
+        const profit = rmbSale - rmbSale*cr - Number(m.fba_fee_usd||0)*rate - Number(m.weight_lb||0)*0.4536*fr - Number(m.purchase_price||0);
+        const pct = rmbSale>0 ? (profit/rmbSale*100) : null;
+        const o = { profit, pct, sale_usd: Number(m.sale_price_usd||0) };
+        if (m.asin) marginByAsin[String(m.asin).toUpperCase()] = o;
+        if (m.sku) marginBySku[String(m.sku)] = o;
+      }
+    } catch (e) { /* 毛利模块还没数据时忽略 */ }
     renderDashboard(); renderSkuTable(); renderSalesTable();
   } catch(e) { showToast(e.message,'err'); }
 }
@@ -383,6 +405,10 @@ function renderDashboard() {
     else if (s.status==='overstock') tip = t('tipOverstock');
     else tip = t('tipOk');
     const img = s.image_url ? `<img class="sku-img" src="${esc(s.image_url)}">` : `<div class="sku-img-empty">📦</div>`;
+    const margin = (s.asin && marginByAsin[String(s.asin).toUpperCase()]) || (s.sku && marginBySku[s.sku]);
+    const marginCell = margin && margin.pct != null
+      ? `<div class="sku-stat" title="销售$${margin.sale_usd.toFixed(2)} · 毛利￥${margin.profit.toFixed(2)} · 数据来源：产品毛利模块"><div class="sku-stat-label">毛利率</div><div class="sku-stat-value" style="color:${margin.pct>=35?'var(--success)':margin.pct>=20?'var(--warning)':'var(--danger)'}">${margin.pct.toFixed(1)}%</div></div>`
+      : `<div class="sku-stat" title="该 SKU/ASIN 还没在产品毛利模块录入"><div class="sku-stat-label">毛利率</div><div class="sku-stat-value" style="color:var(--muted);font-size:13px">未录入</div></div>`;
     return `
     <div class="sku-card">
       <div class="sku-header">
@@ -400,6 +426,7 @@ function renderDashboard() {
         <div class="sku-stat"><div class="sku-stat-label">${t('lblDays')}</div><div class="sku-stat-value" style="color:${s.days_of_supply<s.total_lead_time?'var(--danger)':s.days_of_supply>90?'var(--warning)':'var(--success)'}">${fmtN(s.days_of_supply)}</div></div>
         <div class="sku-stat"><div class="sku-stat-label">${t('lblSafety')}</div><div class="sku-stat-value">${s.safety_stock}</div></div>
         <div class="sku-stat"><div class="sku-stat-label">${t('lblSuggest')}</div><div class="sku-stat-value" style="color:${s.suggested_qty>0?'var(--warning)':'var(--muted)'}">${s.suggested_qty>0?s.suggested_qty:'—'}</div></div>
+        ${marginCell}
       </div>
       <div class="sku-analysis">
         📊 ${tip}<br>

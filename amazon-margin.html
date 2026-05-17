@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TPKELE CRM - 产品毛利</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#000509;--panel:#060f20;--panel2:#0a1628;
+  --border:rgba(0,190,255,0.12);--border-h:rgba(0,220,255,0.38);
+  --text:#ddf0ff;--muted:#4d7390;--muted2:#7aa4c0;
+  --primary:#00c8f0;--p1:#10B981;
+  --danger:#fb7185;--success:#4ade80;--warning:#fbbf24;
+  --shadow:0 20px 60px rgba(0,0,0,.7);--radius:14px;--sb:180px;
+}
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+button,input,select,textarea{font:inherit}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:rgba(16,185,129,0.18);border-radius:4px}
+
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:var(--sb);flex-shrink:0;height:100%;background:linear-gradient(180deg,rgba(3,8,20,.99),rgba(2,5,13,.99));border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sb-logo{display:flex;align-items:center;gap:12px;padding:18px 16px;border-bottom:1px solid var(--border)}
+.logo-text{font-size:15px;font-weight:700;letter-spacing:1px}
+.logo-text span{color:var(--primary)}
+.sb-nav{flex:1;overflow-y:auto;padding:10px 0}
+.nav-group{padding:8px 16px 4px;font-size:10px;font-weight:600;color:rgba(16,185,129,.22);text-transform:uppercase;letter-spacing:.8px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;transition:.15s;white-space:nowrap;color:var(--muted2);font-size:13.5px;font-weight:500;border-left:3px solid transparent;text-decoration:none}
+.nav-item:hover{background:rgba(16,185,129,0.05);color:var(--text)}
+.nav-item.active{background:rgba(16,185,129,0.08);color:var(--primary);border-left-color:var(--primary)}
+.nav-icon{font-size:17px;flex-shrink:0;width:22px;text-align:center}
+
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.header{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-shrink:0;flex-wrap:wrap}
+.header h1{font-size:18px;font-weight:600;flex:1;min-width:160px}
+.btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:13px;cursor:pointer;transition:.15s;white-space:nowrap}
+.btn:hover{border-color:var(--p1);color:var(--p1)}
+.btn-primary{background:var(--p1);color:#000;border-color:var(--p1);font-weight:600}
+.btn-primary:hover{background:#34D399}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:6px}
+.btn-danger{border-color:rgba(251,113,133,.4);color:var(--danger)}
+.btn-danger:hover{background:rgba(251,113,133,.1)}
+.lang-btn{padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:12px;cursor:pointer}
+
+.workspace{flex:1;overflow-y:auto;padding:20px 24px}
+
+/* Top bar with category tabs + global config */
+.cfg-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:14px}
+.cfg-item{display:flex;flex-direction:column;gap:3px;min-width:90px}
+.cfg-item label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.cfg-item input{background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-size:13px;outline:none;width:90px}
+.cfg-item input:focus{border-color:var(--p1)}
+
+.tabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--border);align-items:center;flex-wrap:wrap}
+.tab{padding:8px 16px;font-size:13px;color:var(--muted2);cursor:pointer;border-bottom:2px solid transparent;transition:.15s;white-space:nowrap}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--p1);border-bottom-color:var(--p1);font-weight:600}
+.tab-add{padding:6px 10px;font-size:11.5px;color:var(--muted);border:1px dashed var(--border);border-radius:6px;cursor:pointer;margin-left:auto}
+.tab-add:hover{color:var(--p1);border-color:var(--p1)}
+
+/* Editable table */
+.tbl-wrap{overflow-x:auto;background:var(--panel);border:1px solid var(--border);border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1100px}
+th{text-align:center;padding:9px 8px;color:var(--muted);font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.25);position:sticky;top:0;z-index:2;white-space:nowrap}
+td{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center;vertical-align:middle}
+tr:hover td{background:rgba(16,185,129,.03)}
+
+td.editable input{width:100%;background:transparent;border:1px solid transparent;border-radius:4px;color:var(--text);padding:4px 6px;font-size:12.5px;text-align:center;outline:none}
+td.editable input:focus,td.editable input:hover{border-color:var(--border-h);background:rgba(0,200,255,.04)}
+td.calc{color:var(--muted2);background:rgba(255,255,255,.015);font-feature-settings:"tnum"}
+td.calc strong{color:var(--text)}
+
+td.img-cell{width:50px}
+.img-thumb{width:38px;height:38px;border-radius:6px;object-fit:cover;background:rgba(255,255,255,.04);border:1px solid var(--border);cursor:pointer;margin:0 auto;display:block}
+.img-empty{width:38px;height:38px;border-radius:6px;display:grid;place-items:center;font-size:14px;background:rgba(255,255,255,.04);border:1px dashed var(--border);color:var(--muted);cursor:pointer;margin:0 auto}
+
+.margin-good{color:#4ade80;font-weight:600}
+.margin-mid{color:#fbbf24;font-weight:600}
+.margin-bad{color:#fb7185;font-weight:600}
+
+.row-actions{display:flex;gap:4px;justify-content:center;align-items:center}
+.icon-btn{width:22px;height:22px;display:grid;place-items:center;border:1px solid var(--border);background:transparent;color:var(--muted);border-radius:5px;cursor:pointer;font-size:13px;padding:0;transition:.15s}
+.icon-btn:hover{color:var(--p1);border-color:var(--p1)}
+.icon-btn.del:hover{color:var(--danger);border-color:var(--danger)}
+
+.add-row{margin-top:10px;display:flex;gap:8px;justify-content:flex-start}
+
+/* Summary footer */
+.summary{margin-top:14px;display:flex;gap:14px;flex-wrap:wrap}
+.stat-card{flex:1;min-width:160px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.stat-label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.stat-value{font-size:18px;font-weight:700;margin-top:4px}
+
+/* Modal */
+.modal-backdrop{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);display:none;place-items:center}
+.modal-backdrop.open{display:grid}
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:14px;width:480px;max-width:95vw;display:flex;flex-direction:column;box-shadow:var(--shadow)}
+.modal-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-head h2{font-size:15px;font-weight:600}
+.modal-close{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-size:15px}
+.modal-body{padding:16px 18px;overflow-y:auto;max-height:60vh}
+.modal-footer{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.field label{font-size:11.5px;color:var(--muted2)}
+.field input,.field select{background:var(--panel2);border:1px solid var(--border);border-radius:7px;padding:7px 10px;color:var(--text);font-size:13px;outline:none}
+.field input:focus,.field select:focus{border-color:var(--p1)}
+
+.toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:11px 16px;font-size:13px;color:var(--text);display:none;align-items:center;gap:10px;box-shadow:var(--shadow)}
+.toast.show{display:flex}
+.toast.ok{border-color:rgba(74,222,128,.35)}
+.toast.err{border-color:rgba(251,113,133,.35)}
+
+.dirty-badge{display:inline-block;margin-left:8px;padding:2px 8px;background:rgba(251,191,36,.15);color:var(--warning);border:1px solid rgba(251,191,36,.3);border-radius:10px;font-size:11px}
+</style>
+</head>
+<body>
+<div class="app">
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sb-logo"><div class="logo-text">TP<span>KELE</span></div></div>
+  <div class="sb-nav">
+    <div class="nav-group">主菜单</div>
+    <a class="nav-item" href="dashboard.html"><span class="nav-icon">📊</span><span>仪表盘</span></a>
+    <a class="nav-item" href="dashboard.html"><span class="nav-icon">◍</span><span>订单管理</span></a>
+    <div class="nav-group">亚马逊运营</div>
+    <a class="nav-item active" href="amazon-margin.html"><span class="nav-icon">💰</span><span>产品毛利</span></a>
+    <a class="nav-item" href="amazon-inventory.html"><span class="nav-icon">📦</span><span>库存补货</span></a>
+    <a class="nav-item" href="amazon-research.html"><span class="nav-icon">🔍</span><span>竞品调研</span></a>
+    <a class="nav-item" href="amazon-ads.html"><span class="nav-icon">📢</span><span>广告管理</span></a>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+  <header class="header">
+    <h1>💰 产品毛利计算 <span id="dirtyBadge" class="dirty-badge" style="display:none">未保存</span></h1>
+    <button class="btn" onclick="openSettings()">⚙ 全局设置</button>
+    <button class="btn" onclick="addRow()">＋ 新增产品</button>
+    <button class="btn btn-primary" onclick="saveAll()">💾 保存全部</button>
+  </header>
+
+  <div class="workspace">
+
+    <!-- Config bar -->
+    <div class="cfg-bar">
+      <div class="cfg-item">
+        <label>汇率 USD→RMB</label>
+        <input type="number" step="0.001" id="cfgRate" onchange="onConfigChange()">
+      </div>
+      <div class="cfg-item">
+        <label>扣点 %</label>
+        <input type="number" step="0.1" id="cfgCommission" onchange="onConfigChange()">
+      </div>
+      <div class="cfg-item">
+        <label>头程 ￥/kg</label>
+        <input type="number" step="0.1" id="cfgFreight" onchange="onConfigChange()">
+      </div>
+      <div style="flex:1"></div>
+      <span style="font-size:11.5px;color:var(--muted)">改了配置后所有未单独覆盖的行会用新值重算</span>
+    </div>
+
+    <!-- Category tabs -->
+    <div class="tabs" id="catTabs"></div>
+
+    <!-- Table -->
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px">#</th>
+            <th style="width:50px">图片</th>
+            <th style="width:110px">参数</th>
+            <th style="width:55px">安培数</th>
+            <th style="width:110px">ASIN</th>
+            <th style="width:90px">进货价￥</th>
+            <th style="width:90px">销售价$</th>
+            <th style="width:70px">汇率</th>
+            <th style="width:90px">销售价￥</th>
+            <th style="width:80px">扣点￥</th>
+            <th style="width:80px">FBA $</th>
+            <th style="width:80px">FBA ￥</th>
+            <th style="width:65px">重量lb</th>
+            <th style="width:65px">重量kg</th>
+            <th style="width:80px">头程￥</th>
+            <th style="width:80px">毛利￥</th>
+            <th style="width:75px">毛利率</th>
+            <th style="width:70px">操作</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary">
+      <div class="stat-card">
+        <div class="stat-label">产品数</div>
+        <div class="stat-value" id="statCount">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">平均毛利率</div>
+        <div class="stat-value" id="statAvgMargin">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">毛利率最高</div>
+        <div class="stat-value" id="statMaxMargin">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">需关注 (&lt;20%)</div>
+        <div class="stat-value" style="color:var(--danger)" id="statAlert">0</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- New Category Modal -->
+<div class="modal-backdrop" id="catModal">
+  <div class="modal">
+    <div class="modal-head"><h2>新增类目</h2><button class="modal-close" onclick="closeCatModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>类目代码 (英文小写，如 dc / ac / leakage)</label><input id="catCode"></div>
+      <div class="field"><label>中文名</label><input id="catNameCn" placeholder="例如：漏电保护"></div>
+      <div class="field"><label>英文名 (可选)</label><input id="catNameEn" placeholder="例如：Leakage"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeCatModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveCat()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-backdrop" id="setModal">
+  <div class="modal">
+    <div class="modal-head"><h2>⚙ 全局运营设置</h2><button class="modal-close" onclick="closeSettings()">✕</button></div>
+    <div class="modal-body">
+      <h3 style="font-size:12.5px;color:var(--p1);margin-bottom:10px">基础参数</h3>
+      <div class="field"><label>默认汇率 USD→RMB</label><input type="number" step="0.001" id="setRate"></div>
+      <div class="field"><label>默认 Amazon 扣点率 %</label><input type="number" step="0.1" id="setCommission"></div>
+      <div class="field"><label>默认头程单价 ￥/kg</label><input type="number" step="0.1" id="setFreight"></div>
+
+      <h3 style="font-size:12.5px;color:var(--p1);margin:18px 0 10px">Amazon SP-API 凭证 (留空表示不修改)</h3>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5">
+        Seller Central → Apps &amp; Services → Develop Apps → 注册自有应用<br>
+        审批通过后会拿到 LWA Client ID / Client Secret / Refresh Token
+      </div>
+      <div class="field"><label>Client ID</label><input id="setClientId" placeholder="amzn1.application-oa2-client.xxxxx"></div>
+      <div class="field"><label>Client Secret <span id="secretSet" style="color:var(--success);font-size:11px"></span></label><input type="password" id="setClientSecret" placeholder="留空=不修改"></div>
+      <div class="field"><label>Refresh Token <span id="tokenSet" style="color:var(--success);font-size:11px"></span></label><input type="password" id="setRefreshToken" placeholder="Atzr|..."></div>
+      <div class="field"><label>Seller ID</label><input id="setSellerId" placeholder="A1B2C3D4E5"></div>
+      <div class="field"><label>Marketplace ID</label><input id="setMarketplaceId" value="ATVPDKIKX0DER" readonly style="color:var(--muted)"></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px">默认美国站 ATVPDKIKX0DER</div>
+
+      <div id="spStatus" style="margin-top:12px;padding:10px;background:var(--panel2);border-radius:8px;font-size:12px;color:var(--muted2)"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="testSpApi()">🔌 测试连接</button>
+      <button class="btn" onclick="closeSettings()">取消</button>
+      <button class="btn btn-primary" onclick="saveSettings()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const token = localStorage.getItem('crm_token');
+if (!token) location.href = 'login.html';
+
+let categories = [];
+let items = [];
+let currentCat = '';
+let config = { exchange_rate: 7.2, commission_rate: 15, freight_per_kg: 7.5 };
+let dirty = false;
+
+const api = async (url, opts = {}) => {
+  const res = await fetch(url, {
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token, ...(opts.headers || {}) },
+    ...opts,
+  });
+  if (!res.ok) {
+    let msg = `HTTP ${res.status}`;
+    try { const j = await res.json(); msg = j.message || msg; } catch (e) {}
+    throw new Error(msg);
+  }
+  return res.status === 204 ? null : res.json();
+};
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + (type || '');
+  setTimeout(() => t.className = 'toast', 2500);
+}
+
+function markDirty() {
+  dirty = true;
+  document.getElementById('dirtyBadge').style.display = 'inline-block';
+}
+function markClean() {
+  dirty = false;
+  document.getElementById('dirtyBadge').style.display = 'none';
+}
+
+window.addEventListener('beforeunload', e => {
+  if (dirty) { e.preventDefault(); e.returnValue = '有未保存修改'; }
+});
+
+async function loadConfig() {
+  try {
+    const c = await api('/api/amazon/op-config');
+    config = { exchange_rate: c.exchange_rate, commission_rate: c.commission_rate, freight_per_kg: c.freight_per_kg };
+    document.getElementById('cfgRate').value = config.exchange_rate;
+    document.getElementById('cfgCommission').value = config.commission_rate;
+    document.getElementById('cfgFreight').value = config.freight_per_kg;
+  } catch (e) { /* silent */ }
+}
+
+async function loadCategories() {
+  try {
+    categories = await api('/api/amazon/categories');
+    if (!currentCat && categories.length) currentCat = categories[0].code;
+    renderTabs();
+  } catch (e) { showToast(e.message, 'err'); }
+}
+
+function renderTabs() {
+  const wrap = document.getElementById('catTabs');
+  wrap.innerHTML = categories.map(c =>
+    `<div class="tab ${c.code === currentCat ? 'active' : ''}" onclick="switchCat('${c.code}')">${c.name_cn}${c.name_en ? ' / '+c.name_en : ''}</div>`
+  ).join('') + '<div class="tab-add" onclick="openCatModal()">＋ 新增类目</div>';
+}
+
+async function switchCat(code) {
+  if (dirty && !confirm('当前修改未保存，确定切换？')) return;
+  currentCat = code;
+  markClean();
+  renderTabs();
+  await loadItems();
+}
+
+async function loadItems() {
+  try {
+    items = await api('/api/amazon/margin-items?category=' + encodeURIComponent(currentCat));
+    items.sort((a,b) => (a.sort_order||0) - (b.sort_order||0));
+    renderTable();
+  } catch (e) { showToast(e.message, 'err'); }
+}
+
+function renderTable() {
+  const tbody = document.getElementById('tbody');
+  if (!items.length) {
+    tbody.innerHTML = `<tr><td colspan="18" style="padding:36px;color:var(--muted)">该类目下还没有产品，点右上 ＋新增产品 开始</td></tr>`;
+    updateSummary();
+    return;
+  }
+  tbody.innerHTML = items.map((it, idx) => rowHTML(it, idx)).join('');
+  updateSummary();
+}
+
+function rowHTML(it, idx) {
+  const rate = Number(it.exchange_rate || config.exchange_rate);
+  const commRate = Number(it.commission_rate || config.commission_rate) / 100;
+  const freightRate = Number(it.freight_per_kg || config.freight_per_kg);
+
+  const usdSale = Number(it.sale_price_usd || 0);
+  const rmbSale = usdSale * rate;
+  const commission = rmbSale * commRate;
+  const fbaUsd = Number(it.fba_fee_usd || 0);
+  const fbaRmb = fbaUsd * rate;
+  const lb = Number(it.weight_lb || 0);
+  const kg = lb * 0.4536;
+  const freight = kg * freightRate;
+  const purchase = Number(it.purchase_price || 0);
+  const profit = rmbSale - commission - fbaRmb - freight - purchase;
+  const marginPct = rmbSale > 0 ? (profit / rmbSale * 100) : 0;
+  const marginClass = marginPct >= 35 ? 'margin-good' : marginPct >= 20 ? 'margin-mid' : 'margin-bad';
+
+  const imgCell = it.image_url
+    ? `<img src="${it.image_url}" class="img-thumb" onclick="editImg('${it._key || it.id}')">`
+    : `<div class="img-empty" onclick="editImg('${it._key || it.id}')">＋</div>`;
+
+  return `
+  <tr data-key="${it._key || it.id}">
+    <td>${idx + 1}</td>
+    <td class="img-cell">${imgCell}</td>
+    <td class="editable"><input value="${escAttr(it.spec || '')}" onchange="updateField('${it._key || it.id}','spec',this.value)"></td>
+    <td class="editable"><input value="${escAttr(it.amperage || '')}" onchange="updateField('${it._key || it.id}','amperage',this.value)" placeholder="10A"></td>
+    <td class="editable"><input value="${escAttr(it.asin || '')}" onchange="updateField('${it._key || it.id}','asin',this.value)"></td>
+    <td class="editable"><input type="number" step="0.01" value="${it.purchase_price || ''}" onchange="updateField('${it._key || it.id}','purchase_price',this.value)"></td>
+    <td class="editable"><input type="number" step="0.01" value="${it.sale_price_usd || ''}" onchange="updateField('${it._key || it.id}','sale_price_usd',this.value)"></td>
+    <td class="editable"><input type="number" step="0.001" value="${it.exchange_rate || ''}" placeholder="${config.exchange_rate}" onchange="updateField('${it._key || it.id}','exchange_rate',this.value)"></td>
+    <td class="calc">￥${rmbSale.toFixed(2)}</td>
+    <td class="calc">￥${commission.toFixed(2)}</td>
+    <td class="editable"><input type="number" step="0.01" value="${it.fba_fee_usd || ''}" onchange="updateField('${it._key || it.id}','fba_fee_usd',this.value)"></td>
+    <td class="calc">￥${fbaRmb.toFixed(2)}</td>
+    <td class="editable"><input type="number" step="0.01" value="${it.weight_lb || ''}" onchange="updateField('${it._key || it.id}','weight_lb',this.value)"></td>
+    <td class="calc">${kg.toFixed(3)}</td>
+    <td class="calc">￥${freight.toFixed(2)}</td>
+    <td class="calc"><strong>￥${profit.toFixed(2)}</strong></td>
+    <td class="calc"><strong class="${marginClass}">${marginPct.toFixed(2)}%</strong></td>
+    <td>
+      <div class="row-actions">
+        <button class="icon-btn" title="复制" onclick="cloneRow('${it._key || it.id}')">⎘</button>
+        <button class="icon-btn del" title="删除" onclick="deleteRow('${it._key || it.id}')">✕</button>
+      </div>
+    </td>
+  </tr>`;
+}
+
+function escAttr(s) { return String(s == null ? '' : s).replace(/"/g,'&quot;'); }
+
+function findItem(key) {
+  return items.find(it => (it._key || it.id) === key);
+}
+
+function updateField(key, field, value) {
+  const it = findItem(key);
+  if (!it) return;
+  if (['purchase_price','sale_price_usd','exchange_rate','commission_rate','fba_fee_usd','weight_lb','freight_per_kg'].includes(field)) {
+    it[field] = value === '' ? null : Number(value);
+  } else {
+    it[field] = value;
+  }
+  it._modified = true;
+  markDirty();
+  renderTable();
+}
+
+function editImg(key) {
+  const it = findItem(key);
+  if (!it) return;
+  const url = prompt('图片 URL：', it.image_url || '');
+  if (url == null) return;
+  it.image_url = url || null;
+  it._modified = true;
+  markDirty();
+  renderTable();
+}
+
+function addRow() {
+  if (!currentCat) { showToast('请先选择类目', 'err'); return; }
+  const newIt = {
+    _key: 'new_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+    _modified: true,
+    category_code: currentCat,
+    sort_order: items.length,
+    purchase_price: 0,
+    sale_price_usd: 0,
+    fba_fee_usd: 0,
+    weight_lb: 0,
+  };
+  items.push(newIt);
+  markDirty();
+  renderTable();
+}
+
+function cloneRow(key) {
+  const it = findItem(key);
+  if (!it) return;
+  const copy = { ...it };
+  delete copy.id;
+  copy._key = 'new_' + Date.now();
+  copy._modified = true;
+  copy.spec = (copy.spec || '') + ' (副本)';
+  copy.sort_order = items.length;
+  items.push(copy);
+  markDirty();
+  renderTable();
+}
+
+async function deleteRow(key) {
+  const it = findItem(key);
+  if (!it) return;
+  if (!confirm('确定删除该产品？')) return;
+  if (it.id) {
+    try { await api('/api/amazon/margin-items/' + it.id, { method:'DELETE' }); } catch (e) { return showToast(e.message,'err'); }
+  }
+  items = items.filter(x => (x._key || x.id) !== key);
+  renderTable();
+  if (!items.some(x => x._modified)) markClean();
+  showToast('已删除', 'ok');
+}
+
+async function saveAll() {
+  const toSave = items.filter(it => it._modified).map(it => {
+    const o = {
+      category_code: it.category_code || currentCat,
+      sort_order: it.sort_order || 0,
+      image_url: it.image_url,
+      spec: it.spec,
+      amperage: it.amperage,
+      asin: it.asin,
+      sku: it.sku,
+      purchase_price: Number(it.purchase_price || 0),
+      sale_price_usd: Number(it.sale_price_usd || 0),
+      exchange_rate: it.exchange_rate != null && it.exchange_rate !== '' ? Number(it.exchange_rate) : null,
+      commission_rate: it.commission_rate != null && it.commission_rate !== '' ? Number(it.commission_rate) : null,
+      fba_fee_usd: Number(it.fba_fee_usd || 0),
+      weight_lb: Number(it.weight_lb || 0),
+      freight_per_kg: it.freight_per_kg != null && it.freight_per_kg !== '' ? Number(it.freight_per_kg) : null,
+    };
+    if (it.id) o.id = it.id;
+    return o;
+  });
+  if (!toSave.length) { showToast('没有修改', 'ok'); return; }
+  try {
+    const r = await api('/api/amazon/margin-items/bulk', { method:'POST', body: JSON.stringify({ items: toSave }) });
+    showToast(`已保存 ${r.saved} 行`, 'ok');
+    markClean();
+    await loadItems();
+  } catch (e) { showToast('保存失败：' + e.message, 'err'); }
+}
+
+function onConfigChange() {
+  // 改了 cfgBar 的字段，立即更新本地 config 并重算（不立刻保存到服务器）
+  config.exchange_rate = Number(document.getElementById('cfgRate').value) || 7.2;
+  config.commission_rate = Number(document.getElementById('cfgCommission').value) || 15;
+  config.freight_per_kg = Number(document.getElementById('cfgFreight').value) || 7.5;
+  renderTable();
+  markDirty();
+}
+
+function updateSummary() {
+  document.getElementById('statCount').textContent = items.length;
+  if (!items.length) {
+    document.getElementById('statAvgMargin').textContent = '-';
+    document.getElementById('statMaxMargin').textContent = '-';
+    document.getElementById('statAlert').textContent = '0';
+    return;
+  }
+  let sumPct = 0, maxPct = -999, alertCnt = 0, valid = 0;
+  for (const it of items) {
+    const rate = Number(it.exchange_rate || config.exchange_rate);
+    const commRate = Number(it.commission_rate || config.commission_rate) / 100;
+    const freightRate = Number(it.freight_per_kg || config.freight_per_kg);
+    const rmbSale = Number(it.sale_price_usd || 0) * rate;
+    if (rmbSale <= 0) continue;
+    const profit = rmbSale - rmbSale*commRate - Number(it.fba_fee_usd||0)*rate - Number(it.weight_lb||0)*0.4536*freightRate - Number(it.purchase_price||0);
+    const pct = profit / rmbSale * 100;
+    sumPct += pct; valid++;
+    if (pct > maxPct) maxPct = pct;
+    if (pct < 20) alertCnt++;
+  }
+  document.getElementById('statAvgMargin').textContent = valid ? (sumPct/valid).toFixed(2) + '%' : '-';
+  document.getElementById('statMaxMargin').textContent = valid ? maxPct.toFixed(2) + '%' : '-';
+  document.getElementById('statAlert').textContent = alertCnt;
+}
+
+// ── 新增类目弹窗 ──
+function openCatModal() { document.getElementById('catModal').classList.add('open'); }
+function closeCatModal() { document.getElementById('catModal').classList.remove('open'); }
+async function saveCat() {
+  const code = document.getElementById('catCode').value.trim().toLowerCase();
+  const name_cn = document.getElementById('catNameCn').value.trim();
+  const name_en = document.getElementById('catNameEn').value.trim();
+  if (!code || !name_cn) return showToast('类目代码和中文名必填', 'err');
+  try {
+    const r = await api('/api/amazon/categories', { method:'POST', body: JSON.stringify({ code, name_cn, name_en, sort_order: categories.length }) });
+    showToast('已新增类目', 'ok');
+    categories.push(r.data);
+    currentCat = code;
+    closeCatModal();
+    document.getElementById('catCode').value = '';
+    document.getElementById('catNameCn').value = '';
+    document.getElementById('catNameEn').value = '';
+    renderTabs();
+    await loadItems();
+  } catch (e) { showToast('保存失败：' + e.message, 'err'); }
+}
+
+// ── 全局设置弹窗 ──
+function openSettings() {
+  document.getElementById('setModal').classList.add('open');
+  document.getElementById('setRate').value = config.exchange_rate;
+  document.getElementById('setCommission').value = config.commission_rate;
+  document.getElementById('setFreight').value = config.freight_per_kg;
+  // SP-API
+  api('/api/amazon/op-config').then(c => {
+    document.getElementById('setClientId').value = c.sp_api_client_id || '';
+    document.getElementById('setSellerId').value = c.sp_api_seller_id || '';
+    document.getElementById('setMarketplaceId').value = c.sp_api_marketplace_id || 'ATVPDKIKX0DER';
+    document.getElementById('secretSet').textContent = c.sp_api_secret_set ? '（已设置）' : '';
+    document.getElementById('tokenSet').textContent = c.sp_api_refresh_token_set ? '（已设置）' : '';
+    document.getElementById('spStatus').innerHTML = c.sp_api_last_sync
+      ? `✅ 上次同步：${new Date(c.sp_api_last_sync).toLocaleString('zh-CN')}`
+      : '⚪ 尚未同步过，填齐凭证后可点「测试连接」';
+  });
+}
+function closeSettings() { document.getElementById('setModal').classList.remove('open'); }
+async function saveSettings() {
+  const body = {
+    exchange_rate: document.getElementById('setRate').value,
+    commission_rate: document.getElementById('setCommission').value,
+    freight_per_kg: document.getElementById('setFreight').value,
+    sp_api_client_id: document.getElementById('setClientId').value.trim(),
+    sp_api_seller_id: document.getElementById('setSellerId').value.trim(),
+    sp_api_marketplace_id: document.getElementById('setMarketplaceId').value.trim(),
+  };
+  const secret = document.getElementById('setClientSecret').value.trim();
+  const refresh = document.getElementById('setRefreshToken').value.trim();
+  if (secret) body.sp_api_client_secret = secret;
+  if (refresh) body.sp_api_refresh_token = refresh;
+  try {
+    await api('/api/amazon/op-config', { method:'PUT', body: JSON.stringify(body) });
+    await loadConfig();
+    document.getElementById('cfgRate').value = config.exchange_rate;
+    document.getElementById('cfgCommission').value = config.commission_rate;
+    document.getElementById('cfgFreight').value = config.freight_per_kg;
+    showToast('已保存', 'ok');
+    renderTable();
+    closeSettings();
+  } catch (e) { showToast('保存失败：' + e.message, 'err'); }
+}
+async function testSpApi() {
+  document.getElementById('spStatus').textContent = '⏳ 测试中...';
+  try {
+    const r = await api('/api/amazon/sp-api/sync', { method:'POST' });
+    document.getElementById('spStatus').innerHTML = '✅ ' + (r.message || '连接成功');
+  } catch (e) {
+    document.getElementById('spStatus').innerHTML = '❌ ' + e.message;
+  }
+}
+
+// Init
+(async function init() {
+  await loadConfig();
+  await loadCategories();
+  if (currentCat) await loadItems();
+})();
+</script>
+</body>
+</html>

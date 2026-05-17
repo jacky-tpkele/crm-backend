@@ -2560,4 +2560,327 @@ app.post('/api/amazon/competitors/refresh-all', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
+// ════════════════════════════════════════════════════════════
+// v2.9: 亚马逊运营升级
+//   - 类目 amazon_categories
+//   - 全局配置 amazon_op_config（含 SP-API 凭证）
+//   - 产品毛利 amazon_margin_items
+//   - 竞品品牌 amazon_competitor_brands
+//   - 竞品关键词 amazon_brand_keywords
+//   - SP-API 同步占位
+//   - CSV 批量导入
+// ════════════════════════════════════════════════════════════
+
+// ── 类目 ──
+app.get('/api/amazon/categories', auth, async (req, res) => {
+  try { res.json(await sb('amazon_categories?is_active=eq.true&order=sort_order.asc&select=*')); }
+  catch (e) { res.status(500).json({ message: e.message }); }
+});
+app.post('/api/amazon/categories', auth, async (req, res) => {
+  try {
+    const { code, name_cn, name_en, sort_order } = req.body || {};
+    if (!code || !name_cn) return res.status(400).json({ message: 'code + name_cn required' });
+    const data = await sb('amazon_categories?select=*', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify({ code: code.toLowerCase(), name_cn, name_en, sort_order: sort_order || 0 }),
+    });
+    res.json({ success: true, data: data[0] });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+app.put('/api/amazon/categories/:id', auth, async (req, res) => {
+  try { await sb(`amazon_categories?id=eq.${req.params.id}`, { method:'PATCH', body:JSON.stringify(req.body) }); res.json({success:true}); }
+  catch (e) { res.status(500).json({ message: e.message }); }
+});
+app.delete('/api/amazon/categories/:id', auth, async (req, res) => {
+  try { await sb(`amazon_categories?id=eq.${req.params.id}`, { method:'PATCH', body:JSON.stringify({is_active:false}) }); res.json({success:true}); }
+  catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// ── 全局运营配置 ──
+app.get('/api/amazon/op-config', auth, async (req, res) => {
+  try {
+    const rows = await sb('amazon_op_config?id=eq.1&select=*');
+    const c = rows[0] || {};
+    // 不返回敏感凭证明文，仅返回是否已设置
+    res.json({
+      exchange_rate: Number(c.exchange_rate || 7.2),
+      commission_rate: Number(c.commission_rate || 15),
+      freight_per_kg: Number(c.freight_per_kg || 7.5),
+      sp_api_client_id: c.sp_api_client_id || '',
+      sp_api_seller_id: c.sp_api_seller_id || '',
+      sp_api_marketplace_id: c.sp_api_marketplace_id || 'ATVPDKIKX0DER',
+      sp_api_secret_set: !!c.sp_api_client_secret,
+      sp_api_refresh_token_set: !!c.sp_api_refresh_token,
+      sp_api_last_sync: c.sp_api_last_sync,
+    });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+app.put('/api/amazon/op-config', auth, async (req, res) => {
+  try {
+    const b = req.body || {};
+    const patch = { updated_at: new Date().toISOString() };
+    if (b.exchange_rate != null) patch.exchange_rate = Number(b.exchange_rate);
+    if (b.commission_rate != null) patch.commission_rate = Number(b.commission_rate);
+    if (b.freight_per_kg != null) patch.freight_per_kg = Number(b.freight_per_kg);
+    if (b.sp_api_client_id !== undefined) patch.sp_api_client_id = b.sp_api_client_id || null;
+    if (b.sp_api_seller_id !== undefined) patch.sp_api_seller_id = b.sp_api_seller_id || null;
+    if (b.sp_api_marketplace_id) patch.sp_api_marketplace_id = b.sp_api_marketplace_id;
+    if (b.sp_api_client_secret) patch.sp_api_client_secret = encryptText(b.sp_api_client_secret);
+    if (b.sp_api_refresh_token) patch.sp_api_refresh_token = encryptText(b.sp_api_refresh_token);
+    await sb('amazon_op_config?id=eq.1', { method:'PATCH', body: JSON.stringify(patch) });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// ── 产品毛利 ──
+app.get('/api/amazon/margin-items', auth, async (req, res) => {
+  try {
+    const { category } = req.query;
+    let url = 'amazon_margin_items?is_active=eq.true&order=category_code.asc,sort_order.asc&select=*';
+    if (category) url = `amazon_margin_items?is_active=eq.true&category_code=eq.${category}&order=sort_order.asc&select=*`;
+    res.json(await sb(url));
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+app.post('/api/amazon/margin-items', auth, async (req, res) => {
+  try {
+    const data = await sb('amazon_margin_items?select=*', {
+      method:'POST',
+      headers:{'Prefer':'return=representation'},
+      body: JSON.stringify(req.body),
+    });
+    res.json({ success:true, data: data[0] });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+app.put('/api/amazon/margin-items/:id', auth, async (req, res) => {
+  try {
+    await sb(`amazon_margin_items?id=eq.${req.params.id}`, {
+      method:'PATCH',
+      body: JSON.stringify({ ...req.body, updated_at: new Date().toISOString() }),
+    });
+    res.json({ success:true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+app.delete('/api/amazon/margin-items/:id', auth, async (req, res) => {
+  try {
+    await sb(`amazon_margin_items?id=eq.${req.params.id}`, { method:'PATCH', body: JSON.stringify({is_active:false}) });
+    res.json({ success:true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+// 批量保存：前端编辑后整批 upsert（id 存在则改、无则建）
+app.post('/api/amazon/margin-items/bulk', auth, async (req, res) => {
+  try {
+    const items = Array.isArray(req.body?.items) ? req.body.items : [];
+    let saved = 0;
+    for (const it of items) {
+      if (it.id) {
+        await sb(`amazon_margin_items?id=eq.${it.id}`, {
+          method:'PATCH',
+          body: JSON.stringify({ ...it, id: undefined, updated_at: new Date().toISOString() }),
+        });
+      } else {
+        await sb('amazon_margin_items', { method:'POST', body: JSON.stringify(it) });
+      }
+      saved++;
+    }
+    res.json({ success:true, saved });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// ── 竞品品牌 ──
+app.get('/api/amazon/comp-brands', auth, async (req, res) => {
+  try {
+    const { category } = req.query;
+    let url = 'amazon_competitor_brands?is_active=eq.true&order=sort_order.asc,brand_name.asc&select=*';
+    if (category) url = `amazon_competitor_brands?is_active=eq.true&category_code=eq.${category}&order=sort_order.asc&select=*`;
+    res.json(await sb(url));
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+app.post('/api/amazon/comp-brands', auth, async (req, res) => {
+  try {
+    const data = await sb('amazon_competitor_brands?select=*', {
+      method:'POST',
+      headers:{'Prefer':'return=representation'},
+      body: JSON.stringify(req.body),
+    });
+    res.json({ success:true, data: data[0] });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+app.put('/api/amazon/comp-brands/:id', auth, async (req, res) => {
+  try { await sb(`amazon_competitor_brands?id=eq.${req.params.id}`, { method:'PATCH', body:JSON.stringify(req.body) }); res.json({success:true}); }
+  catch (e) { res.status(500).json({ message: e.message }); }
+});
+app.delete('/api/amazon/comp-brands/:id', auth, async (req, res) => {
+  try { await sb(`amazon_competitor_brands?id=eq.${req.params.id}`, { method:'PATCH', body:JSON.stringify({is_active:false}) }); res.json({success:true}); }
+  catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// ── 竞品关键词调研 ──
+app.get('/api/amazon/brand-keywords', auth, async (req, res) => {
+  try {
+    const { brand_id, category, keyword } = req.query;
+    const parts = [];
+    if (brand_id) parts.push(`brand_id=eq.${brand_id}`);
+    if (keyword) parts.push(`keyword=ilike.%25${encodeURIComponent(keyword)}%25`);
+    let url = 'amazon_brand_keywords?' + parts.join('&') + (parts.length ? '&' : '') + 'order=brand_id.asc,organic_rank.asc&select=*';
+    let rows = await sb(url);
+    if (category) {
+      // 按 brand 的 category 过滤
+      const brands = await sb(`amazon_competitor_brands?category_code=eq.${category}&select=id`);
+      const ids = new Set(brands.map(b => b.id));
+      rows = rows.filter(r => ids.has(r.brand_id));
+    }
+    res.json(rows);
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+app.post('/api/amazon/brand-keywords', auth, async (req, res) => {
+  try {
+    const data = await sb('amazon_brand_keywords?select=*', {
+      method:'POST',
+      headers:{'Prefer':'return=representation'},
+      body: JSON.stringify(req.body),
+    });
+    res.json({ success:true, data: data[0] });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+app.put('/api/amazon/brand-keywords/:id', auth, async (req, res) => {
+  try { await sb(`amazon_brand_keywords?id=eq.${req.params.id}`, { method:'PATCH', body:JSON.stringify(req.body) }); res.json({success:true}); }
+  catch (e) { res.status(500).json({ message: e.message }); }
+});
+app.delete('/api/amazon/brand-keywords/:id', auth, async (req, res) => {
+  try { await sb(`amazon_brand_keywords?id=eq.${req.params.id}`, { method:'DELETE' }); res.json({success:true}); }
+  catch (e) { res.status(500).json({ message: e.message }); }
+});
+// 批量导入（CSV / 粘贴）
+app.post('/api/amazon/brand-keywords/bulk', auth, async (req, res) => {
+  try {
+    const { brand_id, rows } = req.body || {};
+    if (!brand_id || !Array.isArray(rows) || !rows.length) return res.status(400).json({ message:'brand_id + rows required' });
+    const today = new Date().toISOString().slice(0,10);
+    const payload = rows
+      .filter(r => r && r.keyword)
+      .map(r => ({
+        brand_id,
+        keyword: String(r.keyword).trim(),
+        organic_rank: r.organic_rank != null ? Number(r.organic_rank) : null,
+        organic_traffic_pct: r.organic_traffic_pct != null ? Number(r.organic_traffic_pct) : null,
+        ad_traffic_pct: r.ad_traffic_pct != null ? Number(r.ad_traffic_pct) : null,
+        snapshot_date: r.snapshot_date || today,
+      }));
+    if (!payload.length) return res.json({ success:true, saved:0 });
+    await sb('amazon_brand_keywords', { method:'POST', body: JSON.stringify(payload) });
+    res.json({ success:true, saved: payload.length });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+// 聚合视图：所有品牌共同关键词矩阵
+app.get('/api/amazon/brand-keywords/matrix', auth, async (req, res) => {
+  try {
+    const { category } = req.query;
+    let brandUrl = 'amazon_competitor_brands?is_active=eq.true&order=sort_order.asc&select=*';
+    if (category) brandUrl = `amazon_competitor_brands?is_active=eq.true&category_code=eq.${category}&order=sort_order.asc&select=*`;
+    const brands = await sb(brandUrl);
+    if (!brands.length) return res.json({ brands: [], keywords: [], matrix: {} });
+    const ids = brands.map(b => b.id).join(',');
+    const kws = await sb(`amazon_brand_keywords?brand_id=in.(${ids})&select=*`);
+    // 取每个 (brand, keyword) 的最新快照
+    const latest = new Map();   // key brand_id|keyword
+    for (const k of kws) {
+      const key = `${k.brand_id}|${k.keyword.toLowerCase()}`;
+      const prev = latest.get(key);
+      if (!prev || (k.snapshot_date || '') > (prev.snapshot_date || '')) latest.set(key, k);
+    }
+    const kwSet = new Set();
+    for (const k of latest.values()) kwSet.add(k.keyword.toLowerCase());
+    const keywords = [...kwSet].sort();
+    const matrix = {};
+    for (const kw of keywords) {
+      matrix[kw] = {};
+      for (const b of brands) {
+        const v = latest.get(`${b.id}|${kw}`);
+        if (v) matrix[kw][b.id] = { rank: v.organic_rank, organic: v.organic_traffic_pct, ad: v.ad_traffic_pct };
+      }
+    }
+    res.json({ brands, keywords, matrix });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// ── SP-API 占位接口 ──
+// 测试连接：检查凭证是否填齐（不真正调用，避免没注册开发者时报错）
+app.get('/api/amazon/sp-api/status', auth, async (req, res) => {
+  try {
+    const rows = await sb('amazon_op_config?id=eq.1&select=sp_api_client_id,sp_api_client_secret,sp_api_refresh_token,sp_api_seller_id,sp_api_marketplace_id,sp_api_last_sync');
+    const c = rows[0] || {};
+    const ready = !!(c.sp_api_client_id && c.sp_api_client_secret && c.sp_api_refresh_token && c.sp_api_seller_id);
+    res.json({
+      ready,
+      last_sync: c.sp_api_last_sync || null,
+      marketplace_id: c.sp_api_marketplace_id || 'ATVPDKIKX0DER',
+      missing: [
+        !c.sp_api_client_id && 'client_id',
+        !c.sp_api_client_secret && 'client_secret',
+        !c.sp_api_refresh_token && 'refresh_token',
+        !c.sp_api_seller_id && 'seller_id',
+      ].filter(Boolean),
+    });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 手动触发同步：调试时用，先实现简单的 LWA token 获取
+app.post('/api/amazon/sp-api/sync', auth, async (req, res) => {
+  try {
+    const rows = await sb('amazon_op_config?id=eq.1&select=*');
+    const c = rows[0] || {};
+    if (!c.sp_api_client_id || !c.sp_api_client_secret || !c.sp_api_refresh_token) {
+      return res.status(400).json({ message: '请先在设置页填写 SP-API 凭证（client_id / client_secret / refresh_token）' });
+    }
+    const clientSecret = decryptText(c.sp_api_client_secret);
+    const refreshToken = decryptText(c.sp_api_refresh_token);
+    // 1. 用 refresh_token 换 access_token (LWA)
+    const tokenRes = await fetch('https://api.amazon.com/auth/o2/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        refresh_token: refreshToken,
+        client_id: c.sp_api_client_id,
+        client_secret: clientSecret,
+      }),
+    });
+    const tokenJson = await tokenRes.json();
+    if (!tokenJson.access_token) {
+      return res.status(500).json({ message: 'LWA token 获取失败', detail: tokenJson });
+    }
+    // 2. TODO: 用 access_token 调 SP-API 报告接口拉取数据
+    // 这里先返回成功，后续等用户注册好开发者再实现真实数据抓取
+    await sb('amazon_op_config?id=eq.1', { method:'PATCH', body: JSON.stringify({ sp_api_last_sync: new Date().toISOString() }) });
+    res.json({ success: true, message: 'LWA 连接成功，数据同步接口预留中', has_token: true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// ── CSV 批量导入：通用（按表名 + 列映射）──
+// 前端把 CSV 解析成 rows 后调用此接口
+app.post('/api/amazon/csv-import/competitors', auth, async (req, res) => {
+  try {
+    const { rows, brand_id, category_code } = req.body || {};
+    if (!Array.isArray(rows) || !rows.length) return res.status(400).json({ message: 'rows required' });
+    const payload = rows.filter(r => r.asin).map(r => ({
+      asin: String(r.asin).trim().toUpperCase(),
+      brand_id: brand_id || null,
+      category_code: category_code || null,
+      brand: r.brand || null,
+      title: r.title || null,
+      image_url: r.image_url || null,
+      amperage: r.amperage || null,
+      monthly_sales: r.monthly_sales || null,
+      price: r.price != null ? Number(r.price) : null,
+      bsr: r.bsr != null ? Number(r.bsr) : null,
+      rating: r.rating != null ? Number(r.rating) : null,
+      reviews: r.reviews != null ? Number(r.reviews) : null,
+    }));
+    if (!payload.length) return res.json({ success:true, saved:0 });
+    await sb('amazon_competitors', { method:'POST', body: JSON.stringify(payload) });
+    res.json({ success:true, saved: payload.length });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
 module.exports = app;

@@ -57,6 +57,40 @@ button,input,select,textarea{font:inherit}
 .comp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
 .comp-card{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:16px;transition:.15s;cursor:default}
 .comp-card:hover{border-color:rgba(16,185,129,.3)}
+
+/* Brand group section */
+.brand-section{margin-bottom:22px}
+.brand-section-head{display:flex;align-items:center;gap:12px;margin-bottom:10px;padding:8px 12px;background:linear-gradient(90deg,rgba(16,185,129,.08),transparent);border-left:3px solid var(--p1);border-radius:6px}
+.brand-section-head .b-logo{width:36px;height:36px;border-radius:6px;object-fit:cover;background:rgba(255,255,255,.04);border:1px solid var(--border)}
+.brand-section-head .b-name{font-size:14px;font-weight:600;color:var(--text)}
+.brand-section-head .b-meta{font-size:11.5px;color:var(--muted);margin-left:auto}
+
+/* Brand keyword view - horizontal columns */
+.bkw-cols{display:flex;gap:14px;min-height:200px}
+.bkw-col{flex:0 0 320px;background:var(--panel2);border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;max-height:75vh}
+.bkw-col-head{padding:10px 12px;border-bottom:1px solid var(--border);font-weight:600;font-size:13px;color:var(--p1);background:rgba(16,185,129,.04);position:sticky;top:0;border-radius:10px 10px 0 0}
+.bkw-col-body{flex:1;overflow-y:auto;padding:6px}
+.bkw-row{display:grid;grid-template-columns:1fr 28px 60px 60px;gap:4px;padding:5px 8px;border-radius:5px;font-size:11.5px;align-items:center}
+.bkw-row:hover{background:rgba(0,200,255,.05)}
+.bkw-row .kw{color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bkw-row .rank{text-align:center;color:var(--muted2);font-weight:600}
+.bkw-row .rank.top3{color:var(--success)}
+.bkw-row .rank.top10{color:var(--warning)}
+.bkw-row .pct{text-align:right;color:var(--muted2);font-feature-settings:"tnum"}
+.bkw-row .pct.hot{color:var(--danger);font-weight:600}
+.bkw-row .pct.ad-hot{color:var(--warning)}
+.bkw-col-empty{padding:30px 12px;text-align:center;color:var(--muted);font-size:12px}
+
+/* Matrix view */
+.bkw-matrix{width:100%;font-size:11.5px}
+.bkw-matrix th{position:sticky;top:0;background:var(--panel2);z-index:2;text-align:center}
+.bkw-matrix th:first-child{text-align:left;left:0;z-index:3;min-width:200px}
+.bkw-matrix td{text-align:center;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.04)}
+.bkw-matrix td:first-child{text-align:left;font-weight:500;color:var(--text);position:sticky;left:0;background:var(--panel);z-index:1}
+.bkw-cell{display:flex;flex-direction:column;align-items:center;gap:1px;font-size:10.5px;line-height:1.3}
+.bkw-cell .r{font-weight:700;color:var(--text)}
+.bkw-cell .p{color:var(--muted)}
+.bkw-cell.empty{color:var(--muted)}
 .comp-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
 .comp-img{width:56px;height:56px;border-radius:8px;object-fit:cover;border:1px solid var(--border);background:rgba(255,255,255,.04)}
 .comp-img-empty{width:56px;height:56px;border-radius:8px;display:grid;place-items:center;font-size:24px;background:rgba(255,255,255,.04);border:1px solid var(--border)}
@@ -132,9 +166,10 @@ td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04)}
     <div class="nav-item" onclick="location.href='dashboard.html'"><span class="nav-icon">📊</span><span data-i18n="navDashboard">仪表盘</span></div>
     <div class="nav-item" onclick="location.href='dashboard.html'"><span class="nav-icon">◍</span><span data-i18n="navOrders">订单管理</span></div>
     <div class="nav-group" data-i18n="navAmazon">亚马逊运营</div>
+    <div class="nav-item" onclick="location.href='amazon-margin.html'"><span class="nav-icon">💰</span><span data-i18n="navMargin">产品毛利</span></div>
     <div class="nav-item" onclick="location.href='amazon-inventory.html'"><span class="nav-icon">📦</span><span data-i18n="navInventory">库存智能补货</span></div>
-    <div class="nav-item" onclick="location.href='amazon-ads.html'"><span class="nav-icon">📢</span><span data-i18n="navAds">广告管理</span></div>
     <div class="nav-item active"><span class="nav-icon">🔍</span><span data-i18n="navResearch">竞品调研</span></div>
+    <div class="nav-item" onclick="location.href='amazon-ads.html'"><span class="nav-icon">📢</span><span data-i18n="navAds">广告管理</span></div>
   </div>
 </div>
 
@@ -152,7 +187,14 @@ td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04)}
   <div class="workspace">
     <div class="tabs">
       <div class="tab active" data-tab="competitors" onclick="switchTab('competitors')" data-i18n="tabCompetitors">竞品追踪</div>
-      <div class="tab" data-tab="keywords" onclick="switchTab('keywords')" data-i18n="tabKeywords">关键词库</div>
+      <div class="tab" data-tab="brands" onclick="switchTab('brands')" data-i18n="tabBrands">品牌管理</div>
+      <div class="tab" data-tab="brand-kw" onclick="switchTab('brand-kw')" data-i18n="tabBrandKw">竞品关键词</div>
+      <div class="tab" data-tab="keywords" onclick="switchTab('keywords')" data-i18n="tabKeywords">自家关键词</div>
+      <div style="flex:1"></div>
+      <div style="display:flex;align-items:center;gap:6px;padding:0 10px">
+        <span style="font-size:11.5px;color:var(--muted)">类目筛选：</span>
+        <select id="catFilter" onchange="onCatFilterChange()" style="background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:12.5px"><option value="">全部</option></select>
+      </div>
     </div>
 
     <!-- Tab: Competitors -->
@@ -165,7 +207,53 @@ td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04)}
       </div>
     </div>
 
-    <!-- Tab: Keywords -->
+    <!-- Tab: Brands -->
+    <div class="tab-content" id="tab-brands">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">竞品品牌管理</span>
+          <button class="btn btn-primary" onclick="openBrandModal()">＋ 新增品牌</button>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th style="width:60px">Logo</th>
+              <th>品牌名</th>
+              <th>类目</th>
+              <th>ASIN 数</th>
+              <th>平均价</th>
+              <th>排序</th>
+              <th>备注</th>
+              <th>操作</th>
+            </tr></thead>
+            <tbody id="brandTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Brand Keywords (competitor keyword research matrix) -->
+    <div class="tab-content" id="tab-brand-kw">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">竞品关键词调研（按品牌横向对比）</span>
+          <select id="bkwBrandSel" style="background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--text);font-size:12.5px"></select>
+          <button class="btn" onclick="openBkwAddModal()">＋ 添加关键词</button>
+          <button class="btn" onclick="openBkwPasteModal()">📋 粘贴导入</button>
+          <button class="btn btn-primary" onclick="toggleBkwView()" id="bkwViewBtn">📊 切换视图</button>
+        </div>
+        <div id="bkwViewBrand" class="bkw-view">
+          <!-- 横向品牌列视图 -->
+          <div id="bkwBrandCols" style="overflow-x:auto;padding-bottom:8px"></div>
+        </div>
+        <div id="bkwViewMatrix" class="bkw-view" style="display:none">
+          <!-- 关键词聚合矩阵 -->
+          <div id="bkwMatrix" style="overflow:auto;max-height:70vh"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Keywords (own keyword library) -->
     <div class="tab-content" id="tab-keywords">
       <div class="card">
         <div class="card-head">
@@ -202,14 +290,26 @@ td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04)}
     <div class="modal-body">
       <div class="form-grid">
         <div class="field"><label>ASIN *</label><input id="fc-asin" placeholder="B0XXXXXXXX"></div>
-        <div class="field"><label data-i18n="lblBrand">品牌</label><input id="fc-brand"></div>
+        <div class="field"><label data-i18n="lblBrand">品牌</label>
+          <select id="fc-brand-select" onchange="onBrandSelectChange()" style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px">
+            <option value="">-- 选择已有品牌 --</option>
+          </select>
+        </div>
+        <div class="field"><label data-i18n="lblBrandManual">品牌（手填，仅当未选时生效）</label><input id="fc-brand"></div>
+        <div class="field"><label data-i18n="lblCategory">类目</label>
+          <select id="fc-cat-select" style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px">
+            <option value="">-- 选择类目 --</option>
+          </select>
+        </div>
+        <div class="field"><label>安培数</label><input id="fc-amperage" placeholder="例: 16A"></div>
         <div class="field" style="grid-column:1/-1"><label data-i18n="lblTitle">标题 *</label><input id="fc-title"></div>
         <div class="field" style="grid-column:1/-1"><label data-i18n="lblImageUrl">图片URL</label><input id="fc-image" placeholder="https://..."></div>
         <div class="field"><label data-i18n="lblPrice">价格($)</label><input id="fc-price" type="number" step="0.01"></div>
+        <div class="field"><label>月销量(文本)</label><input id="fc-monthlySales" placeholder="100+ / &lt;50 / 300+"></div>
         <div class="field"><label>BSR</label><input id="fc-bsr" type="number"></div>
         <div class="field"><label data-i18n="lblReviews">评论数</label><input id="fc-reviews" type="number"></div>
         <div class="field"><label data-i18n="lblRating">评分</label><input id="fc-rating" type="number" step="0.1" min="0" max="5"></div>
-        <div class="field" style="grid-column:1/-1"><label data-i18n="lblCategory">类目</label><input id="fc-category"></div>
+        <div class="field" style="grid-column:1/-1"><label data-i18n="lblCategoryText">类目文本(原始字段)</label><input id="fc-category"></div>
         <div class="field" style="grid-column:1/-1"><label data-i18n="lblNotes">备注</label><textarea id="fc-notes" rows="2"></textarea></div>
       </div>
     </div>
@@ -297,6 +397,72 @@ td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04)}
   </div>
 </div>
 
+<!-- Brand Modal -->
+<div class="modal-backdrop" id="brandModal" onclick="if(event.target===this)closeBrandModal()">
+  <div class="modal" style="width:480px">
+    <div class="modal-head"><h2 id="brandModalTitle">新增竞品品牌</h2><button class="modal-close" onclick="closeBrandModal()">×</button></div>
+    <div class="modal-body">
+      <div class="field"><label>品牌名 *</label><input id="fb-name"></div>
+      <div class="field"><label>类目</label>
+        <select id="fb-cat" style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px">
+          <option value="">-- 选择类目 --</option>
+        </select>
+      </div>
+      <div class="field"><label>Logo URL</label><input id="fb-logo" placeholder="https://..."></div>
+      <div class="field"><label>排序</label><input id="fb-order" type="number" value="0"></div>
+      <div class="field"><label>备注</label><textarea id="fb-notes" rows="2" style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" id="brandDeleteBtn" style="display:none;margin-right:auto" onclick="deleteBrand(editingBrandId)">删除</button>
+      <button class="btn" onclick="closeBrandModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveBrand()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Brand Keyword Add Modal -->
+<div class="modal-backdrop" id="bkwAddModal" onclick="if(event.target===this)closeBkwAddModal()">
+  <div class="modal" style="width:480px">
+    <div class="modal-head"><h2>添加竞品关键词</h2><button class="modal-close" onclick="closeBkwAddModal()">×</button></div>
+    <div class="modal-body">
+      <div class="field"><label>品牌 *</label>
+        <select id="fbkw-brand" style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px"></select>
+      </div>
+      <div class="field"><label>关键词 *</label><input id="fbkw-keyword"></div>
+      <div class="field"><label>自然排名</label><input id="fbkw-rank" type="number" min="1"></div>
+      <div class="field"><label>自然流量占比 %</label><input id="fbkw-organic" type="number" step="0.01" placeholder="例: 25.82"></div>
+      <div class="field"><label>广告流量占比 %</label><input id="fbkw-ad" type="number" step="0.01" placeholder="留空=未投广告"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeBkwAddModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveBkwAdd()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Brand Keyword Paste Modal -->
+<div class="modal-backdrop" id="bkwPasteModal" onclick="if(event.target===this)closeBkwPasteModal()">
+  <div class="modal" style="width:680px">
+    <div class="modal-head"><h2>📋 粘贴导入竞品关键词</h2><button class="modal-close" onclick="closeBkwPasteModal()">×</button></div>
+    <div class="modal-body">
+      <div class="field"><label>目标品牌 *</label>
+        <select id="fbkwp-brand" style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px"></select>
+      </div>
+      <p style="font-size:12px;color:var(--muted2);line-height:1.5">
+        从 Excel 复制 4 列：<b>关键词 / 自然排名 / 自然流量占比 / 广告流量占比</b>，粘贴到下方文本框，每行一条。<br>
+        百分比可带 % 符号也可不带；广告占比为空时填 0 或留空。
+      </p>
+      <textarea id="fbkwp-text" rows="15" style="width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:12.5px;font-family:monospace;resize:vertical;margin-top:8px" placeholder="dc breaker	1	25.82%	12.14%
+dc circuit breaker	1	19.89%
+dc breaker solar	1	1.75%	"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeBkwPasteModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveBkwPaste()">导入</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <script>
 const token = localStorage.getItem('crm_token');
@@ -305,13 +471,18 @@ if (!token) location.href = 'login.html';
 let lang = localStorage.getItem('crm_lang') || 'zh';
 let competitors = [];
 let keywords = [];
+let brands = [];
+let categories = [];
+let bkwData = { brands: [], keywords: [], matrix: {} };
+let currentCatFilter = '';
+let bkwViewMode = 'brand';  // 'brand' or 'matrix'
 
 const I18N = {
   zh: {
     pageTitle:'🔍 竞品调研', navMain:'主菜单', navDashboard:'仪表盘', navOrders:'订单管理',
-    navAmazon:'亚马逊运营', navInventory:'库存智能补货', navAds:'广告管理', navResearch:'竞品调研',
+    navAmazon:'亚马逊运营', navMargin:'产品毛利', navInventory:'库存智能补货', navAds:'广告管理', navResearch:'竞品调研',
     btnAddCompetitor:'＋ 添加竞品', btnRefresh:'↻ 刷新', btnLookup:'🔎 ASIN 自动抓取', btnRefreshAll:'🔄 全部刷新',
-    tabCompetitors:'竞品追踪', tabKeywords:'关键词库',
+    tabCompetitors:'竞品追踪', tabBrands:'品牌管理', tabBrandKw:'竞品关键词', tabKeywords:'自家关键词',
     emptyCompetitors:'暂无竞品数据，点击添加开始追踪',
     kwTitle:'关键词库', btnBatchKw:'📤 批量添加', btnAddKw:'＋ 添加关键词',
     thKeyword:'关键词', thSource:'来源', thVolume:'搜索量', thCompetition:'竞争度',
@@ -327,9 +498,9 @@ const I18N = {
   },
   en: {
     pageTitle:'🔍 Competitor Research', navMain:'Main Menu', navDashboard:'Dashboard', navOrders:'Orders',
-    navAmazon:'Amazon Operations', navInventory:'Smart Inventory', navAds:'Ad Manager', navResearch:'Research',
+    navAmazon:'Amazon Operations', navMargin:'Margin', navInventory:'Smart Inventory', navAds:'Ad Manager', navResearch:'Research',
     btnAddCompetitor:'＋ Add Competitor', btnRefresh:'↻ Refresh', btnLookup:'🔎 ASIN Lookup', btnRefreshAll:'🔄 Refresh All',
-    tabCompetitors:'Competitor Tracking', tabKeywords:'Keyword Library',
+    tabCompetitors:'Tracking', tabBrands:'Brands', tabBrandKw:'Comp. Keywords', tabKeywords:'My Keywords',
     emptyCompetitors:'No competitors yet. Add one to start tracking.',
     kwTitle:'Keyword Library', btnBatchKw:'📤 Batch Add', btnAddKw:'＋ Add Keyword',
     thKeyword:'Keyword', thSource:'Source', thVolume:'Volume', thCompetition:'Competition',
@@ -369,56 +540,140 @@ function showToast(msg, type='ok') { const el=document.getElementById('toast'); 
 function switchTab(tab) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab===tab));
   document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id===`tab-${tab}`));
+  if (tab === 'brand-kw') loadBkw();
 }
 
 // === Data Loading ===
 async function loadData() {
   try {
-    const [compRes, kwRes] = await Promise.all([
+    const [compRes, kwRes, brRes, catRes] = await Promise.all([
       api('/api/amazon/competitors'),
-      api('/api/amazon/keywords')
+      api('/api/amazon/keywords'),
+      api('/api/amazon/comp-brands'),
+      api('/api/amazon/categories'),
     ]);
     competitors = Array.isArray(compRes) ? compRes : (compRes.data || []);
     keywords = Array.isArray(kwRes) ? kwRes : (kwRes.data || []);
-    renderCompetitors(); renderKeywords();
+    brands = Array.isArray(brRes) ? brRes : [];
+    categories = Array.isArray(catRes) ? catRes : [];
+    renderCatFilter();
+    renderBrandSelects();
+    renderCompetitors();
+    renderBrands();
+    renderKeywords();
+    if (document.querySelector('.tab.active')?.dataset.tab === 'brand-kw') loadBkw();
   } catch(e) { showToast(e.message,'err'); }
 }
 
-// === Render Competitors ===
+function renderCatFilter() {
+  const sel = document.getElementById('catFilter');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">全部类目</option>' + categories.map(c => `<option value="${c.code}">${esc(c.name_cn)}</option>`).join('');
+  sel.value = cur || currentCatFilter || '';
+}
+function onCatFilterChange() {
+  currentCatFilter = document.getElementById('catFilter').value || '';
+  renderCompetitors();
+  renderBrands();
+  if (document.querySelector('.tab.active')?.dataset.tab === 'brand-kw') loadBkw();
+}
+
+function renderBrandSelects() {
+  const opts = '<option value="">-- 选择已有品牌 --</option>' + brands.map(b => `<option value="${b.id}">${esc(b.brand_name)}${b.category_code ? ' ('+b.category_code+')' : ''}</option>`).join('');
+  const cats = '<option value="">-- 选择类目 --</option>' + categories.map(c => `<option value="${c.code}">${esc(c.name_cn)}</option>`).join('');
+  ['fc-brand-select'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = opts; });
+  ['fc-cat-select','fb-cat'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = cats; });
+  const fbkwBrand = document.getElementById('fbkw-brand');
+  if (fbkwBrand) fbkwBrand.innerHTML = brands.map(b => `<option value="${b.id}">${esc(b.brand_name)}</option>`).join('');
+  const fbkwpBrand = document.getElementById('fbkwp-brand');
+  if (fbkwpBrand) fbkwpBrand.innerHTML = brands.map(b => `<option value="${b.id}">${esc(b.brand_name)}</option>`).join('');
+  const bkwSel = document.getElementById('bkwBrandSel');
+  if (bkwSel) bkwSel.innerHTML = '<option value="">所有品牌</option>' + brands.map(b => `<option value="${b.id}">${esc(b.brand_name)}</option>`).join('');
+}
+
+function onBrandSelectChange() {
+  const sel = document.getElementById('fc-brand-select');
+  const txt = document.getElementById('fc-brand');
+  const b = brands.find(x => String(x.id) === sel.value);
+  if (b) { txt.value = b.brand_name; if (b.category_code) document.getElementById('fc-cat-select').value = b.category_code; }
+}
+
+// === Render Competitors (grouped by brand) ===
 function renderCompetitors() {
   const el = document.getElementById('competitorCards');
-  if (!competitors.length) {
+  let list = competitors;
+  if (currentCatFilter) list = list.filter(c => c.category_code === currentCatFilter);
+  if (!list.length) {
     el.innerHTML = `<div style="text-align:center;padding:60px;color:var(--muted)"><div style="font-size:36px;margin-bottom:12px">🔍</div><p>${t('emptyCompetitors')}</p></div>`;
     return;
   }
-  el.innerHTML = `<div class="comp-grid">${competitors.map(c => {
-    const img = c.image_url ? `<img class="comp-img" src="${esc(c.image_url)}" onerror="this.outerHTML='<div class=comp-img-empty>📦</div>'">` : `<div class="comp-img-empty">📦</div>`;
-    return `
-    <div class="comp-card">
-      <div class="comp-header">
-        ${img}
-        <div class="comp-info">
-          <div class="comp-title">${esc(c.title||'Untitled')}</div>
-          <div class="comp-meta">${esc(c.asin)} ${c.brand?'· '+esc(c.brand):''} ${c.category?'· '+esc(c.category):''}</div>
-        </div>
+  // 按 brand_id 分组（无品牌的归到「未分组」）
+  const groups = new Map();
+  for (const c of list) {
+    const key = c.brand_id || '__none__';
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(c);
+  }
+  let html = '';
+  // 先渲染有品牌的（按品牌 sort_order）
+  for (const b of brands) {
+    if (!groups.has(b.id)) continue;
+    const items = groups.get(b.id);
+    const avgPrice = items.filter(x=>x.price).reduce((s,x)=>s+Number(x.price),0) / (items.filter(x=>x.price).length||1);
+    const logoImg = b.logo_url ? `<img class="b-logo" src="${esc(b.logo_url)}" onerror="this.style.display='none'">` : `<div class="b-logo" style="display:grid;place-items:center;font-size:14px;color:var(--p1)">${esc((b.brand_name||'?').charAt(0))}</div>`;
+    html += `<div class="brand-section">
+      <div class="brand-section-head">
+        ${logoImg}
+        <div class="b-name">${esc(b.brand_name)}${b.category_code?' <span style="color:var(--muted);font-weight:400">/'+esc(b.category_code)+'</span>':''}</div>
+        <span class="b-meta">${items.length} ASIN · 平均 $${avgPrice.toFixed(2)}</span>
       </div>
-      <div class="comp-stats">
-        <div class="comp-stat"><div class="comp-stat-label">${t('lblPrice')}</div><div class="comp-stat-value">$${fmtN(c.price)}</div></div>
-        <div class="comp-stat"><div class="comp-stat-label">BSR</div><div class="comp-stat-value">${c.bsr?fmtN(c.bsr):'—'}</div></div>
-        <div class="comp-stat"><div class="comp-stat-label">${t('lblReviews')}</div><div class="comp-stat-value">${c.reviews?fmtN(c.reviews):'—'}</div></div>
-        <div class="comp-stat"><div class="comp-stat-label">${t('lblRating')}</div><div class="comp-stat-value">${c.rating||'—'}</div></div>
-        <div class="comp-stat"><div class="comp-stat-label">ASIN</div><div class="comp-stat-value" style="font-size:11px">${esc(c.asin)}</div></div>
-        <div class="comp-stat"><div class="comp-stat-label">${t('lblCategory')}</div><div class="comp-stat-value" style="font-size:11px">${esc(c.category||'—')}</div></div>
-      </div>
-      ${c.notes?`<div class="comp-notes">📝 ${esc(c.notes)}</div>`:''}
-      <div class="comp-actions">
-        <button class="btn btn-sm" onclick="editCompetitor('${c.id}')">${t('btnEdit')}</button>
-        <button class="btn btn-sm btn-warning" onclick="takeSnapshot('${c.id}')">${t('btnSnapshot')}</button>
-        <button class="btn btn-sm" onclick="viewHistory('${esc(c.asin)}','${esc(c.title||c.asin)}')">${t('btnHistory')}</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteCompetitor('${c.id}')">${t('btnDelete')}</button>
-      </div>
+      <div class="comp-grid">${items.map(competitorCardHTML).join('')}</div>
     </div>`;
-  }).join('')}</div>`;
+    groups.delete(b.id);
+  }
+  // 渲染未分组的
+  for (const [key, items] of groups.entries()) {
+    const title = key === '__none__' ? '未分组（无品牌）' : '未知品牌';
+    html += `<div class="brand-section">
+      <div class="brand-section-head" style="background:linear-gradient(90deg,rgba(148,163,184,.08),transparent);border-left-color:#94a3b8">
+        <div class="b-logo" style="display:grid;place-items:center;font-size:14px;color:#94a3b8">?</div>
+        <div class="b-name">${title}</div>
+        <span class="b-meta">${items.length} ASIN</span>
+      </div>
+      <div class="comp-grid">${items.map(competitorCardHTML).join('')}</div>
+    </div>`;
+  }
+  el.innerHTML = html;
+}
+
+function competitorCardHTML(c) {
+  const img = c.image_url ? `<img class="comp-img" src="${esc(c.image_url)}" onerror="this.outerHTML='<div class=comp-img-empty>📦</div>'">` : `<div class="comp-img-empty">📦</div>`;
+  return `
+  <div class="comp-card">
+    <div class="comp-header">
+      ${img}
+      <div class="comp-info">
+        <div class="comp-title">${esc(c.title||c.asin||'Untitled')}</div>
+        <div class="comp-meta">${esc(c.asin)} ${c.amperage?'· '+esc(c.amperage):''} ${c.monthly_sales?'· 月销 '+esc(c.monthly_sales):''}</div>
+      </div>
+    </div>
+    <div class="comp-stats">
+      <div class="comp-stat"><div class="comp-stat-label">${t('lblPrice')}</div><div class="comp-stat-value">$${fmtN(c.price)}</div></div>
+      <div class="comp-stat"><div class="comp-stat-label">BSR</div><div class="comp-stat-value">${c.bsr?fmtN(c.bsr):'—'}</div></div>
+      <div class="comp-stat"><div class="comp-stat-label">${t('lblReviews')}</div><div class="comp-stat-value">${c.reviews?fmtN(c.reviews):'—'}</div></div>
+      <div class="comp-stat"><div class="comp-stat-label">${t('lblRating')}</div><div class="comp-stat-value">${c.rating||'—'}</div></div>
+      <div class="comp-stat"><div class="comp-stat-label">销量</div><div class="comp-stat-value" style="font-size:12px">${esc(c.monthly_sales||'—')}</div></div>
+      <div class="comp-stat"><div class="comp-stat-label">${t('lblCategory')}</div><div class="comp-stat-value" style="font-size:11px">${esc(c.category||c.category_code||'—')}</div></div>
+    </div>
+    ${c.notes?`<div class="comp-notes">📝 ${esc(c.notes)}</div>`:''}
+    <div class="comp-actions">
+      <button class="btn btn-sm" onclick="editCompetitor('${c.id}')">${t('btnEdit')}</button>
+      <button class="btn btn-sm btn-warning" onclick="takeSnapshot('${c.id}')">${t('btnSnapshot')}</button>
+      <button class="btn btn-sm" onclick="viewHistory('${esc(c.asin)}','${esc(c.title||c.asin)}')">${t('btnHistory')}</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteCompetitor('${c.id}')">${t('btnDelete')}</button>
+    </div>
+  </div>`;
 }
 
 // === Render Keywords ===
@@ -451,7 +706,11 @@ function openCompetitorModal(id) {
   const c = id ? competitors.find(x=>String(x.id)===String(id)) : null;
   document.getElementById('compModalTitle').textContent = c ? t('modalEditComp') : t('modalAddComp');
   document.getElementById('fc-asin').value = c?.asin || '';
+  document.getElementById('fc-brand-select').value = c?.brand_id || '';
+  document.getElementById('fc-cat-select').value = c?.category_code || '';
   document.getElementById('fc-brand').value = c?.brand || '';
+  document.getElementById('fc-amperage').value = c?.amperage || '';
+  document.getElementById('fc-monthlySales').value = c?.monthly_sales || '';
   document.getElementById('fc-title').value = c?.title || '';
   document.getElementById('fc-image').value = c?.image_url || '';
   document.getElementById('fc-price').value = c?.price || '';
@@ -467,15 +726,25 @@ function editCompetitor(id) { openCompetitorModal(id); }
 function closeCompModal() { document.getElementById('compModal').classList.remove('open'); editingCompId=null; }
 
 async function saveCompetitor() {
+  const brand_id = document.getElementById('fc-brand-select').value || null;
+  let brand = document.getElementById('fc-brand').value.trim();
+  if (brand_id && !brand) {
+    const b = brands.find(x => String(x.id) === brand_id);
+    if (b) brand = b.brand_name;
+  }
   const payload = {
     asin: document.getElementById('fc-asin').value.trim(),
     title: document.getElementById('fc-title').value.trim(),
-    brand: document.getElementById('fc-brand').value.trim(),
+    brand: brand || null,
+    brand_id,
+    category_code: document.getElementById('fc-cat-select').value || null,
+    amperage: document.getElementById('fc-amperage').value.trim() || null,
+    monthly_sales: document.getElementById('fc-monthlySales').value.trim() || null,
     image_url: document.getElementById('fc-image').value.trim(),
-    price: parseFloat(document.getElementById('fc-price').value)||0,
-    bsr: parseInt(document.getElementById('fc-bsr').value)||0,
-    reviews: parseInt(document.getElementById('fc-reviews').value)||0,
-    rating: parseFloat(document.getElementById('fc-rating').value)||0,
+    price: parseFloat(document.getElementById('fc-price').value)||null,
+    bsr: parseInt(document.getElementById('fc-bsr').value)||null,
+    reviews: parseInt(document.getElementById('fc-reviews').value)||null,
+    rating: parseFloat(document.getElementById('fc-rating').value)||null,
     category: document.getElementById('fc-category').value.trim(),
     notes: document.getElementById('fc-notes').value.trim(),
   };
@@ -490,6 +759,254 @@ async function saveCompetitor() {
 async function deleteCompetitor(id) {
   if (!confirm('确定删除？')) return;
   try { await api(`/api/amazon/competitors/${id}`, {method:'DELETE'}); showToast(t('btnDelete')+'✓'); loadData(); } catch(e) { showToast(e.message,'err'); }
+}
+
+// === Brand management ===
+function renderBrands() {
+  const body = document.getElementById('brandTableBody');
+  if (!body) return;
+  let list = brands;
+  if (currentCatFilter) list = list.filter(b => b.category_code === currentCatFilter);
+  if (!list.length) {
+    body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--muted)">还没有品牌，点「＋ 新增品牌」开始</td></tr>';
+    return;
+  }
+  body.innerHTML = list.map(b => {
+    const items = competitors.filter(c => c.brand_id === b.id);
+    const prices = items.filter(c=>c.price).map(c=>Number(c.price));
+    const avg = prices.length ? (prices.reduce((s,x)=>s+x,0)/prices.length).toFixed(2) : '—';
+    const logo = b.logo_url ? `<img src="${esc(b.logo_url)}" style="width:32px;height:32px;border-radius:5px;object-fit:cover">` : `<div style="width:32px;height:32px;border-radius:5px;background:rgba(255,255,255,.04);display:inline-grid;place-items:center;color:var(--p1);font-weight:600">${esc((b.brand_name||'?').charAt(0))}</div>`;
+    return `<tr>
+      <td>${logo}</td>
+      <td style="font-weight:500">${esc(b.brand_name)}</td>
+      <td>${esc(b.category_code||'—')}</td>
+      <td>${items.length}</td>
+      <td>${avg==='—'?'—':'$'+avg}</td>
+      <td>${b.sort_order||0}</td>
+      <td style="font-size:12px;color:var(--muted2)">${esc(b.notes||'')}</td>
+      <td>
+        <button class="btn btn-sm" onclick="editBrand('${b.id}')">✎</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteBrand('${b.id}')">×</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+let editingBrandId = null;
+function openBrandModal() {
+  editingBrandId = null;
+  document.getElementById('brandModalTitle').textContent = '新增竞品品牌';
+  document.getElementById('fb-name').value = '';
+  document.getElementById('fb-cat').value = '';
+  document.getElementById('fb-logo').value = '';
+  document.getElementById('fb-order').value = 0;
+  document.getElementById('fb-notes').value = '';
+  document.getElementById('brandDeleteBtn').style.display = 'none';
+  document.getElementById('brandModal').classList.add('open');
+}
+function editBrand(id) {
+  editingBrandId = id;
+  const b = brands.find(x => String(x.id) === String(id));
+  if (!b) return;
+  document.getElementById('brandModalTitle').textContent = '编辑品牌';
+  document.getElementById('fb-name').value = b.brand_name || '';
+  document.getElementById('fb-cat').value = b.category_code || '';
+  document.getElementById('fb-logo').value = b.logo_url || '';
+  document.getElementById('fb-order').value = b.sort_order || 0;
+  document.getElementById('fb-notes').value = b.notes || '';
+  document.getElementById('brandDeleteBtn').style.display = '';
+  document.getElementById('brandModal').classList.add('open');
+}
+function closeBrandModal() { document.getElementById('brandModal').classList.remove('open'); editingBrandId = null; }
+async function saveBrand() {
+  const payload = {
+    brand_name: document.getElementById('fb-name').value.trim(),
+    category_code: document.getElementById('fb-cat').value || null,
+    logo_url: document.getElementById('fb-logo').value.trim() || null,
+    sort_order: parseInt(document.getElementById('fb-order').value) || 0,
+    notes: document.getElementById('fb-notes').value.trim() || null,
+  };
+  if (!payload.brand_name) return showToast('品牌名必填','err');
+  try {
+    if (editingBrandId) await api('/api/amazon/comp-brands/' + editingBrandId, { method:'PUT', body: payload });
+    else await api('/api/amazon/comp-brands', { method:'POST', body: payload });
+    closeBrandModal();
+    showToast('已保存','ok');
+    await loadData();
+  } catch (e) { showToast(e.message,'err'); }
+}
+async function deleteBrand(id) {
+  if (!confirm('确定删除该品牌？已关联的竞品 brand_id 会被清空')) return;
+  try {
+    await api('/api/amazon/comp-brands/' + id, { method:'DELETE' });
+    closeBrandModal();
+    showToast('已删除','ok');
+    await loadData();
+  } catch (e) { showToast(e.message,'err'); }
+}
+
+// === Brand Keywords (竞品关键词调研) ===
+async function loadBkw() {
+  try {
+    const params = new URLSearchParams();
+    if (currentCatFilter) params.set('category', currentCatFilter);
+    bkwData = await api('/api/amazon/brand-keywords/matrix?' + params.toString());
+    renderBkw();
+  } catch (e) { showToast(e.message, 'err'); }
+}
+function toggleBkwView() {
+  bkwViewMode = bkwViewMode === 'brand' ? 'matrix' : 'brand';
+  document.getElementById('bkwViewBtn').textContent = bkwViewMode === 'brand' ? '📊 切换矩阵视图' : '📋 切换品牌列视图';
+  document.getElementById('bkwViewBrand').style.display = bkwViewMode === 'brand' ? '' : 'none';
+  document.getElementById('bkwViewMatrix').style.display = bkwViewMode === 'matrix' ? '' : 'none';
+  renderBkw();
+}
+function renderBkw() {
+  if (bkwViewMode === 'brand') renderBkwBrandView();
+  else renderBkwMatrixView();
+}
+function rankClass(r) {
+  if (r == null) return '';
+  if (r <= 3) return 'top3';
+  if (r <= 10) return 'top10';
+  return '';
+}
+function renderBkwBrandView() {
+  const wrap = document.getElementById('bkwBrandCols');
+  const bs = bkwData.brands || [];
+  if (!bs.length) {
+    wrap.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">还没有品牌，先去「品牌管理」新增品牌</div>';
+    return;
+  }
+  // 每个品牌一列，列出该品牌的关键词（按排名）
+  let html = '<div class="bkw-cols">';
+  for (const b of bs) {
+    const rows = [];
+    for (const kw of bkwData.keywords) {
+      const cell = bkwData.matrix[kw]?.[b.id];
+      if (cell) rows.push({ kw, ...cell });
+    }
+    rows.sort((a,b) => (a.rank||9999) - (b.rank||9999));
+    html += `<div class="bkw-col">
+      <div class="bkw-col-head">${esc(b.brand_name)} <span style="color:var(--muted);font-weight:400;font-size:11px">(${rows.length} 词)</span></div>
+      <div class="bkw-col-body">`;
+    if (!rows.length) html += '<div class="bkw-col-empty">该品牌还没有关键词</div>';
+    for (const r of rows) {
+      const hot = (r.organic||0) >= 10 ? 'hot' : '';
+      const adHot = (r.ad||0) > (r.organic||0) * 1.5 ? 'ad-hot' : '';
+      html += `<div class="bkw-row">
+        <span class="kw" title="${esc(r.kw)}">${esc(r.kw)}</span>
+        <span class="rank ${rankClass(r.rank)}">${r.rank ?? '—'}</span>
+        <span class="pct ${hot}">${r.organic != null ? r.organic.toFixed(2)+'%' : '—'}</span>
+        <span class="pct ${adHot}">${r.ad != null ? r.ad.toFixed(2)+'%' : '—'}</span>
+      </div>`;
+    }
+    html += `</div></div>`;
+  }
+  html += '</div>';
+  // 列头说明
+  wrap.innerHTML = `<div style="font-size:11px;color:var(--muted);margin-bottom:8px;display:flex;gap:18px;flex-wrap:wrap">
+    <span>列：<b style="color:var(--text)">关键词 / 排名 / 自然% / 广告%</b></span>
+    <span><span style="color:var(--success)">●</span> 排名≤3</span>
+    <span><span style="color:var(--warning)">●</span> 排名≤10</span>
+    <span><span style="color:var(--danger)">●</span> 自然流量≥10%（核心词）</span>
+    <span><span style="color:var(--warning)">●</span> 广告占比&gt;自然1.5倍（对手在烧广告）</span>
+  </div>` + html;
+}
+function renderBkwMatrixView() {
+  const wrap = document.getElementById('bkwMatrix');
+  const bs = bkwData.brands || [];
+  const kws = bkwData.keywords || [];
+  if (!bs.length || !kws.length) {
+    wrap.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">暂无数据</div>';
+    return;
+  }
+  let html = '<table class="bkw-matrix"><thead><tr><th>关键词</th>';
+  for (const b of bs) html += `<th>${esc(b.brand_name)}</th>`;
+  html += '<th>判断</th></tr></thead><tbody>';
+  for (const kw of kws) {
+    const row = bkwData.matrix[kw];
+    if (!row) continue;
+    const ranks = Object.values(row).map(c => c.rank).filter(x => x != null);
+    const minRank = ranks.length ? Math.min(...ranks) : null;
+    let judge = '';
+    if (ranks.length >= 2 && minRank && minRank <= 3) judge = '🔥 核心大词';
+    else if (ranks.length >= 1 && minRank && minRank <= 5) judge = '⚡ 有机会';
+    else if (ranks.length <= 1) judge = '🆕 蓝海词';
+    html += `<tr><td>${esc(kw)}</td>`;
+    for (const b of bs) {
+      const c = row[b.id];
+      if (!c) html += '<td class="bkw-cell empty">—</td>';
+      else html += `<td><div class="bkw-cell"><span class="r ${rankClass(c.rank)}">#${c.rank ?? '?'}</span><span class="p">${c.organic != null ? c.organic.toFixed(1)+'%' : '-'}${c.ad != null ? ' / 广'+c.ad.toFixed(1)+'%' : ''}</span></div></td>`;
+    }
+    html += `<td style="font-size:11px;color:var(--muted2)">${judge}</td></tr>`;
+  }
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+function openBkwAddModal() {
+  if (!brands.length) return showToast('请先在「品牌管理」中新增品牌','err');
+  document.getElementById('fbkw-keyword').value = '';
+  document.getElementById('fbkw-rank').value = '';
+  document.getElementById('fbkw-organic').value = '';
+  document.getElementById('fbkw-ad').value = '';
+  document.getElementById('bkwAddModal').classList.add('open');
+}
+function closeBkwAddModal() { document.getElementById('bkwAddModal').classList.remove('open'); }
+async function saveBkwAdd() {
+  const payload = {
+    brand_id: document.getElementById('fbkw-brand').value,
+    keyword: document.getElementById('fbkw-keyword').value.trim(),
+    organic_rank: parseInt(document.getElementById('fbkw-rank').value) || null,
+    organic_traffic_pct: parseFloat(document.getElementById('fbkw-organic').value) || null,
+    ad_traffic_pct: parseFloat(document.getElementById('fbkw-ad').value) || null,
+  };
+  if (!payload.brand_id || !payload.keyword) return showToast('品牌和关键词必填','err');
+  try {
+    await api('/api/amazon/brand-keywords', { method:'POST', body: payload });
+    closeBkwAddModal();
+    showToast('已保存','ok');
+    await loadBkw();
+  } catch (e) { showToast(e.message,'err'); }
+}
+function openBkwPasteModal() {
+  if (!brands.length) return showToast('请先在「品牌管理」中新增品牌','err');
+  document.getElementById('fbkwp-text').value = '';
+  document.getElementById('bkwPasteModal').classList.add('open');
+}
+function closeBkwPasteModal() { document.getElementById('bkwPasteModal').classList.remove('open'); }
+function parsePct(s) {
+  if (s == null || s === '') return null;
+  const n = parseFloat(String(s).replace('%','').trim());
+  return isNaN(n) ? null : n;
+}
+async function saveBkwPaste() {
+  const brand_id = document.getElementById('fbkwp-brand').value;
+  if (!brand_id) return showToast('请选择目标品牌','err');
+  const text = document.getElementById('fbkwp-text').value.trim();
+  if (!text) return showToast('请粘贴关键词数据','err');
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const rows = [];
+  for (const line of lines) {
+    const parts = line.split(/\t|,(?!\d)/);  // tab 或非数字逗号
+    if (parts.length < 1) continue;
+    const keyword = parts[0].trim();
+    if (!keyword) continue;
+    rows.push({
+      keyword,
+      organic_rank: parts[1] ? parseInt(parts[1]) || null : null,
+      organic_traffic_pct: parts[2] != null ? parsePct(parts[2]) : null,
+      ad_traffic_pct: parts[3] != null ? parsePct(parts[3]) : null,
+    });
+  }
+  if (!rows.length) return showToast('解析后没有有效数据','err');
+  try {
+    const r = await api('/api/amazon/brand-keywords/bulk', { method:'POST', body: { brand_id, rows } });
+    closeBkwPasteModal();
+    showToast(`已导入 ${r.saved} 条`,'ok');
+    await loadBkw();
+  } catch (e) { showToast(e.message,'err'); }
 }
 
 // === Snapshot ===
