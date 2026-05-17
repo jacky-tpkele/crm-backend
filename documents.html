@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TPKELE CRM - Documents</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#000509;--panel:#060f20;--panel2:#0a1628;
+  --border:rgba(0,190,255,0.12);--border-h:rgba(0,220,255,0.38);
+  --text:#ddf0ff;--muted:#4d7390;--muted2:#7aa4c0;
+  --primary:#00c8f0;--p1:#10B981;
+  --danger:#fb7185;--success:#4ade80;--warning:#fbbf24;
+  --shadow:0 20px 60px rgba(0,0,0,.7);--radius:14px;--sb:180px;
+}
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+button,input,select,textarea{font:inherit}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:rgba(16,185,129,0.15);border-radius:4px}
+
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:var(--sb);flex-shrink:0;height:100%;background:linear-gradient(180deg,rgba(3,8,20,.99),rgba(2,5,13,.99));border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sb-logo{display:flex;align-items:center;gap:12px;padding:18px 16px;border-bottom:1px solid var(--border)}
+.logo-text{font-size:15px;font-weight:700;letter-spacing:1px}
+.logo-text span{color:var(--primary)}
+.sb-nav{flex:1;overflow-y:auto;padding:10px 0}
+.nav-group{padding:8px 16px 4px;font-size:10px;font-weight:600;color:rgba(16,185,129,.22);text-transform:uppercase;letter-spacing:.8px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;transition:.15s;white-space:nowrap;color:var(--muted2);font-size:13.5px;font-weight:500;border-left:3px solid transparent;text-decoration:none}
+.nav-item:hover{background:rgba(16,185,129,0.05);color:var(--text)}
+.nav-item.active{background:rgba(16,185,129,0.08);color:var(--primary);border-left-color:var(--primary)}
+.nav-icon{font-size:17px;flex-shrink:0;width:22px;text-align:center}
+
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.header{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-shrink:0}
+.header h1{font-size:18px;font-weight:600;flex:1}
+.btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:13px;cursor:pointer;transition:.15s;white-space:nowrap}
+.btn:hover{border-color:var(--p1);color:var(--p1)}
+.btn-primary{background:var(--p1);color:#000;border-color:var(--p1);font-weight:600}
+.btn-primary:hover{background:#34D399}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:6px}
+.lang-btn{padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:12px;cursor:pointer}
+.lang-btn:hover{border-color:var(--p1);color:var(--p1)}
+
+.workspace{flex:1;overflow-y:auto;padding:20px 24px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:18px}
+.card-title{font-size:14px;font-weight:600;margin-bottom:14px}
+
+.controls{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:18px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11.5px;color:var(--muted2);font-weight:500}
+.field select,.field input{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;outline:none;transition:.15s;min-width:160px}
+.field select:focus,.field input:focus{border-color:var(--p1)}
+.field select option{background:var(--panel)}
+
+/* Preview area */
+.preview-wrap{padding:24px;display:flex;justify-content:center}
+.preview-paper{background:#fff;color:#000;width:800px;max-width:100%;padding:28px;box-shadow:0 4px 32px rgba(0,0,0,.6);font-family:Arial,sans-serif;font-size:12px;line-height:1.4}
+.preview-paper *{color:#000}
+
+/* Editable cells */
+[contenteditable="true"]{outline:none;cursor:text;min-width:16px;transition:background .15s}
+[contenteditable="true"]:empty:before{content:attr(data-ph);color:#aaa;font-style:italic}
+[contenteditable="true"]:hover{background:rgba(0,120,200,0.07)}
+[contenteditable="true"]:focus{background:rgba(0,120,200,0.12);outline:1px dashed rgba(0,100,180,0.45)}
+
+.del-col{border:none !important;padding:2px !important;width:22px !important;background:transparent !important}
+.del-row-btn{display:none;width:18px;height:18px;line-height:16px;text-align:center;background:#e53;color:#fff;border:none;border-radius:50%;cursor:pointer;font-size:12px;font-weight:bold;padding:0}
+tr:hover .del-row-btn{display:inline-block}
+
+.action-bar{display:flex;gap:10px;padding:0 24px 18px;justify-content:center;flex-wrap:wrap}
+.action-bar .btn{font-size:13px;padding:8px 18px}
+
+.toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:13px;color:var(--text);display:none;align-items:center;gap:10px;box-shadow:var(--shadow)}
+.toast.show{display:flex}
+.toast.ok{border-color:rgba(74,222,128,.35)}
+.toast.err{border-color:rgba(251,113,133,.35)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sb-logo"><div class="logo-text">TP<span>KELE</span></div></div>
+  <div class="sb-nav">
+    <div class="nav-group" data-i18n="navMain">MENU</div>
+    <a class="nav-item" href="dashboard.html"><span class="nav-icon">&#x1F4CA;</span><span data-i18n="navDashboard">Dashboard</span></a>
+    <a class="nav-item" href="dashboard.html"><span class="nav-icon">&#x25CD;</span><span data-i18n="navOrders">Orders</span></a>
+    <a class="nav-item active" href="documents.html"><span class="nav-icon">&#x1F4C4;</span><span data-i18n="navDocuments">Documents</span></a>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+  <header class="header">
+    <h1 data-i18n="pageTitle">Documents</h1>
+    <button class="lang-btn" onclick="toggleLang()" id="langToggle">ZH</button>
+  </header>
+
+  <div class="workspace">
+    <!-- Controls -->
+    <div class="card">
+      <div class="card-title" data-i18n="ctrlTitle">Generate Document</div>
+      <div class="controls">
+        <div class="field">
+          <label data-i18n="lblOrder">Order</label>
+          <select id="selOrder"><option value="">-- Select Order --</option></select>
+        </div>
+        <div class="field">
+          <label data-i18n="lblDocType">Document Type</label>
+          <select id="selDocType">
+            <option value="quotation">Quotation</option>
+            <option value="pi">Proforma Invoice (PI)</option>
+            <option value="packing">Packing List</option>
+          </select>
+        </div>
+        <div class="field">
+          <label data-i18n="lblDocLang">Language</label>
+          <select id="selDocLang">
+            <option value="en">English</option>
+            <option value="zh">Chinese</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="generateDoc()" data-i18n="btnGenerate">Generate</button>
+      </div>
+    </div>
+
+    <!-- Action bar -->
+    <div class="action-bar" id="actionBar" style="display:none">
+      <button class="btn" onclick="toggleEdit()" id="btnEdit" data-i18n="btnEdit">Edit</button>
+      <button class="btn btn-primary" onclick="downloadPDF()" data-i18n="btnDownload">Download PDF</button>
+      <button class="btn" onclick="addRow()" id="btnAddRow" style="display:none" data-i18n="btnAddRow">+ Add Row</button>
+    </div>
+
+    <!-- Preview -->
+    <div class="preview-wrap" id="previewWrap" style="display:none">
+      <div class="preview-paper" id="docPaper"></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// Auth check
+const token = localStorage.getItem('crm_token');
+if (!token) location.href = 'login.html';
+
+const cfg = JSON.parse(localStorage.getItem('crm_settings') || '{}');
+const CO_NAME = cfg.company || 'Wenzhou Hetao Electric Co., Ltd.';
+const CO_ADDR = cfg.address || 'Room 301, Building 3, Ruijinyuan, No. 5555, Central Avenue, Beibai Xiang Town, Yueqing City, Wenzhou City, Zhejiang Province';
+const API_BASE = '';
+
+let orders = [];
+let customers = [];
+let currentLang = 'en';
+let editMode = false;
+
+// i18n
+const i18n = {
+  en: {
+    navMain:'MENU', navDashboard:'Dashboard', navOrders:'Orders', navDocuments:'Documents',
+    pageTitle:'Documents', ctrlTitle:'Generate Document',
+    lblOrder:'Order', lblDocType:'Document Type', lblDocLang:'Language',
+    btnGenerate:'Generate', btnEdit:'Edit', btnDownload:'Download PDF', btnAddRow:'+ Add Row'
+  },
+  zh: {
+    navMain:'菜单', navDashboard:'仪表盘', navOrders:'订单管理', navDocuments:'文件制作',
+    pageTitle:'文件制作', ctrlTitle:'生成文件',
+    lblOrder:'选择订单', lblDocType:'文件类型', lblDocLang:'语言',
+    btnGenerate:'生成', btnEdit:'编辑', btnDownload:'下载 PDF', btnAddRow:'+ 添加行'
+  }
+};
+
+function toggleLang() {
+  currentLang = currentLang === 'en' ? 'zh' : 'en';
+  document.getElementById('langToggle').textContent = currentLang === 'en' ? 'ZH' : 'EN';
+  applyI18n();
+}
+
+function applyI18n() {
+  const dict = i18n[currentLang];
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (dict[key]) el.textContent = dict[key];
+  });
+}
+
+// Helpers
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatShippingAddress(raw) {
+  if (!raw) return '';
+  try {
+    const arr = JSON.parse(raw);
+    if (Array.isArray(arr)) {
+      return arr.map(a => {
+        if (typeof a === 'object') return [a.address, a.phone].filter(Boolean).join(', ');
+        return String(a);
+      }).join(' / ');
+    }
+  } catch(e) {}
+  return String(raw);
+}
+
+function today() {
+  const d = new Date();
+  return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+}
+
+function ed(ph='') {
+  return `contenteditable="true" data-ph="${esc(ph)}"`;
+}
+
+// API
+async function apiFetch(url) {
+  const res = await fetch(API_BASE + url, { headers: { 'Authorization': 'Bearer ' + token } });
+  if (!res.ok) throw new Error('API error: ' + res.status);
+  return res.json();
+}
+
+async function loadOrders() {
+  try {
+    orders = await apiFetch('/api/orders');
+    const sel = document.getElementById('selOrder');
+    sel.innerHTML = '<option value="">-- Select Order --</option>';
+    orders.forEach(o => {
+      sel.innerHTML += `<option value="${o.id}">${esc(o.order_number || o.id)} - ${esc(o.customer_name || '')}</option>`;
+    });
+  } catch(e) { showToast('Failed to load orders: ' + e.message, 'err'); }
+}
+
+async function loadCustomers() {
+  try {
+    customers = await apiFetch('/api/customers');
+  } catch(e) { /* silent */ }
+}
+
+function getCustomer(id) {
+  return customers.find(c => c.id === id || c.id === Number(id)) || {};
+}
+
+// Document generation
+async function generateDoc() {
+  const orderId = document.getElementById('selOrder').value;
+  const docType = document.getElementById('selDocType').value;
+  const docLang = document.getElementById('selDocLang').value;
+
+  if (!orderId) { showToast('Please select an order', 'err'); return; }
+
+  const order = orders.find(o => String(o.id) === String(orderId));
+  if (!order) { showToast('Order not found', 'err'); return; }
+
+  const customer = getCustomer(order.customer_id);
+  let html = '';
+
+  if (docType === 'pi') html = renderPI(order, customer, docLang);
+  else if (docType === 'quotation') html = renderQuotation(order, customer, docLang);
+  else if (docType === 'packing') html = renderPacking(order, customer, docLang);
+
+  document.getElementById('docPaper').innerHTML = html;
+  document.getElementById('previewWrap').style.display = '';
+  document.getElementById('actionBar').style.display = 'flex';
+  document.getElementById('btnAddRow').style.display = docType === 'packing' ? '' : 'none';
+  editMode = false;
+}
+// PI Template
+function renderPI(order, customer, lang) {
+  const items = order.items || [];
+  const addr = formatShippingAddress(order.shipping_address || customer.address);
+  const rows = items.map(it => `
+    <tr>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">${esc(it.product_name || it.name || '')}</td>
+      <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">${it.quantity || ''}</td>
+      <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">&nbsp;</td>
+    </tr>`).join('');
+  const emptyRows = items.length < 4 ? Array(4 - items.length).fill(0).map(() => `
+    <tr>
+      <td style="border:1px solid #000;padding:5px 8px;height:26px" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+    </tr>`).join('') : '';
+
+  return `
+  <div style="text-align:center;margin-bottom:8px">
+    <div style="font-size:22px;font-weight:bold" ${ed('Company Name')}>${esc(CO_NAME)}</div>
+    <div style="font-size:10.5px;color:#333;margin-top:3px" ${ed('Address')}>${esc(CO_ADDR)}</div>
+  </div>
+  <div style="text-align:center;font-size:15px;font-weight:bold;border:1px solid #000;padding:4px 0">Packing List</div>
+  <table style="width:100%;border-collapse:collapse">
+    <tr>
+      <td style="border:1px solid #000;padding:5px 8px;width:12%;font-weight:600">To:</td>
+      <td style="border:1px solid #000;padding:5px 8px;width:40%" ${ed('Customer')}>${esc(customer.name || order.customer_name || '')}</td>
+      <td style="border:1px solid #000;padding:5px 8px;width:12%;font-weight:600">DATE:</td>
+      <td style="border:1px solid #000;padding:5px 8px" ${ed('Date')}>${today()}</td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000;padding:5px 8px;font-weight:600">ATTN:</td>
+      <td style="border:1px solid #000;padding:5px 8px" ${ed('Contact')}>${esc(customer.contact_person || '')}</td>
+      <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Invoice No:</td>
+      <td style="border:1px solid #000;padding:5px 8px" ${ed('INV-')}>${esc(order.order_number || '')}</td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Address:</td>
+      <td colspan="3" style="border:1px solid #000;padding:5px 8px" ${ed('Address')}>${esc(addr)}</td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Delivery Term:</td>
+      <td style="border:1px solid #000;padding:5px 8px" ${ed('FOB/CIF')}>${esc(order.delivery_term || '')}</td>
+      <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Tel:</td>
+      <td style="border:1px solid #000;padding:5px 8px" ${ed('Phone')}>${esc(customer.whatsapp || customer.phone || '')}</td>
+    </tr>
+  </table>
+  <table style="width:100%;border-collapse:collapse;margin-top:-1px">
+    <thead>
+      <tr style="text-align:center;font-weight:bold;background:#f0f0f0">
+        <th style="border:1px solid #000;padding:6px;width:22%">Product Name</th>
+        <th style="border:1px solid #000;padding:6px;width:12%">Quantity(pcs)</th>
+        <th style="border:1px solid #000;padding:6px;width:12%">Package</th>
+        <th style="border:1px solid #000;padding:6px;width:14%">Net Weight(kg)</th>
+        <th style="border:1px solid #000;padding:6px;width:14%">Gross Weight(kg)</th>
+        <th style="border:1px solid #000;padding:6px;width:12%">&nbsp;</th>
+        <th style="border:1px solid #000;padding:6px;width:14%">CBM</th>
+      </tr>
+    </thead>
+    <tbody id="productTbody">${rows}${emptyRows}</tbody>
+    <tfoot>
+      <tr style="font-weight:bold">
+        <td style="border:1px solid #000;padding:6px;text-align:right">TOTAL:</td>
+        <td style="border:1px solid #000;padding:6px" contenteditable="true">&nbsp;</td>
+        <td style="border:1px solid #000;padding:6px" contenteditable="true">&nbsp;</td>
+        <td style="border:1px solid #000;padding:6px" contenteditable="true">&nbsp;</td>
+        <td style="border:1px solid #000;padding:6px" contenteditable="true">&nbsp;</td>
+        <td style="border:1px solid #000;padding:6px" contenteditable="true">&nbsp;</td>
+        <td style="border:1px solid #000;padding:6px" contenteditable="true">&nbsp;</td>
+      </tr>
+    </tfoot>
+  </table>`;
+}
+// Quotation Template
+function renderQuotation(order, customer, lang) {
+  const items = order.items || [];
+  let subtotal = 0;
+  const rows = items.map((it, i) => {
+    const amt = (it.quantity || 0) * (it.unit_price || 0);
+    subtotal += amt;
+    return `
+    <tr>
+      <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">${i+1}</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">${esc(it.product_name || it.name || '')}</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">${esc(it.spec || it.description || '')}</td>
+      <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">${it.quantity || ''}</td>
+      <td style="border:1px solid #000;padding:5px 8px;text-align:right" contenteditable="true">${it.unit_price ? '$' + Number(it.unit_price).toFixed(2) : ''}</td>
+      <td style="border:1px solid #000;padding:5px 8px;text-align:right" contenteditable="true">${amt ? '$' + amt.toFixed(2) : ''}</td>
+    </tr>`;
+  }).join('');
+  const emptyRows = items.length < 4 ? Array(4 - items.length).fill(0).map(() => `
+    <tr>
+      <td style="border:1px solid #000;padding:5px 8px;height:26px" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+    </tr>`).join('') : '';
+  const shipping = order.shipping_cost || 0;
+  const total = subtotal + shipping;
+
+  return `
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+    <div>
+      <div style="font-size:24px;font-weight:bold;color:#000">QUOTATION</div>
+      <div style="font-size:11px;color:#555;margin-top:4px" ${ed('Date')}>${today()}</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:14px;font-weight:bold" ${ed('Company')}>${esc(CO_NAME)}</div>
+      <div style="font-size:10px;color:#555;margin-top:2px;max-width:280px" ${ed('Address')}>${esc(CO_ADDR)}</div>
+    </div>
+  </div>
+  <div style="margin-bottom:14px;padding:10px;background:#f9f9f9;border:1px solid #ddd;border-radius:4px">
+    <div style="font-size:11px;color:#666;font-weight:600;margin-bottom:4px">BILL TO:</div>
+    <div style="font-size:13px;font-weight:600" ${ed('Customer')}>${esc(customer.name || order.customer_name || '')}</div>
+    <div style="font-size:11px;color:#444;margin-top:2px" ${ed('Address')}>${esc(formatShippingAddress(order.shipping_address || customer.address))}</div>
+  </div>
+  <table style="width:100%;border-collapse:collapse">
+    <thead>
+      <tr style="text-align:center;font-weight:bold;background:#f0f0f0">
+        <th style="border:1px solid #000;padding:6px;width:6%">#</th>
+        <th style="border:1px solid #000;padding:6px;width:28%">Description</th>
+        <th style="border:1px solid #000;padding:6px;width:18%">Spec</th>
+        <th style="border:1px solid #000;padding:6px;width:10%">Qty</th>
+        <th style="border:1px solid #000;padding:6px;width:16%">Unit Price</th>
+        <th style="border:1px solid #000;padding:6px;width:16%">Amount</th>
+      </tr>
+    </thead>
+    <tbody>${rows}${emptyRows}</tbody>
+    <tfoot>
+      <tr>
+        <td colspan="4" style="border:none"></td>
+        <td style="border:1px solid #000;padding:6px;font-weight:600;text-align:right">Subtotal:</td>
+        <td style="border:1px solid #000;padding:6px;text-align:right" contenteditable="true">$${subtotal.toFixed(2)}</td>
+      </tr>
+      <tr>
+        <td colspan="4" style="border:none"></td>
+        <td style="border:1px solid #000;padding:6px;font-weight:600;text-align:right">Shipping:</td>
+        <td style="border:1px solid #000;padding:6px;text-align:right" contenteditable="true">$${shipping.toFixed(2)}</td>
+      </tr>
+      <tr>
+        <td colspan="4" style="border:none"></td>
+        <td style="border:1px solid #000;padding:6px;font-weight:bold;text-align:right;background:#f4b942">TOTAL:</td>
+        <td style="border:1px solid #000;padding:6px;font-weight:bold;text-align:right;background:#f4b942" contenteditable="true">$${total.toFixed(2)}</td>
+      </tr>
+    </tfoot>
+  </table>
+  <div style="margin-top:14px;padding:8px 10px;border:1px solid #ddd;border-radius:4px;font-size:11px;color:#555">
+    <div style="font-weight:600;margin-bottom:4px">Remarks:</div>
+    <div ${ed('Add remarks...')}>${esc(order.remarks || order.notes || '')}&nbsp;</div>
+  </div>`;
+}
+// Packing List Template
+function renderPacking(order, customer, lang) {
+  const items = order.items || [];
+  const addr = formatShippingAddress(order.shipping_address || customer.address);
+  const rows = items.map(it => `
+    <tr>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">${esc(it.product_name || it.name || '')}</td>
+      <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">${it.quantity || ''}</td>
+      <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">&nbsp;</td>
+      <td class="del-col"><button class="del-row-btn" onclick="this.closest('tr').remove()">x</button></td>
+    </tr>`).join('');
+  const emptyRows = items.length < 4 ? Array(4 - items.length).fill(0).map(() => `
+    <tr>
+      <td style="border:1px solid #000;padding:5px 8px;height:26px" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+      <td class="del-col"><button class="del-row-btn" onclick="this.closest('tr').remove()">x</button></td>
+    </tr>`).join('') : '';
+
+  return `
+  <div style="text-align:center;margin-bottom:8px">
+    <div style="font-size:22px;font-weight:bold" ${ed('Company Name')}>${esc(CO_NAME)}</div>
+    <div style="font-size:10.5px;color:#333;margin-top:3px" ${ed('Address')}>${esc(CO_ADDR)}</div>
+  </div>
+  <div style="text-align:center;font-size:15px;font-weight:bold;border:1px solid #000;padding:4px 0">Packing List</div>
+  <table style="width:100%;border-collapse:collapse">
+    <tr>
+      <td style="border:1px solid #000;padding:5px 8px;width:12%;font-weight:600">To:</td>
+      <td style="border:1px solid #000;padding:5px 8px;width:40%" ${ed('Customer')}>${esc(customer.name || order.customer_name || '')}</td>
+      <td style="border:1px solid #000;padding:5px 8px;width:12%;font-weight:600">DATE:</td>
+      <td style="border:1px solid #000;padding:5px 8px" ${ed('Date')}>${today()}</td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000;padding:5px 8px;font-weight:600">ATTN:</td>
+      <td style="border:1px solid #000;padding:5px 8px" ${ed('Contact')}>${esc(customer.contact_person || '')}</td>
+      <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Invoice No:</td>
+      <td style="border:1px solid #000;padding:5px 8px" ${ed('INV-')}>${esc(order.order_number || '')}</td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Address:</td>
+      <td colspan="3" style="border:1px solid #000;padding:5px 8px" ${ed('Address')}>${esc(addr)}</td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Delivery Term:</td>
+      <td style="border:1px solid #000;padding:5px 8px" ${ed('FOB/CIF')}>${esc(order.delivery_term || '')}</td>
+      <td style="border:1px solid #000;padding:5px 8px;font-weight:600">Tel:</td>
+      <td style="border:1px solid #000;padding:5px 8px" ${ed('Phone')}>${esc(customer.whatsapp || customer.phone || '')}</td>
+    </tr>
+  </table>
+  <table style="width:100%;border-collapse:collapse;margin-top:-1px">
+    <thead>
+      <tr style="text-align:center;font-weight:bold;background:#f0f0f0">
+        <th style="border:1px solid #000;padding:6px;width:22%">Product Name</th>
+        <th style="border:1px solid #000;padding:6px;width:12%">Quantity(pcs)</th>
+        <th style="border:1px solid #000;padding:6px;width:12%">Package</th>
+        <th style="border:1px solid #000;padding:6px;width:14%">Net Weight(kg)</th>
+        <th style="border:1px solid #000;padding:6px;width:14%">Gross Weight(kg)</th>
+        <th style="border:1px solid #000;padding:6px;width:14%">CBM</th>
+        <th class="del-col"></th>
+      </tr>
+    </thead>
+    <tbody id="productTbody">${rows}${emptyRows}</tbody>
+    <tfoot>
+      <tr style="font-weight:bold">
+        <td style="border:1px solid #000;padding:6px;text-align:right">TOTAL:</td>
+        <td style="border:1px solid #000;padding:6px" contenteditable="true">&nbsp;</td>
+        <td style="border:1px solid #000;padding:6px" contenteditable="true">&nbsp;</td>
+        <td style="border:1px solid #000;padding:6px" contenteditable="true">&nbsp;</td>
+        <td style="border:1px solid #000;padding:6px" contenteditable="true">&nbsp;</td>
+        <td style="border:1px solid #000;padding:6px" contenteditable="true">&nbsp;</td>
+        <td class="del-col"></td>
+      </tr>
+    </tfoot>
+  </table>`;
+}
+// Actions
+function toggleEdit() {
+  editMode = !editMode;
+  const paper = document.getElementById('docPaper');
+  const cells = paper.querySelectorAll('[contenteditable]');
+  cells.forEach(c => c.contentEditable = editMode ? 'true' : 'false');
+  document.getElementById('btnEdit').textContent = editMode ? (currentLang === 'zh' ? '完成编辑' : 'Done Editing') : (currentLang === 'zh' ? '编辑' : 'Edit');
+}
+
+function addRow() {
+  const tbody = document.getElementById('productTbody');
+  if (!tbody) return;
+  const docType = document.getElementById('selDocType').value;
+  const tr = document.createElement('tr');
+  if (docType === 'packing') {
+    tr.innerHTML = `
+      <td style="border:1px solid #000;padding:5px 8px;height:26px" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
+      <td class="del-col"><button class="del-row-btn" onclick="this.closest('tr').remove()">x</button></td>`;
+  } else {
+    const cols = docType === 'pi' ? 7 : 6;
+    tr.innerHTML = Array(cols).fill(0).map(() =>
+      `<td style="border:1px solid #000;padding:5px 8px;height:26px" contenteditable="true">&nbsp;</td>`
+    ).join('');
+  }
+  tbody.appendChild(tr);
+  showToast(currentLang === 'zh' ? '已添加行' : 'Row added', 'ok');
+}
+
+async function downloadPDF() {
+  const el = document.getElementById('docPaper');
+  if (!el.innerHTML.trim()) { showToast('No document to download', 'err'); return; }
+
+  const docType = document.getElementById('selDocType').value;
+  const names = { pi: 'Proforma-Invoice', quotation: 'Quotation', packing: 'Packing-List' };
+  const filename = (names[docType] || 'Document') + '-' + today().replace(/\./g, '-');
+
+  // Hide delete buttons for PDF
+  const delCols = el.querySelectorAll('.del-col');
+  delCols.forEach(t => { t._bk = t.style.display; t.style.display = 'none'; });
+
+  try {
+    await html2pdf().set({
+      margin: [8, 8, 8, 8],
+      filename: filename + '.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    }).from(el).save();
+    showToast(currentLang === 'zh' ? 'PDF 已下载' : 'PDF downloaded', 'ok');
+  } catch(e) {
+    showToast('Download failed: ' + e.message, 'err');
+  } finally {
+    delCols.forEach(t => { t.style.display = t._bk || ''; });
+  }
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + (type || '');
+  setTimeout(() => t.className = 'toast', 2500);
+}
+
+// Quick Export: auto-generate if URL has ?order=ID&type=pi
+function checkQuickExport() {
+  const params = new URLSearchParams(window.location.search);
+  const orderId = params.get('order');
+  const docType = params.get('type');
+  if (orderId && docType) {
+    document.getElementById('selOrder').value = orderId;
+    document.getElementById('selDocType').value = docType;
+    setTimeout(() => generateDoc(), 300);
+  }
+}
+
+// Init
+(async function init() {
+  await Promise.all([loadOrders(), loadCustomers()]);
+  applyI18n();
+  checkQuickExport();
+})();
+</script>
+</body>
+</html>
