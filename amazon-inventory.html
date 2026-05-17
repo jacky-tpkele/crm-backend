@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TPKELE CRM - Amazon Inventory</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#000509;--panel:#060f20;--panel2:#0a1628;
+  --border:rgba(0,190,255,0.12);--border-h:rgba(0,220,255,0.38);
+  --text:#ddf0ff;--muted:#4d7390;--muted2:#7aa4c0;
+  --primary:#00c8f0;--p1:#10B981;
+  --danger:#fb7185;--success:#4ade80;--warning:#fbbf24;
+  --shadow:0 20px 60px rgba(0,0,0,.7);--radius:14px;--sb:220px;
+}
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+button,input,select,textarea{font:inherit}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:rgba(16,185,129,0.15);border-radius:4px}
+
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:var(--sb);flex-shrink:0;height:100%;background:linear-gradient(180deg,rgba(3,8,20,.99),rgba(2,5,13,.99));border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sb-logo{display:flex;align-items:center;gap:12px;padding:18px 16px;border-bottom:1px solid var(--border)}
+.logo-text{font-size:15px;font-weight:700;letter-spacing:1px}
+.logo-text span{color:var(--primary)}
+.sb-nav{flex:1;overflow-y:auto;padding:10px 0}
+.nav-group{padding:8px 16px 4px;font-size:10px;font-weight:600;color:rgba(16,185,129,.22);text-transform:uppercase;letter-spacing:.8px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;transition:.15s;white-space:nowrap;color:var(--muted2);font-size:13.5px;font-weight:500;border-left:3px solid transparent}
+.nav-item:hover{background:rgba(16,185,129,0.05);color:var(--text)}
+.nav-item.active{background:rgba(16,185,129,0.08);color:var(--primary);border-left-color:var(--primary)}
+.nav-icon{font-size:17px;flex-shrink:0;width:22px;text-align:center}
+
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.header{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-shrink:0}
+.header h1{font-size:18px;font-weight:600;flex:1}
+.btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:13px;cursor:pointer;transition:.15s;white-space:nowrap}
+.btn:hover{border-color:var(--p1);color:var(--p1)}
+.btn-primary{background:var(--p1);color:#000;border-color:var(--p1);font-weight:600}
+.btn-primary:hover{background:#34D399}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:6px}
+.btn-danger{border-color:rgba(251,113,133,.4);color:var(--danger)}
+.btn-danger:hover{background:rgba(251,113,133,.1)}
+.lang-btn{padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:12px;cursor:pointer}
+
+.workspace{flex:1;overflow-y:auto;padding:20px 24px}
+
+/* Cards */
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:18px}
+.card-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.card-title{font-size:14px;font-weight:600;flex:1}
+
+/* Status badges */
+.status-urgent{background:rgba(251,113,133,.15);color:#fb7185;border:1px solid rgba(251,113,133,.35);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.status-restock{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.3);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.status-ok{background:rgba(74,222,128,.12);color:#4ade80;border:1px solid rgba(74,222,128,.3);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.status-overstock{background:rgba(148,163,184,.15);color:#94a3b8;border:1px solid rgba(148,163,184,.3);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+
+/* SKU Card */
+.sku-card{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;transition:.15s}
+.sku-card:hover{border-color:rgba(16,185,129,.3)}
+.sku-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.sku-img{width:48px;height:48px;border-radius:8px;object-fit:cover;border:1px solid var(--border);background:rgba(255,255,255,.04)}
+.sku-img-empty{width:48px;height:48px;border-radius:8px;display:grid;place-items:center;font-size:22px;background:rgba(255,255,255,.04);border:1px solid var(--border)}
+.sku-info{flex:1;min-width:0}
+.sku-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sku-meta{font-size:12px;color:var(--muted);margin-top:2px}
+.sku-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:12px}
+.sku-stat{text-align:center;padding:8px;background:rgba(255,255,255,.02);border-radius:8px;border:1px solid rgba(255,255,255,.04)}
+.sku-stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.sku-stat-value{font-size:16px;font-weight:700;margin-top:2px}
+.sku-analysis{font-size:12.5px;color:var(--muted2);line-height:1.7;padding:10px 12px;background:rgba(16,185,129,.04);border:1px solid rgba(16,185,129,.15);border-radius:8px}
+.sku-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+
+/* Table */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px 12px;color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
+td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04)}
+
+/* Form */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11.5px;color:var(--muted2);font-weight:500}
+.field input,.field select,.field textarea{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;outline:none;transition:.15s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--p1)}
+
+/* Modal */
+.modal-backdrop{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);display:none;place-items:center}
+.modal-backdrop.open{display:grid}
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:14px;width:640px;max-width:95vw;max-height:90vh;display:flex;flex-direction:column;box-shadow:var(--shadow)}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-head h2{font-size:15px;font-weight:600}
+.modal-close{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-size:16px;display:grid;place-items:center}
+.modal-body{padding:18px 20px;overflow-y:auto;flex:1}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:13px;color:var(--text);display:none;align-items:center;gap:10px;box-shadow:var(--shadow)}
+.toast.show{display:flex}
+.toast.ok{border-color:rgba(74,222,128,.35)}
+.toast.err{border-color:rgba(251,113,133,.35)}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0}
+.tab{padding:8px 16px;font-size:13px;color:var(--muted2);cursor:pointer;border-bottom:2px solid transparent;transition:.15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--p1);border-bottom-color:var(--p1);font-weight:600}
+.tab-content{display:none}
+.tab-content.active{display:block}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="logo-text">TP<span>KELE</span></div>
+  </div>
+  <div class="sb-nav">
+    <div class="nav-group" data-i18n="navMain">主菜单</div>
+    <div class="nav-item" onclick="location.href='dashboard.html'"><span class="nav-icon">📊</span><span data-i18n="navDashboard">仪表盘</span></div>
+    <div class="nav-item" onclick="location.href='dashboard.html'"><span class="nav-icon">◍</span><span data-i18n="navOrders">订单管理</span></div>
+    <div class="nav-group" data-i18n="navAmazon">亚马逊运营</div>
+    <div class="nav-item active"><span class="nav-icon">📦</span><span data-i18n="navInventory">库存智能补货</span></div>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+  <header class="header">
+    <h1 data-i18n="pageTitle">📦 库存智能补货</h1>
+    <button class="btn" onclick="openSkuModal()" data-i18n="btnAddSku">＋ 添加 SKU</button>
+    <button class="btn" onclick="openSalesModal()" data-i18n="btnRecordSales">📝 录入销量</button>
+    <button class="btn" onclick="loadData()" data-i18n="btnRefresh">↻ 刷新</button>
+    <button class="lang-btn" onclick="toggleLang()">中/EN</button>
+  </header>
+
+  <div class="workspace">
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" data-tab="dashboard" onclick="switchTab('dashboard')" data-i18n="tabDashboard">补货看板</div>
+      <div class="tab" data-tab="skus" onclick="switchTab('skus')" data-i18n="tabSkus">SKU 管理</div>
+      <div class="tab" data-tab="sales" onclick="switchTab('sales')" data-i18n="tabSales">销量数据</div>
+    </div>
+
+    <!-- Tab: Dashboard -->
+    <div class="tab-content active" id="tab-dashboard">
+      <div id="skuCards">
+        <div style="text-align:center;padding:60px;color:var(--muted)">
+          <div style="font-size:36px;margin-bottom:12px">📦</div>
+          <p data-i18n="emptyDashboard">加载中...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: SKU Management -->
+    <div class="tab-content" id="tab-skus">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title" data-i18n="skuListTitle">SKU 配置列表</span>
+          <button class="btn btn-primary" onclick="openSkuModal()" data-i18n="btnAddSku">＋ 添加 SKU</button>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>SKU</th><th>ASIN</th><th data-i18n="thProduct">产品</th><th data-i18n="thLeadTime">前置时间</th><th data-i18n="thCoverage">覆盖天数</th><th>MOQ</th><th data-i18n="thActions">操作</th>
+            </tr></thead>
+            <tbody id="skuTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Sales Data -->
+    <div class="tab-content" id="tab-sales">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title" data-i18n="salesTitle">每日销量记录</span>
+          <button class="btn" onclick="openSalesModal()" data-i18n="btnRecordSales">📝 录入销量</button>
+          <button class="btn" onclick="openBatchSalesModal()" data-i18n="btnBatchSales">📤 批量导入</button>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>SKU</th><th data-i18n="thDate">日期</th><th data-i18n="thUnits">销量</th><th data-i18n="thRevenue">收入($)</th>
+            </tr></thead>
+            <tbody id="salesTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<!-- SKU Modal -->
+<div class="modal-backdrop" id="skuModal" onclick="if(event.target===this)closeSkuModal()">
+  <div class="modal">
+    <div class="modal-head"><h2 id="skuModalTitle">添加 SKU</h2><button class="modal-close" onclick="closeSkuModal()">×</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field"><label data-i18n="lblSku">SKU *</label><input id="f-sku" placeholder="如 ABC-001"></div>
+        <div class="field"><label data-i18n="lblAsin">ASIN</label><input id="f-asin" placeholder="B0XXXXXXXX"></div>
+        <div class="field" style="grid-column:1/-1"><label data-i18n="lblName">产品名称 *</label><input id="f-name"></div>
+        <div class="field" style="grid-column:1/-1"><label data-i18n="lblImage">图片URL</label><input id="f-image" placeholder="https://..."></div>
+      </div>
+      <h4 style="margin:16px 0 8px;font-size:12px;color:var(--muted2)">⏱ 前置时间</h4>
+      <div class="form-grid" style="grid-template-columns:repeat(4,1fr)">
+        <div class="field"><label data-i18n="lblProdDays">生产(天)</label><input id="f-prod" type="number" value="7"></div>
+        <div class="field"><label data-i18n="lblDomDays">国内物流(天)</label><input id="f-dom" type="number" value="3"></div>
+        <div class="field"><label data-i18n="lblShipDays">海运(天)</label><input id="f-ship" type="number" value="25"></div>
+        <div class="field"><label data-i18n="lblFbaDays">FBA入仓(天)</label><input id="f-fba" type="number" value="5"></div>
+      </div>
+      <h4 style="margin:16px 0 8px;font-size:12px;color:var(--muted2)">📐 补货策略</h4>
+      <div class="form-grid" style="grid-template-columns:repeat(4,1fr)">
+        <div class="field"><label data-i18n="lblCovDays">覆盖天数</label><input id="f-cov" type="number" value="60"></div>
+        <div class="field"><label data-i18n="lblService">服务水平(%)</label><input id="f-svc" type="number" value="95" step="1"></div>
+        <div class="field"><label data-i18n="lblMoq">MOQ</label><input id="f-moq" type="number" value="1"></div>
+        <div class="field"><label data-i18n="lblAirDays">空运(天)</label><input id="f-air" type="number" value="7"></div>
+      </div>
+      <h4 style="margin:16px 0 8px;font-size:12px;color:var(--muted2)">📦 当前库存</h4>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr">
+        <div class="field"><label data-i18n="lblFbaStock">FBA 库存</label><input id="f-stock" type="number" value="0"></div>
+        <div class="field"><label data-i18n="lblInboundStock">在途库存</label><input id="f-inbound" type="number" value="0"></div>
+      </div>
+      <h4 style="margin:16px 0 8px;font-size:12px;color:var(--muted2)">📅 季节性</h4>
+      <div class="field"><label data-i18n="lblSeason">季节系数(JSON)</label><input id="f-season" value="{}" placeholder='{"10":1.3,"11":1.5,"12":1.5}'><div style="font-size:11px;color:var(--muted);margin-top:4px" data-i18n="lblSeasonHint">格式: {"10":1.3,"11":1.5,"12":1.5} — 月份:倍数</div></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" id="skuDeleteBtn" style="display:none;margin-right:auto" onclick="deleteSku(editingSkuId);closeSkuModal()" data-i18n="btnDelete">删除</button>
+      <button class="btn" onclick="closeSkuModal()" data-i18n="btnCancel">取消</button>
+      <button class="btn btn-primary" onclick="saveSku()" data-i18n="btnSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sales Modal -->
+<div class="modal-backdrop" id="salesModal" onclick="if(event.target===this)closeSalesModal()">
+  <div class="modal" style="width:400px">
+    <div class="modal-head"><h2 data-i18n="modalSales">录入每日销量</h2><button class="modal-close" onclick="closeSalesModal()">×</button></div>
+    <div class="modal-body">
+      <div class="form-grid" style="grid-template-columns:1fr 1fr">
+        <div class="field"><label>SKU *</label><input id="fs-sku" placeholder="ABC-001"></div>
+        <div class="field"><label data-i18n="thDate">日期 *</label><input id="fs-date" type="date"></div>
+        <div class="field"><label data-i18n="thUnits">销量(个)</label><input id="fs-units" type="number" placeholder="0"></div>
+        <div class="field"><label data-i18n="thRevenue">收入($)</label><input id="fs-rev" type="number" step="0.01" placeholder="0"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeSalesModal()" data-i18n="btnCancel">取消</button>
+      <button class="btn btn-primary" onclick="saveSales()" data-i18n="btnSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Batch Sales Modal -->
+<div class="modal-backdrop" id="batchSalesModal" onclick="if(event.target===this)closeBatchSalesModal()">
+  <div class="modal">
+    <div class="modal-head"><h2 data-i18n="modalBatchSales">批量导入销量</h2><button class="modal-close" onclick="closeBatchSalesModal()">×</button></div>
+    <div class="modal-body">
+      <p style="font-size:12.5px;color:var(--muted2);margin-bottom:10px">每行一条，格式：SKU, 日期, 销量, 收入<br>支持 Tab 或逗号分隔。示例：<br><code style="color:var(--p1)">ABC-001, 2026-05-15, 5, 49.95</code></p>
+      <textarea id="fb-text" rows="10" style="width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:12.5px;font-family:monospace;resize:vertical" placeholder="SKU, 日期, 销量, 收入&#10;ABC-001, 2026-05-15, 5, 49.95&#10;ABC-001, 2026-05-14, 3, 29.97"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeBatchSalesModal()" data-i18n="btnCancel">取消</button>
+      <button class="btn btn-primary" onclick="saveBatchSales()" data-i18n="btnSave">导入</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+const token = localStorage.getItem('crm_token');
+if (!token) location.href = 'login.html';
+
+let lang = localStorage.getItem('crm_lang') || 'zh';
+let skuData = [];
+let salesData = [];
+
+const I18N = {
+  zh: {
+    pageTitle:'📦 库存智能补货', navMain:'主菜单', navDashboard:'仪表盘', navOrders:'订单管理',
+    navAmazon:'亚马逊运营', navInventory:'库存智能补货',
+    btnAddSku:'＋ 添加 SKU', btnRecordSales:'📝 录入销量', btnRefresh:'↻ 刷新', btnBatchSales:'📤 批量导入',
+    tabDashboard:'补货看板', tabSkus:'SKU 管理', tabSales:'销量数据',
+    emptyDashboard:'暂无 SKU，请先添加', skuListTitle:'SKU 配置列表',
+    salesTitle:'每日销量记录（近60天）',
+    thProduct:'产品', thLeadTime:'前置时间(天)', thCoverage:'覆盖天数', thActions:'操作', thDate:'日期', thUnits:'销量', thRevenue:'收入($)',
+    statusUrgent:'🔴 紧急补货', statusRestock:'⚠️ 需要补货', statusOk:'✅ 库存充足', statusOverstock:'📦 库存过多',
+    lblFba:'FBA库存', lblInbound:'在途', lblForecast:'预测日销', lblDays:'可卖天数', lblSafety:'安全库存', lblSuggest:'建议补货',
+    trendUp:'↑ 上升趋势', trendDown:'↓ 下降趋势', trendFlat:'→ 平稳',
+    cvStable:'波动低', cvMedium:'波动中', cvHigh:'波动高',
+    tipUrgent:'即使现在下单也会断货 {0} 天，建议空运应急 {1} 个',
+    tipRestock:'已触发补货线，建议尽快下单',
+    tipOk:'库存充足，暂不需要补货',
+    tipOverstock:'库存超过90天可卖，注意长期仓储费',
+    modalAddSku:'添加 SKU', modalEditSku:'编辑 SKU', modalSales:'录入每日销量', modalBatchSales:'批量导入销量',
+    btnSave:'保存', btnCancel:'取消', btnDelete:'删除',
+    lblSku:'SKU *', lblAsin:'ASIN', lblName:'产品名称 *', lblImage:'图片URL',
+    lblProdDays:'生产周期(天)', lblDomDays:'国内物流(天)', lblShipDays:'海运(天)', lblFbaDays:'FBA入仓(天)',
+    lblCovDays:'覆盖天数', lblService:'服务水平(%)', lblMoq:'MOQ', lblAirDays:'空运(天)',
+    lblFbaStock:'当前FBA库存', lblInboundStock:'在途库存',
+    lblSeason:'季节系数(JSON)', lblSeasonHint:'格式: {"10":1.3,"11":1.5,"12":1.5}',
+  },
+  en: {
+    pageTitle:'📦 Smart Inventory Replenishment', navMain:'Main Menu', navDashboard:'Dashboard', navOrders:'Orders',
+    navAmazon:'Amazon Operations', navInventory:'Smart Inventory',
+    btnAddSku:'＋ Add SKU', btnRecordSales:'📝 Record Sales', btnRefresh:'↻ Refresh', btnBatchSales:'📤 Batch Import',
+    tabDashboard:'Replenishment', tabSkus:'SKU Config', tabSales:'Sales Data',
+    emptyDashboard:'No SKUs yet. Add one to start.', skuListTitle:'SKU Configuration',
+    salesTitle:'Daily Sales Records (Last 60 Days)',
+    thProduct:'Product', thLeadTime:'Lead Time(d)', thCoverage:'Coverage', thActions:'Actions', thDate:'Date', thUnits:'Units', thRevenue:'Revenue($)',
+    statusUrgent:'🔴 Urgent Restock', statusRestock:'⚠️ Restock Needed', statusOk:'✅ In Stock', statusOverstock:'📦 Overstock',
+    lblFba:'FBA Stock', lblInbound:'Inbound', lblForecast:'Forecast/Day', lblDays:'Days Left', lblSafety:'Safety Stock', lblSuggest:'Suggested Qty',
+    trendUp:'↑ Rising', trendDown:'↓ Declining', trendFlat:'→ Stable',
+    cvStable:'Low Var', cvMedium:'Med Var', cvHigh:'High Var',
+    tipUrgent:'Even ordering now, stockout for {0} days. Air-ship {1} units urgently.',
+    tipRestock:'Reorder point triggered. Order soon.',
+    tipOk:'Stock is healthy. No action needed.',
+    tipOverstock:'Over 90 days supply. Watch for long-term storage fees.',
+    modalAddSku:'Add SKU', modalEditSku:'Edit SKU', modalSales:'Record Daily Sales', modalBatchSales:'Batch Import Sales',
+    btnSave:'Save', btnCancel:'Cancel', btnDelete:'Delete',
+    lblSku:'SKU *', lblAsin:'ASIN', lblName:'Product Name *', lblImage:'Image URL',
+    lblProdDays:'Production(d)', lblDomDays:'Domestic(d)', lblShipDays:'Sea Freight(d)', lblFbaDays:'FBA Intake(d)',
+    lblCovDays:'Coverage Days', lblService:'Service Level(%)', lblMoq:'MOQ', lblAirDays:'Air Freight(d)',
+    lblFbaStock:'Current FBA Stock', lblInboundStock:'Inbound Stock',
+    lblSeason:'Seasonality(JSON)', lblSeasonHint:'Format: {"10":1.3,"11":1.5,"12":1.5}',
+  }
+};
+
+function t(key) { return I18N[lang]?.[key] || I18N.zh[key] || key; }
+function toggleLang() { lang = lang === 'zh' ? 'en' : 'zh'; localStorage.setItem('crm_lang', lang); applyI18n(); }
+function applyI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.dataset.i18n; if (I18N[lang]?.[k]) el.textContent = I18N[lang][k]; });
+  renderDashboard(); renderSkuTable(); renderSalesTable();
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtN(n) { return Number(n||0).toLocaleString('en-US',{maximumFractionDigits:1}); }
+
+async function api(path, opts={}) {
+  const res = await fetch(path, { ...opts, headers:{ 'Authorization':'Bearer '+token, 'Content-Type':'application/json', ...(opts.headers||{}) }, body: opts.body ? (typeof opts.body==='string'?opts.body:JSON.stringify(opts.body)) : undefined });
+  if (res.status === 401) { localStorage.removeItem('crm_token'); location.href='login.html'; }
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Request failed');
+  return data;
+}
+
+function showToast(msg, type='ok') { const t=document.getElementById('toast'); t.textContent=(type==='ok'?'✓ ':'✗ ')+msg; t.className=`toast show ${type}`; setTimeout(()=>t.className='toast',3000); }
+
+// === Data Loading ===
+async function loadData() {
+  try {
+    skuData = await api('/api/amazon/replenishment');
+    salesData = await api('/api/amazon/sales?days=60');
+    renderDashboard(); renderSkuTable(); renderSalesTable();
+  } catch(e) { showToast(e.message,'err'); }
+}
+
+// === Tab Switch ===
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab===tab));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id===`tab-${tab}`));
+}
+
+// === Render Dashboard ===
+function renderDashboard() {
+  const el = document.getElementById('skuCards');
+  if (!skuData.length) { el.innerHTML = `<div style="text-align:center;padding:60px;color:var(--muted)"><div style="font-size:36px;margin-bottom:12px">📦</div><p>${t('emptyDashboard')}</p></div>`; return; }
+  const sorted = [...skuData].sort((a,b) => { const p = {urgent:0,restock:1,ok:2,overstock:3}; return (p[a.status]??2)-(p[b.status]??2); });
+  el.innerHTML = sorted.map(s => {
+    const statusClass = `status-${s.status}`;
+    const statusText = t(`status${s.status.charAt(0).toUpperCase()+s.status.slice(1)}`);
+    const trendText = t(s.trend_label==='up'?'trendUp':s.trend_label==='down'?'trendDown':'trendFlat');
+    const cvText = t(s.cv_label==='stable'?'cvStable':s.cv_label==='medium'?'cvMedium':'cvHigh');
+    let tip = '';
+    if (s.status==='urgent') tip = t('tipUrgent').replace('{0}',s.stockout_days).replace('{1}',s.emergency_air_qty);
+    else if (s.status==='restock') tip = t('tipRestock');
+    else if (s.status==='overstock') tip = t('tipOverstock');
+    else tip = t('tipOk');
+    const img = s.image_url ? `<img class="sku-img" src="${esc(s.image_url)}">` : `<div class="sku-img-empty">📦</div>`;
+    return `
+    <div class="sku-card">
+      <div class="sku-header">
+        ${img}
+        <div class="sku-info">
+          <div class="sku-name">${esc(s.product_name)}</div>
+          <div class="sku-meta">${esc(s.sku)} ${s.asin?'· '+esc(s.asin):''}</div>
+        </div>
+        <span class="${statusClass}">${statusText}</span>
+      </div>
+      <div class="sku-grid">
+        <div class="sku-stat"><div class="sku-stat-label">${t('lblFba')}</div><div class="sku-stat-value">${fmtN(s.fba_stock)}</div></div>
+        <div class="sku-stat"><div class="sku-stat-label">${t('lblInbound')}</div><div class="sku-stat-value">${fmtN(s.inbound_stock)}</div></div>
+        <div class="sku-stat"><div class="sku-stat-label">${t('lblForecast')}</div><div class="sku-stat-value">${fmtN(s.forecast_daily)} <span style="font-size:11px;color:var(--muted)">${trendText}</span></div></div>
+        <div class="sku-stat"><div class="sku-stat-label">${t('lblDays')}</div><div class="sku-stat-value" style="color:${s.days_of_supply<s.total_lead_time?'var(--danger)':s.days_of_supply>90?'var(--warning)':'var(--success)'}">${fmtN(s.days_of_supply)}</div></div>
+        <div class="sku-stat"><div class="sku-stat-label">${t('lblSafety')}</div><div class="sku-stat-value">${s.safety_stock}</div></div>
+        <div class="sku-stat"><div class="sku-stat-label">${t('lblSuggest')}</div><div class="sku-stat-value" style="color:${s.suggested_qty>0?'var(--warning)':'var(--muted)'}">${s.suggested_qty>0?s.suggested_qty:'—'}</div></div>
+      </div>
+      <div class="sku-analysis">
+        📊 ${tip}<br>
+        <span style="color:var(--muted)">σ=${s.sigma} (${cvText}) · Z=${s.z_value} · ${t('lblSafety')}=${s.safety_stock} · 前置=${s.total_lead_time}d · 覆盖=${s.coverage_days}d</span>
+      </div>
+      <div class="sku-actions">
+        <button class="btn btn-sm" onclick="editSku('${s.id}')" data-i18n="modalEditSku">编辑</button>
+        <button class="btn btn-sm" onclick="openSalesModalFor('${s.sku}')" data-i18n="btnRecordSales">📝 录入销量</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteSku('${s.id}')" data-i18n="btnDelete">删除</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// === Render SKU Table ===
+function renderSkuTable() {
+  const body = document.getElementById('skuTableBody');
+  if (!skuData.length) { body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">—</td></tr>'; return; }
+  body.innerHTML = skuData.map(s => `<tr>
+    <td>${esc(s.sku)}</td><td>${esc(s.asin||'—')}</td><td>${esc(s.product_name)}</td>
+    <td>${s.total_lead_time}d</td><td>${s.coverage_days}d</td><td>${s.moq||1}</td>
+    <td><button class="btn btn-sm" onclick="editSku('${s.id}')">✎</button> <button class="btn btn-sm btn-danger" onclick="deleteSku('${s.id}')">×</button></td>
+  </tr>`).join('');
+}
+
+// === Render Sales Table ===
+function renderSalesTable() {
+  const body = document.getElementById('salesTableBody');
+  const rows = [...salesData].sort((a,b) => b.sale_date.localeCompare(a.sale_date)).slice(0,200);
+  if (!rows.length) { body.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">—</td></tr>'; return; }
+  body.innerHTML = rows.map(r => `<tr><td>${esc(r.sku)}</td><td>${r.sale_date}</td><td>${r.units_sold}</td><td>$${fmtN(r.revenue)}</td></tr>`).join('');
+}
+
+// === SKU Modal ===
+let editingSkuId = null;
+function openSkuModal(id) {
+  editingSkuId = id || null;
+  const s = id ? skuData.find(x=>x.id===id) : null;
+  document.getElementById('skuModalTitle').textContent = s ? t('modalEditSku') : t('modalAddSku');
+  document.getElementById('f-sku').value = s?.sku || '';
+  document.getElementById('f-asin').value = s?.asin || '';
+  document.getElementById('f-name').value = s?.product_name || '';
+  document.getElementById('f-image').value = s?.image_url || '';
+  document.getElementById('f-prod').value = s?.production_days ?? 7;
+  document.getElementById('f-dom').value = s?.domestic_days ?? 3;
+  document.getElementById('f-ship').value = s?.shipping_days ?? 25;
+  document.getElementById('f-fba').value = s?.fba_intake_days ?? 5;
+  document.getElementById('f-cov').value = s?.coverage_days ?? 60;
+  document.getElementById('f-svc').value = s?.service_level ?? 95;
+  document.getElementById('f-moq').value = s?.moq ?? 1;
+  document.getElementById('f-air').value = s?.air_days ?? 7;
+  document.getElementById('f-stock').value = s?.fba_stock ?? 0;
+  document.getElementById('f-inbound').value = s?.inbound_stock ?? 0;
+  document.getElementById('f-season').value = s?.seasonality ? JSON.stringify(s.seasonality) : '{}';
+  document.getElementById('skuDeleteBtn').style.display = s ? '' : 'none';
+  document.getElementById('skuModal').classList.add('open');
+}
+function editSku(id) { openSkuModal(id); }
+function closeSkuModal() { document.getElementById('skuModal').classList.remove('open'); editingSkuId=null; }
+
+async function saveSku() {
+  const payload = {
+    sku: document.getElementById('f-sku').value.trim(),
+    asin: document.getElementById('f-asin').value.trim(),
+    product_name: document.getElementById('f-name').value.trim(),
+    image_url: document.getElementById('f-image').value.trim(),
+    production_days: parseInt(document.getElementById('f-prod').value)||7,
+    domestic_days: parseInt(document.getElementById('f-dom').value)||3,
+    shipping_days: parseInt(document.getElementById('f-ship').value)||25,
+    fba_intake_days: parseInt(document.getElementById('f-fba').value)||5,
+    coverage_days: parseInt(document.getElementById('f-cov').value)||60,
+    service_level: parseFloat(document.getElementById('f-svc').value)||95,
+    moq: parseInt(document.getElementById('f-moq').value)||1,
+    air_days: parseInt(document.getElementById('f-air').value)||7,
+    fba_stock: parseInt(document.getElementById('f-stock').value)||0,
+    inbound_stock: parseInt(document.getElementById('f-inbound').value)||0,
+  };
+  try { payload.seasonality = JSON.parse(document.getElementById('f-season').value||'{}'); } catch(_) { payload.seasonality = {}; }
+  if (!payload.sku || !payload.product_name) return showToast('SKU 和产品名称必填','err');
+  try {
+    if (editingSkuId) await api(`/api/amazon/skus/${editingSkuId}`, { method:'PUT', body:payload });
+    else await api('/api/amazon/skus', { method:'POST', body:payload });
+    closeSkuModal(); showToast('已保存'); loadData();
+  } catch(e) { showToast(e.message,'err'); }
+}
+
+async function deleteSku(id) {
+  if (!confirm('确定删除此 SKU？')) return;
+  try { await api(`/api/amazon/skus/${id}`, {method:'DELETE'}); showToast('已删除'); loadData(); } catch(e) { showToast(e.message,'err'); }
+}
+
+// === Sales Modal ===
+function openSalesModal() { openSalesModalFor(''); }
+function openSalesModalFor(sku) {
+  document.getElementById('fs-sku').value = sku || '';
+  document.getElementById('fs-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('fs-units').value = '';
+  document.getElementById('fs-rev').value = '';
+  document.getElementById('salesModal').classList.add('open');
+}
+function closeSalesModal() { document.getElementById('salesModal').classList.remove('open'); }
+
+async function saveSales() {
+  const sku = document.getElementById('fs-sku').value.trim();
+  const sale_date = document.getElementById('fs-date').value;
+  const units_sold = parseInt(document.getElementById('fs-units').value)||0;
+  const revenue = parseFloat(document.getElementById('fs-rev').value)||0;
+  if (!sku || !sale_date) return showToast('SKU 和日期必填','err');
+  try {
+    await api('/api/amazon/sales', { method:'POST', body:{ sku, sale_date, units_sold, revenue } });
+    closeSalesModal(); showToast('已录入'); loadData();
+  } catch(e) { showToast(e.message,'err'); }
+}
+
+// === Batch Sales Modal ===
+function openBatchSalesModal() { document.getElementById('batchSalesModal').classList.add('open'); document.getElementById('fb-text').value=''; }
+function closeBatchSalesModal() { document.getElementById('batchSalesModal').classList.remove('open'); }
+
+async function saveBatchSales() {
+  const text = document.getElementById('fb-text').value.trim();
+  if (!text) return showToast('请粘贴数据','err');
+  const lines = text.split('\n').filter(Boolean);
+  const rows = lines.map(line => {
+    const parts = line.split(/[\t,]+/);
+    return { sku: parts[0]?.trim(), sale_date: parts[1]?.trim(), units_sold: parseInt(parts[2])||0, revenue: parseFloat(parts[3])||0 };
+  }).filter(r => r.sku && r.sale_date);
+  if (!rows.length) return showToast('无有效数据','err');
+  try {
+    const r = await api('/api/amazon/sales/batch', { method:'POST', body:{ rows } });
+    closeBatchSalesModal(); showToast(`已导入 ${r.count} 条`); loadData();
+  } catch(e) { showToast(e.message,'err'); }
+}
+
+// === Init ===
+applyI18n();
+loadData();
+</script>
+</body>
+</html>

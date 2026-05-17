@@ -1959,4 +1959,262 @@ app.get('/api/track', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
+// ════════════════════════════════════════════════════════════
+// AMAZON 库存智能补货
+// ════════════════════════════════════════════════════════════
+
+// SKU 配置 CRUD
+app.get('/api/amazon/skus', auth, async (req, res) => {
+  try {
+    const data = await sb('amazon_sku_config?is_active=eq.true&select=*&order=created_at.desc');
+    res.json(data);
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.post('/api/amazon/skus', auth, async (req, res) => {
+  try {
+    const data = await sb('amazon_sku_config?select=*', {
+      method:'POST', headers:{ 'Prefer':'return=representation' },
+      body: JSON.stringify(req.body),
+    });
+    res.json({ success:true, data: data[0] });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.put('/api/amazon/skus/:id', auth, async (req, res) => {
+  try {
+    await sb(`amazon_sku_config?id=eq.${req.params.id}`, {
+      method:'PATCH',
+      body: JSON.stringify({ ...req.body, updated_at: new Date().toISOString() }),
+    });
+    res.json({ success:true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.delete('/api/amazon/skus/:id', auth, async (req, res) => {
+  try {
+    await sb(`amazon_sku_config?id=eq.${req.params.id}`, {
+      method:'PATCH', body: JSON.stringify({ is_active: false }),
+    });
+    res.json({ success:true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 每日销量录入（手动 / 后续接 SP-API）
+app.post('/api/amazon/sales', auth, async (req, res) => {
+  try {
+    const { sku, sale_date, units_sold, revenue } = req.body || {};
+    if (!sku || !sale_date) return res.status(400).json({ message: 'sku & sale_date required' });
+    // upsert
+    const existing = await sb(`amazon_daily_sales?sku=eq.${encodeURIComponent(sku)}&sale_date=eq.${sale_date}&select=id`);
+    if (existing.length) {
+      await sb(`amazon_daily_sales?id=eq.${existing[0].id}`, {
+        method:'PATCH',
+        body: JSON.stringify({ units_sold: Number(units_sold||0), revenue: Number(revenue||0) }),
+      });
+    } else {
+      await sb('amazon_daily_sales', {
+        method:'POST',
+        body: JSON.stringify({ sku, sale_date, units_sold: Number(units_sold||0), revenue: Number(revenue||0) }),
+      });
+    }
+    res.json({ success:true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 批量录入销量（用于一次性导入）
+app.post('/api/amazon/sales/batch', auth, async (req, res) => {
+  try {
+    const { rows } = req.body || {};
+    if (!Array.isArray(rows) || !rows.length) return res.status(400).json({ message: 'rows required' });
+    let ok = 0;
+    for (const r of rows) {
+      if (!r.sku || !r.sale_date) continue;
+      const existing = await sb(`amazon_daily_sales?sku=eq.${encodeURIComponent(r.sku)}&sale_date=eq.${r.sale_date}&select=id`).catch(()=>[]);
+      if (existing.length) {
+        await sb(`amazon_daily_sales?id=eq.${existing[0].id}`, {
+          method:'PATCH',
+          body: JSON.stringify({ units_sold: Number(r.units_sold||0), revenue: Number(r.revenue||0) }),
+        });
+      } else {
+        await sb('amazon_daily_sales', {
+          method:'POST',
+          body: JSON.stringify({ sku: r.sku, sale_date: r.sale_date, units_sold: Number(r.units_sold||0), revenue: Number(r.revenue||0) }),
+        });
+      }
+      ok++;
+    }
+    res.json({ success:true, count: ok });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+app.get('/api/amazon/sales', auth, async (req, res) => {
+  try {
+    const { sku, days = 60 } = req.query;
+    const since = new Date(Date.now() - Number(days)*86400000).toISOString().slice(0,10);
+    let url = `amazon_daily_sales?sale_date=gte.${since}&order=sale_date.asc`;
+    if (sku) url += `&sku=eq.${encodeURIComponent(sku)}`;
+    const data = await sb(url);
+    res.json(data);
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// ─────────────────────────────────────────────
+// 核心算法：5 层智能补货
+// ─────────────────────────────────────────────
+function stdev(arr) {
+  if (arr.length < 2) return 0;
+  const mean = arr.reduce((a,b)=>a+b,0) / arr.length;
+  const variance = arr.reduce((a,b)=>a+Math.pow(b-mean,2),0) / arr.length;
+  return Math.sqrt(variance);
+}
+
+// Z 值映射（服务水平 → Z）
+function zFromService(level) {
+  const map = { 80:0.84, 85:1.04, 90:1.28, 92:1.41, 95:1.65, 97:1.88, 98:2.05, 99:2.33, 99.5:2.58 };
+  const keys = Object.keys(map).map(Number).sort((a,b)=>a-b);
+  let best = keys[0];
+  for (const k of keys) if (Math.abs(k - level) < Math.abs(best - level)) best = k;
+  return map[best];
+}
+
+function calcReplenishment(cfg, salesRows) {
+  // salesRows: 按日期升序的销量数组 [{sale_date, units_sold}, ...]
+  const last7  = salesRows.slice(-7).map(r => Number(r.units_sold||0));
+  const last14 = salesRows.slice(-14).map(r => Number(r.units_sold||0));
+  const last30 = salesRows.slice(-30).map(r => Number(r.units_sold||0));
+
+  const sum7  = last7.reduce((a,b)=>a+b,0);
+  const sum14 = last14.reduce((a,b)=>a+b,0);
+  const sum30 = last30.reduce((a,b)=>a+b,0);
+
+  const avg7  = last7.length  ? sum7  / last7.length  : 0;
+  const avg14 = last14.length ? sum14 / last14.length : 0;
+  const avg30 = last30.length ? sum30 / last30.length : 0;
+
+  // 加权平均日销
+  const totalWeight = (last7.length*3) + (last14.length*2) + (last30.length*1);
+  const weightedAvg = totalWeight > 0
+    ? (sum7*3 + sum14*2 + sum30*1) / totalWeight
+    : 0;
+
+  // 趋势系数
+  const trendCoef = avg30 > 0 ? avg7 / avg30 : 1;
+  const trendLabel = trendCoef > 1.2 ? 'up' : trendCoef < 0.8 ? 'down' : 'flat';
+
+  // 季节系数
+  const month = String(new Date().getMonth() + 1);
+  const seasonality = cfg.seasonality || {};
+  const seasonCoef = Number(seasonality[month]) || 1;
+
+  // 预测日销
+  const forecastDaily = weightedAvg * trendCoef * seasonCoef;
+
+  // 需求标准差 + 波动系数
+  const sigma = stdev(last30.length ? last30 : last14);
+  const cv = avg30 > 0 ? sigma / avg30 : 0;
+  const cvLabel = cv < 0.3 ? 'stable' : cv < 0.7 ? 'medium' : 'high';
+
+  // 总前置时间
+  const totalLeadTime =
+    Number(cfg.production_days||0) +
+    Number(cfg.domestic_days||0) +
+    Number(cfg.shipping_days||0) +
+    Number(cfg.fba_intake_days||0);
+
+  // 安全库存（Z × σ × √前置时间）
+  const z = zFromService(Number(cfg.service_level || 95));
+  const safetyStock = Math.ceil(z * sigma * Math.sqrt(totalLeadTime));
+
+  // 补货触发点
+  const reorderPoint = Math.ceil(forecastDaily * totalLeadTime + safetyStock);
+
+  // 当前 + 在途
+  const fbaStock = Number(cfg.fba_stock || 0);
+  const inboundStock = Number(cfg.inbound_stock || 0);
+  const totalStock = fbaStock + inboundStock;
+
+  // 可卖天数
+  const daysOfSupply = forecastDaily > 0 ? totalStock / forecastDaily : 999;
+
+  // 建议补货量
+  const coverage = Number(cfg.coverage_days || 60);
+  let suggestedQty = Math.ceil(forecastDaily * (totalLeadTime + coverage) + safetyStock - totalStock);
+  if (suggestedQty < 0) suggestedQty = 0;
+
+  // MOQ 取整
+  const moq = Number(cfg.moq || 1);
+  if (moq > 1 && suggestedQty > 0 && suggestedQty < moq) suggestedQty = moq;
+
+  // 状态判定
+  let status = 'ok';            // 充足
+  let urgencyLabel = '';
+  let stockoutDays = 0;
+  if (daysOfSupply < totalLeadTime) {
+    status = 'urgent';          // 紧急（即使现在下单也会断货）
+    stockoutDays = Math.ceil(totalLeadTime - daysOfSupply);
+  } else if (totalStock < reorderPoint) {
+    status = 'restock';         // 触发补货
+  } else if (daysOfSupply > 90 && forecastDaily > 0) {
+    status = 'overstock';       // 库存过多
+  }
+
+  // 空运/海运组合建议
+  const airDays = Number(cfg.air_days || 7);
+  const seaDays = Number(cfg.shipping_days || 25);
+  const emergencyAirQty = stockoutDays > 0
+    ? Math.ceil(forecastDaily * (airDays + Number(cfg.production_days||0) + Number(cfg.domestic_days||0) + Number(cfg.fba_intake_days||0)) + safetyStock)
+    : 0;
+
+  return {
+    // 销量数据
+    avg7: +avg7.toFixed(2),
+    avg14: +avg14.toFixed(2),
+    avg30: +avg30.toFixed(2),
+    weighted_avg: +weightedAvg.toFixed(2),
+    // 系数
+    trend_coef: +trendCoef.toFixed(3),
+    trend_label: trendLabel,
+    season_coef: +seasonCoef.toFixed(2),
+    // 预测
+    forecast_daily: +forecastDaily.toFixed(2),
+    // 波动
+    sigma: +sigma.toFixed(2),
+    cv: +cv.toFixed(2),
+    cv_label: cvLabel,
+    // 前置时间 + 安全库存
+    total_lead_time: totalLeadTime,
+    z_value: z,
+    safety_stock: safetyStock,
+    // 补货
+    reorder_point: reorderPoint,
+    days_of_supply: +daysOfSupply.toFixed(1),
+    suggested_qty: suggestedQty,
+    fba_stock: fbaStock,
+    inbound_stock: inboundStock,
+    total_stock: totalStock,
+    // 状态
+    status,
+    stockout_days: stockoutDays,
+    emergency_air_qty: emergencyAirQty,
+    coverage_days: coverage,
+  };
+}
+
+// 获取所有 SKU 的智能补货分析
+app.get('/api/amazon/replenishment', auth, async (req, res) => {
+  try {
+    const skus = await sb('amazon_sku_config?is_active=eq.true&select=*&order=created_at.desc');
+    if (!skus.length) return res.json([]);
+    const since = new Date(Date.now() - 60*86400000).toISOString().slice(0,10);
+    const allSales = await sb(`amazon_daily_sales?sale_date=gte.${since}&order=sale_date.asc&select=*`);
+    const out = skus.map(sku => {
+      const rows = allSales.filter(r => r.sku === sku.sku);
+      const calc = calcReplenishment(sku, rows);
+      return { ...sku, ...calc, _sales_history: rows };
+    });
+    res.json(out);
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
 module.exports = app;
