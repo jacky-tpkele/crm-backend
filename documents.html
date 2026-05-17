@@ -72,6 +72,9 @@ button,input,select,textarea{font:inherit}
 .tb-btn.primary{background:var(--p1);color:#000;border-color:var(--p1);font-weight:600}
 .tb-btn.primary:hover{background:#34D399}
 
+/* 多选高亮 */
+td.cell-selected, th.cell-selected{outline:2px solid #00aaff;outline-offset:-2px;background:rgba(0,170,255,.18) !important}
+
 /* Editable cells */
 [contenteditable="true"]{outline:none;cursor:text;min-width:16px;transition:background .15s}
 [contenteditable="true"]:empty:before{content:attr(data-ph);color:#aaa;font-style:italic}
@@ -155,8 +158,10 @@ tr:hover .del-row-btn{display:inline-block}
       <button class="tb-btn" onclick="insertColRight()">→ 右侧插入列</button>
       <button class="tb-btn danger" onclick="deleteCol()">✕ 删除当前列</button>
       <h4 data-i18n="tbMerge">合并/拆分</h4>
-      <button class="tb-btn" onclick="mergeCells()">⊞ 合并单元格</button>
+      <div style="font-size:10px;color:var(--muted);line-height:1.4;padding:0 2px 2px">按住 Shift 点击多个单元格后再按合并</div>
+      <button class="tb-btn" onclick="mergeCells()">⊞ 合并选中</button>
       <button class="tb-btn" onclick="splitCell()">⊟ 拆分单元格</button>
+      <button class="tb-btn" onclick="clearSelection()">○ 取消选择</button>
       <h4 data-i18n="tbOther">其他</h4>
       <button class="tb-btn" onclick="clearCell()">⌫ 清空单元格</button>
       <button class="tb-btn" onclick="addTable()">⊞ 插入新表格</button>
@@ -298,13 +303,19 @@ async function generateDoc() {
   document.getElementById('tableToolbar').classList.add('show');
   editMode = false;
 }
+// 按当前文档语言取产品名
+function pickName(it, lang) {
+  if (lang === 'zh') return it.product_name_cn || it.product_name_en || it.product_name || it.name || '';
+  return it.product_name_en || it.product_name_cn || it.product_name || it.name || '';
+}
+
 // PI Template
 function renderPI(order, customer, lang) {
   const items = order.items || [];
   const addr = formatShippingAddress(order.shipping_address || customer.address);
   const rows = items.map(it => `
     <tr>
-      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">${esc(it.product_name || it.name || '')}</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">${esc(pickName(it, lang))}</td>
       <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">${it.quantity || ''}</td>
       <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">&nbsp;</td>
       <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">&nbsp;</td>
@@ -328,7 +339,7 @@ function renderPI(order, customer, lang) {
     <div style="font-size:22px;font-weight:bold" ${ed('Company Name')}>${esc(CO_NAME)}</div>
     <div style="font-size:10.5px;color:#333;margin-top:3px" ${ed('Address')}>${esc(CO_ADDR)}</div>
   </div>
-  <div style="text-align:center;font-size:15px;font-weight:bold;border:1px solid #000;padding:4px 0">Packing List</div>
+  <div style="text-align:center;font-size:15px;font-weight:bold;border:1px solid #000;padding:4px 0">Proforma Invoice</div>
   <table style="width:100%;border-collapse:collapse">
     <tr>
       <td style="border:1px solid #000;padding:5px 8px;width:12%;font-weight:600">To:</td>
@@ -356,13 +367,13 @@ function renderPI(order, customer, lang) {
   <table style="width:100%;border-collapse:collapse;margin-top:-1px">
     <thead>
       <tr style="text-align:center;font-weight:bold;background:#f0f0f0">
-        <th style="border:1px solid #000;padding:6px;width:22%">Product Name</th>
-        <th style="border:1px solid #000;padding:6px;width:12%">Quantity(pcs)</th>
-        <th style="border:1px solid #000;padding:6px;width:12%">Package</th>
-        <th style="border:1px solid #000;padding:6px;width:14%">Net Weight(kg)</th>
-        <th style="border:1px solid #000;padding:6px;width:14%">Gross Weight(kg)</th>
-        <th style="border:1px solid #000;padding:6px;width:12%">&nbsp;</th>
-        <th style="border:1px solid #000;padding:6px;width:14%">CBM</th>
+        <th style="border:1px solid #000;padding:6px;width:30%">Product Name</th>
+        <th style="border:1px solid #000;padding:6px;width:12%">Quantity</th>
+        <th style="border:1px solid #000;padding:6px;width:14%">Unit Price</th>
+        <th style="border:1px solid #000;padding:6px;width:14%">Amount</th>
+        <th style="border:1px solid #000;padding:6px;width:10%">HS Code</th>
+        <th style="border:1px solid #000;padding:6px;width:10%">Origin</th>
+        <th style="border:1px solid #000;padding:6px;width:10%">Remarks</th>
       </tr>
     </thead>
     <tbody id="productTbody">${rows}${emptyRows}</tbody>
@@ -384,15 +395,17 @@ function renderQuotation(order, customer, lang) {
   const items = order.items || [];
   let subtotal = 0;
   const rows = items.map((it, i) => {
-    const amt = (it.quantity || 0) * (it.unit_price || 0);
+    const price = Number(it.sales_price || it.unit_price || 0);
+    const qty = Number(it.quantity || 0);
+    const amt = Number(it.sales_total || (qty * price));
     subtotal += amt;
     return `
     <tr>
       <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">${i+1}</td>
-      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">${esc(it.product_name || it.name || '')}</td>
-      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">${esc(it.spec || it.description || '')}</td>
-      <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">${it.quantity || ''}</td>
-      <td style="border:1px solid #000;padding:5px 8px;text-align:right" contenteditable="true">${it.unit_price ? '$' + Number(it.unit_price).toFixed(2) : ''}</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">${esc(pickName(it, lang))}</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">${esc(it.specification || it.spec || it.description || '')}</td>
+      <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">${qty || ''}</td>
+      <td style="border:1px solid #000;padding:5px 8px;text-align:right" contenteditable="true">${price ? '$' + price.toFixed(2) : ''}</td>
       <td style="border:1px solid #000;padding:5px 8px;text-align:right" contenteditable="true">${amt ? '$' + amt.toFixed(2) : ''}</td>
     </tr>`;
   }).join('');
@@ -405,7 +418,7 @@ function renderQuotation(order, customer, lang) {
       <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
       <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">&nbsp;</td>
     </tr>`).join('') : '';
-  const shipping = order.shipping_cost || 0;
+  const shipping = Number(order.shipping_cost || 0);
   const total = subtotal + shipping;
 
   return `
@@ -465,7 +478,7 @@ function renderPacking(order, customer, lang) {
   const addr = formatShippingAddress(order.shipping_address || customer.address);
   const rows = items.map(it => `
     <tr>
-      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">${esc(it.product_name || it.name || '')}</td>
+      <td style="border:1px solid #000;padding:5px 8px" contenteditable="true">${esc(pickName(it, lang))}</td>
       <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">${it.quantity || ''}</td>
       <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">&nbsp;</td>
       <td style="border:1px solid #000;padding:5px 8px;text-align:center" contenteditable="true">&nbsp;</td>
@@ -684,35 +697,71 @@ function deleteCol() {
 }
 
 // ── 合并/拆分 ──
-function mergeCells() {
-  const sel = window.getSelection();
-  if (!sel.rangeCount) return showToast(currentLang==='zh'?'请先选中多个单元格（按住鼠标拖选）':'Select multiple cells first','err');
+// Shift+点击 多选单元格
+function setupCellSelection() {
   const paper = document.getElementById('docPaper');
-  const cells = paper.querySelectorAll('td[contenteditable]:focus-within, td.merge-selected, th[contenteditable]:focus-within, th.merge-selected');
-  if (cells.length < 2) {
-    // 尝试用 selection range 找
-    const range = sel.getRangeAt(0);
-    const container = range.commonAncestorContainer;
-    const tr = container.closest ? container.closest('tr') : null;
-    if (!tr) return showToast(currentLang==='zh'?'请在同一行选中多个单元格':'Select cells in same row','err');
-    // 简单合并：当前单元格向右合并一格
-    const cell = getActiveCell();
-    if (!cell || !cell.nextElementSibling) return showToast(currentLang==='zh'?'右侧没有可合并的单元格':'No cell to merge right','err');
-    const next = cell.nextElementSibling;
-    const content = cell.innerHTML + ' ' + next.innerHTML;
-    cell.innerHTML = content.replace(/&nbsp;/g,'').trim() || '&nbsp;';
-    cell.colSpan = (cell.colSpan || 1) + (next.colSpan || 1);
-    next.remove();
-    showToast(currentLang==='zh'?'已合并':'Merged');
-    return;
+  paper.addEventListener('mousedown', (e) => {
+    const cell = e.target.closest('td, th');
+    if (!cell || !paper.contains(cell)) return;
+    if (e.shiftKey) {
+      e.preventDefault();
+      cell.classList.toggle('cell-selected');
+    } else {
+      // 普通点击清除多选高亮（但保留焦点编辑）
+      paper.querySelectorAll('.cell-selected').forEach(c => c.classList.remove('cell-selected'));
+    }
+  });
+}
+
+function clearSelection() {
+  document.querySelectorAll('#docPaper .cell-selected').forEach(c => c.classList.remove('cell-selected'));
+}
+
+function mergeCells() {
+  const paper = document.getElementById('docPaper');
+  const selected = [...paper.querySelectorAll('.cell-selected')];
+  if (selected.length < 2) {
+    return showToast(currentLang==='zh'?'请按住 Shift 点击至少 2 个单元格':'Shift+click at least 2 cells','err');
   }
+  // 必须同行
+  const row = selected[0].parentElement;
+  if (!selected.every(c => c.parentElement === row)) {
+    return showToast(currentLang==='zh'?'仅支持同一行单元格合并':'Only same-row merge supported','err');
+  }
+  // 按 DOM 顺序排序
+  selected.sort((a,b) => {
+    const cs = [...row.children];
+    return cs.indexOf(a) - cs.indexOf(b);
+  });
+  // 必须连续
+  const cells = [...row.children];
+  const idxs = selected.map(c => cells.indexOf(c));
+  for (let i = 1; i < idxs.length; i++) {
+    if (idxs[i] !== idxs[i-1] + 1) {
+      return showToast(currentLang==='zh'?'选中的单元格必须相邻':'Selected cells must be adjacent','err');
+    }
+  }
+  // 合并：内容拼接 + 累加 colSpan
+  const first = selected[0];
+  let totalSpan = 0;
+  let combined = '';
+  selected.forEach(c => {
+    totalSpan += (c.colSpan || 1);
+    const txt = c.innerHTML.replace(/&nbsp;/g,'').trim();
+    if (txt) combined += (combined ? ' ' : '') + txt;
+  });
+  first.colSpan = totalSpan;
+  first.innerHTML = combined || '&nbsp;';
+  selected.slice(1).forEach(c => c.remove());
+  first.classList.remove('cell-selected');
+  showToast(currentLang==='zh'?`已合并 ${selected.length} 个单元格`:`Merged ${selected.length} cells`,'ok');
 }
 
 function splitCell() {
-  const cell = getActiveCell();
+  const cell = getActiveCell() || document.querySelector('#docPaper .cell-selected');
   if (!cell) return showToast(currentLang==='zh'?'请先点击要拆分的单元格':'Click a merged cell','err');
   const span = cell.colSpan || 1;
-  if (span <= 1) return showToast(currentLang==='zh'?'该单元格未合并，无法拆分':'Cell is not merged','err');
+  if (span <= 1) return showToast(currentLang==='zh'?'该单元格未合并':'Cell is not merged','err');
   cell.colSpan = 1;
   for (let i = 1; i < span; i++) {
     const td = document.createElement(cell.tagName.toLowerCase());
@@ -721,7 +770,7 @@ function splitCell() {
     td.innerHTML = '&nbsp;';
     cell.parentNode.insertBefore(td, cell.nextSibling);
   }
-  showToast(currentLang==='zh'?'已拆分':'Split');
+  showToast(currentLang==='zh'?'已拆分':'Split','ok');
 }
 
 function clearCell() {
@@ -801,6 +850,7 @@ function checkQuickExport() {
 (async function init() {
   await Promise.all([loadOrders(), loadCustomers()]);
   applyI18n();
+  setupCellSelection();
   checkQuickExport();
 })();
 </script>
