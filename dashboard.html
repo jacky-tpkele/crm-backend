@@ -1713,7 +1713,7 @@ function logout() {
   localStorage.removeItem('crm_token');
   localStorage.removeItem('crm_username');
   localStorage.removeItem('crm_user');
-  location.href = '/index.html';
+  location.href = '/login.html';
 }
 
 // AI Assistant — moved to standalone ai.html (opens in new tab from sidebar)
@@ -3777,7 +3777,7 @@ function kpiNavigate(scope) {
 // INIT
 // ══════════════════════════════
 async function init() {
-  if (!token()) { location.href = '/index.html'; return; }
+  if (!token()) { location.href = '/login.html'; return; }
   setLang(S.lang);
   loadSettings();
   await Promise.all([loadCustomers(), loadSuppliers()]);
