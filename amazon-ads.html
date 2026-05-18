@@ -4,95 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TPKELE CRM - Amazon Ads</title>
+<link rel="stylesheet" href="_shared/layout.css">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#000509;--panel:#060f20;--panel2:#0a1628;
-  --border:rgba(0,190,255,0.12);--border-h:rgba(0,220,255,0.38);
-  --text:#ddf0ff;--muted:#4d7390;--muted2:#7aa4c0;
-  --primary:#00c8f0;--p1:#10B981;
-  --danger:#fb7185;--success:#4ade80;--warning:#fbbf24;
-  --shadow:0 20px 60px rgba(0,0,0,.7);--radius:14px;--sb:220px;
-}
-html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
-button,input,select,textarea{font:inherit}
-::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-thumb{background:rgba(16,185,129,0.15);border-radius:4px}
-
-.app{display:flex;height:100vh;overflow:hidden}
-.sidebar{width:var(--sb);flex-shrink:0;height:100%;background:linear-gradient(180deg,rgba(3,8,20,.99),rgba(2,5,13,.99));border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
-.sb-logo{display:flex;align-items:center;gap:12px;padding:18px 16px;border-bottom:1px solid var(--border)}
-.logo-text{font-size:15px;font-weight:700;letter-spacing:1px}
-.logo-text span{color:var(--primary)}
-.sb-nav{flex:1;overflow-y:auto;padding:10px 0}
-.nav-group{padding:8px 16px 4px;font-size:10px;font-weight:600;color:rgba(16,185,129,.22);text-transform:uppercase;letter-spacing:.8px}
-.nav-item{display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;transition:.15s;white-space:nowrap;color:var(--muted2);font-size:13.5px;font-weight:500;border-left:3px solid transparent}
-.nav-item:hover{background:rgba(16,185,129,0.05);color:var(--text)}
-.nav-item.active{background:rgba(16,185,129,0.08);color:var(--primary);border-left-color:var(--primary)}
-.nav-icon{font-size:17px;flex-shrink:0;width:22px;text-align:center}
-
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
-.header{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-shrink:0}
-.header h1{font-size:18px;font-weight:600;flex:1}
-.btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:13px;cursor:pointer;transition:.15s;white-space:nowrap}
-.btn:hover{border-color:var(--p1);color:var(--p1)}
-.btn-primary{background:var(--p1);color:#000;border-color:var(--p1);font-weight:600}
-.btn-primary:hover{background:#34D399}
-.btn-sm{padding:5px 10px;font-size:12px;border-radius:6px}
-.btn-danger{border-color:rgba(251,113,133,.4);color:var(--danger)}
-.btn-danger:hover{background:rgba(251,113,133,.1)}
-.lang-btn{padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:12px;cursor:pointer}
-
-.workspace{flex:1;overflow-y:auto;padding:20px 24px}
-
-/* Cards */
-.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:18px}
-.card-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
-.card-title{font-size:14px;font-weight:600;flex:1}
+/* amazon-ads 特有样式 */
+:root { --sb: 220px }   /* 此页侧栏更宽 */
 
 /* Summary Cards */
 .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px}
 .summary-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
 .summary-card .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
 .summary-card .value{font-size:22px;font-weight:700}
-
-/* Table */
-.tbl-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th{text-align:left;padding:10px 12px;color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
-td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04)}
-
-/* Form */
-.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
-.field{display:flex;flex-direction:column;gap:4px}
-.field label{font-size:11.5px;color:var(--muted2);font-weight:500}
-.field input,.field select,.field textarea{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;outline:none;transition:.15s}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--p1)}
-
-/* Modal */
-.modal-backdrop{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);display:none;place-items:center}
-.modal-backdrop.open{display:grid}
-.modal{background:var(--panel);border:1px solid var(--border);border-radius:14px;width:640px;max-width:95vw;max-height:90vh;display:flex;flex-direction:column;box-shadow:var(--shadow)}
-.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.modal-head h2{font-size:15px;font-weight:600}
-.modal-close{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-size:16px;display:grid;place-items:center}
-.modal-body{padding:18px 20px;overflow-y:auto;flex:1}
-.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
-
-/* Toast */
-.toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:13px;color:var(--text);display:none;align-items:center;gap:10px;box-shadow:var(--shadow)}
-.toast.show{display:flex}
-.toast.ok{border-color:rgba(74,222,128,.35)}
-.toast.err{border-color:rgba(251,113,133,.35)}
-
-/* Tabs */
-.tabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0}
-.tab{padding:8px 16px;font-size:13px;color:var(--muted2);cursor:pointer;border-bottom:2px solid transparent;transition:.15s}
-.tab:hover{color:var(--text)}
-.tab.active{color:var(--p1);border-bottom-color:var(--p1);font-weight:600}
-.tab-content{display:none}
-.tab-content.active{display:block}
 
 /* ACoS colors */
 .acos-green{color:var(--success)}
@@ -116,25 +37,11 @@ td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04)}
 .neg-tag button{background:none;border:none;color:var(--danger);cursor:pointer;font-size:14px;padding:0;line-height:1}
 </style>
 </head>
-<body>
+<body data-auth-required>
 <div class="app">
 
 <!-- Sidebar -->
-<div class="sidebar">
-  <div class="sb-logo">
-    <div class="logo-text">TP<span>KELE</span></div>
-  </div>
-  <div class="sb-nav">
-    <div class="nav-group" data-i18n="navMain">主菜单</div>
-    <div class="nav-item" onclick="location.href='dashboard.html'"><span class="nav-icon">📊</span><span data-i18n="navDashboard">仪表盘</span></div>
-    <div class="nav-item" onclick="location.href='dashboard.html'"><span class="nav-icon">◍</span><span data-i18n="navOrders">订单管理</span></div>
-    <div class="nav-group" data-i18n="navAmazon">亚马逊运营</div>
-    <div class="nav-item" onclick="location.href='amazon-margin.html'"><span class="nav-icon">💰</span><span data-i18n="navMargin">产品毛利</span></div>
-    <div class="nav-item" onclick="location.href='amazon-inventory.html'"><span class="nav-icon">📦</span><span data-i18n="navInventory">库存智能补货</span></div>
-    <div class="nav-item" onclick="location.href='amazon-research.html'"><span class="nav-icon">🔍</span><span data-i18n="navResearch">竞品调研</span></div>
-    <div class="nav-item active"><span class="nav-icon">📢</span><span data-i18n="navAds">广告管理</span></div>
-  </div>
-</div>
+<div id="sidebar"></div>
 
 <!-- Main -->
 <div class="main">
@@ -272,11 +179,12 @@ td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04)}
 </div>
 
 <div class="toast" id="toast"></div>
+<script src="_shared/layout.js"></script>
+<script src="_shared/i18n.js"></script>
 <script>
-const token = localStorage.getItem('crm_token');
-if (!token) location.href = 'login.html';
+CRM.mountSidebar('amazon-ads');
 
-let lang = localStorage.getItem('crm_lang') || 'zh';
+let lang = CRM.getLang();
 let editingRuleId = null;
 
 const I18N = {
@@ -319,23 +227,17 @@ const I18N = {
     metricAcos:'ACoS', metricCvr:'CVR', metricSpendNoSale:'Spend No Sale',
   }
 };
+CRM.extendI18n(I18N);
 
-function t(key) { return I18N[lang]?.[key] || I18N.zh[key] || key; }
-function toggleLang() { lang = lang === 'zh' ? 'en' : 'zh'; localStorage.setItem('crm_lang', lang); applyI18n(); }
-function applyI18n() { document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.dataset.i18n; if (I18N[lang]?.[k]) el.textContent = I18N[lang][k]; }); }
+function t(key) { return CRM.t(key); }
+function toggleLang() { CRM.toggleLang(); lang = CRM.getLang(); }
+function applyI18n() { CRM.applyI18n(); }
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function fmtN(n,d=2) { return Number(n||0).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}); }
 function fmtPct(n) { return fmtN(n,1)+'%'; }
 
-function showToast(msg, type='ok') { const el=document.getElementById('toast'); el.textContent=(type==='ok'?'✓ ':'✗ ')+msg; el.className=`toast show ${type}`; setTimeout(()=>el.className='toast',3000); }
-
-async function api(path, opts={}) {
-  const res = await fetch(path, { ...opts, headers:{ 'Authorization':'Bearer '+token, 'Content-Type':'application/json', ...(opts.headers||{}) }, body: opts.body ? (typeof opts.body==='string'?opts.body:JSON.stringify(opts.body)) : undefined });
-  if (res.status === 401) { localStorage.removeItem('crm_token'); location.href='login.html'; }
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message || 'Request failed');
-  return data;
-}
+const showToast = (msg, type='ok') => CRM.showToast((type==='ok'?'✓ ':'✗ ')+msg, type);
+const api = CRM.api;
 
 // === Tab Switch ===
 function switchTab(tab) {

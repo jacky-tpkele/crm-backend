@@ -4,47 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TPKELE CRM - 产品毛利</title>
+<link rel="stylesheet" href="_shared/layout.css">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#000509;--panel:#060f20;--panel2:#0a1628;
-  --border:rgba(0,190,255,0.12);--border-h:rgba(0,220,255,0.38);
-  --text:#ddf0ff;--muted:#4d7390;--muted2:#7aa4c0;
-  --primary:#00c8f0;--p1:#10B981;
-  --danger:#fb7185;--success:#4ade80;--warning:#fbbf24;
-  --shadow:0 20px 60px rgba(0,0,0,.7);--radius:14px;--sb:180px;
-}
-html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
-button,input,select,textarea{font:inherit}
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-thumb{background:rgba(16,185,129,0.18);border-radius:4px}
-
-.app{display:flex;height:100vh;overflow:hidden}
-.sidebar{width:var(--sb);flex-shrink:0;height:100%;background:linear-gradient(180deg,rgba(3,8,20,.99),rgba(2,5,13,.99));border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
-.sb-logo{display:flex;align-items:center;gap:12px;padding:18px 16px;border-bottom:1px solid var(--border)}
-.logo-text{font-size:15px;font-weight:700;letter-spacing:1px}
-.logo-text span{color:var(--primary)}
-.sb-nav{flex:1;overflow-y:auto;padding:10px 0}
-.nav-group{padding:8px 16px 4px;font-size:10px;font-weight:600;color:rgba(16,185,129,.22);text-transform:uppercase;letter-spacing:.8px}
-.nav-item{display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;transition:.15s;white-space:nowrap;color:var(--muted2);font-size:13.5px;font-weight:500;border-left:3px solid transparent;text-decoration:none}
-.nav-item:hover{background:rgba(16,185,129,0.05);color:var(--text)}
-.nav-item.active{background:rgba(16,185,129,0.08);color:var(--primary);border-left-color:var(--primary)}
-.nav-icon{font-size:17px;flex-shrink:0;width:22px;text-align:center}
-
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
-.header{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-shrink:0;flex-wrap:wrap}
-.header h1{font-size:18px;font-weight:600;flex:1;min-width:160px}
-.btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:13px;cursor:pointer;transition:.15s;white-space:nowrap}
-.btn:hover{border-color:var(--p1);color:var(--p1)}
-.btn-primary{background:var(--p1);color:#000;border-color:var(--p1);font-weight:600}
-.btn-primary:hover{background:#34D399}
-.btn-sm{padding:5px 10px;font-size:12px;border-radius:6px}
-.btn-danger{border-color:rgba(251,113,133,.4);color:var(--danger)}
-.btn-danger:hover{background:rgba(251,113,133,.1)}
-.lang-btn{padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:12px;cursor:pointer}
-
-.workspace{flex:1;overflow-y:auto;padding:20px 24px}
+/* 仅保留 amazon-margin 特有样式 */
 
 /* Top bar with category tabs + global config */
 .cfg-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:14px}
@@ -54,9 +16,6 @@ button,input,select,textarea{font:inherit}
 .cfg-item input:focus{border-color:var(--p1)}
 
 .tabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--border);align-items:center;flex-wrap:wrap}
-.tab{padding:8px 16px;font-size:13px;color:var(--muted2);cursor:pointer;border-bottom:2px solid transparent;transition:.15s;white-space:nowrap}
-.tab:hover{color:var(--text)}
-.tab.active{color:var(--p1);border-bottom-color:var(--p1);font-weight:600}
 .tab-add{padding:6px 10px;font-size:11.5px;color:var(--muted);border:1px dashed var(--border);border-radius:6px;cursor:pointer;margin-left:auto}
 .tab-add:hover{color:var(--p1);border-color:var(--p1)}
 
@@ -93,44 +52,16 @@ td.img-cell{width:50px}
 .stat-label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
 .stat-value{font-size:18px;font-weight:700;margin-top:4px}
 
-/* Modal */
-.modal-backdrop{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);display:none;place-items:center}
-.modal-backdrop.open{display:grid}
-.modal{background:var(--panel);border:1px solid var(--border);border-radius:14px;width:480px;max-width:95vw;display:flex;flex-direction:column;box-shadow:var(--shadow)}
-.modal-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.modal-head h2{font-size:15px;font-weight:600}
-.modal-close{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-size:15px}
-.modal-body{padding:16px 18px;overflow-y:auto;max-height:60vh}
-.modal-footer{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
-.field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
-.field label{font-size:11.5px;color:var(--muted2)}
-.field input,.field select{background:var(--panel2);border:1px solid var(--border);border-radius:7px;padding:7px 10px;color:var(--text);font-size:13px;outline:none}
-.field input:focus,.field select:focus{border-color:var(--p1)}
-
-.toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:11px 16px;font-size:13px;color:var(--text);display:none;align-items:center;gap:10px;box-shadow:var(--shadow)}
-.toast.show{display:flex}
-.toast.ok{border-color:rgba(74,222,128,.35)}
-.toast.err{border-color:rgba(251,113,133,.35)}
+/* Smaller modal for this page */
+.modal{width:480px}
+.modal-body{max-height:60vh}
 
 .dirty-badge{display:inline-block;margin-left:8px;padding:2px 8px;background:rgba(251,191,36,.15);color:var(--warning);border:1px solid rgba(251,191,36,.3);border-radius:10px;font-size:11px}
 </style>
 </head>
-<body>
+<body data-auth-required>
 <div class="app">
-<!-- Sidebar -->
-<div class="sidebar">
-  <div class="sb-logo"><div class="logo-text">TP<span>KELE</span></div></div>
-  <div class="sb-nav">
-    <div class="nav-group">主菜单</div>
-    <a class="nav-item" href="dashboard.html"><span class="nav-icon">📊</span><span>仪表盘</span></a>
-    <a class="nav-item" href="dashboard.html"><span class="nav-icon">◍</span><span>订单管理</span></a>
-    <div class="nav-group">亚马逊运营</div>
-    <a class="nav-item active" href="amazon-margin.html"><span class="nav-icon">💰</span><span>产品毛利</span></a>
-    <a class="nav-item" href="amazon-inventory.html"><span class="nav-icon">📦</span><span>库存补货</span></a>
-    <a class="nav-item" href="amazon-research.html"><span class="nav-icon">🔍</span><span>竞品调研</span></a>
-    <a class="nav-item" href="amazon-ads.html"><span class="nav-icon">📢</span><span>广告管理</span></a>
-  </div>
-</div>
+<div id="sidebar"></div>
 
 <!-- Main -->
 <div class="main">
@@ -267,35 +198,19 @@ td.img-cell{width:50px}
 
 <div class="toast" id="toast"></div>
 
+<script src="_shared/layout.js"></script>
+<script src="_shared/i18n.js"></script>
 <script>
-const token = localStorage.getItem('crm_token');
-if (!token) location.href = 'login.html';
+CRM.mountSidebar('amazon-margin');
+
+const api = CRM.api;
+const showToast = CRM.showToast;
 
 let categories = [];
 let items = [];
 let currentCat = '';
 let config = { exchange_rate: 7.2, commission_rate: 15, freight_per_kg: 7.5 };
 let dirty = false;
-
-const api = async (url, opts = {}) => {
-  const res = await fetch(url, {
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token, ...(opts.headers || {}) },
-    ...opts,
-  });
-  if (!res.ok) {
-    let msg = `HTTP ${res.status}`;
-    try { const j = await res.json(); msg = j.message || msg; } catch (e) {}
-    throw new Error(msg);
-  }
-  return res.status === 204 ? null : res.json();
-};
-
-function showToast(msg, type) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show ' + (type || '');
-  setTimeout(() => t.className = 'toast', 2500);
-}
 
 function markDirty() {
   dirty = true;
