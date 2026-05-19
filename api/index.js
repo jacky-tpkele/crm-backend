@@ -641,10 +641,68 @@ app.get('/api/analytics/top-products', auth, async (req, res) => {
 // 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // DOCUMENTS
 // 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
+
+// 列表（支持按 order_id / document_type 过滤）
 app.get('/api/documents', auth, async (req, res) => {
   try {
-    const data = await sb('documents?select=*&order=created_at.desc');
-    res.json(data);
+    const { order_id, document_type, limit = 100 } = req.query;
+    const parts = ['is_deleted=eq.false'];
+    if (order_id) parts.push(`order_id=eq.${order_id}`);
+    if (document_type) parts.push(`document_type=eq.${document_type}`);
+    const url = `documents?${parts.join('&')}&order=created_at.desc&limit=${Number(limit)||100}&select=id,order_id,document_type,language,document_number,notes,created_at,updated_at`;
+    res.json(await sb(url));
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 单条（含 HTML 快照，重新预览/再次打印用）
+app.get('/api/documents/:id', auth, async (req, res) => {
+  try {
+    const rows = await sb(`documents?id=eq.${req.params.id}&is_deleted=eq.false&select=*`);
+    if (!rows.length) return res.status(404).json({ message: 'Document not found' });
+    res.json(rows[0]);
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 新增存档：documents.html 生成 PDF 后调用
+app.post('/api/documents', auth, async (req, res) => {
+  try {
+    const { order_id, document_type, language, document_number, html_content, notes } = req.body || {};
+    if (!document_type) return res.status(400).json({ message: 'document_type required' });
+    if (!html_content) return res.status(400).json({ message: 'html_content required' });
+    const payload = {
+      order_id: order_id || null,
+      document_type,
+      language: language || 'en',
+      document_number: document_number || null,
+      html_content,
+      notes: notes || null,
+    };
+    if (req.user.user_id) payload.created_by = req.user.user_id;
+    const data = await sb('documents?select=id,document_number,created_at', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify(payload),
+    });
+    res.json({ success: true, data: data[0] });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 修改备注/编号（HTML 内容不允许改，要改就重新生成）
+app.patch('/api/documents/:id', auth, async (req, res) => {
+  try {
+    const allowed = ['notes', 'document_number'];
+    const patch = { updated_at: new Date().toISOString() };
+    for (const k of allowed) if (k in req.body) patch[k] = req.body[k];
+    await sb(`documents?id=eq.${req.params.id}`, { method: 'PATCH', body: JSON.stringify(patch) });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 删除（软删）
+app.delete('/api/documents/:id', auth, async (req, res) => {
+  try {
+    await sb(`documents?id=eq.${req.params.id}`, { method: 'PATCH', body: JSON.stringify({ is_deleted: true, updated_at: new Date().toISOString() }) });
+    res.json({ success: true });
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
@@ -784,6 +842,12 @@ app.post('/api/emails/sync', auth, async (req, res) => {
           };
           if (account_id) emailData.account_id = account_id;
 
+          // 自动匹配客户（按 from_address）
+          try {
+            const cid = await findCustomerByEmail(from.address);
+            if (cid) emailData.customer_id = cid;
+          } catch (_) {}
+
           await sb('emails?on_conflict=message_id', {
             method: 'POST',
             headers: { 'Prefer': 'resolution=ignore-duplicates' },
@@ -821,7 +885,7 @@ app.get('/api/emails', auth, async (req, res) => {
       ? `&account_id=eq.${account_id}`
       : '&account_id=is.null';
     const data = await sb(
-      `emails?${folderFilter}${acctFilter}&is_deleted=eq.false&order=received_at.desc&limit=${limit}&offset=${offset}&select=id,message_id,folder,account_id,from_address,from_name,to_addresses,subject,is_read,received_at`
+      `emails?${folderFilter}${acctFilter}&is_deleted=eq.false&order=received_at.desc&limit=${limit}&offset=${offset}&select=id,message_id,folder,account_id,customer_id,from_address,from_name,to_addresses,subject,is_read,received_at`
     );
     res.json(data);
   } catch (e) { res.status(500).json({ message: e.message }); }
@@ -918,6 +982,13 @@ app.post('/api/emails/send', auth, async (req, res) => {
     };
     if (account_id) sentData.account_id = account_id;
 
+    // 自动匹配客户（按收件人）
+    try {
+      const firstTo = String(to || '').split(',')[0].trim();
+      const cid = await findCustomerByEmail(firstTo);
+      if (cid) sentData.customer_id = cid;
+    } catch (_) {}
+
     await sb('emails', { method: 'POST', body: JSON.stringify(sentData) });
     res.json({ success: true, messageId: info.messageId });
   } catch (e) { res.status(500).json({ message: e.message }); }
@@ -928,6 +999,31 @@ app.post('/api/emails/send', auth, async (req, res) => {
 // 鈹€鈹€ AI 鍔╂墜 鈹€鈹€
 // 注：5 个 /api/ai/* endpoint（settings/status/chat/image）已于 2026-05-18 清理，
 // ai.html 改为前端直连 SiliconFlow API。logistics/extract 仍读 ai_settings 表（暂保留）。
+
+// 根据邮箱地址查找客户ID（支持 customers.email 多邮箱用逗号分隔）
+async function findCustomerByEmail(addr) {
+  const a = String(addr || '').trim().toLowerCase();
+  if (!a) return null;
+  // PostgREST ilike：customers.email 模糊包含该邮箱（前后允许有逗号分隔/空格）
+  const esc = encodeURIComponent('%' + a + '%');
+  const rows = await sb(`customers?email=ilike.${esc}&select=id,email&limit=10`).catch(() => []);
+  if (!rows.length) return null;
+  // 精确匹配优先
+  for (const r of rows) {
+    const list = String(r.email || '').toLowerCase().split(/[,;\s]+/).map(x => x.trim()).filter(Boolean);
+    if (list.includes(a)) return r.id;
+  }
+  return rows[0].id;
+}
+
+// 客户的邮件历史（dashboard 客户卡片调）
+app.get('/api/customers/:id/emails', auth, async (req, res) => {
+  try {
+    const limit = Number(req.query.limit) || 50;
+    const data = await sb(`emails?customer_id=eq.${req.params.id}&is_deleted=eq.false&order=received_at.desc&limit=${limit}&select=id,folder,from_address,from_name,to_addresses,subject,is_read,received_at`);
+    res.json(data);
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
 
 // LOGISTICS
 // 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲

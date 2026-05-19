@@ -61,7 +61,10 @@ tr:hover .del-row-btn{display:inline-block}
   <div class="workspace">
     <!-- Controls -->
     <div class="card">
-      <div class="card-title" data-i18n="ctrlTitle">Generate Document</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div class="card-title" data-i18n="ctrlTitle" style="margin:0;flex:1">Generate Document</div>
+        <button class="btn btn-sm" onclick="toggleArchive()" id="btnArchiveToggle">📚 历史档案</button>
+      </div>
       <div class="controls">
         <div class="field">
           <label data-i18n="lblOrder">Order</label>
@@ -90,6 +93,7 @@ tr:hover .del-row-btn{display:inline-block}
     <div class="table-toolbar" id="tableToolbar">
       <h4 data-i18n="tbFile">文件</h4>
       <button class="tb-btn primary" onclick="downloadPDF()" data-i18n="btnDownload">⬇ 下载 PDF</button>
+      <button class="tb-btn" onclick="archiveDoc()" data-i18n="btnArchive">💾 保存到档案</button>
       <button class="tb-btn" onclick="toggleEdit()" id="btnEdit" data-i18n="btnEdit">✏ 编辑模式</button>
       <h4 data-i18n="tbRows">行操作</h4>
       <button class="tb-btn" onclick="addRow()">＋ 添加行</button>
@@ -108,6 +112,21 @@ tr:hover .del-row-btn{display:inline-block}
       <h4 data-i18n="tbOther">其他</h4>
       <button class="tb-btn" onclick="clearCell()">⌫ 清空单元格</button>
       <button class="tb-btn" onclick="addTable()">⊞ 插入新表格</button>
+    </div>
+
+    <!-- 历史档案 -->
+    <div class="card" id="archiveCard" style="display:none">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div class="card-title" style="margin:0;flex:1">📚 文档档案</div>
+        <select id="archFilterType" onchange="loadArchives()" style="background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--text);font-size:12.5px">
+          <option value="">所有类型</option>
+          <option value="pi">Proforma Invoice</option>
+          <option value="quotation">Quotation</option>
+          <option value="packing">Packing List</option>
+        </select>
+        <button class="btn btn-sm" onclick="loadArchives()">↻</button>
+      </div>
+      <div id="archiveList" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
 
     <!-- Preview -->
@@ -775,6 +794,116 @@ function showToast(msg, type) {
   t.textContent = msg;
   t.className = 'toast show ' + (type || '');
   setTimeout(() => t.className = 'toast', 2500);
+}
+
+// ── 文档存档 ──
+function genDocNumber(docType) {
+  const prefix = { pi: 'INV', quotation: 'QUO', packing: 'PKL' }[docType] || 'DOC';
+  const d = new Date();
+  const ymd = d.getFullYear().toString().slice(2) + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+  const rnd = String(Math.floor(Math.random()*900) + 100);
+  return `${prefix}-${ymd}${rnd}`;
+}
+
+async function archiveDoc() {
+  const orderId = document.getElementById('selOrder').value;
+  const docType = document.getElementById('selDocType').value;
+  const docLang = document.getElementById('selDocLang').value;
+  const html = document.getElementById('docPaper').innerHTML;
+  if (!html.trim()) return showToast(currentLang==='zh'?'请先生成文档':'Generate first','err');
+
+  const number = genDocNumber(docType);
+  const notes = prompt(currentLang==='zh'?'备注（可选）：':'Notes (optional):', '') || '';
+  try {
+    const res = await fetch(API_BASE + '/api/documents', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({
+        order_id: orderId || null,
+        document_type: docType,
+        language: docLang,
+        document_number: number,
+        html_content: html,
+        notes,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed');
+    showToast(`${currentLang==='zh'?'已存档':'Archived'}: ${data.data.document_number || number}`, 'ok');
+    if (document.getElementById('archiveCard').style.display !== 'none') loadArchives();
+  } catch (e) {
+    showToast((currentLang==='zh'?'存档失败：':'Archive failed: ') + e.message, 'err');
+  }
+}
+
+function toggleArchive() {
+  const card = document.getElementById('archiveCard');
+  const open = card.style.display === 'none';
+  card.style.display = open ? '' : 'none';
+  if (open) loadArchives();
+}
+
+async function loadArchives() {
+  const type = document.getElementById('archFilterType').value;
+  const list = document.getElementById('archiveList');
+  list.innerHTML = '<div style="color:var(--muted);font-size:12.5px;padding:8px">加载中...</div>';
+  try {
+    const params = new URLSearchParams();
+    if (type) params.set('document_type', type);
+    params.set('limit', '50');
+    const res = await fetch(API_BASE + '/api/documents?' + params.toString(), {
+      headers: { 'Authorization': 'Bearer ' + token },
+    });
+    const rows = await res.json();
+    if (!Array.isArray(rows) || !rows.length) {
+      list.innerHTML = '<div style="color:var(--muted);font-size:12.5px;padding:14px;text-align:center">暂无档案</div>';
+      return;
+    }
+    const typeName = { pi: 'PI', quotation: '报价单', packing: '装箱单' };
+    list.innerHTML = rows.map(r => {
+      const order = orders.find(o => String(o.id) === String(r.order_id));
+      const orderText = order ? `${esc(order.order_number || '')} - ${esc(order.customer_name || '')}` : '—';
+      return `
+      <div style="display:flex;gap:10px;align-items:center;padding:8px 12px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;font-size:12.5px">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600">${esc(r.document_number || '(无编号)')} <span style="color:var(--muted);font-weight:400;margin-left:6px">${typeName[r.document_type]||r.document_type} · ${r.language||'en'}</span></div>
+          <div style="color:var(--muted2);font-size:11.5px;margin-top:2px">${orderText} · ${new Date(r.created_at).toLocaleString('zh-CN')}</div>
+          ${r.notes ? `<div style="color:var(--muted);font-size:11px;margin-top:2px">📝 ${esc(r.notes)}</div>` : ''}
+        </div>
+        <button class="btn btn-sm" onclick="reopenDoc('${r.id}')">查看</button>
+        <button class="btn btn-sm" style="color:var(--danger);border-color:rgba(251,113,133,.4)" onclick="deleteArchive('${r.id}')">✕</button>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    list.innerHTML = `<div style="color:var(--danger);font-size:12.5px;padding:8px">加载失败：${e.message}</div>`;
+  }
+}
+
+async function reopenDoc(id) {
+  try {
+    const res = await fetch(API_BASE + '/api/documents/' + id, { headers: { 'Authorization': 'Bearer ' + token } });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+    document.getElementById('docPaper').innerHTML = data.html_content || '';
+    document.getElementById('previewWrap').style.display = '';
+    document.getElementById('tableToolbar').classList.add('show');
+    if (data.document_type) document.getElementById('selDocType').value = data.document_type;
+    if (data.order_id) document.getElementById('selOrder').value = data.order_id;
+    showToast(`已加载档案 ${data.document_number || id}`, 'ok');
+  } catch (e) { showToast('加载失败：' + e.message, 'err'); }
+}
+
+async function deleteArchive(id) {
+  if (!confirm('删除这条档案？(软删除，保留在数据库)')) return;
+  try {
+    const res = await fetch(API_BASE + '/api/documents/' + id, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token },
+    });
+    if (!res.ok) throw new Error((await res.json()).message);
+    showToast('已删除', 'ok');
+    loadArchives();
+  } catch (e) { showToast('删除失败：' + e.message, 'err'); }
 }
 
 // Quick Export: auto-generate if URL has ?order=ID&type=pi

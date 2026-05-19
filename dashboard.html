@@ -1972,6 +1972,7 @@ function renderCustomers() {
       <td data-label="Level"><span class="badge badge-${c.customer_level||'standard'}">${esc(c.customer_level||'standard')}</span></td>
       <td data-label=""><div class="actions-cell">
         <button class="btn btn-sm" onclick="editCustomer('${c.id}')">编辑</button>
+        <button class="btn btn-sm" title="查看相关邮件" onclick="viewCustomerEmails('${c.id}','${esc(c.customer_name||'')}')">📧</button>
         <button class="btn btn-sm btn-danger" onclick="deleteCustomer('${c.id}')">删除</button>
       </div></td>
     </tr>`).join('') +
@@ -2172,6 +2173,13 @@ async function saveCustomer(e) {
     await loadCustomers();
   } catch(err) { toast(err.message,'err'); }
 }
+function viewCustomerEmails(id, name) {
+  const params = new URLSearchParams();
+  params.set('customer_id', id);
+  if (name) params.set('customer_name', name);
+  window.open('email.html?' + params.toString(), '_blank');
+}
+
 async function deleteCustomer(id) {
   if (!confirm('Delete this customer?')) return;
   try { await api(`/api/customers/${id}`, {method:'DELETE'}); toast('Deleted'); await loadCustomers(); }

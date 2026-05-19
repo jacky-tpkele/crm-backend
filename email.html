@@ -473,6 +473,9 @@ let currentAccountId = null; // null = 使用环境变量默认账号
 let mailEditor       = null;
 let attachments      = [];
 let editingAccountId = null;
+// URL 参数 ?customer_id=xxx 时按客户过滤
+let filterCustomerId = (new URLSearchParams(location.search)).get('customer_id') || null;
+let filterCustomerName = (new URLSearchParams(location.search)).get('customer_name') || '';
 
 // ── Auth fetch ──
 async function apiFetch(path, opts = {}) {
@@ -629,12 +632,21 @@ async function loadEmails(folder) {
   const selAll = document.getElementById('selAllCheck');
   if (selAll) { selAll.checked = false; selAll.indeterminate = false; }
   try {
-    const acct = currentAccountId ? `&account_id=${currentAccountId}` : '';
-    const res   = await apiFetch(`/api/emails?folder=${folder}${acct}`);
+    let url;
+    if (filterCustomerId) {
+      url = `/api/customers/${filterCustomerId}/emails?limit=100`;
+    } else {
+      const acct = currentAccountId ? `&account_id=${currentAccountId}` : '';
+      url = `/api/emails?folder=${folder}${acct}`;
+    }
+    const res   = await apiFetch(url);
     const emails = await res.json();
     renderList(emails);
-    document.getElementById('listCount').textContent = emails.length ? `${emails.length} 封` : '';
-    if (folder === 'INBOX') updateBadge(emails);
+    const countEl = document.getElementById('listCount');
+    if (countEl) {
+      countEl.textContent = emails.length ? `${emails.length} 封${filterCustomerId ? ' · 客户邮件' : ''}` : (filterCustomerId ? '该客户暂无邮件' : '');
+    }
+    if (folder === 'INBOX' && !filterCustomerId) updateBadge(emails);
   } catch (e) {
     list.innerHTML = `<div class="list-empty">加载失败：${e.message}</div>`;
   }
@@ -658,7 +670,7 @@ function renderList(emails) {
         <input type="checkbox" class="ei-check" data-id="${e.id}"
                ${selectedIds.has(e.id)?'checked':''} onchange="toggleEmailSelect('${e.id}',this)" onclick="event.stopPropagation()">
         ${!e.is_read?'<span class="unread-dot"></span>':''}
-        <div class="ei-from" style="flex:1">${esc(e.from_name||e.from_address)}</div>
+        <div class="ei-from" style="flex:1">${esc(e.from_name||e.from_address)}${e.customer_id?'<span style="margin-left:6px;padding:1px 6px;background:rgba(16,185,129,.12);color:#10B981;border:1px solid rgba(16,185,129,.3);border-radius:8px;font-size:10.5px">客户</span>':''}</div>
       </div>
       <div class="ei-subject">${esc(e.subject)}</div>
       <div class="ei-date">${fmtDate(e.received_at)}</div>
@@ -1146,6 +1158,20 @@ function toggleStripeRows() {
 }
 
 // ── Init ──
+// 如果 URL 带 customer_id，显示一个清除筛选的提示条
+if (filterCustomerId) {
+  const bar = document.createElement('div');
+  bar.style.cssText = 'background:rgba(0,200,255,.08);border:1px solid rgba(0,200,255,.3);padding:8px 14px;font-size:12.5px;display:flex;align-items:center;gap:10px;color:var(--text)';
+  bar.innerHTML = `<span>📩 仅显示客户「<b>${filterCustomerName || filterCustomerId.slice(0,8)+'…'}</b>」的邮件</span>
+    <button onclick="clearCustomerFilter()" style="margin-left:auto;padding:4px 10px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted2);cursor:pointer;font-size:12px">✕ 清除筛选</button>`;
+  document.body.insertBefore(bar, document.body.firstChild);
+}
+function clearCustomerFilter() {
+  filterCustomerId = null;
+  filterCustomerName = '';
+  history.replaceState(null, '', location.pathname);
+  location.reload();
+}
 loadEmails('INBOX');
 loadAccounts();
 </script>
