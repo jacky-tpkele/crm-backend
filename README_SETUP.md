@@ -218,26 +218,49 @@ CREATE TABLE IF NOT EXISTS document_exports (
 
 ---
 
+## 六、项目文件结构（2026-05-19 现状）
+
+```
+/
+├── login.html          # 登录页（根路径 / 自动跳此页）
+├── dashboard.html      # 主面板（订单/客户/产品/供应商/采购单/分析/系统设置 9 合 1）
+├── logistics.html      # 物流单（独立页）
+├── documents.html      # PI/Quotation/Packing List 生成 + 历史档案
+├── email.html          # 邮件（IMAP/SMTP，URL 带 ?customer_id=xxx 看客户专属邮件）
+├── password-vault.html # 密码保险柜
+├── ai.html             # AI 助手（直连 SiliconFlow，与后端无关）
+├── amazon-margin.html      # 产品毛利
+├── amazon-inventory.html   # 库存智能补货
+├── amazon-research.html    # 竞品调研（含品牌+关键词矩阵）
+├── amazon-ads.html         # 广告管理
+├── _shared/
+│   ├── layout.css      # 公共主题 + 侧栏 + 按钮 + 表格 + 弹窗 + toast
+│   ├── layout.js       # CRM.api / showToast / mountSidebar / 401 自动跳登录
+│   └── i18n.js         # 统一 i18n 词典 + applyI18n + extendI18n
+├── api/
+│   └── index.js        # Express + Supabase REST，单文件后端
+├── schema_v2_upgrade.sql           # 主结构（v2.0）
+├── schema_v2_1_patch.sql ~ v2_12*  # 增量迁移（按顺序执行）
+├── setup_database.sql              # 含历史 customers/orders/emails/...（首次部署用）
+├── package.json
+├── vercel.json
+└── README_SETUP.md
+```
+
+**SQL 部署顺序**（首次新环境）：
+1. `setup_database.sql` — 基础表（customers/orders/order_items/emails/documents/password_vault…）
+2. `schema_v2_upgrade.sql` — v2 结构升级（products/suppliers/purchase_orders 重建）
+3. 按文件名顺序执行 `schema_v2_1_patch.sql` 一直到最新的 `schema_v2_12_*.sql`
+
+所有迁移文件用 `IF NOT EXISTS` / `ADD COLUMN IF NOT EXISTS`，可重复执行，安全。
+
+---
+
 ## 五、登录账号
 
 | 用户名 | 密码 |
 |--------|------|
 | TPKELE | 662255 |
-
----
-
-## 六、项目文件结构
-
-```
-/
-├── index.html        # 登录页
-├── dashboard.html    # 主界面（登录后进入）
-├── api/
-│   └── index.js      # 后端接口（Vercel Serverless 函数）
-├── package.json      # 依赖配置
-├── vercel.json       # Vercel 路由配置
-└── README_SETUP.md   # 本说明文件
-```
 
 ---
 
