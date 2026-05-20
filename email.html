@@ -640,13 +640,15 @@ async function loadEmails(folder) {
       url = `/api/emails?folder=${folder}${acct}`;
     }
     const res   = await apiFetch(url);
+    if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.message || `HTTP ${res.status}`); }
     const emails = await res.json();
-    renderList(emails);
+    const list2 = Array.isArray(emails) ? emails : [];
+    renderList(list2);
     const countEl = document.getElementById('listCount');
     if (countEl) {
-      countEl.textContent = emails.length ? `${emails.length} 封${filterCustomerId ? ' · 客户邮件' : ''}` : (filterCustomerId ? '该客户暂无邮件' : '');
+      countEl.textContent = list2.length ? `${list2.length} 封${filterCustomerId ? ' · 客户邮件' : ''}` : (filterCustomerId ? '该客户暂无邮件' : '');
     }
-    if (folder === 'INBOX' && !filterCustomerId) updateBadge(emails);
+    if (folder === 'INBOX' && !filterCustomerId) updateBadge(list2);
   } catch (e) {
     list.innerHTML = `<div class="list-empty">加载失败：${e.message}</div>`;
   }
