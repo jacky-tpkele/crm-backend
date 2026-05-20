@@ -727,6 +727,8 @@ function imapClient(cfg = {}) {
     auth: { user: cfg.username || EMAIL_USER, pass: cfg.password || EMAIL_PASS },
     logger: false,
     tls: { rejectUnauthorized: false },
+    greetingTimeout: 15000,
+    socketTimeout: 30000,
   });
 }
 
@@ -811,7 +813,7 @@ app.post('/api/emails/sync', auth, async (req, res) => {
       try {
         for await (const msg of client.fetch(range, { uid: true, source: true }, { uid: true })) {
           messages.push({ uid: msg.uid, source: msg.source });
-          if (messages.length >= 50) break;
+          if (messages.length >= 20) break;
         }
       } catch (fetchErr) {
         if (!fetchErr.message?.includes('No messages')) throw fetchErr;
