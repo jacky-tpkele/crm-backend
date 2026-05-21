@@ -311,6 +311,7 @@ button,input,select,textarea{font:inherit}
       <div class="nav-item" onclick="location.href='dashboard.html'"><span class="nav-icon">📊</span><span>仪表盘</span></div>
       <div class="nav-item" onclick="location.href='dashboard.html'"><span class="nav-icon">📦</span><span>订单管理</span></div>
       <div class="nav-item" onclick="location.href='dashboard.html#customers'"><span class="nav-icon">👥</span><span>客户管理</span></div>
+      <div class="nav-item" onclick="location.href='inquiries.html'"><span class="nav-icon">📋</span><span>网站询盘</span></div>
       <div class="nav-group">工具</div>
       <div class="nav-item active"><span class="nav-icon">✉️</span><span>邮件</span></div>
     </div>
@@ -332,6 +333,10 @@ button,input,select,textarea{font:inherit}
         </div>
         <div class="folder-item" onclick="selectFolder('SENT',this)">
           <span>📤</span><span>已发送</span>
+        </div>
+        <div class="folder-item" onclick="selectFolder('INQUIRY',this)">
+          <span>📋</span><span>网站询盘</span>
+          <span class="badge" id="badge-inquiry" style="display:none"></span>
         </div>
       </div>
 
@@ -649,6 +654,11 @@ async function loadEmails(folder) {
       countEl.textContent = list2.length ? `${list2.length} 封${filterCustomerId ? ' · 客户邮件' : ''}` : (filterCustomerId ? '该客户暂无邮件' : '');
     }
     if (folder === 'INBOX' && !filterCustomerId) updateBadge(list2);
+    if (folder === 'INQUIRY') {
+      const unread = list2.filter(e => !e.is_read).length;
+      const b = document.getElementById('badge-inquiry');
+      if (b) { b.textContent = unread; b.style.display = unread ? '' : 'none'; }
+    }
   } catch (e) {
     list.innerHTML = `<div class="list-empty">加载失败：${e.message}</div>`;
   }
@@ -658,6 +668,18 @@ function updateBadge(emails) {
   const unread = emails.filter(e => !e.is_read).length;
   const b = document.getElementById('badge-inbox');
   b.textContent = unread; b.style.display = unread ? '' : 'none';
+}
+
+// 后台拉取询盘未读数（用于侧边栏徽标，独立于当前列表）
+async function refreshInquiryBadge() {
+  try {
+    const res = await apiFetch('/api/emails?folder=INQUIRY');
+    if (!res.ok) return;
+    const list = await res.json();
+    const unread = (Array.isArray(list) ? list : []).filter(e => !e.is_read).length;
+    const b = document.getElementById('badge-inquiry');
+    if (b) { b.textContent = unread; b.style.display = unread ? '' : 'none'; }
+  } catch (_) {}
 }
 
 let selectedIds = new Set();
@@ -827,7 +849,8 @@ function selectFolder(folder, el) {
   currentEmailId = null;
   document.querySelectorAll('.folder-item').forEach(x => x.classList.remove('active'));
   if (el) el.classList.add('active');
-  document.getElementById('listTitle').textContent = folder==='INBOX'?'收件箱':'已发送';
+  const titleMap = { INBOX:'收件箱', SENT:'已发送', INQUIRY:'网站询盘' };
+  document.getElementById('listTitle').textContent = titleMap[folder] || folder;
   showPlaceholder();
   loadEmails(folder);
 }
@@ -869,9 +892,9 @@ function openCompose(opts = {}) {
         </div>
       </div>
       <div class="compose-form">
-        <div class="field-row"><span class="field-label">收件人</span><input class="field-input" id="cTo" placeholder="example@domain.com" value="${opts.to||''}"></div>
+        <div class="field-row"><span class="field-label">收件人</span><input class="field-input" id="cTo" placeholder="example@domain.com" value="${esc(opts.to||'')}"></div>
         <div class="field-row"><span class="field-label">抄送</span><input class="field-input" id="cCc" placeholder="可选"></div>
-        <div class="field-row"><span class="field-label">主题</span><input class="field-input" id="cSubject" placeholder="邮件主题" value="${opts.subject||''}"></div>
+        <div class="field-row"><span class="field-label">主题</span><input class="field-input" id="cSubject" placeholder="邮件主题" value="${esc(opts.subject||'')}"></div>
         <div class="compose-editor"><textarea id="richEditor"></textarea></div>
         <div class="table-tools">
           <button class="attach-btn" onclick="openTableDialog()">⊞ 插入表格</button>
@@ -1174,8 +1197,33 @@ function clearCustomerFilter() {
   history.replaceState(null, '', location.pathname);
   location.reload();
 }
-loadEmails('INBOX');
+
+// 处理 URL 参数：?compose=1 直接打开写信，?folder=INQUIRY 跳转到询盘文件夹
+const _qp = new URLSearchParams(location.search);
+const _initialFolder = _qp.get('folder') === 'INQUIRY' ? 'INQUIRY' : 'INBOX';
+if (_initialFolder === 'INQUIRY') {
+  currentFolder = 'INQUIRY';
+  // 切换激活态
+  document.querySelectorAll('.folder-item').forEach((x, idx) => {
+    x.classList.toggle('active', idx === 2); // 第 3 个是 INQUIRY
+  });
+  document.getElementById('listTitle').textContent = '网站询盘';
+}
+
+loadEmails(_initialFolder);
 loadAccounts();
+refreshInquiryBadge();
+
+// 如果带 compose 参数，自动打开写信界面（延迟一下让 CSS 就位）
+if (_qp.get('compose') === '1') {
+  setTimeout(() => {
+    openCompose({
+      to:      _qp.get('to')      || '',
+      subject: _qp.get('subject') || '',
+      body:    (_qp.get('body')   || '').replace(/\n/g, '<br>'),
+    });
+  }, 200);
+}
 </script>
 </body>
 </html>

@@ -877,9 +877,10 @@ app.get('/api/emails', auth, async (req, res) => {
     const folderFilter = folder === 'SENT'
       ? 'folder=eq.SENT'
       : `folder=eq.${encodeURIComponent(folder)}`;
-    const acctFilter = account_id
-      ? `&account_id=eq.${account_id}`
-      : '&account_id=is.null';
+    // INQUIRY 是网站询盘虚拟文件夹，不绑定邮箱账号，跨账号统一显示
+    const acctFilter = folder === 'INQUIRY'
+      ? ''
+      : (account_id ? `&account_id=eq.${account_id}` : '&account_id=is.null');
     const data = await sb(
       `emails?${folderFilter}${acctFilter}&is_deleted=eq.false&order=received_at.desc&limit=${limit}&offset=${offset}&select=id,message_id,folder,account_id,from_address,from_name,to_addresses,subject,is_read,received_at`
     );
@@ -2661,6 +2662,7 @@ app.post('/api/amazon/sp-api/sync', auth, async (req, res) => {
 // ────────────────────────────────────────────────────────────────────
 // 官网询盘接口（公开，无需 auth）
 // 接收 tpkele.com 表单提交，写入 inquiries + 自动关联/创建客户
+// 同时往 emails 表写一条 folder=INQUIRY 的记录，便于邮件页"网站询盘"标签查看
 // ────────────────────────────────────────────────────────────────────
 app.post('/api/website-inquiry', async (req, res) => {
   try {
@@ -2672,9 +2674,16 @@ app.post('/api/website-inquiry', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid email' });
     }
 
+    const cleanName    = String(name).trim();
+    const cleanEmail   = String(email).trim().toLowerCase();
+    const cleanProduct = product ? String(product).trim() : '';
+    const cleanSubject = String(subject).trim();
+    const cleanMessage = String(message).trim();
+    const now          = new Date().toISOString();
+
     // 查找或创建客户
     let customerId = null;
-    const esc = encodeURIComponent(email.trim().toLowerCase());
+    const esc = encodeURIComponent(cleanEmail);
     const existing = await sb(`customers?email=ilike.%25${esc}%25&is_deleted=eq.false&select=id&limit=1`).catch(() => []);
     if (existing.length) {
       customerId = existing[0].id;
@@ -2683,33 +2692,67 @@ app.post('/api/website-inquiry', async (req, res) => {
         method: 'POST',
         headers: { 'Prefer': 'return=representation' },
         body: JSON.stringify({
-          customer_name: name.trim(),
-          email: email.trim().toLowerCase(),
+          customer_name: cleanName,
+          email: cleanEmail,
           source: 'website',
-          notes: product ? `Product interest: ${product}` : '',
+          notes: cleanProduct ? `Product interest: ${cleanProduct}` : '',
         }),
       }).catch(() => null);
       if (created && created[0]) customerId = created[0].id;
     }
 
-    // 写入询盘
-    const notes = [
-      `From: ${name} <${email}>`,
-      product ? `Product: ${product}` : '',
-      `Subject: ${subject}`,
-      `Message: ${message}`,
+    // 写入询盘（拆字段 + 兼容 notes）
+    const notesBlock = [
+      `From: ${cleanName} <${cleanEmail}>`,
+      cleanProduct ? `Product: ${cleanProduct}` : '',
+      `Subject: ${cleanSubject}`,
+      `Message: ${cleanMessage}`,
     ].filter(Boolean).join('\n');
 
     await sb('inquiries', {
       method: 'POST',
       body: JSON.stringify({
         customer_id: customerId,
-        customer_name: name.trim(),
-        inquiry_date: new Date().toISOString().slice(0, 10),
+        customer_name: cleanName,
+        email: cleanEmail,
+        product_interest: cleanProduct,
+        subject: cleanSubject,
+        message: cleanMessage,
+        source: 'website',
+        inquiry_date: now.slice(0, 10),
         status: 'new',
-        notes,
+        notes: notesBlock,
       }),
     });
+
+    // 同步往 emails 表写一条，folder=INQUIRY（不依赖 IMAP，便于在邮件页查看）
+    const bodyHtml = `<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.7;color:#1f2937">
+      <p><strong>来自网站表单的询盘</strong></p>
+      <table style="border-collapse:collapse;margin:8px 0">
+        <tr><td style="padding:4px 12px 4px 0;color:#6b7280">姓名</td><td><strong>${escapeHtml(cleanName)}</strong></td></tr>
+        <tr><td style="padding:4px 12px 4px 0;color:#6b7280">邮箱</td><td><a href="mailto:${escapeHtml(cleanEmail)}">${escapeHtml(cleanEmail)}</a></td></tr>
+        ${cleanProduct ? `<tr><td style="padding:4px 12px 4px 0;color:#6b7280">产品</td><td>${escapeHtml(cleanProduct)}</td></tr>` : ''}
+        <tr><td style="padding:4px 12px 4px 0;color:#6b7280">主题</td><td>${escapeHtml(cleanSubject)}</td></tr>
+      </table>
+      <div style="margin-top:14px;padding:14px 16px;background:#f9fafb;border-left:3px solid #2563eb;white-space:pre-wrap;border-radius:4px">${escapeHtml(cleanMessage)}</div>
+    </div>`;
+    const bodyText = `[网站询盘]\n姓名: ${cleanName}\n邮箱: ${cleanEmail}\n${cleanProduct ? `产品: ${cleanProduct}\n` : ''}主题: ${cleanSubject}\n\n${cleanMessage}`;
+    await sb('emails', {
+      method: 'POST',
+      body: JSON.stringify({
+        message_id:   `website-inquiry-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        folder:       'INQUIRY',
+        from_address: cleanEmail,
+        from_name:    cleanName,
+        to_addresses: 'website-form',
+        subject:      `[询盘] ${cleanSubject}`,
+        body_text:    bodyText,
+        body_html:    bodyHtml,
+        is_read:      false,
+        is_deleted:   false,
+        received_at:  now,
+      }),
+    }).catch((e) => { console.error('Failed to write inquiry to emails table:', e.message); });
 
     res.json({ success: true });
   } catch (e) {
@@ -2717,6 +2760,15 @@ app.post('/api/website-inquiry', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 // ── CSV 批量导入：通用（按表名 + 列映射）──
 // 前端把 CSV 解析成 rows 后调用此接口
