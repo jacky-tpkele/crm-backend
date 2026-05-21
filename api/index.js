@@ -2658,6 +2658,66 @@ app.post('/api/amazon/sp-api/sync', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
+// ────────────────────────────────────────────────────────────────────
+// 官网询盘接口（公开，无需 auth）
+// 接收 tpkele.com 表单提交，写入 inquiries + 自动关联/创建客户
+// ────────────────────────────────────────────────────────────────────
+app.post('/api/website-inquiry', async (req, res) => {
+  try {
+    const { name, email, product, subject, message } = req.body || {};
+    if (!name || !email || !subject || !message) {
+      return res.status(400).json({ success: false, message: 'Missing required fields' });
+    }
+    if (!email.includes('@')) {
+      return res.status(400).json({ success: false, message: 'Invalid email' });
+    }
+
+    // 查找或创建客户
+    let customerId = null;
+    const esc = encodeURIComponent(email.trim().toLowerCase());
+    const existing = await sb(`customers?email=ilike.%25${esc}%25&is_deleted=eq.false&select=id&limit=1`).catch(() => []);
+    if (existing.length) {
+      customerId = existing[0].id;
+    } else {
+      const created = await sb('customers?select=id', {
+        method: 'POST',
+        headers: { 'Prefer': 'return=representation' },
+        body: JSON.stringify({
+          customer_name: name.trim(),
+          email: email.trim().toLowerCase(),
+          source: 'website',
+          notes: product ? `Product interest: ${product}` : '',
+        }),
+      }).catch(() => null);
+      if (created && created[0]) customerId = created[0].id;
+    }
+
+    // 写入询盘
+    const notes = [
+      `From: ${name} <${email}>`,
+      product ? `Product: ${product}` : '',
+      `Subject: ${subject}`,
+      `Message: ${message}`,
+    ].filter(Boolean).join('\n');
+
+    await sb('inquiries', {
+      method: 'POST',
+      body: JSON.stringify({
+        customer_id: customerId,
+        customer_name: name.trim(),
+        inquiry_date: new Date().toISOString().slice(0, 10),
+        status: 'new',
+        notes,
+      }),
+    });
+
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Website inquiry error:', e.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // ── CSV 批量导入：通用（按表名 + 列映射）──
 // 前端把 CSV 解析成 rows 后调用此接口
 module.exports = app;
