@@ -844,12 +844,6 @@ app.post('/api/emails/sync', auth, async (req, res) => {
           };
           if (account_id) emailData.account_id = account_id;
 
-          // 自动匹配客户（按 from_address）
-          try {
-            const cid = await findCustomerByEmail(from.address);
-            if (cid) emailData.customer_id = cid;
-          } catch (_) {}
-
           await sb('emails?on_conflict=message_id', {
             method: 'POST',
             headers: { 'Prefer': 'resolution=ignore-duplicates' },
@@ -887,7 +881,7 @@ app.get('/api/emails', auth, async (req, res) => {
       ? `&account_id=eq.${account_id}`
       : '&account_id=is.null';
     const data = await sb(
-      `emails?${folderFilter}${acctFilter}&is_deleted=eq.false&order=received_at.desc&limit=${limit}&offset=${offset}&select=id,message_id,folder,account_id,customer_id,from_address,from_name,to_addresses,subject,is_read,received_at`
+      `emails?${folderFilter}${acctFilter}&is_deleted=eq.false&order=received_at.desc&limit=${limit}&offset=${offset}&select=id,message_id,folder,account_id,from_address,from_name,to_addresses,subject,is_read,received_at`
     );
     res.json(data);
   } catch (e) { res.status(500).json({ message: e.message }); }
@@ -984,13 +978,6 @@ app.post('/api/emails/send', auth, async (req, res) => {
     };
     if (account_id) sentData.account_id = account_id;
 
-    // 自动匹配客户（按收件人）
-    try {
-      const firstTo = String(to || '').split(',')[0].trim();
-      const cid = await findCustomerByEmail(firstTo);
-      if (cid) sentData.customer_id = cid;
-    } catch (_) {}
-
     await sb('emails', { method: 'POST', body: JSON.stringify(sentData) });
     res.json({ success: true, messageId: info.messageId });
   } catch (e) { res.status(500).json({ message: e.message }); }
@@ -1018,11 +1005,15 @@ async function findCustomerByEmail(addr) {
   return rows[0].id;
 }
 
-// 客户的邮件历史（dashboard 客户卡片调）
+// 客户的邮件历史（按客户邮箱匹配）
 app.get('/api/customers/:id/emails', auth, async (req, res) => {
   try {
     const limit = Number(req.query.limit) || 50;
-    const data = await sb(`emails?customer_id=eq.${req.params.id}&is_deleted=eq.false&order=received_at.desc&limit=${limit}&select=id,folder,from_address,from_name,to_addresses,subject,is_read,received_at`);
+    const cRows = await sb(`customers?id=eq.${req.params.id}&select=email`);
+    const cEmail = (cRows[0]?.email || '').split(/[,;\s]+/)[0].trim().toLowerCase();
+    if (!cEmail) return res.json([]);
+    const esc = encodeURIComponent(cEmail);
+    const data = await sb(`emails?from_address=eq.${esc}&is_deleted=eq.false&order=received_at.desc&limit=${limit}&select=id,folder,from_address,from_name,to_addresses,subject,is_read,received_at`);
     res.json(data);
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
