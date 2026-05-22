@@ -64,7 +64,6 @@
     { id: 'orders',            icon: '◍',  label: '订单管理',    href: 'dashboard.html#orders' },
     { id: 'customers',         icon: '👥', label: '客户管理',    href: 'dashboard.html#customers' },
     { id: 'products',          icon: '📦', label: '产品管理',    href: 'dashboard.html#products' },
-    { id: 'inquiries',         icon: '📋', label: '网站询盘',    href: 'inquiries.html' },
     { id: 'logistics',         icon: '🚚', label: '物流管理',    href: 'logistics.html' },
 
     { group: '亚马逊运营' },

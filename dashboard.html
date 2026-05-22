@@ -287,6 +287,14 @@ tr:hover .del-row-btn{display:inline-block}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
 .form-grid.col3{grid-template-columns:1fr 1fr 1fr}
 .form-full{grid-column:1/-1}
+/* ── Inquiry detail view ── */
+.iq-detail-grid{display:grid;grid-template-columns:auto 1fr;gap:10px 18px;font-size:13.5px;margin-bottom:18px}
+.iq-detail-grid .iq-dl{color:var(--muted);font-weight:600;white-space:nowrap}
+.iq-detail-grid .iq-dv{color:var(--text);word-break:break-all}
+.iq-detail-msg-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.iq-detail-msg{padding:14px 16px;background:rgba(0,180,255,.05);border-left:3px solid var(--primary);border-radius:6px;font-size:13.5px;line-height:1.7;color:var(--text);white-space:pre-wrap;word-wrap:break-word}
+tr.iq-unread td:first-child{box-shadow:inset 3px 0 0 var(--primary)}
+tr.iq-unread td{font-weight:600}
 .field{display:flex;flex-direction:column;gap:5px}
 .field label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
 .field input,.field select,.field textarea{
@@ -584,28 +592,35 @@ tr:hover .del-row-btn{display:inline-block}
       </div>
     </section>
 
-    <!-- ── INQUIRIES ── -->
+    <!-- ── INQUIRIES (Website) ── -->
     <section class="section" id="sec-inquiries">
-      <div class="section-title" data-i18n="navInquiries">Inquiries</div>
-      <div class="section-sub" data-i18n="subInquiries">Manage incoming trade inquiries and convert to orders</div>
+      <div class="section-title" data-i18n="navInquiries">网站询盘</div>
+      <div class="section-sub" data-i18n="subInquiries">来自官网表单的客户询盘 — 可直接写邮件回复</div>
       <div class="card">
         <div class="card-head">
           <div class="filter-bar">
-            <input type="text" id="iq-search" data-i18n-ph="phSearchIq" placeholder="Customer / notes..." oninput="renderInquiries()">
+            <input type="text" id="iq-search" data-i18n-ph="phSearchIq" placeholder="客户 / 邮箱 / 主题..." oninput="renderInquiries()">
             <select id="iq-status" onchange="renderInquiries()">
-              <option value="" data-i18n="allStatus">All Status</option>
-              <option value="new" data-i18n="stNew">New</option>
-              <option value="quoted" data-i18n="stQuoted">Quoted</option>
-              <option value="converted" data-i18n="stConverted">Converted</option>
-              <option value="closed" data-i18n="stClosed">Closed</option>
+              <option value="" data-i18n="allStatus">全部状态</option>
+              <option value="new" data-i18n="stNew">新询盘</option>
+              <option value="contacted" data-i18n="stContacted">已联系</option>
+              <option value="quoted" data-i18n="stQuoted">已报价</option>
+              <option value="converted" data-i18n="stConverted">已转单</option>
+              <option value="closed" data-i18n="stClosed">已关闭</option>
             </select>
           </div>
-          <button class="btn btn-primary" data-i18n="btnNewInquiryCard" onclick="openInquiryModal()">＋ New Inquiry</button>
+          <button class="btn" onclick="loadInquiries()">🔄 刷新</button>
         </div>
         <div class="tbl-wrap">
           <table>
             <thead><tr>
-              <th data-i18n="thDate">Date</th><th data-i18n="thCustomer">Customer</th><th data-i18n="thStatus">Status</th><th data-i18n="thNotes">Notes</th><th data-i18n="thActions">Actions</th>
+              <th data-i18n="thDate">日期</th>
+              <th data-i18n="thCustomer">客户</th>
+              <th data-i18n="thEmail">邮箱</th>
+              <th data-i18n="thProduct">产品</th>
+              <th data-i18n="thSubject">主题</th>
+              <th data-i18n="thStatus">状态</th>
+              <th data-i18n="thActions">操作</th>
             </tr></thead>
             <tbody id="iqBody"></tbody>
           </table>
@@ -1019,29 +1034,10 @@ tr:hover .del-row-btn{display:inline-block}
 <div class="modal-backdrop" id="inquiryModal" style="display:none">
   <div class="modal">
     <div class="modal-head">
-      <h2 id="inquiryModalTitle">New Inquiry</h2>
+      <h2 id="inquiryModalTitle">询盘详情</h2>
       <button class="modal-close" onclick="closeModal('inquiryModal')">×</button>
     </div>
-    <form id="inquiryForm" onsubmit="saveInquiry(event)">
-      <input type="hidden" id="iqm-id">
-      <div class="form-grid">
-        <div class="field"><label data-i18n="lblIqCustomer">Customer Name</label><input type="text" id="iqm-customer" required></div>
-        <div class="field"><label data-i18n="lblIqDate">Inquiry Date</label><input type="date" id="iqm-date" required></div>
-        <div class="field"><label data-i18n="lblIqStatus">Status</label>
-          <select id="iqm-status">
-            <option value="new" data-i18n="optIqNew">New</option>
-            <option value="quoted" data-i18n="optIqQuoted">Quoted</option>
-            <option value="converted" data-i18n="optIqConverted">Converted to Order</option>
-            <option value="closed" data-i18n="optIqClosed">Closed</option>
-          </select>
-        </div>
-        <div class="field form-full"><label data-i18n="lblIqNotes">Notes</label><textarea id="iqm-notes" rows="4"></textarea></div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn" data-i18n="btnCancel" onclick="closeModal('inquiryModal')">取消</button>
-        <button type="submit" class="btn btn-primary" data-i18n="btnSaveInquiry">Save Inquiry</button>
-      </div>
-    </form>
+    <div id="inquiryDetailBody"></div>
   </div>
 </div>
 
@@ -1165,7 +1161,7 @@ const S = {
 
 const I18N = {
   zh: {
-    navDashboard:'仪表盘', navInquiries:'询盘', navCustomers:'客户', navProducts:'产品',
+    navDashboard:'仪表盘', navInquiries:'网站询盘', navCustomers:'客户', navProducts:'产品',
     navSuppliers:'供应商', navOrders:'订单', navDocuments:'文件', navAnalytics:'数据分析',
     navSettings:'设置', navDocGroup:'文件', navQuotation:'报价单', navPI:'形式发票',
     navPacking:'装箱单', navAI:'AI助手', navCollapse:'收起',
@@ -1175,10 +1171,11 @@ const I18N = {
     btnNewOrder:'＋ 新建订单', btnNewCustomer:'＋ 新建客户', btnNewInquiry:'＋ 新建询盘', btnNewSupplier:'＋ 新建供应商', btnNewProduct:'＋ 新建产品',
     chartOrderTrend:'订单趋势（12个月）', chartProfitTrend:'利润趋势（12个月）',
     chartTopProducts:'销售额TOP产品', chartTopCustomers:'销售额TOP客户',
-    subInquiries:'管理进来的贸易询盘并转化为订单',
-    phSearchIq:'客户 / 备注...', allStatus:'全部状态',
-    stNew:'新询盘', stQuoted:'已报价', stConverted:'已转化', stClosed:'已关闭',
+    subInquiries:'来自官网表单的客户询盘 — 可直接写邮件回复',
+    phSearchIq:'客户 / 邮箱 / 主题...', allStatus:'全部状态',
+    stNew:'新询盘', stContacted:'已联系', stQuoted:'已报价', stConverted:'已转单', stClosed:'已关闭',
     thDate:'日期', thCustomer:'客户', thStatus:'状态', thNotes:'备注', thActions:'操作',
+    thProduct:'产品', thSubject:'主题',
     btnNewInquiryCard:'＋ 新建询盘',
     subCustomers:'买方主数据 — 自动填充PI文件',
     phSearchCu:'名称 / 国家 / 邮箱...', btnNewCustomerCard:'＋ 新建客户',
@@ -1290,7 +1287,7 @@ const I18N = {
     settingsRoleBadge:'角色',
   },
   en: {
-    navDashboard:'Dashboard', navInquiries:'Inquiries', navCustomers:'Customers',
+    navDashboard:'Dashboard', navInquiries:'Web Inquiries', navCustomers:'Customers',
     navProducts:'Products', navSuppliers:'Suppliers', navOrders:'Orders',
     navDocuments:'Documents', navAnalytics:'Analytics', navSettings:'Settings',
     navDocGroup:'Documents', navQuotation:'Quotation', navPI:'Pro-forma Invoice',
@@ -1302,10 +1299,11 @@ const I18N = {
     btnNewOrder:'＋ New Order', btnNewCustomer:'＋ New Customer', btnNewInquiry:'＋ New Inquiry', btnNewSupplier:'＋ New Supplier', btnNewProduct:'＋ New Product',
     chartOrderTrend:'Order Trend (12 months)', chartProfitTrend:'Profit Trend (12 months)',
     chartTopProducts:'Top Products by Sales', chartTopCustomers:'Top Customers by Sales',
-    subInquiries:'Manage incoming trade inquiries and convert to orders',
-    phSearchIq:'Customer / notes...', allStatus:'All Status',
-    stNew:'New', stQuoted:'Quoted', stConverted:'Converted', stClosed:'Closed',
+    subInquiries:'Customer inquiries from the website form — reply by email directly',
+    phSearchIq:'Customer / email / subject...', allStatus:'All Status',
+    stNew:'New', stContacted:'Contacted', stQuoted:'Quoted', stConverted:'Converted', stClosed:'Closed',
     thDate:'Date', thCustomer:'Customer', thStatus:'Status', thNotes:'Notes', thActions:'Actions',
+    thProduct:'Product', thSubject:'Subject',
     btnNewInquiryCard:'＋ New Inquiry',
     subCustomers:'Buyer master data — auto-fills PI documents',
     phSearchCu:'Name / country / email...', btnNewCustomerCard:'＋ New Customer',
@@ -1740,6 +1738,7 @@ function navigate(sec) {
   document.querySelectorAll(`[data-sec="${sec}"]`).forEach(n => n.classList.add('active'));
   if (sec === 'analytics') initAnalyticsCharts();
   if (sec === 'purchase-orders') loadPurchaseOrders();
+  if (sec === 'inquiries') loadInquiries();
 }
 
 function toggleMobileSidebar() {
@@ -3580,74 +3579,126 @@ async function renderAndDownloadPoPdf(po) {
 }
 
 // ══════════════════════════════
-// INQUIRIES
+// INQUIRIES (Website form submissions)
 // ══════════════════════════════
+const IQ_STATUS = {
+  new:       { label:'新询盘', cls:'badge-new' },
+  contacted: { label:'已联系', cls:'badge-producing' },
+  quoted:    { label:'已报价', cls:'badge-quoted' },
+  converted: { label:'已转单', cls:'badge-completed' },
+  closed:    { label:'已关闭', cls:'badge-draft' },
+};
+
 async function loadInquiries() {
-  try { S.inquiries = await api('/api/inquiries'); renderInquiries(); } catch(e) { toast(e.message,'err'); }
+  try {
+    const data = await api('/api/inquiries');
+    // 只显示官网来源的询盘
+    S.inquiries = (Array.isArray(data) ? data : []).filter(i => i.source === 'website');
+    renderInquiries();
+  } catch(e) { toast(e.message,'err'); }
 }
+
 function renderInquiries() {
-  const q   = document.getElementById('iq-search').value.toLowerCase();
-  const st  = document.getElementById('iq-status').value;
+  const q  = document.getElementById('iq-search').value.toLowerCase();
+  const st = document.getElementById('iq-status').value;
   const rows = S.inquiries.filter(i =>
-    (!q  || [i.customer_name,i.notes].join(' ').toLowerCase().includes(q)) &&
-    (!st || i.status === st)
+    (!q  || [i.customer_name,i.email,i.subject,i.product_interest,i.message,i.notes].filter(Boolean).join(' ').toLowerCase().includes(q)) &&
+    (!st || (i.status||'new') === st)
   );
   const body = document.getElementById('iqBody');
-  if (!rows.length) { body.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="icon">📋</div><p>No inquiries found</p></div></td></tr>'; return; }
-  body.innerHTML = rows.map(i => `
-    <tr>
-      <td data-label="Date">${esc(i.inquiry_date||'')}</td>
-      <td data-label="Customer">${esc(i.customer_name||i.customers?.customer_name||'—')}</td>
-      <td data-label="Status"><span class="badge badge-${i.status||'new'}">${esc(i.status||'new')}</span></td>
-      <td data-label="Notes">${esc(i.notes||'—')}</td>
+  const statusLine = document.getElementById('iqStatus');
+  if (statusLine) statusLine.textContent = S.inquiries.length ? `共 ${S.inquiries.length} 条网站询盘` : '';
+  if (!rows.length) {
+    body.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="icon">📭</div><p>暂无网站询盘</p></div></td></tr>';
+    return;
+  }
+  body.innerHTML = rows.map(i => {
+    const s = IQ_STATUS[i.status] || IQ_STATUS.new;
+    return `
+    <tr class="${(i.status||'new')==='new'?'iq-unread':''}">
+      <td data-label="日期">${esc((i.created_at||i.inquiry_date||'').slice(0,10))}</td>
+      <td data-label="客户">${esc(i.customer_name||'—')}</td>
+      <td data-label="邮箱">${i.email?`<a href="mailto:${esc(i.email)}" style="color:var(--primary)">${esc(i.email)}</a>`:'—'}</td>
+      <td data-label="产品">${esc(i.product_interest||'—')}</td>
+      <td data-label="主题">${esc(i.subject||'—')}</td>
+      <td data-label="状态"><span class="badge ${s.cls}">${esc(s.label)}</span></td>
       <td data-label=""><div class="actions-cell">
-        <button class="btn btn-sm btn-cyan" onclick="convertInquiryToOrder('${i.id}')">→ Order</button>
-        <button class="btn btn-sm" onclick="editInquiry('${i.id}')">编辑</button>
+        <button class="btn btn-sm btn-primary" onclick="viewInquiry('${i.id}')">查看</button>
+        <button class="btn btn-sm btn-cyan" onclick="replyInquiryByEmail('${i.id}')">✉ 回复</button>
         <button class="btn btn-sm btn-danger" onclick="deleteInquiry('${i.id}')">删除</button>
       </div></td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
-function openInquiryModal() {
-  document.getElementById('iqm-id').value = '';
-  document.getElementById('inquiryForm').reset();
-  document.getElementById('iqm-date').value = today();
-  document.getElementById('inquiryModalTitle').textContent = 'New Inquiry';
-  openModal('inquiryModal');
-}
-function editInquiry(id) {
+
+// 查看询盘详情（只读弹窗 + 状态下拉 + 操作按钮）
+function viewInquiry(id) {
   const i = S.inquiries.find(x=>x.id===id); if (!i) return;
-  document.getElementById('inquiryModalTitle').textContent = 'Edit Inquiry';
-  document.getElementById('iqm-id').value       = i.id;
-  document.getElementById('iqm-customer').value = i.customer_name||'';
-  document.getElementById('iqm-date').value     = i.inquiry_date||today();
-  document.getElementById('iqm-status').value   = i.status||'new';
-  document.getElementById('iqm-notes').value    = i.notes||'';
+  const optionsHtml = Object.entries(IQ_STATUS).map(([v,s]) =>
+    `<option value="${v}" ${(i.status||'new')===v?'selected':''}>${s.label}</option>`).join('');
+  document.getElementById('inquiryModalTitle').textContent = '询盘详情';
+  document.getElementById('inquiryDetailBody').innerHTML = `
+    <div class="iq-detail">
+      <div class="iq-detail-grid">
+        <span class="iq-dl">客户姓名</span><span class="iq-dv">${esc(i.customer_name||'—')}</span>
+        <span class="iq-dl">邮箱</span><span class="iq-dv">${i.email?`<a href="mailto:${esc(i.email)}" style="color:var(--primary)">${esc(i.email)}</a>`:'—'}</span>
+        ${i.product_interest?`<span class="iq-dl">感兴趣产品</span><span class="iq-dv">${esc(i.product_interest)}</span>`:''}
+        <span class="iq-dl">主题</span><span class="iq-dv">${esc(i.subject||'—')}</span>
+        <span class="iq-dl">收到时间</span><span class="iq-dv">${esc((i.created_at||i.inquiry_date||'').replace('T',' ').slice(0,19))}</span>
+        <span class="iq-dl">状态</span><span class="iq-dv">
+          <select id="iq-detail-status" onchange="updateInquiryStatus('${i.id}',this.value)"
+            style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-size:13px;outline:none">${optionsHtml}</select>
+        </span>
+      </div>
+      <div class="iq-detail-msg-label">询盘内容</div>
+      <div class="iq-detail-msg">${esc(i.message||i.notes||'(无内容)')}</div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn" onclick="closeModal('inquiryModal')">关闭</button>
+      <button type="button" class="btn btn-cyan" onclick="convertInquiryToOrder('${i.id}')">→ 转为订单</button>
+      <button type="button" class="btn btn-primary" onclick="replyInquiryByEmail('${i.id}')">✉ 写邮件回复</button>
+    </div>`;
   openModal('inquiryModal');
 }
-async function saveInquiry(e) {
-  e.preventDefault();
-  const id = document.getElementById('iqm-id').value;
-  const payload = {
-    customer_name: document.getElementById('iqm-customer').value,
-    inquiry_date:  document.getElementById('iqm-date').value,
-    status:        document.getElementById('iqm-status').value,
-    notes:         document.getElementById('iqm-notes').value,
-  };
+
+// 修改询盘状态
+async function updateInquiryStatus(id, status) {
   try {
-    if (id) await api(`/api/inquiries/${id}`, { method:'PUT', body:JSON.stringify(payload) });
-    else    await api('/api/inquiries',        { method:'POST', body:JSON.stringify(payload) });
-    closeModal('inquiryModal');
-    toast('Saved');
-    await loadInquiries();
-  } catch(err) { toast(err.message,'err'); }
+    await api(`/api/inquiries/${id}`, { method:'PUT', body:JSON.stringify({ status, updated_at:new Date().toISOString() }) });
+    const it = S.inquiries.find(x=>x.id===id);
+    if (it) it.status = status;
+    renderInquiries();
+    toast('状态已更新');
+  } catch(e) { toast(e.message,'err'); }
 }
+
+// 写邮件回复：跳转邮件页 compose，自动填收件人/主题/称呼
+function replyInquiryByEmail(id) {
+  const i = S.inquiries.find(x=>x.id===id); if (!i) return;
+  if (!i.email) { toast('该询盘没有邮箱地址','err'); return; }
+  const subject = i.subject ? (i.subject.startsWith('Re:')?i.subject:`Re: ${i.subject}`) : 'Re: Your inquiry';
+  const greet = i.customer_name ? `Dear ${i.customer_name},\n\n` : 'Hello,\n\n';
+  const body  = `${greet}Thank you for your inquiry${i.product_interest?` regarding ${i.product_interest}`:''}.\n\nBest regards,\nTPKELE`;
+  // 状态自动从 new → contacted
+  if ((i.status||'new')==='new') updateInquiryStatus(id,'contacted').catch(()=>{});
+  const url = `email.html?compose=1&to=${encodeURIComponent(i.email)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.open(url, '_blank');
+}
+
 async function deleteInquiry(id) {
-  if (!confirm('Delete this inquiry?')) return;
-  try { await api(`/api/inquiries/${id}`, {method:'DELETE'}); toast('Deleted'); await loadInquiries(); }
-  catch(e) { toast(e.message,'err'); }
+  if (!confirm('确定删除这条询盘吗？此操作不可撤销。')) return;
+  try {
+    await api(`/api/inquiries/${id}`, {method:'DELETE'});
+    S.inquiries = S.inquiries.filter(x=>x.id!==id);
+    renderInquiries();
+    toast('已删除');
+  } catch(e) { toast(e.message,'err'); }
 }
+
 function convertInquiryToOrder(id) {
   const i = S.inquiries.find(x=>x.id===id); if (!i) return;
+  updateInquiryStatus(id,'converted').catch(()=>{});
+  closeModal('inquiryModal');
   navigate('orders');
   setTimeout(() => {
     openOrderModal();
@@ -3791,6 +3842,9 @@ async function init() {
   await Promise.all([loadCustomers(), loadSuppliers()]);
   await Promise.all([loadOrders(), loadProducts(), loadInquiries(), loadPurchaseOrders(), loadLogisticsForSearch()]);
   await loadDashboard();
+  // URL hash 路由：dashboard.html#inquiries 等直接跳到对应板块
+  const hash = (location.hash || '').replace('#', '');
+  if (hash && document.getElementById('sec-' + hash)) navigate(hash);
 }
 // 仪表盘只为全局搜索拉一份物流摘要（轻量）
 async function loadLogisticsForSearch() {
