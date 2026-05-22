@@ -290,6 +290,100 @@ button,input,select,textarea{font:inherit}
 .tox .tox-edit-area::before{border:none !important}
 </style>
 <link rel="stylesheet" href="light-theme.css">
+
+<!-- ★ 覆盖 light-theme.css：写邮件区域强制白底黑字、按钮恢复正常 -->
+<style>
+/* 写信框输入框：白底、深色文字、细灰边、聚焦淡蓝；高特异性盖过 light-theme.css */
+html body .compose .field-row{padding:10px 22px !important;border-bottom:1px solid #e5e7eb !important;background:#ffffff !important;border-radius:0 !important}
+html body .compose .field-input,
+html body .compose input.field-input{
+  flex:1 !important;background:#ffffff !important;color:#111827 !important;
+  border:1px solid #d1d5db !important;border-radius:6px !important;
+  padding:8px 12px !important;font-size:13.5px !important;font-weight:400 !important;
+  box-shadow:none !important;outline:none !important;height:auto !important;
+}
+html body .compose .field-input:focus,
+html body .compose input.field-input:focus{
+  border-color:#2563eb !important;background:#ffffff !important;
+  box-shadow:0 0 0 3px rgba(37,99,235,.12) !important;color:#111827 !important;
+}
+html body .compose .field-input::placeholder{color:#9ca3af !important}
+html body .compose .field-label{color:#6b7280 !important;font-weight:500 !important;font-size:13px !important;width:60px !important}
+
+/* compose 区域里的按钮恢复方角、正常背景 */
+html body .compose .btn-close,
+html body .compose .btn-fs{
+  width:30px !important;height:30px !important;padding:0 !important;
+  background:#ffffff !important;border:1px solid #d1d5db !important;border-radius:6px !important;
+  color:#4b5563 !important;font-weight:400 !important;display:grid !important;place-items:center !important;
+}
+html body .compose .btn-close:hover{background:#fef2f2 !important;border-color:#dc2626 !important;color:#dc2626 !important;transform:none !important}
+html body .compose .btn-fs:hover{background:#eff6ff !important;border-color:#2563eb !important;color:#2563eb !important;transform:none !important}
+
+/* 附件区/表格工具按钮 */
+html body .compose .attach-btn,
+html body .compose .table-tool-btn{
+  background:#ffffff !important;color:#374151 !important;
+  border:1px solid #d1d5db !important;border-radius:6px !important;
+  padding:5px 12px !important;font-size:12.5px !important;font-weight:400 !important;
+}
+html body .compose .attach-btn:hover,
+html body .compose .table-tool-btn:hover{
+  background:#f3f4f6 !important;border-color:#2563eb !important;color:#1d4ed8 !important;transform:none !important;
+}
+
+/* 发送按钮（蓝色实心） */
+html body .compose .btn-send{
+  background:#2563eb !important;color:#ffffff !important;border:1px solid #2563eb !important;
+  border-radius:8px !important;padding:8px 22px !important;font-weight:600 !important;
+}
+html body .compose .btn-send:hover{background:#1d4ed8 !important;border-color:#1d4ed8 !important;color:#ffffff !important;transform:none !important}
+
+/* ── TinyMCE 工具栏：紧凑、白底黑字、不要绿色胶囊 ── */
+html body .tox.tox-tinymce{border:none !important}
+html body .tox .tox-editor-header{padding:4px 8px !important;background:#ffffff !important;border-bottom:1px solid #e5e7eb !important}
+html body .tox .tox-toolbar,
+html body .tox .tox-toolbar__primary,
+html body .tox .tox-toolbar__overflow{background:#ffffff !important;border:none !important;padding:2px 0 !important;gap:2px !important}
+html body .tox .tox-toolbar__group{padding:0 4px !important;border:none !important;gap:0 !important}
+
+/* 工具栏按钮：小巧白底，hover 浅灰 */
+html body .tox .tox-tbtn,
+html body .tox button.tox-tbtn{
+  background:#ffffff !important;color:#1f2937 !important;
+  border:none !important;border-radius:4px !important;
+  width:28px !important;height:28px !important;margin:0 1px !important;padding:0 !important;
+  font-size:13px !important;font-weight:400 !important;
+}
+html body .tox .tox-tbtn:hover,
+html body .tox button.tox-tbtn:hover{background:#f3f4f6 !important;color:#111827 !important;transform:none !important;box-shadow:none !important}
+html body .tox .tox-tbtn--enabled,
+html body .tox .tox-tbtn--active{background:#e0e7ff !important;color:#1d4ed8 !important}
+html body .tox .tox-tbtn svg{fill:#374151 !important}
+html body .tox .tox-tbtn:hover svg{fill:#111827 !important}
+
+/* 段落 / 字体 / 字号下拉：白底、合理宽度 */
+html body .tox .tox-tbtn--select,
+html body .tox button.tox-tbtn--select,
+html body .tox .tox-split-button{
+  background:#ffffff !important;color:#1f2937 !important;
+  border:1px solid #e5e7eb !important;border-radius:6px !important;
+  height:28px !important;padding:0 6px !important;min-width:auto !important;width:auto !important;
+}
+html body .tox .tox-tbtn--select:hover{background:#f9fafb !important;border-color:#d1d5db !important}
+html body .tox .tox-tbtn__select-label{color:#1f2937 !important;font-size:12.5px !important;font-weight:400 !important;margin:0 4px 0 2px !important}
+html body .tox .tox-tbtn__select-chevron svg{fill:#6b7280 !important}
+
+/* 下拉菜单（段落 / 字体）正常白底黑字 */
+html body .tox .tox-menu{background:#ffffff !important;border:1px solid #d1d5db !important;border-radius:8px !important;box-shadow:0 4px 12px rgba(0,0,0,.1) !important}
+html body .tox .tox-collection__item{color:#1f2937 !important;background:transparent !important}
+html body .tox .tox-collection__item--active,
+html body .tox .tox-collection__item:hover{background:#f3f4f6 !important;color:#111827 !important}
+html body .tox .tox-collection__item-label{color:inherit !important}
+
+/* 编辑区域：白底黑字 */
+html body .tox .tox-edit-area iframe{background:#ffffff !important}
+</style>
 </head>
 <body>
 <div class="app">
