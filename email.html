@@ -1010,6 +1010,38 @@ function openCompose(opts = {}) {
   initMailEditor(opts.body || '');
 }
 
+const EMAIL_SIGNATURE = `
+<br><br>
+<div style="border-top:1px solid #e5e7eb; padding-top:14px; margin-top:20px;">
+<table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,Helvetica,sans-serif; color:#1f2937; width:680px; max-width:680px;">
+  <tr>
+    <td style="padding:0 0 10px 0;">
+      <div style="font-size:22px; font-weight:700; color:#064e3b; letter-spacing:0.4px;">Jacky Chen</div>
+      <div style="font-size:14px; color:#64748b; margin-top:2px;">Manager | TPKELE</div>
+    </td>
+  </tr>
+  <tr>
+    <td style="height:3px; background:#00a86b; font-size:0; line-height:0;"></td>
+  </tr>
+  <tr>
+    <td style="padding:14px 0 0 0;">
+      <table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,Helvetica,sans-serif; font-size:15px; color:#1f2937; line-height:1.65;">
+        <tr><td style="width:120px; font-weight:700; color:#111827;">Email:</td><td style="color:#334155;">jacky@tpkele.com</td></tr>
+        <tr><td style="width:120px; font-weight:700; color:#111827;">Web:</td><td style="color:#334155;">www.tpkele.com</td></tr>
+        <tr><td style="width:120px; font-weight:700; color:#111827;">WhatsApp:</td><td style="color:#334155;">+86 15067704501</td></tr>
+        <tr><td style="width:120px; font-weight:700; color:#111827;">Location:</td><td style="color:#334155;">Wenzhou, Zhejiang, China</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding-top:14px;">
+      <div style="font-size:14px; color:#00a86b; font-weight:700; letter-spacing:0.2px;">Circuit Breakers · Distribution Components · Electrical Protection Devices</div>
+      <div style="font-size:13px; color:#475569; margin-top:8px;">Reliable Industrial Electrical Solutions</div>
+    </td>
+  </tr>
+</table>
+</div>`;
+
 function initMailEditor(initialHtml = '') {
   if (typeof tinymce === 'undefined') return;
   if (tinymce.get('richEditor')) tinymce.get('richEditor').remove();
@@ -1128,7 +1160,7 @@ function initMailEditor(initialHtml = '') {
     table_toolbar: 'tableprops tabledelete | tableinsertrowbefore tableinsertrowafter tabledeleterow | tableinsertcolbefore tableinsertcolafter tabledeletecol | tablecellprops tablemergecells tablesplitcells',
     setup: (editor) => {
       mailEditor = editor;
-      editor.on('init', () => editor.setContent(initialHtml || '<p><br></p>'));
+      editor.on('init', () => editor.setContent((initialHtml || '<p><br></p>') + EMAIL_SIGNATURE));
     }
   });
 }
