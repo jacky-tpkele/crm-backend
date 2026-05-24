@@ -10,6 +10,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="TPKELE">
 <script src="/pwa.js" defer></script>
+<link rel="stylesheet" href="/_shared/mobile.css">
+<script src="/_shared/mobile.js" defer></script>
 <title>TPKELE CRM Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -3621,6 +3623,7 @@ function renderInquiries() {
   }
   body.innerHTML = rows.map(i => {
     const s = IQ_STATUS[i.status] || IQ_STATUS.new;
+    const msgPreview = (i.message || i.notes || '').trim();
     return `
     <tr class="${(i.status||'new')==='new'?'iq-unread':''}">
       <td data-label="日期">${esc((i.created_at||i.inquiry_date||'').slice(0,10))}</td>
@@ -3633,7 +3636,7 @@ function renderInquiries() {
         <button class="btn btn-sm btn-primary" onclick="viewInquiry('${i.id}')">查看</button>
         <button class="btn btn-sm btn-cyan" onclick="replyInquiryByEmail('${i.id}')">✉ 回复</button>
         <button class="btn btn-sm btn-danger" onclick="deleteInquiry('${i.id}')">删除</button>
-      </div></td>
+      </div>${msgPreview?`<div class="iq-card-msg">${esc(msgPreview)}</div>`:''}</td>
     </tr>`;
   }).join('');
 }

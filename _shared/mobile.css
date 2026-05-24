@@ -1,0 +1,239 @@
+/* ════════════════════════════════════════════════════════════
+   _shared/mobile.css — TPKELE CRM 统一移动端适配
+   引用：所有 HTML 页面（dashboard / amazon-* / email / documents
+            / logistics / password-vault / ai / login）
+   策略：仅在 ≤768px 生效，桌面端零影响
+   ════════════════════════════════════════════════════════════ */
+
+/* ── 全局：触摸热区、避免 iOS 双击缩放、统一字号 ── */
+@media (max-width:768px) {
+  html { -webkit-text-size-adjust:100%; touch-action:manipulation; }
+  body { overscroll-behavior:none; }
+
+  /* iOS 输入框点击不放大整个页面 */
+  input, select, textarea { font-size:16px !important; }
+
+  /* 所有按钮最小触摸区域 */
+  button, .btn, .nav-item, .folder-item, .acct-item,
+  .tab, .modal-close, .lang-btn, a.btn {
+    min-height:38px;
+  }
+  .btn-sm { min-height:32px; }
+}
+
+/* ── 侧边栏：抽屉化 ── */
+@media (max-width:768px) {
+  .sidebar {
+    position:fixed; left:-100%; top:0; height:100%;
+    width:240px !important;
+    z-index:1000; transition:left .25s ease;
+    box-shadow:6px 0 24px rgba(0,0,0,.5);
+  }
+  .sidebar.mobile-open { left:0; }
+
+  /* 主内容区占满 */
+  .main { width:100%; }
+  .app { flex-direction:column; }
+
+  /* 侧栏遮罩 */
+  .mobile-sidebar-overlay,
+  .sidebar-overlay {
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,.55); z-index:999;
+    backdrop-filter:blur(2px);
+  }
+  .mobile-sidebar-overlay.active,
+  .sidebar-overlay.active { display:block; }
+
+  /* 顶栏汉堡按钮 */
+  .mobile-menu-btn {
+    display:flex !important;
+    align-items:center; justify-content:center;
+    width:38px; height:38px; border-radius:8px;
+    border:1px solid rgba(255,255,255,.2);
+    background:transparent; color:inherit;
+    font-size:20px; cursor:pointer; flex-shrink:0;
+  }
+}
+.mobile-menu-btn { display:none; }
+
+/* ── 顶栏自适应 ── */
+@media (max-width:768px) {
+  .header {
+    padding:10px 14px !important;
+    gap:8px !important;
+    flex-wrap:nowrap;
+  }
+  .header h1, .header-title {
+    font-size:15px !important;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .header-right, .header-actions { gap:6px !important; flex-wrap:wrap; }
+  .header .search-wrap { max-width:none; flex:1; min-width:0; }
+}
+
+/* ── workspace 边距 ── */
+@media (max-width:768px) {
+  .workspace { padding:14px 12px !important; }
+  .card { padding:14px !important; margin-bottom:12px !important; }
+  .card-head { flex-wrap:wrap; gap:8px; }
+  .card-head input[type=text],
+  .card-head input[type=search] { width:100%; min-width:0; flex:1 1 100%; }
+  .filter-bar { flex-wrap:wrap; gap:6px; width:100%; }
+  .filter-bar input, .filter-bar select { width:100%; min-width:0; flex:1 1 100%; }
+}
+
+/* ── 表格 → 卡片（仅当 td 有 data-label 时；否则保留横向滚动） ── */
+@media (max-width:768px) {
+  /* 默认：所有表格容器允许横向滚动 */
+  .tbl-wrap {
+    overflow-x:auto !important;
+    -webkit-overflow-scrolling:touch;
+    border-radius:10px;
+  }
+  .tbl-wrap table { min-width:100%; }
+
+  /* 当表格里有 data-label 标记时，启用卡片化模式 */
+  .tbl-wrap:has(td[data-label]) { overflow-x:visible !important; border:none !important; }
+  .tbl-wrap:has(td[data-label]) table { display:block; }
+  .tbl-wrap:has(td[data-label]) thead { display:none; }
+  .tbl-wrap:has(td[data-label]) tbody { display:block; }
+  .tbl-wrap:has(td[data-label]) tbody tr {
+    display:block;
+    background:var(--panel2);
+    border:1px solid var(--border);
+    border-radius:10px;
+    margin-bottom:10px;
+    padding:10px 14px;
+  }
+  .tbl-wrap:has(td[data-label]) td {
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    padding:6px 0;
+    border:none !important;
+    border-bottom:1px solid rgba(255,255,255,.05) !important;
+    font-size:13px;
+    min-height:32px;
+    gap:10px;
+    word-break:break-word;
+  }
+  .tbl-wrap:has(td[data-label]) td:last-child { border-bottom:none !important; padding-top:8px; }
+  .tbl-wrap:has(td[data-label]) td[data-label]::before {
+    content:attr(data-label);
+    color:var(--muted);
+    font-size:11px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:.4px;
+    flex-shrink:0;
+    min-width:80px;
+    text-align:left;
+  }
+  .tbl-wrap:has(td[data-label]) td[data-label=""]::before { display:none; }
+
+  /* 缩略图列特殊处理 */
+  .tbl-wrap td img { max-width:60px; height:auto; }
+
+  /* 操作按钮组 */
+  .actions-cell, .tbl-wrap td .actions-cell {
+    display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end;
+  }
+  .tbl-wrap:has(td[data-label]) .actions-cell { width:100%; }
+  .actions-cell .btn-sm { font-size:12px; padding:6px 10px; }
+
+  /* 询盘卡片：支持额外的"内容预览"描述行 */
+  .iq-card-msg {
+    width:100%;
+    color:var(--muted2);
+    font-size:12.5px;
+    line-height:1.5;
+    margin-top:6px;
+    padding-top:8px;
+    border-top:1px solid rgba(255,255,255,.05);
+    display:-webkit-box;
+    -webkit-line-clamp:3;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+}
+
+/* 桌面端隐藏内容预览（只在移动卡片中显示） */
+@media (min-width:769px) {
+  .iq-card-msg { display:none !important; }
+}
+
+/* ── 表单 / 网格 ── */
+@media (max-width:768px) {
+  .form-grid { grid-template-columns:1fr !important; }
+  .grid { grid-template-columns:1fr !important; }
+  .charts-row, .charts-row-3, .analytics-grid { grid-template-columns:1fr !important; }
+  .item-row { grid-template-columns:1fr !important; gap:8px !important; }
+}
+
+/* ── 弹窗：移动端全屏 ── */
+@media (max-width:768px) {
+  .modal {
+    width:100% !important;
+    max-width:100% !important;
+    max-height:100% !important;
+    height:100vh !important;
+    border-radius:0 !important;
+    border-left:none !important;
+    border-right:none !important;
+  }
+  .modal-head { padding:14px 16px !important; }
+  .modal-body { padding:14px 16px !important; }
+  .modal-footer {
+    padding:12px 16px !important;
+    flex-wrap:wrap; gap:8px;
+  }
+  .modal-footer .btn { flex:1 1 calc(50% - 4px); }
+}
+
+/* ── Tab 横向滚动 ── */
+@media (max-width:768px) {
+  .tabs {
+    overflow-x:auto;
+    flex-wrap:nowrap;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .tabs::-webkit-scrollbar { display:none; }
+  .tab { white-space:nowrap; flex-shrink:0; }
+}
+
+/* ── 通用：横向溢出兜底 ── */
+@media (max-width:768px) {
+  body, .app, .main, .workspace { max-width:100vw; }
+  .workspace > * { max-width:100%; }
+  pre, code { max-width:100%; overflow-x:auto; word-break:break-word; }
+}
+
+/* ── 安全区域（iPhone 刘海/底栏） ── */
+@media (max-width:768px) {
+  .header { padding-top:max(10px, env(safe-area-inset-top)) !important; }
+  .workspace { padding-bottom:max(14px, env(safe-area-inset-bottom)) !important; }
+}
+
+/* ── documents.html 专属：preview 不右留白，工具栏改顶吸 ── */
+@media (max-width:768px) {
+  .preview-wrap { padding:14px !important; }
+  .preview-paper { padding:14px !important; font-size:11px; }
+  .table-toolbar {
+    position:fixed !important;
+    top:auto !important;
+    bottom:0 !important;
+    right:0 !important; left:0 !important;
+    width:auto !important;
+    transform:none !important;
+    flex-direction:row !important;
+    overflow-x:auto !important;
+    max-height:none !important;
+    padding:8px !important;
+    border-radius:0 !important;
+    border-top:1px solid var(--border);
+  }
+  .table-toolbar h4 { display:none; }
+  .table-toolbar .tb-btn { width:auto !important; flex-shrink:0; }
+}
