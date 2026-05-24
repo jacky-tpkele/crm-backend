@@ -58,9 +58,10 @@ END$$;
 -- ── push_subscriptions ───────────────────────────────────────
 -- 每条记录代表一个浏览器/PWA 的推送端点
 -- 同一个用户可以有多端：iPhone PWA、电脑 Chrome 等
+-- 注：user_id 不加外键约束，因为 users 表可能尚未创建（CRM 现在是单用户模式，靠环境变量登录）
 CREATE TABLE IF NOT EXISTS push_subscriptions (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id     UUID REFERENCES users(id) ON DELETE CASCADE,
+  user_id     UUID,                                    -- 关联 users.id（若 users 表存在）；当前可为 NULL
   endpoint    TEXT NOT NULL UNIQUE,                    -- 浏览器返回的推送服务 URL（Apple/Google/Mozilla 各家）
   p256dh      TEXT NOT NULL,                           -- 加密用公钥
   auth        TEXT NOT NULL,                           -- 加密用 auth secret
