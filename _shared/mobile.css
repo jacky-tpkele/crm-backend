@@ -24,15 +24,21 @@
 /* ── 侧边栏：抽屉化 ── */
 @media (max-width:768px) {
   .sidebar {
-    position:fixed; left:-100%; top:0; height:100%;
+    position:fixed !important;
+    left:-280px !important; top:0 !important;
+    height:100% !important;
     width:240px !important;
-    z-index:1000; transition:left .25s ease;
+    z-index:1000 !important;
+    transition:left .25s ease !important;
     box-shadow:6px 0 24px rgba(0,0,0,.5);
   }
-  .sidebar.mobile-open { left:0; }
+  .sidebar.mobile-open { left:0 !important; }
+  .sidebar.collapsed { width:240px !important; }
+  /* 移动端隐藏侧栏底部的"折叠/展开"按钮，因为它在抽屉里没意义 */
+  .sb-toggle, .sb-bottom .sb-toggle { display:none !important; }
 
   /* 主内容区占满 */
-  .main { width:100%; }
+  .main { width:100% !important; max-width:100vw !important; }
   .app { flex-direction:column; }
 
   /* 侧栏遮罩 */
@@ -62,14 +68,30 @@
   .header {
     padding:10px 14px !important;
     gap:8px !important;
-    flex-wrap:nowrap;
+    flex-wrap:wrap !important;
+    overflow:hidden;
   }
   .header h1, .header-title {
     font-size:15px !important;
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    min-width:0;
   }
   .header-right, .header-actions { gap:6px !important; flex-wrap:wrap; }
   .header .search-wrap { max-width:none; flex:1; min-width:0; }
+  /* 搜索框里的快捷键提示在小屏隐藏 */
+  .header .search-wrap kbd { display:none !important; }
+
+  /* dashboard 顶栏额外的链接按钮（物流/密码保险柜/通知）—— 移动端收起，因为已经在侧栏里能访问 */
+  .header > a[href*="logistics"],
+  .header > a[href*="password-vault"],
+  .header > a[href*="vault"],
+  .header .icon-btn[title*="Notification"],
+  .header .icon-btn[title*="通知"] {
+    display:none !important;
+  }
+  /* 用户按钮只显示头像和角色，省掉名字 */
+  .header .user-btn #userNameDisplay { display:none !important; }
+  .header .user-btn { padding:4px 8px !important; gap:4px !important; }
 }
 
 /* ── workspace 边距 ── */
