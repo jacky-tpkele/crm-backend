@@ -446,6 +446,40 @@ tr.iq-unread td{font-weight:600}
   .item-row{grid-template-columns:1fr 1fr;gap:6px}
   .form-grid{grid-template-columns:1fr}
 }
+
+/* ── Live Chat ── */
+.chat-layout{display:grid;grid-template-columns:320px 1fr;gap:14px;height:calc(100vh - 230px);min-height:480px}
+.chat-sidebar{background:var(--panel);border:1px solid var(--border);border-radius:12px;display:flex;flex-direction:column;overflow:hidden}
+.chat-sidebar-head{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--text)}
+.chat-session-list{flex:1;overflow-y:auto;padding:6px}
+.chat-session{padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:4px;transition:.15s;position:relative;border:1px solid transparent}
+.chat-session:hover{background:rgba(16,185,129,.06)}
+.chat-session.active{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.35)}
+.chat-session .cs-name{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px}
+.chat-session .cs-preview{font-size:11px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-session .cs-time{font-size:10px;color:var(--muted);position:absolute;top:10px;right:12px}
+.chat-session .cs-badge{background:#ef4444;color:#fff;font-size:10px;padding:0 6px;border-radius:999px;font-weight:700;min-width:18px;text-align:center}
+.chat-session.closed{opacity:.5}
+
+.chat-main{background:var(--panel);border:1px solid var(--border);border-radius:12px;display:flex;flex-direction:column;overflow:hidden}
+.chat-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;align-items:flex-start}
+.chat-head > div:last-child{margin-left:auto}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;background:rgba(0,0,0,.12)}
+.chat-msg{max-width:72%;padding:8px 12px;border-radius:12px;font-size:13px;line-height:1.5;word-break:break-word;white-space:pre-wrap}
+.chat-msg.visitor{align-self:flex-start;background:rgba(255,255,255,.08);color:var(--text);border-bottom-left-radius:3px}
+.chat-msg.agent{align-self:flex-end;background:linear-gradient(135deg,#10B981,#34D399);color:#0F1F1C;border-bottom-right-radius:3px;font-weight:500}
+.chat-msg.system{align-self:center;background:transparent;color:var(--muted);font-size:11px;padding:4px 8px;text-align:center}
+.chat-msg .msg-time{font-size:10px;opacity:.6;margin-top:3px;display:block}
+
+.chat-composer{display:flex;gap:8px;padding:10px;border-top:1px solid var(--border);background:var(--panel)}
+.chat-composer textarea{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;resize:none;font-family:inherit;outline:none}
+.chat-composer textarea:focus{border-color:rgba(16,185,129,.5)}
+
+@media (max-width:768px){
+  .chat-layout{grid-template-columns:1fr;height:auto}
+  .chat-sidebar{max-height:240px}
+  .chat-main{min-height:420px}
+}
 </style>
 <link rel="stylesheet" href="light-theme.css">
 <link rel="stylesheet" href="/_shared/mobile.css">
@@ -473,6 +507,10 @@ tr.iq-unread td{font-weight:600}
     </div>
     <div class="nav-item" data-sec="inquiries">
       <span class="nav-icon">◎</span><span class="nav-label" data-i18n="navInquiries">询盘管理</span>
+    </div>
+    <div class="nav-item" data-sec="chat">
+      <span class="nav-icon">💬</span><span class="nav-label" data-i18n="navChat">在线客服</span>
+      <span id="chatNavBadge" style="display:none;margin-left:auto;background:#ef4444;color:#fff;font-size:10px;padding:1px 6px;border-radius:999px;font-weight:700">0</span>
     </div>
     <div class="nav-item" data-sec="customers">
       <span class="nav-icon">◉</span><span class="nav-label" data-i18n="navCustomers">客户管理</span>
@@ -635,6 +673,42 @@ tr.iq-unread td{font-weight:600}
           </table>
         </div>
         <div class="status-line" id="iqStatus"></div>
+      </div>
+    </section>
+
+    <!-- ── LIVE CHAT (网站访客 ↔ 客服) ── -->
+    <section class="section" id="sec-chat">
+      <div class="section-title" data-i18n="navChat">💬 在线客服</div>
+      <div class="section-sub">网站访客发起的实时对话 — 离线时 iPhone 主屏 PWA 会收到通知</div>
+      <div style="margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button class="btn" id="chatEnablePushBtn" onclick="enableChatPush()">🔔 启用通知</button>
+        <button class="btn" onclick="loadChatSessions()">🔄 刷新</button>
+        <button class="btn" onclick="testChatPush()" title="向所有已订阅设备发一条测试通知">🧪 测试推送</button>
+        <span id="chatPushStatus" style="font-size:12px;color:var(--muted)"></span>
+      </div>
+      <div class="chat-layout">
+        <!-- 左：会话列表 -->
+        <div class="chat-sidebar">
+          <div class="chat-sidebar-head">会话列表 <span id="chatTotalCount" style="float:right;color:var(--muted);font-size:12px"></span></div>
+          <div id="chatSessionList" class="chat-session-list"></div>
+        </div>
+        <!-- 右：聊天窗 -->
+        <div class="chat-main">
+          <div class="chat-head" id="chatHead">
+            <div style="font-weight:700;font-size:14px" id="chatHeadName">选择一个会话开始聊天</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px" id="chatHeadMeta"></div>
+            <div style="margin-left:auto;display:flex;gap:6px" id="chatHeadActions" hidden>
+              <button class="btn" onclick="closeCurrentChatSession()">✕ 关闭会话</button>
+            </div>
+          </div>
+          <div id="chatMessages" class="chat-messages">
+            <div style="text-align:center;color:var(--muted);font-size:13px;padding:40px 0">← 在左侧选择会话</div>
+          </div>
+          <form id="chatComposer" class="chat-composer" onsubmit="sendChatReply(event)" hidden>
+            <textarea id="chatInput" rows="2" placeholder="输入回复，Enter 发送 / Shift+Enter 换行"></textarea>
+            <button type="submit" class="btn btn-primary">发送</button>
+          </form>
+        </div>
       </div>
     </section>
 
@@ -3902,6 +3976,274 @@ init().catch(e => { console.error(e); if (e.message?.includes('401')) logout(); 
   load();
   setInterval(load, 5*60*1000);
 })();
+</script>
+
+<!-- ══ Live Chat (websocket via Supabase Realtime + Web Push) ══ -->
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+const TOKEN = () => localStorage.getItem('crm_token') || '';
+const authHdr = () => ({ Authorization: 'Bearer ' + TOKEN() });
+
+let supabase = null;
+let vapidPublicKey = '';
+let chatChannel = null;
+let currentSession = null;
+let allSessions = [];
+
+async function chatInit(){
+  try{
+    const r = await fetch('/api/chat/config');
+    const cfg = await r.json();
+    if (!cfg.supabase_url || !cfg.supabase_anon_key) {
+      console.warn('[chat] missing supabase config'); return;
+    }
+    supabase = createClient(cfg.supabase_url, cfg.supabase_anon_key);
+    vapidPublicKey = cfg.vapid_public_key || '';
+    subscribeRealtime();
+    await loadChatSessions();
+    await updateChatPushStatus();
+  }catch(e){ console.warn('[chat] init failed', e); }
+}
+
+function subscribeRealtime(){
+  if (!supabase) return;
+  if (chatChannel) { supabase.removeChannel(chatChannel); chatChannel = null; }
+  chatChannel = supabase.channel('chat-realtime')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, (payload) => {
+      const m = payload.new;
+      // 当前打开的就是这个会话 → 追加显示
+      if (currentSession && m.session_id === currentSession.id) {
+        appendMessage(m);
+        scrollChatToBottom();
+      }
+      // 列表刷新（更新最后一条消息预览、未读数）
+      loadChatSessions(true);
+    })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_sessions' }, () => {
+      loadChatSessions(true);
+    })
+    .subscribe();
+}
+
+window.loadChatSessions = async function(silent){
+  if (!silent) document.getElementById('chatSessionList').innerHTML = '<div style="padding:16px;color:var(--muted);font-size:12px">加载中...</div>';
+  try{
+    const r = await fetch('/api/chat/sessions', { headers: authHdr() });
+    if (!r.ok) throw new Error(await r.text());
+    const data = await r.json();
+    allSessions = data.sessions || [];
+    renderChatSessionList();
+    updateChatNavBadge();
+  }catch(e){
+    document.getElementById('chatSessionList').innerHTML = '<div style="padding:16px;color:#ef4444;font-size:12px">加载失败：' + e.message + '</div>';
+  }
+};
+
+function renderChatSessionList(){
+  const list = document.getElementById('chatSessionList');
+  if (!allSessions.length) {
+    list.innerHTML = '<div style="padding:16px;color:var(--muted);font-size:12px;text-align:center">暂无会话<br><span style="font-size:11px">访客在独立站发起对话后会出现在这里</span></div>';
+    document.getElementById('chatTotalCount').textContent = '';
+    return;
+  }
+  document.getElementById('chatTotalCount').textContent = allSessions.length + ' 个';
+  list.innerHTML = allSessions.map(s => {
+    const name = s.visitor_name || s.visitor_email || ('匿名 ' + (s.visitor_id||'').slice(0,6));
+    const t = s.last_message_at ? formatChatTime(s.last_message_at) : '';
+    const unread = (s.unread_for_agent||0) > 0;
+    const active = currentSession && currentSession.id === s.id;
+    return `<div class="chat-session ${active?'active':''} ${s.status==='closed'?'closed':''}" onclick="openChatSession('${s.id}')">
+      <div class="cs-time">${t}</div>
+      <div class="cs-name">${escapeChatHtml(name)} ${unread?`<span class="cs-badge">${s.unread_for_agent}</span>`:''}</div>
+      <div class="cs-preview">${escapeChatHtml(s.page_url || '')}</div>
+    </div>`;
+  }).join('');
+}
+
+function updateChatNavBadge(){
+  const total = allSessions.reduce((a,s) => a + (s.unread_for_agent||0), 0);
+  const el = document.getElementById('chatNavBadge');
+  if (total > 0) { el.style.display='inline-block'; el.textContent = total > 99 ? '99+' : total; }
+  else el.style.display = 'none';
+}
+
+window.openChatSession = async function(id){
+  const s = allSessions.find(x => x.id === id);
+  if (!s) return;
+  currentSession = s;
+  renderChatSessionList();
+  document.getElementById('chatHeadName').textContent = s.visitor_name || s.visitor_email || ('匿名 ' + s.visitor_id.slice(0,6));
+  document.getElementById('chatHeadMeta').textContent = [s.visitor_email, s.page_url].filter(Boolean).join(' · ');
+  document.getElementById('chatHeadActions').hidden = false;
+  document.getElementById('chatComposer').hidden = s.status === 'closed';
+  document.getElementById('chatMessages').innerHTML = '<div style="text-align:center;color:var(--muted);font-size:12px;padding:20px">加载中...</div>';
+  try{
+    const r = await fetch('/api/chat/sessions/' + id + '/messages', { headers: authHdr() });
+    const data = await r.json();
+    const cont = document.getElementById('chatMessages');
+    cont.innerHTML = '';
+    (data.messages||[]).forEach(m => appendMessage(m));
+    scrollChatToBottom();
+    // 清未读 → 刷新列表
+    loadChatSessions(true);
+  }catch(e){
+    document.getElementById('chatMessages').innerHTML = '<div style="color:#ef4444;padding:16px">' + e.message + '</div>';
+  }
+};
+
+function appendMessage(m){
+  const cont = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'chat-msg ' + (m.sender || 'system');
+  const time = m.created_at ? new Date(m.created_at).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}) : '';
+  div.innerHTML = escapeChatHtml(m.body) + (time ? `<span class="msg-time">${time}</span>` : '');
+  cont.appendChild(div);
+}
+
+function scrollChatToBottom(){
+  const cont = document.getElementById('chatMessages');
+  cont.scrollTop = cont.scrollHeight;
+}
+
+window.sendChatReply = async function(e){
+  e.preventDefault();
+  if (!currentSession) return;
+  const input = document.getElementById('chatInput');
+  const text = (input.value || '').trim();
+  if (!text) return;
+  input.value = '';
+  try{
+    const r = await fetch('/api/chat/agent/reply', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHdr() },
+      body: JSON.stringify({ session_id: currentSession.id, body: text }),
+    });
+    if (!r.ok) throw new Error(await r.text());
+    const data = await r.json();
+    appendMessage(data.message);
+    scrollChatToBottom();
+  }catch(err){ alert('发送失败：' + err.message); input.value = text; }
+};
+
+// Enter 发送，Shift+Enter 换行
+document.addEventListener('keydown', (e) => {
+  if (e.target && e.target.id === 'chatInput' && e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    document.getElementById('chatComposer').dispatchEvent(new Event('submit', { cancelable: true }));
+  }
+});
+
+window.closeCurrentChatSession = async function(){
+  if (!currentSession) return;
+  if (!confirm('关闭这个会话？关闭后访客仍可看到历史。')) return;
+  await fetch('/api/chat/sessions/' + currentSession.id + '/close', { method:'POST', headers: authHdr() });
+  await loadChatSessions();
+  currentSession = null;
+  document.getElementById('chatMessages').innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:40px 0">会话已关闭</div>';
+  document.getElementById('chatComposer').hidden = true;
+};
+
+// ── Web Push 订阅 ──
+window.enableChatPush = async function(){
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    alert('当前浏览器不支持 Web Push。\niPhone 需要 iOS 16.4+ 并把本网站「添加到主屏幕」后再操作。');
+    return;
+  }
+  if (!vapidPublicKey) { alert('VAPID 公钥未配置，请先在 Vercel 设置环境变量 VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY'); return; }
+  try{
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') { alert('未授予通知权限'); return; }
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+      });
+    }
+    const json = sub.toJSON();
+    const r = await fetch('/api/chat/push/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', ...authHdr() },
+      body: JSON.stringify({
+        endpoint: json.endpoint,
+        keys: json.keys,
+        device_name: prompt('给这个设备起个名字（如 "iPhone 15 主屏"）', navigator.platform || 'Device') || null,
+      }),
+    });
+    if (!r.ok) throw new Error(await r.text());
+    alert('✅ 已订阅推送，访客来新消息会推到此设备');
+    updateChatPushStatus();
+  }catch(e){ alert('订阅失败：' + e.message); }
+};
+
+window.testChatPush = async function(){
+  try{
+    const r = await fetch('/api/chat/push/test', { method:'POST', headers: authHdr() });
+    if (!r.ok) throw new Error(await r.text());
+    alert('已发送测试推送，等几秒钟查看通知。');
+  }catch(e){ alert(e.message); }
+};
+
+async function updateChatPushStatus(){
+  const el = document.getElementById('chatPushStatus');
+  if (!('serviceWorker' in navigator)) { el.textContent='浏览器不支持推送'; return; }
+  try{
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if (sub && Notification.permission === 'granted') {
+      el.textContent = '✓ 已订阅推送';
+      el.style.color = '#34D399';
+    } else {
+      el.textContent = '未订阅推送';
+      el.style.color = 'var(--muted)';
+    }
+  }catch(_){ el.textContent = '未订阅推送'; }
+}
+
+function urlBase64ToUint8Array(base64String){
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g,'+').replace(/_/g,'/');
+  const raw = atob(base64);
+  const out = new Uint8Array(raw.length);
+  for (let i=0;i<raw.length;i++) out[i] = raw.charCodeAt(i);
+  return out;
+}
+
+function escapeChatHtml(s){
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function formatChatTime(iso){
+  const d = new Date(iso);
+  const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  if (sameDay) return d.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+  const sameYear = d.getFullYear() === now.getFullYear();
+  return sameYear ? (d.getMonth()+1)+'/'+d.getDate() : d.toLocaleDateString('zh-CN');
+}
+
+// 等 DOM 和 token 就绪后初始化
+function chatBoot(){
+  if (!TOKEN()) return; // 未登录就不启动
+  chatInit();
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', chatBoot);
+} else {
+  chatBoot();
+}
+
+// 切到 chat 区域时刷新一下
+const _origNavigate = window.navigate;
+window.navigate = function(sec){
+  _origNavigate && _origNavigate(sec);
+  if (sec === 'chat') { loadChatSessions(); updateChatPushStatus(); }
+};
+
+// 全局每 30s 拉一次会话列表（兜底，万一 Realtime 掉线）
+setInterval(() => { if (TOKEN()) loadChatSessions(true); }, 30000);
 </script>
 </body>
 </html>

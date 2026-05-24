@@ -5,6 +5,7 @@ const nodemailer = require('nodemailer');
 const { ImapFlow } = require('imapflow');
 const { simpleParser } = require('mailparser');
 const crypto = require('crypto');
+const webpush = require('web-push');
 
 const app = express();
 app.use(express.json({ limit: '20mb' }));
@@ -2769,6 +2770,352 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
+
+// ════════════════════════════════════════════════════════════════════
+// LIVE CHAT (website ↔ CRM) + Web Push 离线推送
+// ════════════════════════════════════════════════════════════════════
+// 设计：
+//   1. 访客在独立站打开浮窗 → 调 /api/chat/visitor/start 拿 session_id（无认证，靠 visitor_id 区分）
+//   2. 访客发消息 → /api/chat/visitor/message
+//      → 触发：① 在 chat_messages INSERT（Supabase Realtime 把消息推到 CRM 浏览器） ② Web Push 推到 iPhone PWA
+//   3. 客服在 CRM 看会话列表（/api/chat/sessions）、回消息（/api/chat/agent/reply）
+//   4. CRM 用户在 PWA 里允许通知后调 /api/chat/push/subscribe 把 endpoint 存起来；
+//      访客来新消息时后端遍历所有 push_subscriptions 推一次。
+// ════════════════════════════════════════════════════════════════════
+
+const VAPID_PUBLIC  = process.env.VAPID_PUBLIC_KEY  || '';
+const VAPID_PRIVATE = process.env.VAPID_PRIVATE_KEY || '';
+const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:admin@tpkele.com';
+if (VAPID_PUBLIC && VAPID_PRIVATE) {
+  try {
+    webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC, VAPID_PRIVATE);
+  } catch (e) {
+    console.warn('[push] VAPID 配置失败：', e.message);
+  }
+} else {
+  console.warn('[push] VAPID_PUBLIC_KEY/VAPID_PRIVATE_KEY 未设置，推送功能将不可用（聊天仍可用）');
+}
+
+// 简单 CORS：聊天访客接口允许跨域（独立站要从 tpkele.com 调到 crm.tpkele.com）
+function chatCors(req, res, next) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,X-Visitor-Id');
+  res.setHeader('Access-Control-Max-Age', '86400');
+  if (req.method === 'OPTIONS') return res.status(204).end();
+  next();
+}
+
+// 给 CRM 推送（遍历所有订阅）
+async function pushToAllAgents(payload) {
+  if (!VAPID_PUBLIC || !VAPID_PRIVATE) return;
+  const subs = await sb('push_subscriptions?select=id,endpoint,p256dh,auth').catch(() => []);
+  await Promise.all(subs.map(async (s) => {
+    const subscription = {
+      endpoint: s.endpoint,
+      keys: { p256dh: s.p256dh, auth: s.auth },
+    };
+    try {
+      await webpush.sendNotification(subscription, JSON.stringify(payload));
+    } catch (err) {
+      // 410 = 用户已取消订阅；404 = endpoint 不存在 → 清理
+      if (err.statusCode === 410 || err.statusCode === 404) {
+        await sb(`push_subscriptions?id=eq.${s.id}`, { method: 'DELETE' }).catch(() => {});
+      } else {
+        console.warn('[push] send error:', err.statusCode, err.body);
+      }
+    }
+  }));
+}
+
+// VAPID 公钥（前端注册推送时用）
+app.get('/api/chat/vapid-public-key', chatCors, (req, res) => {
+  res.json({ key: VAPID_PUBLIC });
+});
+
+// 给前端拉公开配置（Supabase URL / anon key / VAPID 公钥）
+// 这些都是公钥/anon，受 RLS 和域名白名单保护，可以安全暴露给客户端
+app.get('/api/chat/config', chatCors, (req, res) => {
+  res.json({
+    supabase_url: SB_URL,
+    supabase_anon_key: SB_KEY,
+    vapid_public_key: VAPID_PUBLIC,
+  });
+});
+
+// ── 访客侧：开启 / 续接一个会话 ─────────────────────────────────
+app.options('/api/chat/visitor/start', chatCors, (req, res) => res.status(204).end());
+app.post('/api/chat/visitor/start', chatCors, async (req, res) => {
+  try {
+    const visitorId = String(req.headers['x-visitor-id'] || req.body?.visitor_id || '').trim();
+    if (!visitorId || visitorId.length > 100) {
+      return res.status(400).json({ message: 'visitor_id required' });
+    }
+    const { name, email, page_url } = req.body || {};
+    const ua = String(req.headers['user-agent'] || '').slice(0, 500);
+
+    // 找该访客 24 小时内的 open 会话，有就续接；没就新建
+    const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+    const existing = await sb(
+      `chat_sessions?visitor_id=eq.${encodeURIComponent(visitorId)}&status=eq.open&last_message_at=gte.${encodeURIComponent(since)}&order=last_message_at.desc&limit=1`
+    ).catch(() => []);
+
+    let session;
+    if (existing.length) {
+      session = existing[0];
+      // 顺手更新姓名/邮箱（如果新填了）
+      const patch = {};
+      if (name && !session.visitor_name) patch.visitor_name = String(name).slice(0, 100);
+      if (email && !session.visitor_email) patch.visitor_email = String(email).slice(0, 200);
+      if (Object.keys(patch).length) {
+        await sb(`chat_sessions?id=eq.${session.id}`, {
+          method: 'PATCH', body: JSON.stringify(patch),
+        }).catch(() => {});
+      }
+    } else {
+      const created = await sb('chat_sessions?select=*', {
+        method: 'POST',
+        headers: { 'Prefer': 'return=representation' },
+        body: JSON.stringify({
+          visitor_id: visitorId,
+          visitor_name: name ? String(name).slice(0, 100) : null,
+          visitor_email: email ? String(email).slice(0, 200) : null,
+          page_url: page_url ? String(page_url).slice(0, 500) : null,
+          user_agent: ua,
+          status: 'open',
+        }),
+      });
+      session = created[0];
+    }
+
+    // 回拉最近 50 条消息（续接时让访客看到历史）
+    const msgs = await sb(
+      `chat_messages?session_id=eq.${session.id}&select=id,sender,body,created_at&order=created_at.asc&limit=50`
+    ).catch(() => []);
+
+    res.json({ session_id: session.id, messages: msgs });
+  } catch (e) {
+    console.error('chat/visitor/start error:', e.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// ── 访客侧：发消息 ─────────────────────────────────────────
+app.options('/api/chat/visitor/message', chatCors, (req, res) => res.status(204).end());
+app.post('/api/chat/visitor/message', chatCors, async (req, res) => {
+  try {
+    const visitorId = String(req.headers['x-visitor-id'] || req.body?.visitor_id || '').trim();
+    const { session_id, body } = req.body || {};
+    if (!session_id || !body || !visitorId) {
+      return res.status(400).json({ message: 'session_id, body, visitor_id required' });
+    }
+    const text = String(body).trim().slice(0, 4000);
+    if (!text) return res.status(400).json({ message: 'empty body' });
+
+    // 校验 session 属于该访客（防滥用别人 session）
+    const sList = await sb(`chat_sessions?id=eq.${session_id}&visitor_id=eq.${encodeURIComponent(visitorId)}&select=*&limit=1`).catch(() => []);
+    if (!sList.length) return res.status(404).json({ message: 'session not found' });
+    const session = sList[0];
+
+    const now = new Date().toISOString();
+    const inserted = await sb('chat_messages?select=*', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify({ session_id, sender: 'visitor', body: text }),
+    });
+    const msg = inserted[0];
+
+    // 更新 session（未读 +1、最后消息时间）
+    await sb(`chat_sessions?id=eq.${session_id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        last_message_at: now,
+        unread_for_agent: (session.unread_for_agent || 0) + 1,
+        updated_at: now,
+      }),
+    }).catch(() => {});
+
+    // 推送给所有客服 PWA
+    const visitorLabel = session.visitor_name || session.visitor_email || '匿名访客';
+    pushToAllAgents({
+      title: `💬 ${visitorLabel}`,
+      body: text.length > 80 ? text.slice(0, 80) + '…' : text,
+      url: `/dashboard.html?chat=${session_id}`,
+      tag: `chat-${session_id}`,
+    }).catch((e) => console.warn('[push] fanout failed:', e.message));
+
+    res.json({ message: msg });
+  } catch (e) {
+    console.error('chat/visitor/message error:', e.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// ── 访客侧：轮询新消息（兜底，避免 Realtime 连不上时聊不动）──
+app.options('/api/chat/visitor/poll', chatCors, (req, res) => res.status(204).end());
+app.get('/api/chat/visitor/poll', chatCors, async (req, res) => {
+  try {
+    const visitorId = String(req.headers['x-visitor-id'] || req.query.visitor_id || '').trim();
+    const { session_id, after } = req.query || {};
+    if (!session_id || !visitorId) return res.status(400).json({ message: 'session_id, visitor_id required' });
+
+    // 校验 session 属于该访客
+    const sList = await sb(`chat_sessions?id=eq.${session_id}&visitor_id=eq.${encodeURIComponent(visitorId)}&select=id&limit=1`).catch(() => []);
+    if (!sList.length) return res.status(404).json({ message: 'session not found' });
+
+    const afterClause = after ? `&created_at=gt.${encodeURIComponent(after)}` : '';
+    const msgs = await sb(
+      `chat_messages?session_id=eq.${session_id}${afterClause}&select=id,sender,body,created_at&order=created_at.asc&limit=100`
+    ).catch(() => []);
+    res.json({ messages: msgs });
+  } catch (e) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// ── 客服侧：会话列表 ───────────────────────────────────────
+app.get('/api/chat/sessions', auth, async (req, res) => {
+  try {
+    const sessions = await sb(
+      `chat_sessions?select=*&order=last_message_at.desc&limit=200`
+    ).catch(() => []);
+    res.json({ sessions });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+
+// ── 客服侧：拉某会话的消息 ─────────────────────────────────
+app.get('/api/chat/sessions/:id/messages', auth, async (req, res) => {
+  try {
+    const sessionId = req.params.id;
+    const msgs = await sb(
+      `chat_messages?session_id=eq.${sessionId}&select=id,sender,agent_id,body,created_at&order=created_at.asc&limit=500`
+    ).catch(() => []);
+    // 标记为已读 + 清零未读计数
+    await sb(`chat_sessions?id=eq.${sessionId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ unread_for_agent: 0, updated_at: new Date().toISOString() }),
+    }).catch(() => {});
+    res.json({ messages: msgs });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+
+// ── 客服侧：回消息 ─────────────────────────────────────────
+app.post('/api/chat/agent/reply', auth, async (req, res) => {
+  try {
+    const { session_id, body } = req.body || {};
+    if (!session_id || !body) return res.status(400).json({ message: 'session_id, body required' });
+    const text = String(body).trim().slice(0, 4000);
+    if (!text) return res.status(400).json({ message: 'empty body' });
+
+    const now = new Date().toISOString();
+    const inserted = await sb('chat_messages?select=*', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify({
+        session_id,
+        sender: 'agent',
+        agent_id: req.user.user_id || null,
+        body: text,
+      }),
+    });
+
+    await sb(`chat_sessions?id=eq.${session_id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ last_message_at: now, updated_at: now }),
+    }).catch(() => {});
+
+    res.json({ message: inserted[0] });
+  } catch (e) {
+    console.error('chat/agent/reply error:', e.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// ── 客服侧：关闭会话 ───────────────────────────────────────
+app.post('/api/chat/sessions/:id/close', auth, async (req, res) => {
+  try {
+    await sb(`chat_sessions?id=eq.${req.params.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'closed', updated_at: new Date().toISOString() }),
+    });
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+
+// ── Web Push：订阅 / 退订 ─────────────────────────────────
+app.post('/api/chat/push/subscribe', auth, async (req, res) => {
+  try {
+    const { endpoint, keys, device_name } = req.body || {};
+    if (!endpoint || !keys?.p256dh || !keys?.auth) {
+      return res.status(400).json({ message: 'invalid subscription' });
+    }
+    const ua = String(req.headers['user-agent'] || '').slice(0, 500);
+
+    // upsert：endpoint 是唯一键
+    const existing = await sb(`push_subscriptions?endpoint=eq.${encodeURIComponent(endpoint)}&select=id&limit=1`).catch(() => []);
+    if (existing.length) {
+      await sb(`push_subscriptions?id=eq.${existing[0].id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          user_id: req.user.user_id || null,
+          p256dh: keys.p256dh,
+          auth: keys.auth,
+          user_agent: ua,
+          device_name: device_name || null,
+          last_used_at: new Date().toISOString(),
+        }),
+      });
+    } else {
+      await sb('push_subscriptions', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: req.user.user_id || null,
+          endpoint,
+          p256dh: keys.p256dh,
+          auth: keys.auth,
+          user_agent: ua,
+          device_name: device_name || null,
+        }),
+      });
+    }
+    res.json({ success: true });
+  } catch (e) {
+    console.error('push/subscribe error:', e.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.post('/api/chat/push/unsubscribe', auth, async (req, res) => {
+  try {
+    const { endpoint } = req.body || {};
+    if (!endpoint) return res.status(400).json({ message: 'endpoint required' });
+    await sb(`push_subscriptions?endpoint=eq.${encodeURIComponent(endpoint)}`, { method: 'DELETE' });
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+
+// 测试推送（自己点一下，验证 iPhone 收得到）
+app.post('/api/chat/push/test', auth, async (req, res) => {
+  try {
+    await pushToAllAgents({
+      title: '🔔 测试通知',
+      body: '如果你在 iPhone 主屏幕看到这条，说明 Web Push 通了',
+      url: '/dashboard.html',
+      tag: 'test-push',
+    });
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
 
 // ── CSV 批量导入：通用（按表名 + 列映射）──
 // 前端把 CSV 解析成 rows 后调用此接口
