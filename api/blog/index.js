@@ -927,4 +927,488 @@ router.post('/generate-faq', async (req, res) => {
   }
 });
 
+// ──────────────────────────────────────────
+// Phase 4: 仪表盘 + 自动化管理
+// ──────────────────────────────────────────
+
+// 1. 获取仪表盘统计数据
+router.get('/dashboard', async (req, res) => {
+  try {
+    const plans = await sb('blog_plans');
+    const posts = await sb('blog_posts');
+
+    const stats = {
+      totalPlans: plans.length,
+      generated: posts.filter(p => p.status === 'content_generated').length,
+      pending: posts.filter(p => p.status === 'draft').length,
+      published: posts.filter(p => p.status === 'published').length,
+      failed: posts.filter(p => p.status === 'failed').length,
+    };
+
+    res.json({
+      success: true,
+      stats,
+    });
+  } catch (error) {
+    console.error('Error fetching dashboard:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 2. 立即生成今天的文章
+router.post('/generate-now', async (req, res) => {
+  try {
+    const { modelType = 'deepseek' } = req.body;
+
+    const today = new Date().toISOString().split('T')[0];
+    const plans = await sb(
+      `blog_plans?status=eq.pending&plan_month=eq.${today.slice(0, 7)}&limit=4`
+    );
+
+    const results = [];
+
+    for (const plan of plans) {
+      try {
+        const content = await generateContentWithAI(plan.keyword, plan.title, modelType);
+
+        const post = {
+          plan_id: plan.id,
+          title: plan.title,
+          content,
+          keywords: [plan.keyword],
+          status: 'draft',
+        };
+
+        const postResult = await sb('blog_posts', {
+          method: 'POST',
+          body: JSON.stringify(post),
+        });
+
+        await sb(`blog_plans?id=eq.${plan.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: 'content_generated' }),
+        });
+
+        results.push({
+          planId: plan.id,
+          postId: postResult[0].id,
+          title: plan.title,
+          status: 'success',
+        });
+      } catch (error) {
+        results.push({
+          planId: plan.id,
+          title: plan.title,
+          status: 'error',
+          error: error.message,
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+      generatedCount: results.filter(r => r.status === 'success').length,
+      results,
+    });
+  } catch (error) {
+    console.error('Error in generate-now:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 3. 重新生成失败的文章
+router.post('/retry-failed', async (req, res) => {
+  try {
+    const { modelType = 'deepseek' } = req.body;
+
+    const failedPosts = await sb('blog_posts?status=eq.failed');
+    const results = [];
+
+    for (const post of failedPosts) {
+      try {
+        const plan = await sb(`blog_plans?id=eq.${post.plan_id}`);
+        if (!plan || plan.length === 0) continue;
+
+        const content = await generateContentWithAI(
+          plan[0].keyword,
+          plan[0].title,
+          modelType
+        );
+
+        await sb(`blog_posts?id=eq.${post.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            content,
+            status: 'draft',
+            updated_at: new Date().toISOString(),
+          }),
+        });
+
+        results.push({
+          postId: post.id,
+          title: post.title,
+          status: 'success',
+        });
+      } catch (error) {
+        results.push({
+          postId: post.id,
+          title: post.title,
+          status: 'error',
+          error: error.message,
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      retriedCount: failedPosts.length,
+      successCount: results.filter(r => r.status === 'success').length,
+      results,
+    });
+  } catch (error) {
+    console.error('Error in retry-failed:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 4. 同步已审核的文章到网站
+router.post('/sync-approved', async (req, res) => {
+  try {
+    const approvedPosts = await sb('blog_posts?status=eq.approved');
+    const results = [];
+
+    for (const post of approvedPosts) {
+      try {
+        const slug = post.title
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-');
+
+        await sb(`blog_posts?id=eq.${post.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            slug,
+            status: 'published',
+            published_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }),
+        });
+
+        if (post.plan_id) {
+          await sb(`blog_plans?id=eq.${post.plan_id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status: 'published' }),
+          });
+        }
+
+        results.push({
+          postId: post.id,
+          title: post.title,
+          slug,
+          status: 'success',
+        });
+      } catch (error) {
+        results.push({
+          postId: post.id,
+          title: post.title,
+          status: 'error',
+          error: error.message,
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      syncedCount: results.filter(r => r.status === 'success').length,
+      results,
+    });
+  } catch (error) {
+    console.error('Error in sync-approved:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 5. 切换自动生成开关
+router.post('/toggle-auto-generation', async (req, res) => {
+  try {
+    const { enabled } = req.body;
+
+    if (typeof enabled !== 'boolean') {
+      return res.status(400).json({ error: 'Missing enabled flag' });
+    }
+
+    const config = await sb('blog_config?key=eq.auto_generation_enabled', {
+      method: 'PATCH',
+      body: JSON.stringify({ value: enabled }),
+    });
+
+    res.json({
+      success: true,
+      enabled,
+    });
+  } catch (error) {
+    console.error('Error toggling auto-generation:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 6. 获取计划列表
+router.get('/plans', async (req, res) => {
+  try {
+    const { status, limit = 100 } = req.query;
+    let query = `blog_plans?order=created_at.desc&limit=${limit}`;
+    if (status) query += `&status=eq.${status}`;
+
+    const plans = await sb(query);
+
+    res.json({
+      success: true,
+      plans,
+    });
+  } catch (error) {
+    console.error('Error fetching plans:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 7. 批准文章
+router.post('/approve', async (req, res) => {
+  try {
+    const { postId } = req.body;
+
+    if (!postId) {
+      return res.status(400).json({ error: 'Missing postId' });
+    }
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        status: 'approved',
+        approved_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }),
+    });
+
+    res.json({
+      success: true,
+      postId,
+      status: 'approved',
+    });
+  } catch (error) {
+    console.error('Error approving post:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 8. 拒绝文章
+router.post('/reject', async (req, res) => {
+  try {
+    const { postId, reason } = req.body;
+
+    if (!postId) {
+      return res.status(400).json({ error: 'Missing postId' });
+    }
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        status: 'rejected',
+        rejection_reason: reason || '',
+        updated_at: new Date().toISOString(),
+      }),
+    });
+
+    res.json({
+      success: true,
+      postId,
+      status: 'rejected',
+    });
+  } catch (error) {
+    console.error('Error rejecting post:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 9. 获取自动化状态
+router.get('/status', async (req, res) => {
+  try {
+    const config = await sb('blog_config');
+    const autoEnabled = config.find(c => c.key === 'auto_generation_enabled')?.value || false;
+
+    res.json({
+      success: true,
+      autoGenerationEnabled: autoEnabled,
+    });
+  } catch (error) {
+    console.error('Error fetching status:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 10. 切换自动化
+router.post('/toggle-auto', async (req, res) => {
+  try {
+    const { enabled } = req.body;
+
+    if (typeof enabled !== 'boolean') {
+      return res.status(400).json({ error: 'Missing enabled flag' });
+    }
+
+    await sb('blog_config?key=eq.auto_generation_enabled', {
+      method: 'PATCH',
+      body: JSON.stringify({ value: enabled }),
+    });
+
+    res.json({
+      success: true,
+      enabled,
+    });
+  } catch (error) {
+    console.error('Error toggling auto:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 11. 关键词管理
+
+// 11a. 获取关键词列表
+router.get('/keywords', async (req, res) => {
+  try {
+    const keywords = await sb('blog_keywords?order=created_at.desc');
+
+    res.json({
+      success: true,
+      keywords,
+    });
+  } catch (error) {
+    console.error('Error fetching keywords:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 11b. 添加关键词
+router.post('/keywords', async (req, res) => {
+  try {
+    const { keyword, category = 'general', difficulty = 'medium' } = req.body;
+
+    if (!keyword) {
+      return res.status(400).json({ error: 'Missing keyword' });
+    }
+
+    const result = await sb('blog_keywords', {
+      method: 'POST',
+      body: JSON.stringify({
+        keyword,
+        category,
+        difficulty,
+        created_at: new Date().toISOString(),
+      }),
+    });
+
+    res.json({
+      success: true,
+      keyword: result[0],
+    });
+  } catch (error) {
+    console.error('Error adding keyword:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 11c. AI 推荐关键词
+router.get('/keywords/ai-recommend', async (req, res) => {
+  try {
+    const { seed } = req.query;
+
+    if (!seed) {
+      return res.status(400).json({ error: 'Missing seed keyword' });
+    }
+
+    const prompt = `基于关键词 "${seed}"，生成 40-50 个相关的长尾关键词。返回 JSON 格式：{"keywords": ["kw1", "kw2", ...]}`;
+
+    const model = AI_MODELS['deepseek'];
+    if (!model || !model.apiKey) {
+      return res.status(400).json({ error: 'DeepSeek not configured' });
+    }
+
+    const response = await fetch(model.endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${model.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: model.model,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+      }),
+    });
+
+    const result = await response.json();
+    const content = result.choices[0].message.content;
+    const keywords = JSON.parse(content).keywords;
+
+    res.json({
+      success: true,
+      seed,
+      keywords,
+    });
+  } catch (error) {
+    console.error('Error recommending keywords:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 11d. 批量添加关键词
+router.post('/keywords/batch', async (req, res) => {
+  try {
+    const { keywords } = req.body;
+
+    if (!Array.isArray(keywords) || keywords.length === 0) {
+      return res.status(400).json({ error: 'Missing keywords array' });
+    }
+
+    const results = [];
+
+    for (const kw of keywords) {
+      try {
+        const newKeyword = {
+          keyword: kw.keyword || kw,
+          category: kw.category || 'general',
+          difficulty: kw.difficulty || 'medium',
+          created_at: new Date().toISOString(),
+        };
+
+        const result = await sb('blog_keywords', {
+          method: 'POST',
+          body: JSON.stringify(newKeyword),
+        });
+
+        results.push({
+          keyword: kw.keyword || kw,
+          status: 'success',
+          id: result[0].id,
+        });
+      } catch (error) {
+        results.push({
+          keyword: kw.keyword || kw,
+          status: 'error',
+          error: error.message,
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      addedCount: results.filter(r => r.status === 'success').length,
+      results,
+    });
+  } catch (error) {
+    console.error('Error batch adding keywords:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
