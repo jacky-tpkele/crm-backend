@@ -2787,22 +2787,24 @@
 
         const response = await fetch('/api/blog/generate-now', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + (localStorage.getItem('crm_token') || localStorage.getItem('token') || '')
-          }
+          headers: getHeaders(),
+          body: JSON.stringify({})
         });
 
         const data = await response.json();
         if (data.success) {
           showToast(`成功生成 ${data.generatedCount} 篇文案`);
-          loadControlPanelStatus();
+          loadDashboard();
           loadPlans();
         } else {
           showToast('生成失败: ' + data.error);
         }
       } catch (error) {
         showToast('生成失败: ' + error.message);
+      } finally {
+        const btn = document.getElementById('generateNowBtn');
+        btn.disabled = false;
+        btn.textContent = '📝 立即生成今日文章';
       }
     }
 
@@ -2998,15 +3000,17 @@
       try {
         const response = await fetch('/api/blog/keywords/batch', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getHeaders(),
           body: JSON.stringify({ keywords: selected.map(s => ({ ...s, ai_recommended: true })) })
         });
         const data = await response.json();
 
         if (data.success) {
-          showToast(`成功添加 ${data.added} 个，跳过 ${data.skipped} 个（已存在）`);
+          showToast(`成功添加 ${data.addedCount} 个关键词`);
           loadKeywords();
           clearRecommendSelection();
+        } else {
+          showToast('添加失败：' + data.error);
         }
       } catch (error) {
         showToast('添加失败：' + error.message);

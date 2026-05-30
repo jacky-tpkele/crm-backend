@@ -937,17 +937,19 @@ router.get('/dashboard', async (req, res) => {
     const plans = await sb('blog_plans?select=*');
     const posts = await sb('blog_posts?select=*');
 
-    const stats = {
-      totalPlans: plans.length,
+    const todayStats = {
+      total: plans.length,
       generated: posts.filter(p => p.status === 'content_generated').length,
-      pending: posts.filter(p => p.status === 'draft').length,
+      pending_review: posts.filter(p => p.status === 'draft').length,
       published: posts.filter(p => p.status === 'published').length,
       failed: posts.filter(p => p.status === 'failed').length,
     };
 
     res.json({
       success: true,
-      stats,
+      todayStats,
+      nextExecutionTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      hoursUntilNextExecution: 24,
     });
   } catch (error) {
     console.error('Error fetching dashboard:', error);
