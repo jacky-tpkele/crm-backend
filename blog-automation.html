@@ -2142,7 +2142,7 @@
       btn.textContent = '生成中...';
 
       try {
-        const response = await fetch('/api/blog/generate-manual', {
+        const response = await fetch('/api/blog/generate-now', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({})

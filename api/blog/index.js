@@ -962,10 +962,29 @@ router.post('/generate-now', async (req, res) => {
   try {
     const { modelType = 'deepseek' } = req.body;
 
+    // 先尝试从计划中找
     const today = new Date().toISOString().split('T')[0];
-    const plans = await sb(
-      `blog_plans?status=eq.pending&plan_month=eq.${today.slice(0, 7)}&limit=4`
+    let plans = await sb(
+      `blog_plans?status=eq.pending&plan_month=eq.${today.slice(0, 7)}&select=*&limit=4`
     );
+
+    // 如果没有计划，从关键词库直接生成
+    if (!plans || plans.length === 0) {
+      const keywords = await sb('blog_keywords?select=*&order=created_at.desc&limit=4');
+
+      if (!keywords || keywords.length === 0) {
+        return res.status(400).json({
+          error: '没有可用的关键词。请先到"关键词库"添加关键词，或到"生成规划"创建月度计划'
+        });
+      }
+
+      // 临时计划列表
+      plans = keywords.map(kw => ({
+        id: null,
+        keyword: kw.keyword,
+        title: `Complete Guide to ${kw.keyword}`,
+      }));
+    }
 
     const results = [];
 
@@ -983,17 +1002,20 @@ router.post('/generate-now', async (req, res) => {
 
         const postResult = await sb('blog_posts', {
           method: 'POST',
+          headers: { 'Prefer': 'return=representation' },
           body: JSON.stringify(post),
         });
 
-        await sb(`blog_plans?id=eq.${plan.id}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ status: 'content_generated' }),
-        });
+        if (plan.id) {
+          await sb(`blog_plans?id=eq.${plan.id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status: 'content_generated' }),
+          });
+        }
 
         results.push({
           planId: plan.id,
-          postId: postResult[0].id,
+          postId: postResult[0]?.id,
           title: plan.title,
           status: 'success',
         });
