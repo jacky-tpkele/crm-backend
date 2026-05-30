@@ -89,6 +89,24 @@ async function sb(path, opts = {}) {
   return data;
 }
 
+// 鈹€鈹€ 安全解析 AI 返回的 JSON（处理 markdown 代码块包裹、额外文本等异常情形） 鈹€鈹€
+function parseAIJson(content) {
+  if (!content) throw new Error('Empty AI response');
+  let text = String(content).trim();
+  // 剥除 ```json ... ``` 包裹
+  text = text.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+  // 如果仍不是纯 JSON，提取第一个 {...} 或 [...] 块
+  try {
+    return JSON.parse(text);
+  } catch {
+    const objMatch = text.match(/\{[\s\S]*\}/);
+    const arrMatch = text.match(/\[[\s\S]*\]/);
+    const candidate = objMatch ? objMatch[0] : (arrMatch ? arrMatch[0] : null);
+    if (!candidate) throw new Error('Failed to parse AI JSON response');
+    return JSON.parse(candidate);
+  }
+}
+
 // ──────────────────────────────────────────
 // AI 模型适配器
 // ──────────────────────────────────────────
@@ -100,22 +118,24 @@ async function generateContentWithAI(keyword, title, modelType = 'claude') {
   }
 
   const prompt = `
-你是一个专业的 BLOG 内容创作者。请为以下主题创建一篇高质量的 BLOG 文章。
+You are a professional B2B SEO blog writer for an electrical products manufacturer (TPKele).
+Write a high-quality English blog article on the topic below.
 
-主题关键词：${keyword}
-文章标题：${title}
+Target keyword: ${keyword}
+Article title: ${title}
 
-要求：
-1. 文章长度：800-1200 字
-2. 格式：Markdown
-3. 包含 2-3 个主要章节
-4. 每个章节包含 2-3 个段落
-5. 在适当位置添加列表或要点
-6. 最后包含一个总结段落
-7. 不要包含图片标记或 HTML 标签
-8. 确保内容对 SEO 友好
+Requirements:
+1. Length: 800-1200 words
+2. Format: clean Markdown
+3. Structure: 2-3 main sections with H2 headings
+4. Each section: 2-3 paragraphs
+5. Include bullet lists where helpful
+6. End with a short conclusion
+7. SEO-friendly: naturally use the target keyword 3-5 times
+8. Tone: professional, technical, helpful for procurement managers
+9. No images, no HTML tags
 
-请直接返回 Markdown 格式的文章内容，不要添加任何额外的说明或标记。
+Return ONLY the Markdown article. Do not add any preamble or explanation.
   `;
 
   if (modelType === 'claude') {
@@ -632,20 +652,18 @@ router.post('/generate-seo', async (req, res) => {
     }
 
     // 生成 SEO 元数据
-    const seoPrompt = `
-你是 SEO 专家。请为以下文章生成 SEO 元数据。
+    const seoPrompt = `You are an SEO expert. Generate SEO metadata for the article below.
 
-文章标题：${post.title}
-文章内容摘要：${post.content.substring(0, 500)}
+Article title: ${post.title}
+Article excerpt: ${post.content.substring(0, 500)}
 
-请返回 JSON 格式（不要包含 markdown 代码块）：
+Return ONLY valid JSON (no markdown, no code fences):
 {
-  "meta_title": "SEO 优化的标题（50-60 字符）",
-  "meta_description": "SEO 优化的描述（150-160 字符）",
-  "main_keyword": "主关键词",
-  "sub_keywords": ["子关键词1", "子关键词2", "子关键词3"]
-}
-    `;
+  "meta_title": "SEO-optimized title (50-60 chars)",
+  "meta_description": "SEO-optimized description (150-160 chars)",
+  "main_keyword": "primary keyword",
+  "sub_keywords": ["secondary 1", "secondary 2", "secondary 3"]
+}`;
 
     let seoData;
     if (modelType === 'deepseek' || modelType === 'gpt') {
@@ -665,7 +683,7 @@ router.post('/generate-seo', async (req, res) => {
       if (!result.choices || !result.choices[0]) {
         throw new Error(`API error: ${JSON.stringify(result)}`);
       }
-      seoData = JSON.parse(result.choices[0].message.content);
+      seoData = parseAIJson(result.choices[0].message.content);
     } else if (modelType === 'claude') {
       const response = await fetch(model.endpoint, {
         method: 'POST',
@@ -682,7 +700,7 @@ router.post('/generate-seo', async (req, res) => {
       });
       const result = await response.json();
       const content = result.content[0].text;
-      seoData = JSON.parse(content);
+      seoData = parseAIJson(content);
     }
 
     // 计算字数和阅读时间
@@ -744,28 +762,26 @@ router.post('/generate-links', async (req, res) => {
     // 获取所有已发布的文章用于内部链接推荐
     const publishedPosts = await sb('blog_posts?status=eq.published&select=id,title,main_keyword');
 
-    const linksPrompt = `
-你是内容策略专家。请为以下文章推荐内部和外部链接。
+    const linksPrompt = `You are a content strategist. Recommend internal and external links for the article below.
 
-文章标题：${post.title}
-文章关键词：${post.main_keyword}
-文章内容摘要：${post.content.substring(0, 500)}
+Article title: ${post.title}
+Main keyword: ${post.main_keyword}
+Article excerpt: ${post.content.substring(0, 500)}
 
-已发布的相关文章：
-${publishedPosts.map(p => `- ${p.title} (关键词: ${p.main_keyword})`).join('\n')}
+Already published articles available for internal linking:
+${publishedPosts.map(p => `- ${p.title} (keyword: ${p.main_keyword})`).join('\n')}
 
-请返回 JSON 格式（不要包含 markdown 代码块）：
+Return ONLY valid JSON (no markdown, no code fences):
 {
   "internal_links": [
-    {"title": "相关文章标题", "url": "/blog/slug", "reason": "链接原因"}
+    {"title": "related article title", "url": "/blog/slug", "reason": "why link"}
   ],
   "external_links": [
-    {"title": "外部资源标题", "url": "https://example.com", "reason": "链接原因"}
+    {"title": "external resource title", "url": "https://example.com", "reason": "why link"}
   ]
 }
 
-最多推荐 3 个内部链接和 3 个外部链接。
-    `;
+Recommend at most 3 internal and 3 external links.`;
 
     let linksData;
     if (modelType === 'deepseek' || modelType === 'gpt') {
@@ -785,7 +801,7 @@ ${publishedPosts.map(p => `- ${p.title} (关键词: ${p.main_keyword})`).join('\
       if (!result.choices || !result.choices[0]) {
         throw new Error(`API error: ${JSON.stringify(result)}`);
       }
-      linksData = JSON.parse(result.choices[0].message.content);
+      linksData = parseAIJson(result.choices[0].message.content);
     } else if (modelType === 'claude') {
       const response = await fetch(model.endpoint, {
         method: 'POST',
@@ -802,7 +818,7 @@ ${publishedPosts.map(p => `- ${p.title} (关键词: ${p.main_keyword})`).join('\
       });
       const result = await response.json();
       const content = result.content[0].text;
-      linksData = JSON.parse(content);
+      linksData = parseAIJson(content);
     }
 
     // 更新数据库
@@ -850,22 +866,20 @@ router.post('/generate-faq', async (req, res) => {
     }
 
     // 生成 FAQ
-    const faqPrompt = `
-你是内容编辑。请根据以下文章内容生成 5-7 个常见问题和答案。
+    const faqPrompt = `You are a content editor. Generate 5-7 frequently asked questions and answers based on the article below.
 
-文章标题：${post.title}
-文章内容：${post.content}
+Article title: ${post.title}
+Article content: ${post.content}
 
-请返回 JSON 格式（不要包含 markdown 代码块）：
+Return ONLY valid JSON (no markdown, no code fences):
 {
   "faq": [
-    {"question": "问题1？", "answer": "答案1"},
-    {"question": "问题2？", "answer": "答案2"}
+    {"question": "Question 1?", "answer": "Answer 1"},
+    {"question": "Question 2?", "answer": "Answer 2"}
   ]
 }
 
-确保问题和答案都简洁明了，适合在网页上展示。
-    `;
+Keep questions and answers concise and suitable for a public webpage.`;
 
     let faqData;
     if (modelType === 'deepseek' || modelType === 'gpt') {
@@ -902,7 +916,7 @@ router.post('/generate-faq', async (req, res) => {
       });
       const result = await response.json();
       const content = result.content[0].text;
-      faqData = JSON.parse(content);
+      faqData = parseAIJson(content);
     }
 
     // 更新数据库
@@ -937,19 +951,27 @@ router.get('/dashboard', async (req, res) => {
     const plans = await sb('blog_plans?select=*');
     const posts = await sb('blog_posts?select=*');
 
+    // 文章状态：draft/pending_review = 待审核, approved = 已批准, published = 已发布, generation_failed/failed = 失败
     const todayStats = {
       total: plans.length,
-      generated: posts.filter(p => p.status === 'content_generated').length,
-      pending_review: posts.filter(p => p.status === 'draft').length,
+      generated: posts.filter(p => ['draft', 'pending_review', 'approved', 'published'].includes(p.status)).length,
+      pending_review: posts.filter(p => ['draft', 'pending_review'].includes(p.status)).length,
+      approved: posts.filter(p => p.status === 'approved').length,
       published: posts.filter(p => p.status === 'published').length,
-      failed: posts.filter(p => p.status === 'failed').length,
+      failed: posts.filter(p => ['failed', 'generation_failed'].includes(p.status)).length,
     };
+
+    // 下次执行时间：明天上午 8:00
+    const next = new Date();
+    next.setDate(next.getDate() + (next.getHours() >= 8 ? 1 : 0));
+    next.setHours(8, 0, 0, 0);
+    const hoursUntil = ((next.getTime() - Date.now()) / (1000 * 60 * 60)).toFixed(1);
 
     res.json({
       success: true,
       todayStats,
-      nextExecutionTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-      hoursUntilNextExecution: 24,
+      nextExecutionTime: next.toISOString(),
+      hoursUntilNextExecution: hoursUntil,
     });
   } catch (error) {
     console.error('Error fetching dashboard:', error);
@@ -997,7 +1019,7 @@ router.post('/generate-now', async (req, res) => {
           title: plan.title,
           content,
           keywords: [plan.keyword],
-          status: 'draft',
+          status: 'pending_review',
         };
 
         const postResult = await sb('blog_posts', {
@@ -1012,6 +1034,20 @@ router.post('/generate-now', async (req, res) => {
             body: JSON.stringify({ status: 'content_generated' }),
           });
         }
+
+        // 增加关键词使用计数
+        try {
+          const kw = await sb(`blog_keywords?keyword=eq.${encodeURIComponent(plan.keyword)}&select=id,used_count`);
+          if (kw && kw[0]) {
+            await sb(`blog_keywords?id=eq.${kw[0].id}`, {
+              method: 'PATCH',
+              body: JSON.stringify({
+                used_count: (kw[0].used_count || 0) + 1,
+                last_used_date: new Date().toISOString().split('T')[0],
+              }),
+            });
+          }
+        } catch {}
 
         results.push({
           planId: plan.id,
@@ -1257,7 +1293,7 @@ router.post('/reject', async (req, res) => {
 router.get('/status', async (req, res) => {
   try {
     const config = await sb('blog_config?select=*');
-    const autoEnabled = config.find(c => c.key === 'auto_generation_enabled')?.value || false;
+    const autoEnabled = config.find(c => c.config_key === 'auto_generation_enabled')?.config_value === 'true' || false;
 
     res.json({
       success: true,
@@ -1265,7 +1301,10 @@ router.get('/status', async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching status:', error);
-    res.status(500).json({ error: error.message });
+    res.json({
+      success: true,
+      autoGenerationEnabled: false,
+    });
   }
 });
 
@@ -1346,7 +1385,14 @@ router.get('/keywords/ai-recommend', async (req, res) => {
       return res.status(400).json({ error: 'Missing seed keyword' });
     }
 
-    const prompt = `基于关键词 "${seed}"，生成 40-50 个相关的长尾关键词。返回 JSON 格式：{"keywords": ["kw1", "kw2", ...]}`;
+    const prompt = `You are an SEO keyword research expert for a B2B electrical products manufacturer.
+Based on the seed keyword "${seed}", generate 40-50 highly relevant English long-tail keywords.
+
+Focus on: product specifications, technical applications, buying guides, comparisons, and FAQ-style queries.
+Target audience: international procurement managers and electrical engineers.
+
+Return ONLY valid JSON in this exact format (no markdown, no code fences, no explanations):
+{"keywords": ["keyword 1", "keyword 2", "..."]}`;
 
     const model = AI_MODELS['deepseek'];
     if (!model || !model.apiKey) {
@@ -1377,21 +1423,8 @@ router.get('/keywords/ai-recommend', async (req, res) => {
     }
 
     const content = result.choices[0].message.content;
-    let keywords = [];
-
-    try {
-      const parsed = JSON.parse(content);
-      keywords = parsed.keywords || [];
-    } catch (e) {
-      // 尝试从文本中提取 JSON
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
-        keywords = parsed.keywords || [];
-      } else {
-        throw new Error('Failed to parse AI response');
-      }
-    }
+    const parsed = parseAIJson(content);
+    const keywords = parsed.keywords || [];
 
     res.json({
       success: true,

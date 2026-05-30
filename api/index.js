@@ -11,9 +11,6 @@ const blogRouter = require('./blog/index.js');
 const app = express();
 app.use(express.json({ limit: '20mb' }));
 
-// 集成 BLOG 自动化路由
-app.use('/api/blog', blogRouter);
-
 const SB_URL  = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SB_KEY  = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -107,6 +104,13 @@ function auth(req, res, next) {
     res.status(401).json({ message: 'Invalid or expired token' });
   }
 }
+
+// 集成 BLOG 自动化路由（cron 端点用 token 参数验证，其他端点全部需要 JWT 认证）
+app.use('/api/blog', (req, res, next) => {
+  // cron 端点跳过 auth（用 query token 自己验证）
+  if (req.path === '/cron') return next();
+  return auth(req, res, next);
+}, blogRouter);
 
 // ────────────────────────────────────────────────────────────────────
 // 回收站：列出软删除记录 + 一键恢复

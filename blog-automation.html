@@ -2080,11 +2080,6 @@
       });
     });
 
-    // 页面加载时初始化控制面板
-    window.addEventListener('load', () => {
-      loadDashboard();
-    });
-
     // 加载控制面板数据
     async function loadDashboard() {
       try {
@@ -2241,43 +2236,6 @@
       } catch (error) {
         showToast('❌ 切换失败：' + error.message);
       }
-    }
-
-    // 添加关键词
-    function addKeyword() {
-      const input = document.getElementById('keywordInput');
-      const keyword = input.value.trim();
-
-      if (!keyword) {
-        showToast('请输入关键词');
-        return;
-      }
-
-      if (keywords.includes(keyword)) {
-        showToast('关键词已存在');
-        return;
-      }
-
-      keywords.push(keyword);
-      input.value = '';
-      renderKeywords();
-    }
-
-    // 渲染关键词列表
-    function renderKeywords() {
-      const list = document.getElementById('keywordList');
-      list.innerHTML = keywords.map(kw => `
-        <div class="keyword-tag">
-          <span>${kw}</span>
-          <span class="remove" onclick="removeKeyword('${kw}')">✕</span>
-        </div>
-      `).join('');
-    }
-
-    // 删除关键词
-    function removeKeyword(keyword) {
-      keywords = keywords.filter(k => k !== keyword);
-      renderKeywords();
     }
 
     // 生成规划
