@@ -4,19 +4,94 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BLOG 自动化</title>
-  <link rel="stylesheet" href="_shared/layout.css">
   <style>
-    .blog-container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 20px;
+    /* 全局重置 */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Microsoft YaHei', sans-serif;
+      background: #ffffff;
+      color: #333;
+      font-size: 14px;
     }
 
+    /* 主布局：左 sidebar + 右 main */
+    .blog-container {
+      display: flex;
+      height: 100vh;
+      max-width: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .blog-sidebar {
+      width: 220px;
+      background: #f5f5f5;
+      border-right: 1px solid #ddd;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .blog-sidebar-header {
+      padding: 20px;
+      background: #fff;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .blog-sidebar-header h2 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
+    }
+
+    .blog-sidebar-nav {
+      flex: 1;
+      padding: 10px 0;
+      overflow-y: auto;
+    }
+
+    .blog-sidebar-footer {
+      padding: 15px 20px;
+      background: #fff;
+      border-top: 1px solid #ddd;
+    }
+
+    .btn-back-crm {
+      width: 100%;
+      padding: 10px;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    .btn-back-crm:hover { background: #555; }
+
+    .blog-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .blog-main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 30px;
+    }
+
+    /* 改造原 tabs：变成左侧导航 */
     .tabs {
       display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-      border-bottom: 2px solid #e0e0e0;
+      flex-direction: column;
+      gap: 0;
+      margin-bottom: 0;
+      border-bottom: none;
     }
 
     .tab-btn {
@@ -26,13 +101,24 @@
       cursor: pointer;
       font-size: 14px;
       color: #666;
-      border-bottom: 3px solid transparent;
-      transition: all 0.3s;
+      border-left: 3px solid transparent;
+      border-bottom: none;
+      transition: all 0.2s;
+      text-align: left;
+      width: 100%;
+    }
+
+    .tab-btn:hover {
+      background: #efefef;
+      color: #333;
     }
 
     .tab-btn.active {
-      color: #0066cc;
-      border-bottom-color: #0066cc;
+      color: #333;
+      border-left-color: #333;
+      border-bottom-color: transparent;
+      background: #e8e8e8;
+      font-weight: 500;
     }
 
     .tab-content {
@@ -66,7 +152,7 @@
 
     .keyword-input-group button {
       padding: 10px 20px;
-      background: #0066cc;
+      background: #333;
       color: white;
       border: none;
       border-radius: 4px;
@@ -146,7 +232,7 @@
     }
 
     .btn-primary {
-      background: #0066cc;
+      background: #333;
       color: white;
     }
 
@@ -433,7 +519,7 @@
 
     .keyword-chip .remove {
       cursor: pointer;
-      color: #0066cc;
+      color: #333;
       font-weight: bold;
     }
 
@@ -455,8 +541,8 @@
     }
 
     .image-upload:hover {
-      border-color: #0066cc;
-      background: #f0f7ff;
+      border-color: #333;
+      background: #f5f5f5;
     }
 
     .image-upload input {
@@ -537,7 +623,7 @@
       width: 16px;
       height: 16px;
       border: 2px solid #f3f3f3;
-      border-top: 2px solid #0066cc;
+      border-top: 2px solid #333;
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
@@ -572,8 +658,8 @@
 
     /* 控制面板样式 */
     .control-panel {
-      background: #f0f7ff;
-      border: 1px solid #0066cc;
+      background: #f5f5f5;
+      border: 1px solid #333;
       border-radius: 8px;
       padding: 20px;
       margin-bottom: 20px;
@@ -686,7 +772,7 @@
     }
 
     .stat-card:hover {
-      border-color: #0066cc;
+      border-color: #333;
       box-shadow: 0 2px 8px rgba(0, 102, 204, 0.1);
     }
 
@@ -700,7 +786,7 @@
     .stat-value {
       font-size: 28px;
       font-weight: 700;
-      color: #0066cc;
+      color: #333;
       margin-bottom: 4px;
     }
 
@@ -799,7 +885,7 @@
 
     .keyword-input-row button {
       padding: 8px 20px;
-      background: #0066cc;
+      background: #333;
       color: white;
       border: none;
       border-radius: 4px;
@@ -810,7 +896,7 @@
 
     /* AI 推荐样式 */
     .ai-recommend-section {
-      background: #f0f7ff;
+      background: #f5f5f5;
       border: 1px solid #cce0ff;
       border-radius: 8px;
       padding: 15px;
@@ -868,9 +954,9 @@
     }
 
     .recommend-tab.active {
-      background: #0066cc;
+      background: #333;
       color: white;
-      border-color: #0066cc;
+      border-color: #333;
     }
 
     .recommend-list {
@@ -1002,8 +1088,8 @@
     }
 
     .radio-option:hover {
-      border-color: #0066cc;
-      background: #f0f7ff;
+      border-color: #333;
+      background: #f5f5f5;
     }
 
     .type-ratio-grid {
@@ -1051,14 +1137,14 @@
     }
 
     .template-btn:hover {
-      border-color: #0066cc;
-      color: #0066cc;
+      border-color: #333;
+      color: #333;
     }
 
     .template-btn.active {
-      background: #0066cc;
+      background: #333;
       color: white;
-      border-color: #0066cc;
+      border-color: #333;
     }
 
     .template-preview {
@@ -1178,8 +1264,8 @@
     }
 
     .modal-tab-btn.active {
-      color: #0066cc;
-      border-bottom-color: #0066cc;
+      color: #333;
+      border-bottom-color: #333;
     }
 
     .modal-tab-content {
@@ -1245,7 +1331,7 @@
 
     .seo-keyword-chip .remove {
       cursor: pointer;
-      color: #0066cc;
+      color: #333;
       font-weight: bold;
     }
 
@@ -1274,12 +1360,12 @@
     }
 
     .btn-generate-seo {
-      background: #0066cc;
+      background: #333;
       color: white;
     }
 
     .btn-generate-seo:hover {
-      background: #0052a3;
+      background: #000;
     }
 
     /* 链接管理样式 */
@@ -1324,7 +1410,7 @@
     }
 
     .link-url {
-      color: #0066cc;
+      color: #333;
       text-decoration: none;
       font-size: 12px;
       word-break: break-all;
@@ -1350,7 +1436,7 @@
     }
 
     .btn-generate-links {
-      background: #0066cc;
+      background: #333;
       color: white;
       padding: 8px 16px;
       border: none;
@@ -1361,7 +1447,7 @@
     }
 
     .btn-generate-links:hover {
-      background: #0052a3;
+      background: #000;
     }
 
     /* FAQ 编辑样式 */
@@ -1412,7 +1498,7 @@
     }
 
     .btn-generate-faq {
-      background: #0066cc;
+      background: #333;
       color: white;
       padding: 8px 16px;
       border: none;
@@ -1423,22 +1509,36 @@
     }
 
     .btn-generate-faq:hover {
-      background: #0052a3;
+      background: #000;
     }
-  </style>
   </style>
 </head>
 <body>
   <div class="blog-container">
-    <h1>BLOG 自动化</h1>
+    <!-- 左侧导航 -->
+    <aside class="blog-sidebar">
+      <div class="blog-sidebar-header">
+        <h2>BLOG 自动化</h2>
+      </div>
 
-    <!-- 标签页 -->
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="control">控制面板</button>
-      <button class="tab-btn" data-tab="keywords">关键词库</button>
-      <button class="tab-btn" data-tab="plan">生成规划</button>
-      <button class="tab-btn" data-tab="list">计划列表</button>
-    </div>
+      <!-- 主导航：原 tabs -->
+      <div class="blog-sidebar-nav">
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="control">📊 控制面板</button>
+          <button class="tab-btn" data-tab="keywords">🔑 关键词库</button>
+          <button class="tab-btn" data-tab="plan">📅 生成规划</button>
+          <button class="tab-btn" data-tab="list">📝 计划列表</button>
+        </div>
+      </div>
+
+      <div class="blog-sidebar-footer">
+        <button class="btn-back-crm" onclick="window.location.href='/dashboard.html'">← 返回 CRM</button>
+      </div>
+    </aside>
+
+    <!-- 右侧主内容 -->
+    <main class="blog-main">
+      <div class="blog-main-content">
 
     <!-- 标签页 0：控制面板 -->
     <div class="tab-content active" id="control-tab">
@@ -1517,7 +1617,7 @@
     </div>
 
     <!-- 标签页 1：关键词库 -->
-    <div class="tab-content active" id="keywords-tab">
+    <div class="tab-content" id="keywords-tab">
       <div class="keywords-section">
         <div class="keywords-header">
           <h2>关键词库管理</h2>
@@ -1747,7 +1847,9 @@
         </tbody>
       </table>
     </div>
-  </div>
+      </div><!-- /.blog-main-content -->
+    </main><!-- /.blog-main -->
+  </div><!-- /.blog-container -->
 
   <!-- 预览编辑弹窗 -->
   <div class="modal" id="previewModal">
@@ -1790,7 +1892,7 @@
             <p>推荐尺寸：1200 × 540 px (16:9)</p>
             <p>推荐格式：WebP / JPEG</p>
             <p>最大文件：200KB</p>
-            <p style="margin-top: 10px; color: #0066cc;">拖拽上传或点击选择文件</p>
+            <p style="margin-top: 10px; color: #333;">拖拽上传或点击选择文件</p>
             <input type="file" id="imageInput" accept="image/*" onchange="handleImageUpload(event)">
           </div>
           <div class="image-preview" id="imagePreview"></div>
@@ -1845,7 +1947,7 @@
             </div>
           </div>
 
-          <div style="background: #f0f7ff; padding: 12px; border-radius: 4px; font-size: 13px; color: #0066cc;">
+          <div style="background: #f5f5f5; padding: 12px; border-radius: 4px; font-size: 13px; color: #333;">
             <strong>💡 提示：</strong>点击下方按钮让 AI 自动生成 SEO 元数据
           </div>
 
@@ -1853,7 +1955,7 @@
             <button class="btn-generate-seo" onclick="generateSEO()">🤖 AI 生成 SEO 元数据</button>
           </div>
 
-          <div id="seoGeneratingStatus" style="display: none; color: #0066cc; font-size: 13px;">
+          <div id="seoGeneratingStatus" style="display: none; color: #333; font-size: 13px;">
             <span class="loading"></span> 正在生成 SEO 元数据...
           </div>
         </div>
@@ -1876,7 +1978,7 @@
             </div>
           </div>
 
-          <div style="background: #f0f7ff; padding: 12px; border-radius: 4px; font-size: 13px; color: #0066cc;">
+          <div style="background: #f5f5f5; padding: 12px; border-radius: 4px; font-size: 13px; color: #333;">
             <strong>💡 提示：</strong>点击下方按钮让 AI 推荐相关链接
           </div>
 
@@ -1884,7 +1986,7 @@
             <button class="btn-generate-links" onclick="generateLinks()">🤖 AI 推荐链接</button>
           </div>
 
-          <div id="linksGeneratingStatus" style="display: none; color: #0066cc; font-size: 13px;">
+          <div id="linksGeneratingStatus" style="display: none; color: #333; font-size: 13px;">
             <span class="loading"></span> 正在推荐链接...
           </div>
         </div>
@@ -1897,7 +1999,7 @@
             <p style="color: #999; font-size: 13px;">暂无 FAQ</p>
           </div>
 
-          <div style="background: #f0f7ff; padding: 12px; border-radius: 4px; font-size: 13px; color: #0066cc; margin-top: 15px;">
+          <div style="background: #f5f5f5; padding: 12px; border-radius: 4px; font-size: 13px; color: #333; margin-top: 15px;">
             <strong>💡 提示：</strong>点击下方按钮让 AI 从文章内容生成常见问题
           </div>
 
@@ -1905,7 +2007,7 @@
             <button class="btn-generate-faq" onclick="generateFAQ()">🤖 AI 生成 FAQ</button>
           </div>
 
-          <div id="faqGeneratingStatus" style="display: none; color: #0066cc; font-size: 13px;">
+          <div id="faqGeneratingStatus" style="display: none; color: #333; font-size: 13px;">
             <span class="loading"></span> 正在生成 FAQ...
           </div>
         </div>
@@ -1923,6 +2025,27 @@
 
   <script src="_shared/layout.js"></script>
   <script>
+    // 自动给所有 /api/blog/* 请求加上 Authorization 头
+    (function() {
+      const _fetch = window.fetch;
+      window.fetch = function(input, init) {
+        const url = typeof input === 'string' ? input : input.url;
+        if (url && url.startsWith('/api/')) {
+          init = init || {};
+          init.headers = init.headers || {};
+          const token = localStorage.getItem('crm_token') || localStorage.getItem('token') || '';
+          if (token && !(init.headers['Authorization'] || init.headers['authorization'])) {
+            if (init.headers instanceof Headers) {
+              init.headers.set('Authorization', 'Bearer ' + token);
+            } else {
+              init.headers['Authorization'] = 'Bearer ' + token;
+            }
+          }
+        }
+        return _fetch.call(this, input, init);
+      };
+    })();
+
     // 全局状态
     let currentPostId = null;
     let isReviewMode = false;
@@ -2583,7 +2706,7 @@
     async function loadControlPanelStatus() {
       try {
         const response = await fetch('/api/blog/status', {
-          headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('token') || '') }
+          headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('crm_token') || localStorage.getItem('token') || '') }
         });
         const data = await response.json();
 
@@ -2638,7 +2761,7 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + (localStorage.getItem('token') || '')
+            'Authorization': 'Bearer ' + (localStorage.getItem('crm_token') || localStorage.getItem('token') || '')
           },
           body: JSON.stringify({ enabled })
         });
@@ -2666,7 +2789,7 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + (localStorage.getItem('token') || '')
+            'Authorization': 'Bearer ' + (localStorage.getItem('crm_token') || localStorage.getItem('token') || '')
           }
         });
 
