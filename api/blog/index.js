@@ -29,6 +29,12 @@ cloudinary.config({
 
 // AI 模型配置
 const AI_MODELS = {
+  deepseek: {
+    name: 'DeepSeek',
+    apiKey: process.env.DEEPSEEK_API_KEY,
+    endpoint: 'https://api.deepseek.com/chat/completions',
+    model: 'deepseek-chat',
+  },
   claude: {
     name: 'Claude',
     apiKey: process.env.CLAUDE_API_KEY,
@@ -607,7 +613,7 @@ router.get('/models', (req, res) => {
 // 9. 生成 SEO 元数据
 router.post('/generate-seo', async (req, res) => {
   try {
-    const { postId, modelType = 'claude' } = req.body;
+    const { postId, modelType = 'deepseek' } = req.body;
 
     if (!postId) {
       return res.status(400).json({ error: 'Missing postId' });
@@ -642,7 +648,25 @@ router.post('/generate-seo', async (req, res) => {
     `;
 
     let seoData;
-    if (modelType === 'claude') {
+    if (modelType === 'deepseek' || modelType === 'gpt') {
+      const response = await fetch(model.endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${model.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: model.model,
+          messages: [{ role: 'user', content: seoPrompt }],
+          temperature: 0.7,
+        }),
+      });
+      const result = await response.json();
+      if (!result.choices || !result.choices[0]) {
+        throw new Error(`API error: ${JSON.stringify(result)}`);
+      }
+      seoData = JSON.parse(result.choices[0].message.content);
+    } else if (modelType === 'claude') {
       const response = await fetch(model.endpoint, {
         method: 'POST',
         headers: {
@@ -659,21 +683,6 @@ router.post('/generate-seo', async (req, res) => {
       const result = await response.json();
       const content = result.content[0].text;
       seoData = JSON.parse(content);
-    } else if (modelType === 'gpt') {
-      const response = await fetch(model.endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${model.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: model.model,
-          messages: [{ role: 'user', content: seoPrompt }],
-          temperature: 0.7,
-        }),
-      });
-      const result = await response.json();
-      seoData = JSON.parse(result.choices[0].message.content);
     }
 
     // 计算字数和阅读时间
@@ -714,7 +723,7 @@ router.post('/generate-seo', async (req, res) => {
 // 10. 生成内部/外部链接推荐
 router.post('/generate-links', async (req, res) => {
   try {
-    const { postId, modelType = 'claude' } = req.body;
+    const { postId, modelType = 'deepseek' } = req.body;
 
     if (!postId) {
       return res.status(400).json({ error: 'Missing postId' });
@@ -759,7 +768,25 @@ ${publishedPosts.map(p => `- ${p.title} (关键词: ${p.main_keyword})`).join('\
     `;
 
     let linksData;
-    if (modelType === 'claude') {
+    if (modelType === 'deepseek' || modelType === 'gpt') {
+      const response = await fetch(model.endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${model.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: model.model,
+          messages: [{ role: 'user', content: linksPrompt }],
+          temperature: 0.7,
+        }),
+      });
+      const result = await response.json();
+      if (!result.choices || !result.choices[0]) {
+        throw new Error(`API error: ${JSON.stringify(result)}`);
+      }
+      linksData = JSON.parse(result.choices[0].message.content);
+    } else if (modelType === 'claude') {
       const response = await fetch(model.endpoint, {
         method: 'POST',
         headers: {
@@ -776,21 +803,6 @@ ${publishedPosts.map(p => `- ${p.title} (关键词: ${p.main_keyword})`).join('\
       const result = await response.json();
       const content = result.content[0].text;
       linksData = JSON.parse(content);
-    } else if (modelType === 'gpt') {
-      const response = await fetch(model.endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${model.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: model.model,
-          messages: [{ role: 'user', content: linksPrompt }],
-          temperature: 0.7,
-        }),
-      });
-      const result = await response.json();
-      linksData = JSON.parse(result.choices[0].message.content);
     }
 
     // 更新数据库
@@ -819,7 +831,7 @@ ${publishedPosts.map(p => `- ${p.title} (关键词: ${p.main_keyword})`).join('\
 // 11. 生成 FAQ
 router.post('/generate-faq', async (req, res) => {
   try {
-    const { postId, modelType = 'claude' } = req.body;
+    const { postId, modelType = 'deepseek' } = req.body;
 
     if (!postId) {
       return res.status(400).json({ error: 'Missing postId' });
@@ -856,7 +868,25 @@ router.post('/generate-faq', async (req, res) => {
     `;
 
     let faqData;
-    if (modelType === 'claude') {
+    if (modelType === 'deepseek' || modelType === 'gpt') {
+      const response = await fetch(model.endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${model.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: model.model,
+          messages: [{ role: 'user', content: faqPrompt }],
+          temperature: 0.7,
+        }),
+      });
+      const result = await response.json();
+      if (!result.choices || !result.choices[0]) {
+        throw new Error(`API error: ${JSON.stringify(result)}`);
+      }
+      faqData = JSON.parse(result.choices[0].message.content);
+    } else if (modelType === 'claude') {
       const response = await fetch(model.endpoint, {
         method: 'POST',
         headers: {
@@ -873,21 +903,6 @@ router.post('/generate-faq', async (req, res) => {
       const result = await response.json();
       const content = result.content[0].text;
       faqData = JSON.parse(content);
-    } else if (modelType === 'gpt') {
-      const response = await fetch(model.endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${model.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: model.model,
-          messages: [{ role: 'user', content: faqPrompt }],
-          temperature: 0.7,
-        }),
-      });
-      const result = await response.json();
-      faqData = JSON.parse(result.choices[0].message.content);
     }
 
     // 更新数据库
