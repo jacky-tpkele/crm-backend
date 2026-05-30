@@ -934,8 +934,8 @@ router.post('/generate-faq', async (req, res) => {
 // 1. 获取仪表盘统计数据
 router.get('/dashboard', async (req, res) => {
   try {
-    const plans = await sb('blog_plans');
-    const posts = await sb('blog_posts');
+    const plans = await sb('blog_plans?select=*');
+    const posts = await sb('blog_posts?select=*');
 
     const stats = {
       totalPlans: plans.length,
@@ -1022,12 +1022,12 @@ router.post('/retry-failed', async (req, res) => {
   try {
     const { modelType = 'deepseek' } = req.body;
 
-    const failedPosts = await sb('blog_posts?status=eq.failed');
+    const failedPosts = await sb('blog_posts?status=eq.failed&select=*');
     const results = [];
 
     for (const post of failedPosts) {
       try {
-        const plan = await sb(`blog_plans?id=eq.${post.plan_id}`);
+        const plan = await sb(`blog_plans?id=eq.${post.plan_id}&select=*`);
         if (!plan || plan.length === 0) continue;
 
         const content = await generateContentWithAI(
@@ -1075,7 +1075,7 @@ router.post('/retry-failed', async (req, res) => {
 // 4. 同步已审核的文章到网站
 router.post('/sync-approved', async (req, res) => {
   try {
-    const approvedPosts = await sb('blog_posts?status=eq.approved');
+    const approvedPosts = await sb('blog_posts?status=eq.approved&select=*');
     const results = [];
 
     for (const post of approvedPosts) {
@@ -1158,7 +1158,7 @@ router.post('/toggle-auto-generation', async (req, res) => {
 router.get('/plans', async (req, res) => {
   try {
     const { status, limit = 100 } = req.query;
-    let query = `blog_plans?order=created_at.desc&limit=${limit}`;
+    let query = `blog_plans?select=*&order=created_at.desc&limit=${limit}`;
     if (status) query += `&status=eq.${status}`;
 
     const plans = await sb(query);
@@ -1234,7 +1234,7 @@ router.post('/reject', async (req, res) => {
 // 9. 获取自动化状态
 router.get('/status', async (req, res) => {
   try {
-    const config = await sb('blog_config');
+    const config = await sb('blog_config?select=*');
     const autoEnabled = config.find(c => c.key === 'auto_generation_enabled')?.value || false;
 
     res.json({
@@ -1256,7 +1256,7 @@ router.post('/toggle-auto', async (req, res) => {
       return res.status(400).json({ error: 'Missing enabled flag' });
     }
 
-    await sb('blog_config?key=eq.auto_generation_enabled', {
+    await sb('blog_config?key=eq.auto_generation_enabled&select=*', {
       method: 'PATCH',
       body: JSON.stringify({ value: enabled }),
     });
@@ -1276,7 +1276,7 @@ router.post('/toggle-auto', async (req, res) => {
 // 11a. 获取关键词列表
 router.get('/keywords', async (req, res) => {
   try {
-    const keywords = await sb('blog_keywords?order=created_at.desc');
+    const keywords = await sb('blog_keywords?select=*&order=created_at.desc');
 
     res.json({
       success: true,
