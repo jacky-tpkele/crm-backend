@@ -2917,7 +2917,10 @@
     async function deleteKeyword(id) {
       if (!confirm('确定删除这个关键词吗？')) return;
       try {
-        await fetch(`/api/blog/keywords/${id}`, { method: 'DELETE' });
+        await fetch(`/api/blog/keywords/${id}`, {
+          method: 'DELETE',
+          headers: getHeaders()
+        });
         showToast('已删除');
         loadKeywords();
       } catch (error) {
@@ -2935,17 +2938,16 @@
       btn.textContent = '推荐中...';
 
       try {
-        const response = await fetch('/api/blog/keywords/ai-recommend', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ seedKeyword })
+        const response = await fetch(`/api/blog/keywords/ai-recommend?seed=${encodeURIComponent(seedKeyword)}`, {
+          method: 'GET',
+          headers: getHeaders()
         });
         const data = await response.json();
 
         if (data.success) {
-          recommendData = data.recommendations;
+          recommendData = data.keywords || [];
+          renderRecommendations();
           document.getElementById('aiRecommendResult').style.display = 'block';
-          showRecommendTab('product');
           showToast('AI 推荐完成！');
         } else {
           showToast('推荐失败：' + data.error);
@@ -2956,6 +2958,19 @@
         btn.disabled = false;
         btn.textContent = '🤖 AI 推荐';
       }
+    }
+
+    // 渲染推荐关键词列表
+    function renderRecommendations() {
+      const list = document.getElementById('recommendList');
+      if (!list || !recommendData || recommendData.length === 0) return;
+
+      list.innerHTML = recommendData.map(kw => `
+        <label style="display: flex; align-items: center; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 8px; cursor: pointer;">
+          <input type="checkbox" value="${kw}" data-category="general" style="margin-right: 10px;">
+          <span>${kw}</span>
+        </label>
+      `).join('');
     }
 
     // 显示推荐标签页
