@@ -221,6 +221,26 @@
       color: #856404;
     }
 
+    .status-draft {
+      background: #e2e3e5;
+      color: #383d41;
+    }
+
+    .status-pending_review {
+      background: #cfe2ff;
+      color: #084298;
+    }
+
+    .status-approved {
+      background: #d1e7dd;
+      color: #0f5132;
+    }
+
+    .status-needs_revision {
+      background: #f8d7da;
+      color: #842029;
+    }
+
     .status-generated {
       background: #d1ecf1;
       color: #0c5460;
@@ -229,6 +249,71 @@
     .status-published {
       background: #d4edda;
       color: #155724;
+    }
+
+    .status-generation_failed {
+      background: #f8d7da;
+      color: #842029;
+    }
+
+    .status-publish_failed {
+      background: #f8d7da;
+      color: #842029;
+    }
+
+    /* SEO 评分样式 */
+    .seo-score {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+      font-weight: 600;
+      min-width: 30px;
+      text-align: center;
+    }
+
+    .seo-good {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .seo-fair {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .seo-poor {
+      background: #f8d7da;
+      color: #842029;
+    }
+
+    /* 同步状态样式 */
+    .sync-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .sync-pending {
+      background: #e2e3e5;
+      color: #383d41;
+    }
+
+    .sync-syncing {
+      background: #cfe2ff;
+      color: #084298;
+    }
+
+    .sync-success {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .sync-failed {
+      background: #f8d7da;
+      color: #842029;
     }
 
     .action-buttons {
@@ -582,6 +667,176 @@
       background: #ccc;
       cursor: not-allowed;
     }
+
+    /* 卡片式统计样式 */
+    .stats-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .stat-card {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .stat-card:hover {
+      border-color: #0066cc;
+      box-shadow: 0 2px 8px rgba(0, 102, 204, 0.1);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #0066cc;
+      margin-bottom: 4px;
+    }
+
+    .stat-unit {
+      font-size: 12px;
+      color: #999;
+    }
+
+    /* 快速操作按钮 */
+    .control-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn-retry {
+      background: #ffc107;
+      color: #333;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .btn-retry:hover {
+      background: #ffb300;
+    }
+
+    .btn-sync {
+      background: #17a2b8;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .btn-sync:hover {
+      background: #138496;
+    }
+
+    .btn-retry:disabled,
+    .btn-sync:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    /* SEO 检查结果样式 */
+    .seo-check-result {
+      background: #f9f9f9;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      padding: 15px;
+      margin-top: 10px;
+    }
+
+    .seo-check-result h4 {
+      margin: 0 0 15px 0;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .seo-checks {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .seo-check-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      border-radius: 3px;
+      font-size: 13px;
+    }
+
+    .seo-check-item.passed {
+      background: #f0f8f0;
+      color: #155724;
+    }
+
+    .seo-check-item.failed {
+      background: #fef5f5;
+      color: #842029;
+    }
+
+    .check-icon {
+      font-weight: bold;
+      min-width: 20px;
+    }
+
+    .check-name {
+      flex: 1;
+    }
+
+    .check-weight {
+      font-size: 12px;
+      opacity: 0.7;
+    }
+
+    /* 审核按钮样式 */
+    .btn-approve {
+      background: #28a745;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .btn-approve:hover {
+      background: #218838;
+    }
+
+    .btn-reject {
+      background: #dc3545;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .btn-reject:hover {
+      background: #c82333;
+    }
   </style>
   </style>
 </head>
@@ -602,38 +857,72 @@
       <div class="control-panel">
         <h3>⚙️ 自动化控制面板</h3>
 
+        <!-- 自动生成状态 -->
         <div class="control-item">
           <div>
             <div class="control-item-label">自动生成状态</div>
-            <div class="control-item-value">每天凌晨 8 点自动生成 4 篇文案</div>
+            <div class="control-item-value">每天上午 8:00 自动生成 4 篇文章</div>
           </div>
           <div class="toggle-switch" id="autoToggle" onclick="toggleAutoGeneration()"></div>
         </div>
 
+        <!-- 下次执行时间 -->
         <div class="control-item">
           <div>
-            <div class="control-item-label">最后生成时间</div>
-            <div class="control-item-value" id="lastGenTime">加载中...</div>
+            <div class="control-item-label">下次执行时间</div>
+            <div class="control-item-value" id="nextExecTime">加载中...</div>
           </div>
         </div>
 
-        <div class="control-item">
-          <div>
-            <div class="control-item-label">下次自动生成时间</div>
-            <div class="control-item-value" id="nextGenTime">加载中...</div>
+        <!-- 今日任务统计（卡片式） -->
+        <div class="stats-cards">
+          <div class="stat-card">
+            <div class="stat-label">今日计划文章</div>
+            <div class="stat-value" id="statTotal">0</div>
+            <div class="stat-unit">篇</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">已生成</div>
+            <div class="stat-value" id="statGenerated">0</div>
+            <div class="stat-unit">篇</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">待审核</div>
+            <div class="stat-value" id="statPending">0</div>
+            <div class="stat-unit">篇</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">已发布</div>
+            <div class="stat-value" id="statPublished">0</div>
+            <div class="stat-unit">篇</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">生成失败</div>
+            <div class="stat-value" id="statFailed">0</div>
+            <div class="stat-unit">篇</div>
           </div>
         </div>
 
+        <!-- 最近一次运行记录 -->
         <div class="control-item">
           <div>
-            <div class="control-item-label">今日统计</div>
-            <div class="control-item-value" id="todayStats">加载中...</div>
+            <div class="control-item-label">最近一次运行记录</div>
+            <div class="control-item-value">
+              <div id="lastRunRecord">加载中...</div>
+            </div>
           </div>
         </div>
 
+        <!-- 快速操作按钮 -->
         <div class="control-buttons">
           <button class="btn-generate-now" id="generateNowBtn" onclick="generateNow()">
-            📝 立即生成今日文案
+            📝 立即生成今日文章
+          </button>
+          <button class="btn-retry" id="retryFailedBtn" onclick="retryFailed()">
+            🔄 重新生成失败文章
+          </button>
+          <button class="btn-sync" id="syncBtn" onclick="syncToWebsite()">
+            🌐 同步已审核文章到网站
           </button>
         </div>
       </div>
@@ -695,9 +984,13 @@
         <thead>
           <tr>
             <th>#</th>
+            <th>日期</th>
             <th>关键词</th>
             <th>标题</th>
+            <th>类型</th>
+            <th>SEO评分</th>
             <th>状态</th>
+            <th>网站同步</th>
             <th>操作</th>
           </tr>
         </thead>
@@ -762,9 +1055,17 @@
         </div>
       </div>
 
+      <!-- SEO 检查结果 -->
+      <div class="edit-section" id="seoCheckSection" style="display: none;">
+        <h3>SEO 检查结果</h3>
+        <div id="seoCheckResult"></div>
+      </div>
+
       <div class="modal-actions">
         <button class="btn-cancel" onclick="closeModal()">取消</button>
         <button class="btn-reset" onclick="resetEditForm()">重置</button>
+        <button class="btn-approve" onclick="approvePost()" style="display: none;">批准</button>
+        <button class="btn-reject" onclick="rejectPost()" style="display: none;">拒绝</button>
         <button class="btn-publish" onclick="publishPost()">确认发布</button>
       </div>
     </div>
@@ -774,6 +1075,7 @@
   <script>
     // 全局状态
     let currentPostId = null;
+    let isReviewMode = false;
     let keywords = [];
     let plans = [];
 
@@ -788,9 +1090,169 @@
 
         if (tabName === 'list') {
           loadPlans();
+        } else if (tabName === 'control') {
+          loadDashboard();
         }
       });
     });
+
+    // 页面加载时初始化控制面板
+    window.addEventListener('load', () => {
+      loadDashboard();
+    });
+
+    // 加载控制面板数据
+    async function loadDashboard() {
+      try {
+        const response = await fetch('/api/blog/dashboard');
+        const data = await response.json();
+
+        if (data.success) {
+          // 更新下次执行时间
+          const nextExecTime = new Date(data.nextExecutionTime);
+          const hoursUntil = parseFloat(data.hoursUntilNextExecution);
+          document.getElementById('nextExecTime').innerHTML = `
+            ${nextExecTime.toLocaleString('zh-CN')} (还有 ${hoursUntil} 小时)
+          `;
+
+          // 更新统计卡片
+          document.getElementById('statTotal').textContent = data.todayStats.total;
+          document.getElementById('statGenerated').textContent = data.todayStats.generated;
+          document.getElementById('statPending').textContent = data.todayStats.pending_review;
+          document.getElementById('statPublished').textContent = data.todayStats.published;
+          document.getElementById('statFailed').textContent = data.todayStats.failed;
+
+          // 更新最近运行记录
+          if (data.lastGenerationLog) {
+            const log = data.lastGenerationLog;
+            const logTime = new Date(log.generationTime).toLocaleString('zh-CN');
+            let errorHtml = '';
+            if (log.failureCount > 0 && log.errorMessage) {
+              errorHtml = `<div style="color: #d32f2f; margin-top: 8px;">❌ ${log.errorMessage}</div>`;
+            }
+            document.getElementById('lastRunRecord').innerHTML = `
+              <div>最后生成时间：${logTime}</div>
+              <div>本次生成数量：${log.totalCount} 篇</div>
+              <div>成功数量：${log.successCount} 篇</div>
+              <div>失败数量：${log.failureCount} 篇</div>
+              ${errorHtml}
+            `;
+          } else {
+            document.getElementById('lastRunRecord').innerHTML = '<div style="color: #999;">暂无生成记录</div>';
+          }
+
+          // 更新快速操作按钮状态
+          document.getElementById('retryFailedBtn').disabled = data.todayStats.failed === 0;
+          document.getElementById('syncBtn').disabled = data.todayStats.pending_review === 0;
+        }
+      } catch (error) {
+        console.error('加载控制面板失败:', error);
+        document.getElementById('nextExecTime').textContent = '加载失败';
+      }
+    }
+
+    // 立即生成今日文章
+    async function generateNow() {
+      const btn = document.getElementById('generateNowBtn');
+      btn.disabled = true;
+      btn.textContent = '生成中...';
+
+      try {
+        const response = await fetch('/api/blog/generate-manual', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          showToast(`成功生成 ${data.generatedCount} 篇文章`);
+          loadDashboard();
+        } else {
+          showToast('生成失败：' + data.error);
+        }
+      } catch (error) {
+        showToast('错误：' + error.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '📝 立即生成今日文章';
+      }
+    }
+
+    // 重新生成失败文章
+    async function retryFailed() {
+      const btn = document.getElementById('retryFailedBtn');
+      btn.disabled = true;
+      btn.textContent = '重新生成中...';
+
+      try {
+        const response = await fetch('/api/blog/retry-failed', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          showToast(`成功重新生成 ${data.retryCount} 篇文章`);
+          loadDashboard();
+        } else {
+          showToast('重新生成失败：' + data.error);
+        }
+      } catch (error) {
+        showToast('错误：' + error.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🔄 重新生成失败文章';
+      }
+    }
+
+    // 同步已审核文章到网站
+    async function syncToWebsite() {
+      const btn = document.getElementById('syncBtn');
+      btn.disabled = true;
+      btn.textContent = '同步中...';
+
+      try {
+        const response = await fetch('/api/blog/sync-approved', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          showToast(`成功同步 ${data.syncCount} 篇文章到网站`);
+          loadDashboard();
+        } else {
+          showToast('同步失败：' + data.error);
+        }
+      } catch (error) {
+        showToast('错误：' + error.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🌐 同步已审核文章到网站';
+      }
+    }
+
+    // 切换自动生成
+    async function toggleAutoGeneration() {
+      try {
+        const response = await fetch('/api/blog/toggle-auto-generation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          showToast(data.autoGenerationEnabled ? '已启用自动生成' : '已禁用自动生成');
+          loadDashboard();
+        }
+      } catch (error) {
+        showToast('切换失败：' + error.message);
+      }
+    }
 
     // 添加关键词
     function addKeyword() {
@@ -880,28 +1342,45 @@
       const tbody = document.getElementById('planTableBody');
 
       if (plans.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">暂无数据</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #999;">暂无数据</td></tr>';
         return;
       }
 
-      tbody.innerHTML = plans.map((plan, idx) => `
-        <tr>
-          <td>${idx + 1}</td>
-          <td>${plan.keyword}</td>
-          <td>${plan.title}</td>
-          <td>
-            <span class="status-badge status-${plan.status}">
-              ${getStatusLabel(plan.status)}
-            </span>
-          </td>
-          <td>
-            <div class="action-buttons">
-              <button onclick="openPreview('${plan.id}')">预览</button>
-              ${plan.status === 'published' ? '<button onclick="viewPost(\''+plan.id+'\')">查看</button>' : ''}
-            </div>
-          </td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = plans.map((plan, idx) => {
+        const date = new Date(plan.created_at).toLocaleDateString('zh-CN');
+        const seoScore = plan.seo_score || '-';
+        const syncStatus = plan.sync_status || 'pending';
+
+        return `
+          <tr>
+            <td>${idx + 1}</td>
+            <td>${date}</td>
+            <td>${plan.keyword}</td>
+            <td>${plan.title}</td>
+            <td>${plan.content_type || 'Blog'}</td>
+            <td>
+              ${seoScore !== '-' ? `<span class="seo-score seo-${seoScore >= 80 ? 'good' : seoScore >= 60 ? 'fair' : 'poor'}">${seoScore}</span>` : '-'}
+            </td>
+            <td>
+              <span class="status-badge status-${plan.status}">
+                ${getStatusLabel(plan.status)}
+              </span>
+            </td>
+            <td>
+              <span class="sync-badge sync-${syncStatus}">
+                ${getSyncStatusLabel(syncStatus)}
+              </span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button onclick="openPreview('${plan.id}')">预览</button>
+                ${plan.status === 'pending_review' ? '<button onclick="reviewPost(\''+plan.id+'\')">审核</button>' : ''}
+                ${plan.status === 'approved' ? '<button onclick="publishPost(\''+plan.id+'\')">发布</button>' : ''}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
 
       // 更新统计
       document.getElementById('totalPlans').textContent = plans.length;
@@ -911,9 +1390,24 @@
     // 获取状态标签
     function getStatusLabel(status) {
       const labels = {
-        'pending': '待生成',
-        'content_generated': '已生成',
-        'published': '已发布'
+        'draft': '草稿',
+        'pending_review': '待审核',
+        'approved': '已批准',
+        'needs_revision': '需修改',
+        'published': '已发布',
+        'generation_failed': '生成失败',
+        'publish_failed': '发布失败'
+      };
+      return labels[status] || status;
+    }
+
+    // 获取同步状态标签
+    function getSyncStatusLabel(status) {
+      const labels = {
+        'pending': '待同步',
+        'syncing': '同步中',
+        'success': '已同步',
+        'failed': '同步失败'
       };
       return labels[status] || status;
     }
@@ -943,6 +1437,63 @@
         }
       } catch (error) {
         showToast('加载预览失败：' + error.message);
+      }
+    }
+
+    // 打开审核模式
+    async function reviewPost(postId) {
+      currentPostId = postId;
+      isReviewMode = true;
+
+      try {
+        const response = await fetch(`/api/blog/preview/${postId}`);
+        const data = await response.json();
+
+        if (data.success) {
+          document.getElementById('editTitle').value = data.title;
+          document.getElementById('editContent').value = data.content;
+
+          // 渲染关键词
+          const keywordsContainer = document.getElementById('editKeywords');
+          keywordsContainer.innerHTML = (data.keywords || []).map(kw => `
+            <div class="keyword-chip">
+              <span>${kw}</span>
+              <span class="remove" onclick="removeEditKeyword('${kw}')">✕</span>
+            </div>
+          `).join('') + '<input type="text" placeholder="输入关键词，按 Enter 添加">';
+
+          // 显示 SEO 检查结果
+          const seoResponse = await fetch(`/api/blog/seo-check/${postId}`);
+          const seoData = await seoResponse.json();
+
+          if (seoData.success) {
+            const seoHtml = `
+              <div class="seo-check-result">
+                <h4>SEO 检查结果 (${seoData.score}/100)</h4>
+                <div class="seo-checks">
+                  ${seoData.checks.map(check => `
+                    <div class="seo-check-item ${check.passed ? 'passed' : 'failed'}">
+                      <span class="check-icon">${check.passed ? '✓' : '✗'}</span>
+                      <span class="check-name">${check.name}</span>
+                      <span class="check-weight">(${check.weight}分)</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+            document.getElementById('seoCheckResult').innerHTML = seoHtml;
+            document.getElementById('seoCheckSection').style.display = 'block';
+          }
+
+          // 显示审核按钮，隐藏发布按钮
+          document.querySelector('.btn-approve').style.display = 'inline-block';
+          document.querySelector('.btn-reject').style.display = 'inline-block';
+          document.querySelector('.btn-publish').style.display = 'none';
+
+          document.getElementById('previewModal').classList.add('active');
+        }
+      } catch (error) {
+        showToast('加载审核信息失败：' + error.message);
       }
     }
 
@@ -1032,6 +1583,106 @@
         }
       } catch (error) {
         showToast('发布失败：' + error.message);
+      }
+    }
+
+    // 审核文章
+    async function reviewPost(postId) {
+      currentPostId = postId;
+
+      try {
+        const response = await fetch(`/api/blog/preview/${postId}`);
+        const data = await response.json();
+
+        if (data.success) {
+          document.getElementById('editTitle').value = data.title;
+          document.getElementById('editContent').value = data.content;
+
+          // 渲染关键词
+          const keywordsContainer = document.getElementById('editKeywords');
+          keywordsContainer.innerHTML = (data.keywords || []).map(kw => `
+            <div class="keyword-chip">
+              <span>${kw}</span>
+              <span class="remove" onclick="removeEditKeyword('${kw}')">✕</span>
+            </div>
+          `).join('') + '<input type="text" placeholder="输入关键词，按 Enter 添加">';
+
+          // 显示 SEO 检查结果
+          const seoResponse = await fetch(`/api/blog/seo-check/${postId}`);
+          const seoData = await seoResponse.json();
+
+          if (seoData.success) {
+            const seoHtml = `
+              <div class="seo-check-result">
+                <h4>SEO 检查结果 (${seoData.score}/100)</h4>
+                <div class="seo-checks">
+                  ${seoData.checks.map(check => `
+                    <div class="seo-check-item ${check.passed ? 'passed' : 'failed'}">
+                      <span class="check-icon">${check.passed ? '✓' : '✗'}</span>
+                      <span class="check-name">${check.name}</span>
+                      <span class="check-weight">(${check.weight}分)</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+            document.getElementById('seoCheckResult').innerHTML = seoHtml;
+          }
+
+          document.getElementById('previewModal').classList.add('active');
+        }
+      } catch (error) {
+        showToast('加载审核信息失败：' + error.message);
+      }
+    }
+
+    // 批准文章
+    async function approvePost() {
+      if (!currentPostId) return;
+
+      try {
+        const response = await fetch('/api/blog/approve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ postId: currentPostId })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          showToast('文章已批准');
+          closeModal();
+          loadPlans();
+        }
+      } catch (error) {
+        showToast('批准失败：' + error.message);
+      }
+    }
+
+    // 拒绝文章
+    async function rejectPost() {
+      if (!currentPostId) return;
+
+      const reason = prompt('请输入拒绝原因：');
+      if (!reason) return;
+
+      try {
+        const response = await fetch('/api/blog/reject', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            postId: currentPostId,
+            reason
+          })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          showToast('文章已拒绝');
+          closeModal();
+          loadPlans();
+        }
+      } catch (error) {
+        showToast('拒绝失败：' + error.message);
       }
     }
 

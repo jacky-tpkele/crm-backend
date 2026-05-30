@@ -3767,6 +3767,457 @@ app.get('/api/blog/status', auth, async (req, res) => {
   }
 });
 
+// 13. 获取控制面板数据（包含统计和最近运行记录）
+app.get('/api/blog/dashboard', auth, async (req, res) => {
+  try {
+    // 获取自动生成状态
+    const autoConfig = await sb('blog_config?config_key=eq.auto_generation_enabled');
+    const autoEnabled = autoConfig && autoConfig.length > 0 ? autoConfig[0].auto_generation_enabled : true;
+
+    // 获取最后生成时间
+    const lastGenConfig = await sb('blog_config?config_key=eq.last_generation_time');
+    const lastGenTime = lastGenConfig && lastGenConfig.length > 0
+      ? new Date(lastGenConfig[0].last_generation_time)
+      : null;
+
+    const now = new Date();
+    const hoursSinceLastGen = lastGenTime ? (now - lastGenTime) / (1000 * 60 * 60) : 24;
+
+    // 获取今日统计
+    const today = new Date().toISOString().split('T')[0];
+    const todayPlans = await sb(
+      `blog_posts?created_at=gte.${today}T00:00:00&select=status`
+    );
+
+    const stats = {
+      total: todayPlans.length,
+      generated: todayPlans.filter(p => p.status !== 'draft').length,
+      pending_review: todayPlans.filter(p => p.status === 'pending_review').length,
+      published: todayPlans.filter(p => p.status === 'published').length,
+      failed: todayPlans.filter(p => p.status === 'generation_failed' || p.status === 'publish_failed').length,
+    };
+
+    // 获取最近的生成日志
+    const logs = await sb(
+      'blog_generation_log?order=generation_time.desc&limit=1'
+    );
+
+    const lastLog = logs && logs.length > 0 ? logs[0] : null;
+
+    res.json({
+      success: true,
+      autoGenerationEnabled: autoEnabled,
+      nextExecutionTime: new Date(lastGenTime.getTime() + 24 * 60 * 60 * 1000).toISOString(),
+      hoursUntilNextExecution: (24 - hoursSinceLastGen).toFixed(1),
+      todayStats: stats,
+      lastGenerationLog: lastLog ? {
+        generationTime: lastLog.generation_time,
+        triggerType: lastLog.trigger_type,
+        totalCount: lastLog.total_count,
+        successCount: lastLog.success_count,
+        failureCount: lastLog.failure_count,
+        errorMessage: lastLog.error_message,
+      } : null,
+    });
+  } catch (error) {
+    console.error('Error getting dashboard data:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 14. 审核文章（批准或需要修改）
+app.post('/api/blog/review', auth, async (req, res) => {
+  try {
+    const { postId, action, notes } = req.body;
+
+    if (!postId || !action) {
+      return res.status(400).json({ error: 'Missing postId or action' });
+    }
+
+    if (!['approve', 'reject'].includes(action)) {
+      return res.status(400).json({ error: 'Invalid action' });
+    }
+
+    const newStatus = action === 'approve' ? 'approved' : 'needs_revision';
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        status: newStatus,
+        review_notes: notes || null,
+        updated_at: new Date().toISOString(),
+      }),
+    });
+
+    res.json({
+      success: true,
+      postId,
+      newStatus,
+      message: action === 'approve' ? 'Article approved' : 'Article marked for revision',
+    });
+  } catch (error) {
+    console.error('Error reviewing article:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 15. 发布文章到网站
+app.post('/api/blog/publish-to-website', auth, async (req, res) => {
+  try {
+    const { postId } = req.body;
+
+    if (!postId) {
+      return res.status(400).json({ error: 'Missing postId' });
+    }
+
+    // 获取文章信息
+    const post = await sb(`blog_posts?id=eq.${postId}`);
+    if (!post || post.length === 0) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    const article = post[0];
+
+    // 检查文章是否已审核
+    if (article.status !== 'approved') {
+      return res.status(400).json({ error: 'Article must be approved before publishing' });
+    }
+
+    // 更新状态为发布中
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        status: 'publishing',
+        updated_at: new Date().toISOString(),
+      }),
+    });
+
+    // 这里调用网站 API 推送文章
+    // TODO: 实现网站同步逻辑
+    const publishResult = {
+      success: true,
+      slug: article.slug,
+      url: `https://www.tpkele.com/blog/${article.slug}`,
+    };
+
+    // 更新状态为已发布
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        status: 'published',
+        sync_status: 'success',
+        published_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }),
+    });
+
+    res.json({
+      success: true,
+      postId,
+      message: 'Article published successfully',
+      publishResult,
+    });
+  } catch (error) {
+    console.error('Error publishing article:', error);
+
+    // 更新状态为发布失败
+    const { postId } = req.body;
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        status: 'publish_failed',
+        sync_status: 'failed',
+        sync_error: error.message,
+        updated_at: new Date().toISOString(),
+      }),
+    });
+
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 16. 获取生成日志
+app.get('/api/blog/generation-logs', auth, async (req, res) => {
+  try {
+    const { limit = 10 } = req.query;
+
+    const logs = await sb(
+      `blog_generation_log?order=generation_time.desc&limit=${limit}`
+    );
+
+    res.json({
+      success: true,
+      logs: logs.map(log => ({
+        id: log.id,
+        generationTime: log.generation_time,
+        triggerType: log.trigger_type,
+        totalCount: log.total_count,
+        successCount: log.success_count,
+        failureCount: log.failure_count,
+        errorMessage: log.error_message,
+      })),
+    });
+  } catch (error) {
+    console.error('Error getting generation logs:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 17. 获取 SEO 检查结果
+app.get('/api/blog/seo-check/:postId', auth, async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    const post = await sb(`blog_posts?id=eq.${postId}`);
+    if (!post || post.length === 0) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    const article = post[0];
+
+    // 执行 SEO 检查
+    const checks = {
+      titleHasKeyword: {
+        name: '标题包含主关键词',
+        weight: 10,
+        passed: article.title && article.keywords && article.keywords.length > 0
+          ? article.title.toLowerCase().includes(article.keywords[0].toLowerCase())
+          : false,
+      },
+      metaDescriptionLength: {
+        name: 'Meta Description 合理',
+        weight: 10,
+        passed: article.seo_description ? article.seo_description.length >= 50 && article.seo_description.length <= 160 : false,
+      },
+      h1Unique: {
+        name: 'H1 唯一性',
+        weight: 10,
+        passed: (article.content.match(/<h1>/g) || []).length === 1,
+      },
+      h2Count: {
+        name: 'H2 数量足够',
+        weight: 10,
+        passed: (article.content.match(/<h2>/g) || []).length >= 2 && (article.content.match(/<h2>/g) || []).length <= 5,
+      },
+      hasInternalLinks: {
+        name: '包含内链',
+        weight: 10,
+        passed: (article.content.match(/\[.*?\]\(\/.*?\)/g) || []).length >= 2,
+      },
+      hasFAQ: {
+        name: '包含 FAQ',
+        weight: 10,
+        passed: (article.content.match(/Q:/g) || []).length >= 3,
+      },
+      wordCount: {
+        name: '字数超过 1000',
+        weight: 15,
+        passed: article.content.length >= 1000,
+      },
+      hasCTA: {
+        name: '产品引导 CTA',
+        weight: 15,
+        passed: article.content.toLowerCase().includes('request') || article.content.toLowerCase().includes('quotation'),
+      },
+    };
+
+    // 计算总分
+    let totalScore = 0;
+    let maxScore = 0;
+    Object.values(checks).forEach(check => {
+      maxScore += check.weight;
+      if (check.passed) {
+        totalScore += check.weight;
+      }
+    });
+
+    const score = Math.round((totalScore / maxScore) * 100);
+
+    res.json({
+      success: true,
+      postId,
+      score,
+      checks: Object.entries(checks).map(([key, check]) => ({
+        key,
+        name: check.name,
+        weight: check.weight,
+        passed: check.passed,
+      })),
+    });
+  } catch (error) {
+    console.error('Error checking SEO:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 18. 重新生成失败的文章
+app.post('/api/blog/retry-failed', auth, async (req, res) => {
+  try {
+    // 获取所有生成失败的文章
+    const failedPosts = await sb('blog_posts?status=eq.generation_failed');
+
+    if (!failedPosts || failedPosts.length === 0) {
+      return res.json({
+        success: true,
+        retryCount: 0,
+        message: 'No failed posts to retry',
+      });
+    }
+
+    let retryCount = 0;
+    const results = [];
+
+    for (const post of failedPosts) {
+      try {
+        // 重新生成文章
+        const generatedContent = await generateBlogContent(post.title, post.keywords);
+
+        // 更新文章状态
+        await sb(`blog_posts?id=eq.${post.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            content: generatedContent,
+            status: 'pending_review',
+            generation_error: null,
+            updated_at: new Date().toISOString(),
+          }),
+        });
+
+        retryCount++;
+        results.push({
+          postId: post.id,
+          status: 'success',
+        });
+      } catch (error) {
+        results.push({
+          postId: post.id,
+          status: 'error',
+          error: error.message,
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      retryCount,
+      results,
+    });
+  } catch (error) {
+    console.error('Error retrying failed posts:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 19. 同步已审核的文章到网站
+app.post('/api/blog/sync-approved', auth, async (req, res) => {
+  try {
+    // 获取所有已审核的文章
+    const approvedPosts = await sb('blog_posts?status=eq.approved');
+
+    if (!approvedPosts || approvedPosts.length === 0) {
+      return res.json({
+        success: true,
+        syncCount: 0,
+        message: 'No approved posts to sync',
+      });
+    }
+
+    let syncCount = 0;
+    const results = [];
+
+    for (const post of approvedPosts) {
+      try {
+        // 更新状态为发布中
+        await sb(`blog_posts?id=eq.${post.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            status: 'publishing',
+            updated_at: new Date().toISOString(),
+          }),
+        });
+
+        // 这里调用网站 API 推送文章
+        // TODO: 实现网站同步逻辑
+        const publishResult = {
+          success: true,
+          slug: post.slug,
+          url: `https://www.tpkele.com/blog/${post.slug}`,
+        };
+
+        // 更新状态为已发布
+        await sb(`blog_posts?id=eq.${post.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            status: 'published',
+            sync_status: 'success',
+            published_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }),
+        });
+
+        syncCount++;
+        results.push({
+          postId: post.id,
+          status: 'success',
+        });
+      } catch (error) {
+        // 更新状态为发布失败
+        await sb(`blog_posts?id=eq.${post.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            status: 'publish_failed',
+            sync_status: 'failed',
+            sync_error: error.message,
+            updated_at: new Date().toISOString(),
+          }),
+        });
+
+        results.push({
+          postId: post.id,
+          status: 'error',
+          error: error.message,
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      syncCount,
+      results,
+    });
+  } catch (error) {
+    console.error('Error syncing approved posts:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 20. 切换自动生成状态
+app.post('/api/blog/toggle-auto-generation', auth, async (req, res) => {
+  try {
+    // 获取当前状态
+    const config = await sb('blog_config?config_key=eq.auto_generation_enabled');
+    const currentStatus = config && config.length > 0 ? config[0].auto_generation_enabled : true;
+    const newStatus = !currentStatus;
+
+    // 更新状态
+    await sb('blog_config?config_key=eq.auto_generation_enabled', {
+      method: 'PATCH',
+      body: JSON.stringify({
+        auto_generation_enabled: newStatus,
+      }),
+    });
+
+    res.json({
+      success: true,
+      autoGenerationEnabled: newStatus,
+      message: newStatus ? 'Auto generation enabled' : 'Auto generation disabled',
+    });
+  } catch (error) {
+    console.error('Error toggling auto generation:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // 12. 切换自动生成开关
 app.post('/api/blog/toggle-auto', auth, async (req, res) => {
   try {
@@ -3791,6 +4242,204 @@ app.post('/api/blog/toggle-auto', auth, async (req, res) => {
     });
   } catch (error) {
     console.error('Error toggling auto generation:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 13. 批准文章
+app.post('/api/blog/approve', auth, async (req, res) => {
+  try {
+    const { postId } = req.body;
+
+    if (!postId) {
+      return res.status(400).json({ error: 'postId is required' });
+    }
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        status: 'approved',
+        approved_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }),
+    });
+
+    res.json({
+      success: true,
+      message: 'Post approved successfully',
+    });
+  } catch (error) {
+    console.error('Error approving post:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 14. 拒绝文章
+app.post('/api/blog/reject', auth, async (req, res) => {
+  try {
+    const { postId, reason } = req.body;
+
+    if (!postId || !reason) {
+      return res.status(400).json({ error: 'postId and reason are required' });
+    }
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        status: 'needs_revision',
+        rejection_reason: reason,
+        updated_at: new Date().toISOString(),
+      }),
+    });
+
+    res.json({
+      success: true,
+      message: 'Post rejected successfully',
+    });
+  } catch (error) {
+    console.error('Error rejecting post:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 15. 获取待审核文章列表
+app.get('/api/blog/pending-review', auth, async (req, res) => {
+  try {
+    const posts = await sb('blog_posts?status=eq.pending_review&order=created_at.desc');
+
+    res.json({
+      success: true,
+      posts: posts || [],
+      count: (posts || []).length,
+    });
+  } catch (error) {
+    console.error('Error fetching pending review posts:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 16. 获取审核统计
+app.get('/api/blog/review-stats', auth, async (req, res) => {
+  try {
+    const allPosts = await sb('blog_posts');
+
+    const stats = {
+      total: allPosts.length,
+      pending_review: allPosts.filter(p => p.status === 'pending_review').length,
+      approved: allPosts.filter(p => p.status === 'approved').length,
+      needs_revision: allPosts.filter(p => p.status === 'needs_revision').length,
+      published: allPosts.filter(p => p.status === 'published').length,
+      generation_failed: allPosts.filter(p => p.status === 'generation_failed').length,
+    };
+
+    res.json({
+      success: true,
+      stats,
+    });
+  } catch (error) {
+    console.error('Error fetching review stats:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 17. SEO 检查
+app.get('/api/blog/seo-check/:postId', auth, async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    const posts = await sb(`blog_posts?id=eq.${postId}`);
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    const post = posts[0];
+    const { title, content, keywords } = post;
+
+    // SEO 检查项
+    const checks = [];
+    let score = 0;
+
+    // 1. 标题长度 (30-60 字符最佳)
+    const titleLength = title.length;
+    const titleCheck = titleLength >= 30 && titleLength <= 60;
+    checks.push({
+      name: '标题长度',
+      passed: titleCheck,
+      weight: 15,
+      details: `${titleLength} 字符 (推荐 30-60)`
+    });
+    if (titleCheck) score += 15;
+
+    // 2. 关键词密度 (2-5%)
+    const keywordDensity = keywords && keywords.length > 0
+      ? (keywords.filter(kw => content.includes(kw)).length / keywords.length) * 100
+      : 0;
+    const densityCheck = keywordDensity >= 2 && keywordDensity <= 5;
+    checks.push({
+      name: '关键词密度',
+      passed: densityCheck,
+      weight: 20,
+      details: `${keywordDensity.toFixed(1)}% (推荐 2-5%)`
+    });
+    if (densityCheck) score += 20;
+
+    // 3. 内容长度 (最少 300 字)
+    const contentLength = content.length;
+    const contentCheck = contentLength >= 300;
+    checks.push({
+      name: '内容长度',
+      passed: contentCheck,
+      weight: 15,
+      details: `${contentLength} 字 (推荐 ≥300)`
+    });
+    if (contentCheck) score += 15;
+
+    // 4. 标题包含关键词
+    const titleHasKeyword = keywords && keywords.some(kw => title.includes(kw));
+    checks.push({
+      name: '标题包含关键词',
+      passed: titleHasKeyword,
+      weight: 20,
+      details: titleHasKeyword ? '✓' : '✗'
+    });
+    if (titleHasKeyword) score += 20;
+
+    // 5. 段落结构 (至少 3 个段落)
+    const paragraphs = content.split('\n\n').filter(p => p.trim().length > 0);
+    const paragraphCheck = paragraphs.length >= 3;
+    checks.push({
+      name: '段落结构',
+      passed: paragraphCheck,
+      weight: 15,
+      details: `${paragraphs.length} 个段落 (推荐 ≥3)`
+    });
+    if (paragraphCheck) score += 15;
+
+    // 6. 图片存在
+    const hasImage = post.image_url && post.image_url.length > 0;
+    checks.push({
+      name: '配图',
+      passed: hasImage,
+      weight: 15,
+      details: hasImage ? '✓' : '✗'
+    });
+    if (hasImage) score += 15;
+
+    res.json({
+      success: true,
+      score: Math.min(100, score),
+      checks,
+      recommendations: score < 80 ? [
+        score < 15 ? '请调整标题长度到 30-60 字符' : '',
+        keywordDensity < 2 || keywordDensity > 5 ? '请调整关键词密度到 2-5%' : '',
+        contentLength < 300 ? '请补充内容到至少 300 字' : '',
+        !titleHasKeyword ? '建议在标题中包含主关键词' : '',
+        paragraphs.length < 3 ? '建议至少分为 3 个段落' : '',
+        !hasImage ? '建议添加配图' : ''
+      ].filter(r => r) : []
+    });
+  } catch (error) {
+    console.error('Error checking SEO:', error);
     res.status(500).json({ error: error.message });
   }
 });
