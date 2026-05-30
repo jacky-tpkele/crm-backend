@@ -753,6 +753,324 @@
       cursor: not-allowed;
     }
 
+    /* ── 第 2 阶段：关键词库样式 ── */
+    .keywords-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .keywords-stats {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .keyword-add-form {
+      background: #f9f9f9;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .keyword-input-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .keyword-input-row input[type="text"] {
+      flex: 1;
+      min-width: 200px;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .keyword-input-row select {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 13px;
+      background: white;
+    }
+
+    .keyword-input-row button {
+      padding: 8px 20px;
+      background: #0066cc;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    /* AI 推荐样式 */
+    .ai-recommend-section {
+      background: #f0f7ff;
+      border: 1px solid #cce0ff;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .ai-recommend-header h3 {
+      margin: 0 0 5px 0;
+      font-size: 15px;
+    }
+
+    .ai-recommend-header p {
+      margin: 0 0 12px 0;
+      font-size: 13px;
+      color: #666;
+    }
+
+    .ai-recommend-input {
+      display: flex;
+      gap: 8px;
+    }
+
+    .ai-recommend-input input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .ai-recommend-input button {
+      padding: 8px 20px;
+      background: #6f42c1;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .recommend-tabs {
+      display: flex;
+      gap: 8px;
+      margin: 15px 0 10px;
+    }
+
+    .recommend-tab {
+      padding: 6px 14px;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .recommend-tab.active {
+      background: #0066cc;
+      color: white;
+      border-color: #0066cc;
+    }
+
+    .recommend-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+
+    .recommend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    .recommend-item.exists {
+      background: #f8f9fa;
+      color: #999;
+    }
+
+    .recommend-item.exists::after {
+      content: '已添加';
+      font-size: 11px;
+      color: #28a745;
+      margin-left: auto;
+    }
+
+    .recommend-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    /* 关键词筛选 */
+    .keywords-filter {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .keywords-filter select {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    /* 关键词表格 */
+    .keyword-table-wrap {
+      overflow-x: auto;
+    }
+
+    .keyword-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .keyword-table th {
+      background: #f5f5f5;
+      padding: 10px 12px;
+      text-align: left;
+      font-size: 13px;
+      font-weight: 600;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .keyword-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #eee;
+      font-size: 13px;
+    }
+
+    .category-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .category-product { background: #cfe2ff; color: #084298; }
+    .category-comparison { background: #d1e7dd; color: #0f5132; }
+    .category-application { background: #fff3cd; color: #856404; }
+    .category-buying { background: #f8d7da; color: #842029; }
+    .category-faq { background: #e2e3e5; color: #383d41; }
+
+    .priority-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 11px;
+    }
+
+    .priority-high { background: #f8d7da; color: #842029; }
+    .priority-medium { background: #fff3cd; color: #856404; }
+    .priority-low { background: #d1e7dd; color: #0f5132; }
+
+    .difficulty-stars {
+      color: #ffc107;
+      font-size: 12px;
+    }
+
+    /* ── 第 2 阶段：生成规划样式 ── */
+    .daily-count-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      background: white;
+    }
+
+    .radio-option:hover {
+      border-color: #0066cc;
+      background: #f0f7ff;
+    }
+
+    .type-ratio-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .type-ratio-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+    }
+
+    .type-ratio-item span:first-child {
+      width: 140px;
+      flex-shrink: 0;
+    }
+
+    .type-ratio-item input {
+      width: 70px;
+      padding: 6px 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .template-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .template-btn {
+      padding: 8px 14px;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .template-btn:hover {
+      border-color: #0066cc;
+      color: #0066cc;
+    }
+
+    .template-btn.active {
+      background: #0066cc;
+      color: white;
+      border-color: #0066cc;
+    }
+
+    .template-preview {
+      padding: 10px 12px;
+      background: #f9f9f9;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #666;
+      font-style: italic;
+    }
+
     /* SEO 检查结果样式 */
     .seo-check-result {
       background: #f9f9f9;
@@ -931,12 +1249,100 @@
     <!-- 标签页 1：关键词库 -->
     <div class="tab-content active" id="keywords-tab">
       <div class="keywords-section">
-        <h2>关键词库管理</h2>
-        <div class="keyword-input-group">
-          <input type="text" id="keywordInput" placeholder="输入关键词，按 Enter 添加">
-          <button onclick="addKeyword()">添加</button>
+        <div class="keywords-header">
+          <h2>关键词库管理</h2>
+          <div class="keywords-stats" id="keywordsStats">加载中...</div>
         </div>
-        <div class="keyword-list" id="keywordList"></div>
+
+        <!-- 添加关键词 -->
+        <div class="keyword-add-form">
+          <div class="keyword-input-row">
+            <input type="text" id="keywordInput" placeholder="输入关键词，按 Enter 添加">
+            <select id="keywordCategory">
+              <option value="product">产品词</option>
+              <option value="comparison">对比词</option>
+              <option value="application">应用词</option>
+              <option value="buying">采购词</option>
+              <option value="faq">FAQ词</option>
+            </select>
+            <select id="keywordDifficulty">
+              <option value="1">难度 1（很容易）</option>
+              <option value="2">难度 2（容易）</option>
+              <option value="3" selected>难度 3（中等）</option>
+              <option value="4">难度 4（困难）</option>
+              <option value="5">难度 5（很困难）</option>
+            </select>
+            <select id="keywordPriority">
+              <option value="high">高优先级</option>
+              <option value="medium" selected>中优先级</option>
+              <option value="low">低优先级</option>
+            </select>
+            <button onclick="addKeyword()">添加</button>
+          </div>
+        </div>
+
+        <!-- AI 推荐 -->
+        <div class="ai-recommend-section">
+          <div class="ai-recommend-header">
+            <h3>🤖 AI 关键词推荐</h3>
+            <p>输入一个种子关键词，AI 帮你推荐 40-50 个相关关键词</p>
+          </div>
+          <div class="ai-recommend-input">
+            <input type="text" id="seedKeyword" placeholder="输入种子关键词，例如：MCB">
+            <button onclick="getAIRecommendations()" id="aiRecommendBtn">🤖 AI 推荐</button>
+          </div>
+          <div id="aiRecommendResult" style="display: none;">
+            <div class="recommend-tabs">
+              <button class="recommend-tab active" onclick="showRecommendTab('product')">产品词</button>
+              <button class="recommend-tab" onclick="showRecommendTab('comparison')">对比词</button>
+              <button class="recommend-tab" onclick="showRecommendTab('application')">应用词</button>
+              <button class="recommend-tab" onclick="showRecommendTab('buying')">采购词</button>
+            </div>
+            <div id="recommendList"></div>
+            <div class="recommend-actions">
+              <button onclick="addSelectedKeywords()" class="btn-primary">添加选中关键词</button>
+              <button onclick="selectAllRecommend()" class="btn-secondary">全选</button>
+              <button onclick="clearRecommendSelection()" class="btn-secondary">取消全选</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 筛选 -->
+        <div class="keywords-filter">
+          <select id="filterCategory" onchange="loadKeywords()">
+            <option value="">所有分类</option>
+            <option value="product">产品词</option>
+            <option value="comparison">对比词</option>
+            <option value="application">应用词</option>
+            <option value="buying">采购词</option>
+            <option value="faq">FAQ词</option>
+          </select>
+          <select id="filterPriority" onchange="loadKeywords()">
+            <option value="">所有优先级</option>
+            <option value="high">高优先级</option>
+            <option value="medium">中优先级</option>
+            <option value="low">低优先级</option>
+          </select>
+        </div>
+
+        <!-- 关键词列表 -->
+        <div class="keyword-table-wrap">
+          <table class="keyword-table">
+            <thead>
+              <tr>
+                <th>关键词</th>
+                <th>分类</th>
+                <th>难度</th>
+                <th>优先级</th>
+                <th>使用次数</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="keywordTableBody">
+              <tr><td colspan="6" style="text-align:center;color:#999;">加载中...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -944,16 +1350,86 @@
     <div class="tab-content" id="plan-tab">
       <div class="plan-form">
         <h2>生成 30 天规划</h2>
+
+        <!-- 第 1 步：规划月份 -->
         <div class="form-group">
           <label>规划月份</label>
           <input type="month" id="planMonth" value="2026-06">
         </div>
+
+        <!-- 第 2 步：每天生成数量 -->
         <div class="form-group">
-          <label>标题模板（可选，每行一个）</label>
-          <textarea id="titleTemplate" placeholder="如果不填，系统会自动生成标题"></textarea>
+          <label>每天生成数量</label>
+          <div class="daily-count-options">
+            <label class="radio-option">
+              <input type="radio" name="dailyCount" value="1"> 每天 1 篇（稳定 SEO）
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="dailyCount" value="2"> 每天 2 篇（中等强度）
+            </label>
+            <label class="radio-option active" >
+              <input type="radio" name="dailyCount" value="4" checked> 每天 4 篇（快速铺内容）
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="dailyCount" value="custom"> 自定义
+              <input type="number" id="customDailyCount" min="1" max="10" value="4" style="width:60px;margin-left:8px;">
+            </label>
+          </div>
         </div>
+
+        <!-- 第 3 步：文章类型比例 -->
+        <div class="form-group">
+          <label>文章类型比例</label>
+          <div class="type-ratio-grid">
+            <div class="type-ratio-item">
+              <span>产品知识文章</span>
+              <input type="number" id="ratioProduct" value="40" min="0" max="100" onchange="updateRatioTotal()">
+              <span>%</span>
+            </div>
+            <div class="type-ratio-item">
+              <span>选型指南文章</span>
+              <input type="number" id="ratioComparison" value="25" min="0" max="100" onchange="updateRatioTotal()">
+              <span>%</span>
+            </div>
+            <div class="type-ratio-item">
+              <span>对比文章</span>
+              <input type="number" id="ratioApplication" value="20" min="0" max="100" onchange="updateRatioTotal()">
+              <span>%</span>
+            </div>
+            <div class="type-ratio-item">
+              <span>应用场景文章</span>
+              <input type="number" id="ratioBuying" value="10" min="0" max="100" onchange="updateRatioTotal()">
+              <span>%</span>
+            </div>
+            <div class="type-ratio-item">
+              <span>FAQ 文章</span>
+              <input type="number" id="ratioFaq" value="5" min="0" max="100" onchange="updateRatioTotal()">
+              <span>%</span>
+            </div>
+          </div>
+          <div id="ratioTotal" style="margin-top:8px;font-size:13px;color:#666;">总计：100%</div>
+        </div>
+
+        <!-- 第 4 步：标题模板 -->
+        <div class="form-group">
+          <label>标题模板</label>
+          <div class="template-options">
+            <button class="template-btn active" onclick="selectTemplate('auto', this)">🤖 AI 自动生成</button>
+            <button class="template-btn" onclick="selectTemplate('buying', this)">📦 采购型</button>
+            <button class="template-btn" onclick="selectTemplate('comparison', this)">⚖️ 对比型</button>
+            <button class="template-btn" onclick="selectTemplate('application', this)">🔧 应用型</button>
+            <button class="template-btn" onclick="selectTemplate('science', this)">📚 科普型</button>
+            <button class="template-btn" onclick="selectTemplate('faq', this)">❓ FAQ型</button>
+            <button class="template-btn" onclick="selectTemplate('custom', this)">✏️ 自定义</button>
+          </div>
+          <div id="templatePreview" class="template-preview">
+            示例：How to Choose the Right {keyword} for Your Project
+          </div>
+          <textarea id="customTemplate" placeholder="输入自定义标题模板，用 {keyword} 代表关键词" style="display:none;margin-top:8px;"></textarea>
+        </div>
+
         <div class="form-actions">
-          <button class="btn-primary" onclick="generatePlan()">生成 30 天规划</button>
+          <button class="btn-primary" onclick="generatePlanV2()">生成 30 天规划</button>
           <button class="btn-secondary" onclick="resetPlanForm()">重置</button>
         </div>
       </div>
@@ -1092,6 +1568,8 @@
           loadPlans();
         } else if (tabName === 'control') {
           loadDashboard();
+        } else if (tabName === 'keywords') {
+          loadKeywords();
         }
       });
     });
@@ -1838,10 +2316,302 @@
 
     // 页面加载时初始化控制面板
     window.addEventListener('load', () => {
-      loadControlPanelStatus();
-      // 每 30 秒刷新一次状态
-      setInterval(loadControlPanelStatus, 30000);
+      loadDashboard();
+      loadKeywords();
+      setInterval(loadDashboard, 30000);
     });
+
+    // ════════════════════════════════════════════════════════════════════
+    // 第 2 阶段：关键词库函数
+    // ════════════════════════════════════════════════════════════════════
+
+    let currentRecommendTab = 'product';
+    let recommendData = {};
+    let selectedTemplate = 'auto';
+
+    // 加载关键词库
+    async function loadKeywords() {
+      try {
+        const category = document.getElementById('filterCategory')?.value || '';
+        const priority = document.getElementById('filterPriority')?.value || '';
+        let url = '/api/blog/keywords';
+        const params = [];
+        if (category) params.push(`category=${category}`);
+        if (priority) params.push(`priority=${priority}`);
+        if (params.length) url += '?' + params.join('&');
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.success) {
+          renderKeywordTable(data.keywords);
+          document.getElementById('keywordsStats').textContent =
+            `共 ${data.keywords.length} 个关键词`;
+        }
+      } catch (error) {
+        console.error('加载关键词失败:', error);
+      }
+    }
+
+    // 渲染关键词表格
+    function renderKeywordTable(keywords) {
+      const tbody = document.getElementById('keywordTableBody');
+      if (!keywords || keywords.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align:center;padding:30px;color:#999;">
+              <div>暂无关键词</div>
+              <div style="margin-top:8px;font-size:12px;">请添加关键词或使用 AI 推荐功能</div>
+            </td>
+          </tr>`;
+        return;
+      }
+
+      const categoryLabels = { product:'产品词', comparison:'对比词', application:'应用词', buying:'采购词', faq:'FAQ词' };
+      const priorityLabels = { high:'高', medium:'中', low:'低' };
+
+      tbody.innerHTML = keywords.map(kw => `
+        <tr>
+          <td><strong>${kw.keyword}</strong></td>
+          <td><span class="category-badge category-${kw.category}">${categoryLabels[kw.category] || kw.category}</span></td>
+          <td><span class="difficulty-stars">${'★'.repeat(kw.difficulty || 3)}${'☆'.repeat(5 - (kw.difficulty || 3))}</span></td>
+          <td><span class="priority-badge priority-${kw.priority}">${priorityLabels[kw.priority] || kw.priority}</span></td>
+          <td>${kw.used_count || 0} 次</td>
+          <td>
+            <button onclick="deleteKeyword('${kw.id}')" style="padding:3px 8px;border:1px solid #ddd;background:white;border-radius:3px;cursor:pointer;font-size:12px;color:#dc3545;">删除</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // 添加关键词（升级版）
+    async function addKeyword() {
+      const input = document.getElementById('keywordInput');
+      const keyword = input.value.trim();
+      if (!keyword) { showToast('请输入关键词'); return; }
+
+      const category = document.getElementById('keywordCategory').value;
+      const difficulty = parseInt(document.getElementById('keywordDifficulty').value);
+      const priority = document.getElementById('keywordPriority').value;
+
+      try {
+        const response = await fetch('/api/blog/keywords', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ keyword, category, difficulty, priority })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          showToast('关键词已添加');
+          input.value = '';
+          loadKeywords();
+        } else {
+          showToast(data.message || '添加失败');
+        }
+      } catch (error) {
+        showToast('错误：' + error.message);
+      }
+    }
+
+    // 删除关键词
+    async function deleteKeyword(id) {
+      if (!confirm('确定删除这个关键词吗？')) return;
+      try {
+        await fetch(`/api/blog/keywords/${id}`, { method: 'DELETE' });
+        showToast('已删除');
+        loadKeywords();
+      } catch (error) {
+        showToast('删除失败：' + error.message);
+      }
+    }
+
+    // AI 推荐关键词
+    async function getAIRecommendations() {
+      const seedKeyword = document.getElementById('seedKeyword').value.trim();
+      if (!seedKeyword) { showToast('请输入种子关键词'); return; }
+
+      const btn = document.getElementById('aiRecommendBtn');
+      btn.disabled = true;
+      btn.textContent = '推荐中...';
+
+      try {
+        const response = await fetch('/api/blog/keywords/ai-recommend', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ seedKeyword })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          recommendData = data.recommendations;
+          document.getElementById('aiRecommendResult').style.display = 'block';
+          showRecommendTab('product');
+          showToast('AI 推荐完成！');
+        } else {
+          showToast('推荐失败：' + data.error);
+        }
+      } catch (error) {
+        showToast('错误：' + error.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🤖 AI 推荐';
+      }
+    }
+
+    // 显示推荐标签页
+    function showRecommendTab(tab) {
+      currentRecommendTab = tab;
+      document.querySelectorAll('.recommend-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.recommend-tab').forEach(t => {
+        if (t.textContent.includes({ product:'产品词', comparison:'对比词', application:'应用词', buying:'采购词' }[tab])) {
+          t.classList.add('active');
+        }
+      });
+
+      const items = recommendData[tab] || [];
+      const listEl = document.getElementById('recommendList');
+      listEl.innerHTML = `<div class="recommend-list">` + items.map(item => `
+        <label class="recommend-item ${item.exists ? 'exists' : ''}">
+          <input type="checkbox" value="${item.keyword}" data-category="${item.category}" ${item.exists ? 'disabled' : ''}>
+          ${item.keyword}
+        </label>
+      `).join('') + `</div>`;
+    }
+
+    // 全选推荐
+    function selectAllRecommend() {
+      document.querySelectorAll('#recommendList input[type="checkbox"]:not(:disabled)').forEach(cb => cb.checked = true);
+    }
+
+    // 取消全选
+    function clearRecommendSelection() {
+      document.querySelectorAll('#recommendList input[type="checkbox"]').forEach(cb => cb.checked = false);
+    }
+
+    // 添加选中的推荐关键词
+    async function addSelectedKeywords() {
+      const selected = [];
+      document.querySelectorAll('#recommendList input[type="checkbox"]:checked').forEach(cb => {
+        selected.push({ keyword: cb.value, category: cb.dataset.category || currentRecommendTab });
+      });
+
+      if (selected.length === 0) { showToast('请先选择关键词'); return; }
+
+      try {
+        const response = await fetch('/api/blog/keywords/batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ keywords: selected.map(s => ({ ...s, ai_recommended: true })) })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          showToast(`成功添加 ${data.added} 个，跳过 ${data.skipped} 个（已存在）`);
+          loadKeywords();
+          clearRecommendSelection();
+        }
+      } catch (error) {
+        showToast('添加失败：' + error.message);
+      }
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // 第 2 阶段：生成规划函数
+    // ════════════════════════════════════════════════════════════════════
+
+    // 更新比例总计
+    function updateRatioTotal() {
+      const total = ['Product','Comparison','Application','Buying','Faq'].reduce((sum, t) => {
+        return sum + (parseInt(document.getElementById('ratio' + t)?.value) || 0);
+      }, 0);
+      const el = document.getElementById('ratioTotal');
+      el.textContent = `总计：${total}%`;
+      el.style.color = total === 100 ? '#28a745' : '#dc3545';
+    }
+
+    // 选择标题模板
+    function selectTemplate(type, btn) {
+      selectedTemplate = type;
+      document.querySelectorAll('.template-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const previews = {
+        auto: '示例：How to Choose the Right {keyword} for Your Project',
+        buying: '示例：How to Choose a Reliable {keyword} Supplier',
+        comparison: '示例：{keyword} vs Alternatives: Key Differences Explained',
+        application: '示例：How to Use {keyword} in Solar DC Systems',
+        science: '示例：What Is a {keyword}? Complete Technical Guide',
+        faq: '示例：10 Common Questions About {keyword} Answered',
+        custom: '请在下方输入自定义模板，用 {keyword} 代表关键词',
+      };
+
+      document.getElementById('templatePreview').textContent = previews[type] || '';
+      document.getElementById('customTemplate').style.display = type === 'custom' ? 'block' : 'none';
+    }
+
+    // 生成规划（升级版）
+    async function generatePlanV2() {
+      const month = document.getElementById('planMonth').value;
+      if (!month) { showToast('请选择规划月份'); return; }
+
+      // 获取每天篇数
+      const dailyCountRadio = document.querySelector('input[name="dailyCount"]:checked');
+      let dailyCount = 4;
+      if (dailyCountRadio) {
+        dailyCount = dailyCountRadio.value === 'custom'
+          ? parseInt(document.getElementById('customDailyCount').value) || 4
+          : parseInt(dailyCountRadio.value);
+      }
+
+      // 获取类型比例
+      const typeRatio = {
+        product: parseInt(document.getElementById('ratioProduct').value) || 40,
+        comparison: parseInt(document.getElementById('ratioComparison').value) || 25,
+        application: parseInt(document.getElementById('ratioApplication').value) || 20,
+        buying: parseInt(document.getElementById('ratioBuying').value) || 10,
+        faq: parseInt(document.getElementById('ratioFaq').value) || 5,
+      };
+
+      const total = Object.values(typeRatio).reduce((a, b) => a + b, 0);
+      if (total !== 100) { showToast(`类型比例总计必须为 100%，当前为 ${total}%`); return; }
+
+      // 获取标题模板
+      const customTemplate = selectedTemplate === 'custom'
+        ? document.getElementById('customTemplate').value
+        : null;
+
+      try {
+        const response = await fetch('/api/blog/generate-plan-v2', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ month, dailyCount, typeRatio, titleTemplate: selectedTemplate, customTitles: customTemplate ? [customTemplate] : [] })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          showToast(`规划生成成功！共 ${data.totalPlans} 篇，每天 ${dailyCount} 篇`);
+          loadPlans();
+        } else {
+          showToast('生成失败：' + data.error);
+        }
+      } catch (error) {
+        showToast('错误：' + error.message);
+      }
+    }
+
+    // 重置规划表单
+    function resetPlanForm() {
+      document.getElementById('planMonth').value = new Date().toISOString().slice(0, 7);
+      document.querySelector('input[name="dailyCount"][value="4"]').checked = true;
+      document.getElementById('ratioProduct').value = 40;
+      document.getElementById('ratioComparison').value = 25;
+      document.getElementById('ratioApplication').value = 20;
+      document.getElementById('ratioBuying').value = 10;
+      document.getElementById('ratioFaq').value = 5;
+      updateRatioTotal();
+      selectTemplate('auto', document.querySelector('.template-btn'));
+    }
   </script>
 </body>
 </html>

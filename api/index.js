@@ -4446,4 +4446,314 @@ app.get('/api/blog/seo-check/:postId', auth, async (req, res) => {
 
 // ── CSV 批量导入：通用（按表名 + 列映射）──
 // 前端把 CSV 解析成 rows 后调用此接口
+
+// ════════════════════════════════════════════════════════════════════
+// BLOG 自动化 - 第 2 阶段 API（关键词库升级 + 生成规划升级）
+// ════════════════════════════════════════════════════════════════════
+
+// 1. 获取关键词库（支持分类筛选）
+app.get('/api/blog/keywords', auth, async (req, res) => {
+  try {
+    const { category, priority } = req.query;
+    let query = 'blog_keywords?order=priority.asc,used_count.desc';
+    if (category) query += `&category=eq.${category}`;
+    if (priority) query += `&priority=eq.${priority}`;
+
+    const keywords = await sb(query);
+    res.json({ success: true, keywords: keywords || [] });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 2. 添加关键词（支持分类、难度、优先级）
+app.post('/api/blog/keywords', auth, async (req, res) => {
+  try {
+    const { keyword, category = 'product', difficulty = 3, priority = 'medium' } = req.body;
+    if (!keyword) return res.status(400).json({ error: 'keyword is required' });
+
+    // 检查是否已存在
+    const existing = await sb(`blog_keywords?keyword=eq.${encodeURIComponent(keyword)}`);
+    if (existing && existing.length > 0) {
+      return res.json({ success: false, message: '关键词已存在', existing: existing[0] });
+    }
+
+    const result = await sb('blog_keywords', {
+      method: 'POST',
+      body: JSON.stringify({ keyword, category, difficulty, priority, used_count: 0 }),
+    });
+
+    res.json({ success: true, keyword: result[0] });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 3. 批量添加关键词
+app.post('/api/blog/keywords/batch', auth, async (req, res) => {
+  try {
+    const { keywords } = req.body;
+    if (!keywords || !Array.isArray(keywords)) {
+      return res.status(400).json({ error: 'keywords array is required' });
+    }
+
+    const results = { added: [], skipped: [] };
+
+    for (const kw of keywords) {
+      const existing = await sb(`blog_keywords?keyword=eq.${encodeURIComponent(kw.keyword)}`);
+      if (existing && existing.length > 0) {
+        results.skipped.push(kw.keyword);
+        continue;
+      }
+
+      await sb('blog_keywords', {
+        method: 'POST',
+        body: JSON.stringify({
+          keyword: kw.keyword,
+          category: kw.category || 'product',
+          difficulty: kw.difficulty || 3,
+          priority: kw.priority || 'medium',
+          ai_recommended: kw.ai_recommended || false,
+          used_count: 0,
+        }),
+      });
+      results.added.push(kw.keyword);
+    }
+
+    res.json({ success: true, added: results.added.length, skipped: results.skipped.length, results });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 4. 删除关键词
+app.delete('/api/blog/keywords/:id', auth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    await sb(`blog_keywords?id=eq.${id}`, { method: 'DELETE' });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 5. AI 推荐关键词
+app.post('/api/blog/keywords/ai-recommend', auth, async (req, res) => {
+  try {
+    const { seedKeyword, model = 'deepseek' } = req.body;
+    if (!seedKeyword) return res.status(400).json({ error: 'seedKeyword is required' });
+
+    const prompt = `你是一个专业的 SEO 关键词研究专家。
+基于种子关键词"${seedKeyword}"，请为电气保护产品（MCB、SPD、ATS、断路器等）网站生成关键词推荐。
+
+请按以下 4 个分类各推荐 10-12 个关键词，返回 JSON 格式：
+
+{
+  "product": ["关键词1", "关键词2", ...],
+  "comparison": ["关键词1", "关键词2", ...],
+  "application": ["关键词1", "关键词2", ...],
+  "buying": ["关键词1", "关键词2", ...]
+}
+
+要求：
+- product（产品词）：描述产品本身的词
+- comparison（对比词）：产品对比类的词
+- application（应用词）：产品应用场景的词
+- buying（采购词）：采购意图的词
+- 全部用英文
+- 每个关键词 2-6 个单词
+- 只返回 JSON，不要其他内容`;
+
+    const content = await generateContentWithAI(seedKeyword, prompt, model);
+
+    // 解析 JSON
+    let recommendations;
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      recommendations = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+    } catch {
+      recommendations = { product: [], comparison: [], application: [], buying: [] };
+    }
+
+    // 获取已有关键词列表用于去重标记
+    const existingKeywords = await sb('blog_keywords?select=keyword');
+    const existingSet = new Set((existingKeywords || []).map(k => k.keyword.toLowerCase()));
+
+    // 标记已存在的关键词
+    const result = {};
+    for (const [category, words] of Object.entries(recommendations)) {
+      result[category] = (words || []).map(word => ({
+        keyword: word,
+        category,
+        exists: existingSet.has(word.toLowerCase()),
+      }));
+    }
+
+    res.json({ success: true, recommendations: result, seedKeyword });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 6. 生成 30 天规划（升级版，支持类型比例和每天篇数）
+app.post('/api/blog/generate-plan-v2', auth, async (req, res) => {
+  try {
+    const {
+      month,
+      dailyCount = 4,
+      typeRatio = { product: 40, comparison: 25, application: 20, buying: 10, faq: 5 },
+      titleTemplate = 'auto',
+      customTitles = [],
+    } = req.body;
+
+    if (!month) return res.status(400).json({ error: 'month is required' });
+
+    // 获取关键词库（按优先级和分类）
+    const allKeywords = await sb('blog_keywords?order=priority.asc,used_count.asc');
+    if (!allKeywords || allKeywords.length === 0) {
+      return res.status(400).json({ error: '关键词库为空，请先添加关键词' });
+    }
+
+    // 按分类分组关键词
+    const keywordsByCategory = {
+      product: allKeywords.filter(k => k.category === 'product'),
+      comparison: allKeywords.filter(k => k.category === 'comparison'),
+      application: allKeywords.filter(k => k.category === 'application'),
+      buying: allKeywords.filter(k => k.category === 'buying'),
+      faq: allKeywords.filter(k => k.category === 'faq'),
+    };
+
+    // 计算每月总篇数
+    const daysInMonth = new Date(month.split('-')[0], month.split('-')[1], 0).getDate();
+    const totalPosts = daysInMonth * dailyCount;
+
+    // 按比例分配文章类型
+    const typeDistribution = {};
+    let remaining = totalPosts;
+    const types = Object.keys(typeRatio);
+
+    types.forEach((type, idx) => {
+      if (idx === types.length - 1) {
+        typeDistribution[type] = remaining;
+      } else {
+        typeDistribution[type] = Math.round(totalPosts * typeRatio[type] / 100);
+        remaining -= typeDistribution[type];
+      }
+    });
+
+    // 生成计划列表
+    const plans = [];
+    let orderNum = 1;
+    const typeQueues = {};
+
+    // 为每个类型创建关键词队列
+    for (const type of types) {
+      const kwList = keywordsByCategory[type] || [];
+      typeQueues[type] = [];
+      for (let i = 0; i < typeDistribution[type]; i++) {
+        typeQueues[type].push(kwList[i % Math.max(kwList.length, 1)]);
+      }
+    }
+
+    // 按天分配，每天 dailyCount 篇，类型均匀分布
+    const allTypedPosts = [];
+    for (const type of types) {
+      for (const kw of typeQueues[type]) {
+        allTypedPosts.push({ type, keyword: kw });
+      }
+    }
+
+    // 打乱顺序，让每天的文章类型多样化
+    for (let i = allTypedPosts.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allTypedPosts[i], allTypedPosts[j]] = [allTypedPosts[j], allTypedPosts[i]];
+    }
+
+    // 生成标题
+    const titleTemplates = {
+      product: ['What Is {keyword}?', 'Complete Guide to {keyword}', '{keyword}: Everything You Need to Know'],
+      comparison: ['{keyword}: Key Differences Explained', 'Comparing {keyword}: Which Is Better?'],
+      application: ['How to Use {keyword} in Your Project', '{keyword} for Solar Systems'],
+      buying: ['How to Choose the Right {keyword}', 'Best {keyword} for Your Needs'],
+      faq: ['10 Common Questions About {keyword}', '{keyword} FAQ: Expert Answers'],
+    };
+
+    for (let i = 0; i < allTypedPosts.length; i++) {
+      const { type, keyword } = allTypedPosts[i];
+      const kw = keyword ? keyword.keyword : 'electrical protection';
+
+      let title;
+      if (titleTemplate === 'auto') {
+        const templates = titleTemplates[type] || titleTemplates.product;
+        const tmpl = templates[i % templates.length];
+        title = tmpl.replace('{keyword}', kw);
+      } else if (customTitles.length > 0) {
+        title = customTitles[i % customTitles.length].replace('{keyword}', kw);
+      } else {
+        title = `${kw} Guide`;
+      }
+
+      plans.push({
+        plan_month: month,
+        plan_order: orderNum++,
+        keyword: kw,
+        title,
+        article_type: type,
+        daily_count: dailyCount,
+        status: 'pending',
+      });
+    }
+
+    // 批量插入计划
+    const result = await sb('blog_plans', {
+      method: 'POST',
+      body: JSON.stringify(plans),
+    });
+
+    res.json({
+      success: true,
+      planMonth: month,
+      totalPlans: plans.length,
+      dailyCount,
+      typeDistribution,
+      plans: result,
+    });
+  } catch (error) {
+    console.error('Error generating plan v2:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 7. 获取规划配置
+app.get('/api/blog/plan-config', auth, async (req, res) => {
+  try {
+    const config = await sb('blog_config?config_key=eq.plan_settings');
+    const settings = config && config.length > 0
+      ? JSON.parse(config[0].config_value)
+      : { daily_count: 4, type_ratio: { product: 40, comparison: 25, application: 20, buying: 10, faq: 5 }, title_template: 'auto' };
+
+    res.json({ success: true, settings });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 8. 保存规划配置
+app.post('/api/blog/plan-config', auth, async (req, res) => {
+  try {
+    const { dailyCount, typeRatio, titleTemplate } = req.body;
+
+    const settings = { daily_count: dailyCount, type_ratio: typeRatio, title_template: titleTemplate };
+
+    await sb('blog_config?config_key=eq.plan_settings', {
+      method: 'PATCH',
+      body: JSON.stringify({ config_value: JSON.stringify(settings) }),
+    });
+
+    res.json({ success: true, settings });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = app;
