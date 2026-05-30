@@ -1155,6 +1155,276 @@
     .btn-reject:hover {
       background: #c82333;
     }
+
+    /* Phase 3: SEO/链接/FAQ 标签页 */
+    .modal-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #e0e0e0;
+      overflow-x: auto;
+    }
+
+    .modal-tab-btn {
+      padding: 10px 15px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      color: #666;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+
+    .modal-tab-btn.active {
+      color: #0066cc;
+      border-bottom-color: #0066cc;
+    }
+
+    .modal-tab-content {
+      display: none;
+    }
+
+    .modal-tab-content.active {
+      display: block;
+    }
+
+    /* SEO 编辑样式 */
+    .seo-form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .seo-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .seo-field label {
+      font-weight: 500;
+      font-size: 13px;
+      color: #333;
+    }
+
+    .seo-field input,
+    .seo-field textarea {
+      padding: 8px 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: inherit;
+    }
+
+    .seo-field textarea {
+      min-height: 60px;
+      resize: vertical;
+    }
+
+    .seo-keywords-input {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: white;
+    }
+
+    .seo-keyword-chip {
+      background: #e3f2fd;
+      padding: 4px 8px;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+    }
+
+    .seo-keyword-chip .remove {
+      cursor: pointer;
+      color: #0066cc;
+      font-weight: bold;
+    }
+
+    .seo-keywords-input input {
+      border: none;
+      outline: none;
+      flex: 1;
+      min-width: 100px;
+      padding: 4px;
+      font-size: 13px;
+    }
+
+    .seo-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .seo-actions button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .btn-generate-seo {
+      background: #0066cc;
+      color: white;
+    }
+
+    .btn-generate-seo:hover {
+      background: #0052a3;
+    }
+
+    /* 链接管理样式 */
+    .links-section {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .links-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .links-group h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
+    }
+
+    .link-item {
+      background: #f9f9f9;
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .link-info {
+      flex: 1;
+    }
+
+    .link-title {
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 3px;
+    }
+
+    .link-url {
+      color: #0066cc;
+      text-decoration: none;
+      font-size: 12px;
+      word-break: break-all;
+    }
+
+    .link-reason {
+      color: #666;
+      font-size: 12px;
+      margin-top: 3px;
+    }
+
+    .link-remove {
+      cursor: pointer;
+      color: #ff4444;
+      font-weight: bold;
+      padding: 0 10px;
+    }
+
+    .links-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .btn-generate-links {
+      background: #0066cc;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .btn-generate-links:hover {
+      background: #0052a3;
+    }
+
+    /* FAQ 编辑样式 */
+    .faq-section {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .faq-item {
+      background: #f9f9f9;
+      padding: 12px;
+      border-radius: 4px;
+      border: 1px solid #eee;
+    }
+
+    .faq-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .faq-question {
+      font-weight: 500;
+      color: #333;
+      font-size: 13px;
+      flex: 1;
+    }
+
+    .faq-remove {
+      cursor: pointer;
+      color: #ff4444;
+      font-weight: bold;
+    }
+
+    .faq-answer {
+      color: #666;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .faq-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .btn-generate-faq {
+      background: #0066cc;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .btn-generate-faq:hover {
+      background: #0052a3;
+    }
   </style>
   </style>
 </head>
@@ -1487,54 +1757,158 @@
         <button class="modal-close" onclick="closeModal()">&times;</button>
       </div>
 
-      <div class="edit-section">
-        <h3>标题编辑</h3>
-        <input type="text" id="editTitle" placeholder="输入标题">
+      <!-- Phase 3: 标签页切换 -->
+      <div class="modal-tabs">
+        <button class="modal-tab-btn active" data-tab="basic" onclick="switchModalTab('basic')">基础编辑</button>
+        <button class="modal-tab-btn" data-tab="seo" onclick="switchModalTab('seo')">SEO 优化</button>
+        <button class="modal-tab-btn" data-tab="links" onclick="switchModalTab('links')">链接管理</button>
+        <button class="modal-tab-btn" data-tab="faq" onclick="switchModalTab('faq')">FAQ</button>
       </div>
 
-      <div class="edit-section">
-        <h3>关键词编辑</h3>
-        <div class="keywords-input" id="editKeywords">
-          <input type="text" placeholder="输入关键词，按 Enter 添加">
+      <!-- 标签页 1: 基础编辑 -->
+      <div class="modal-tab-content active" id="basic-tab">
+        <div class="edit-section">
+          <h3>标题编辑</h3>
+          <input type="text" id="editTitle" placeholder="输入标题">
         </div>
-      </div>
 
-      <div class="edit-section">
-        <h3>文案编辑</h3>
-        <textarea id="editContent" placeholder="输入文章内容（Markdown 格式）"></textarea>
-      </div>
-
-      <div class="edit-section">
-        <h3>图片上传</h3>
-        <div class="image-upload" onclick="document.getElementById('imageInput').click()">
-          <p>推荐尺寸：1200 × 540 px (16:9)</p>
-          <p>推荐格式：WebP / JPEG</p>
-          <p>最大文件：200KB</p>
-          <p style="margin-top: 10px; color: #0066cc;">拖拽上传或点击选择文件</p>
-          <input type="file" id="imageInput" accept="image/*" onchange="handleImageUpload(event)">
-        </div>
-        <div class="image-preview" id="imagePreview"></div>
-      </div>
-
-      <div class="preview-grid">
-        <div class="preview-item">
-          <h4>详情页预览（1200×540）</h4>
-          <div class="preview-box" id="detailPreview">
-            <p style="color: #999;">上传图片后显示</p>
+        <div class="edit-section">
+          <h3>关键词编辑</h3>
+          <div class="keywords-input" id="editKeywords">
+            <input type="text" placeholder="输入关键词，按 Enter 添加">
           </div>
         </div>
-        <div class="preview-item">
-          <h4>前台卡片预览（470×210）</h4>
-          <div class="preview-box" id="cardPreview">
-            <p style="color: #999;">上传图片后显示</p>
+
+        <div class="edit-section">
+          <h3>文案编辑</h3>
+          <textarea id="editContent" placeholder="输入文章内容（Markdown 格式）"></textarea>
+        </div>
+
+        <div class="edit-section">
+          <h3>图片上传</h3>
+          <div class="image-upload" onclick="document.getElementById('imageInput').click()">
+            <p>推荐尺寸：1200 × 540 px (16:9)</p>
+            <p>推荐格式：WebP / JPEG</p>
+            <p>最大文件：200KB</p>
+            <p style="margin-top: 10px; color: #0066cc;">拖拽上传或点击选择文件</p>
+            <input type="file" id="imageInput" accept="image/*" onchange="handleImageUpload(event)">
+          </div>
+          <div class="image-preview" id="imagePreview"></div>
+        </div>
+
+        <div class="preview-grid">
+          <div class="preview-item">
+            <h4>详情页预览（1200×540）</h4>
+            <div class="preview-box" id="detailPreview">
+              <p style="color: #999;">上传图片后显示</p>
+            </div>
+          </div>
+          <div class="preview-item">
+            <h4>前台卡片预览（470×210）</h4>
+            <div class="preview-box" id="cardPreview">
+              <p style="color: #999;">上传图片后显示</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- SEO 检查结果 -->
+        <div class="edit-section" id="seoCheckSection" style="display: none;">
+          <h3>SEO 检查结果</h3>
+          <div id="seoCheckResult"></div>
+        </div>
+      </div>
+
+      <!-- 标签页 2: SEO 优化 -->
+      <div class="modal-tab-content" id="seo-tab">
+        <div class="seo-form">
+          <div class="seo-field">
+            <label>Meta Title (SEO 标题)</label>
+            <input type="text" id="seoMetaTitle" placeholder="50-60 字符" maxlength="60">
+            <small style="color: #999;">用于搜索引擎结果页面</small>
+          </div>
+
+          <div class="seo-field">
+            <label>Meta Description (SEO 描述)</label>
+            <textarea id="seoMetaDescription" placeholder="150-160 字符" maxlength="160"></textarea>
+            <small style="color: #999;">用于搜索引擎结果页面摘要</small>
+          </div>
+
+          <div class="seo-field">
+            <label>主关键词</label>
+            <input type="text" id="seoMainKeyword" placeholder="文章的主要关键词">
+          </div>
+
+          <div class="seo-field">
+            <label>子关键词</label>
+            <div class="seo-keywords-input" id="seoSubKeywords">
+              <input type="text" placeholder="输入子关键词，按 Enter 添加">
+            </div>
+          </div>
+
+          <div style="background: #f0f7ff; padding: 12px; border-radius: 4px; font-size: 13px; color: #0066cc;">
+            <strong>💡 提示：</strong>点击下方按钮让 AI 自动生成 SEO 元数据
+          </div>
+
+          <div class="seo-actions">
+            <button class="btn-generate-seo" onclick="generateSEO()">🤖 AI 生成 SEO 元数据</button>
+          </div>
+
+          <div id="seoGeneratingStatus" style="display: none; color: #0066cc; font-size: 13px;">
+            <span class="loading"></span> 正在生成 SEO 元数据...
           </div>
         </div>
       </div>
 
-      <!-- SEO 检查结果 -->
-      <div class="edit-section" id="seoCheckSection" style="display: none;">
-        <h3>SEO 检查结果</h3>
-        <div id="seoCheckResult"></div>
+      <!-- 标签页 3: 链接管理 -->
+      <div class="modal-tab-content" id="links-tab">
+        <div class="links-section">
+          <div class="links-group">
+            <h4>🔗 内部链接（指向其他 BLOG）</h4>
+            <div id="internalLinksList" style="display: flex; flex-direction: column; gap: 8px;">
+              <p style="color: #999; font-size: 13px;">暂无内部链接</p>
+            </div>
+          </div>
+
+          <div class="links-group">
+            <h4>🌐 外部链接（参考资源）</h4>
+            <div id="externalLinksList" style="display: flex; flex-direction: column; gap: 8px;">
+              <p style="color: #999; font-size: 13px;">暂无外部链接</p>
+            </div>
+          </div>
+
+          <div style="background: #f0f7ff; padding: 12px; border-radius: 4px; font-size: 13px; color: #0066cc;">
+            <strong>💡 提示：</strong>点击下方按钮让 AI 推荐相关链接
+          </div>
+
+          <div class="links-actions">
+            <button class="btn-generate-links" onclick="generateLinks()">🤖 AI 推荐链接</button>
+          </div>
+
+          <div id="linksGeneratingStatus" style="display: none; color: #0066cc; font-size: 13px;">
+            <span class="loading"></span> 正在推荐链接...
+          </div>
+        </div>
+      </div>
+
+      <!-- 标签页 4: FAQ -->
+      <div class="modal-tab-content" id="faq-tab">
+        <div class="faq-section">
+          <div id="faqList" style="display: flex; flex-direction: column; gap: 10px;">
+            <p style="color: #999; font-size: 13px;">暂无 FAQ</p>
+          </div>
+
+          <div style="background: #f0f7ff; padding: 12px; border-radius: 4px; font-size: 13px; color: #0066cc; margin-top: 15px;">
+            <strong>💡 提示：</strong>点击下方按钮让 AI 从文章内容生成常见问题
+          </div>
+
+          <div class="faq-actions">
+            <button class="btn-generate-faq" onclick="generateFAQ()">🤖 AI 生成 FAQ</button>
+          </div>
+
+          <div id="faqGeneratingStatus" style="display: none; color: #0066cc; font-size: 13px;">
+            <span class="loading"></span> 正在生成 FAQ...
+          </div>
+        </div>
       </div>
 
       <div class="modal-actions">
@@ -2611,6 +2985,203 @@
       document.getElementById('ratioFaq').value = 5;
       updateRatioTotal();
       selectTemplate('auto', document.querySelector('.template-btn'));
+    }
+
+    // ──────────────────────────────────────────
+    // Phase 3: SEO/链接/FAQ 函数
+    // ──────────────────────────────────────────
+
+    // 切换模态框标签页
+    function switchModalTab(tabName) {
+      document.querySelectorAll('.modal-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.modal-tab-content').forEach(content => content.classList.remove('active'));
+      document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+      document.getElementById(`${tabName}-tab`).classList.add('active');
+    }
+
+    // 生成 SEO 元数据
+    async function generateSEO() {
+      if (!currentPostId) {
+        showToast('请先选择文章');
+        return;
+      }
+
+      const statusEl = document.getElementById('seoGeneratingStatus');
+      statusEl.style.display = 'block';
+
+      try {
+        const response = await fetch('/api/blog/generate-seo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ postId: currentPostId, modelType: 'claude' })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // 填充 SEO 字段
+          document.getElementById('seoMetaTitle').value = data.seoData.meta_title;
+          document.getElementById('seoMetaDescription').value = data.seoData.meta_description;
+          document.getElementById('seoMainKeyword').value = data.seoData.main_keyword;
+
+          // 填充子关键词
+          const subKeywordsContainer = document.getElementById('seoSubKeywords');
+          subKeywordsContainer.innerHTML = '';
+          data.seoData.sub_keywords.forEach(keyword => {
+            const chip = document.createElement('div');
+            chip.className = 'seo-keyword-chip';
+            chip.innerHTML = `${keyword} <span class="remove" onclick="this.parentElement.remove()">×</span>`;
+            subKeywordsContainer.appendChild(chip);
+          });
+
+          // 添加输入框
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.placeholder = '输入子关键词，按 Enter 添加';
+          input.onkeypress = (e) => {
+            if (e.key === 'Enter' && input.value.trim()) {
+              const chip = document.createElement('div');
+              chip.className = 'seo-keyword-chip';
+              chip.innerHTML = `${input.value.trim()} <span class="remove" onclick="this.parentElement.remove()">×</span>`;
+              subKeywordsContainer.insertBefore(chip, input);
+              input.value = '';
+            }
+          };
+          subKeywordsContainer.appendChild(input);
+
+          showToast(`✅ SEO 元数据已生成！字数: ${data.seoData.wordCount}, 阅读时间: ${data.seoData.readingTime} 分钟`);
+        } else {
+          showToast('生成失败：' + data.error);
+        }
+      } catch (error) {
+        showToast('错误：' + error.message);
+      } finally {
+        statusEl.style.display = 'none';
+      }
+    }
+
+    // 生成链接推荐
+    async function generateLinks() {
+      if (!currentPostId) {
+        showToast('请先选择文章');
+        return;
+      }
+
+      const statusEl = document.getElementById('linksGeneratingStatus');
+      statusEl.style.display = 'block';
+
+      try {
+        const response = await fetch('/api/blog/generate-links', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ postId: currentPostId, modelType: 'claude' })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // 显示内部链接
+          const internalList = document.getElementById('internalLinksList');
+          internalList.innerHTML = '';
+          if (data.linksData.internal_links && data.linksData.internal_links.length > 0) {
+            data.linksData.internal_links.forEach((link, idx) => {
+              const item = document.createElement('div');
+              item.className = 'link-item';
+              item.innerHTML = `
+                <div class="link-info">
+                  <div class="link-title">${link.title}</div>
+                  <div class="link-url">${link.url}</div>
+                  <div class="link-reason">原因: ${link.reason}</div>
+                </div>
+                <div class="link-remove" onclick="this.parentElement.remove()">删除</div>
+              `;
+              internalList.appendChild(item);
+            });
+          } else {
+            internalList.innerHTML = '<p style="color: #999; font-size: 13px;">暂无内部链接推荐</p>';
+          }
+
+          // 显示外部链接
+          const externalList = document.getElementById('externalLinksList');
+          externalList.innerHTML = '';
+          if (data.linksData.external_links && data.linksData.external_links.length > 0) {
+            data.linksData.external_links.forEach((link, idx) => {
+              const item = document.createElement('div');
+              item.className = 'link-item';
+              item.innerHTML = `
+                <div class="link-info">
+                  <div class="link-title">${link.title}</div>
+                  <a href="${link.url}" target="_blank" class="link-url">${link.url}</a>
+                  <div class="link-reason">原因: ${link.reason}</div>
+                </div>
+                <div class="link-remove" onclick="this.parentElement.remove()">删除</div>
+              `;
+              externalList.appendChild(item);
+            });
+          } else {
+            externalList.innerHTML = '<p style="color: #999; font-size: 13px;">暂无外部链接推荐</p>';
+          }
+
+          showToast(`✅ 链接推荐已生成！内部: ${data.linksData.internal_links?.length || 0}, 外部: ${data.linksData.external_links?.length || 0}`);
+        } else {
+          showToast('生成失败：' + data.error);
+        }
+      } catch (error) {
+        showToast('错误：' + error.message);
+      } finally {
+        statusEl.style.display = 'none';
+      }
+    }
+
+    // 生成 FAQ
+    async function generateFAQ() {
+      if (!currentPostId) {
+        showToast('请先选择文章');
+        return;
+      }
+
+      const statusEl = document.getElementById('faqGeneratingStatus');
+      statusEl.style.display = 'block';
+
+      try {
+        const response = await fetch('/api/blog/generate-faq', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ postId: currentPostId, modelType: 'claude' })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          const faqList = document.getElementById('faqList');
+          faqList.innerHTML = '';
+
+          if (data.faqData.faq && data.faqData.faq.length > 0) {
+            data.faqData.faq.forEach((item, idx) => {
+              const faqItem = document.createElement('div');
+              faqItem.className = 'faq-item';
+              faqItem.innerHTML = `
+                <div class="faq-item-header">
+                  <div class="faq-question">Q${idx + 1}: ${item.question}</div>
+                  <div class="faq-remove" onclick="this.parentElement.parentElement.remove()">删除</div>
+                </div>
+                <div class="faq-answer">A: ${item.answer}</div>
+              `;
+              faqList.appendChild(faqItem);
+            });
+          } else {
+            faqList.innerHTML = '<p style="color: #999; font-size: 13px;">暂无 FAQ</p>';
+          }
+
+          showToast(`✅ FAQ 已生成！共 ${data.faqData.faq?.length || 0} 个问题`);
+        } else {
+          showToast('生成失败：' + data.error);
+        }
+      } catch (error) {
+        showToast('错误：' + error.message);
+      } finally {
+        statusEl.style.display = 'none';
+      }
     }
   </script>
 </body>

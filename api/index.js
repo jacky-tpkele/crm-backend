@@ -4756,4 +4756,269 @@ app.post('/api/blog/plan-config', auth, async (req, res) => {
   }
 });
 
+// ════════════════════════════════════════════════════════════════════
+// BLOG 自动化 - 第 3 阶段 API（文章详情页 + SEO 编辑 + 图片管理）
+// ════════════════════════════════════════════════════════════════════
+
+// 1. 获取文章详情（完整字段）
+app.get('/api/blog/post/:postId', auth, async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const posts = await sb(`blog_posts?id=eq.${postId}`);
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    res.json({ success: true, post: posts[0] });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 2. 更新文章详情（完整字段）
+app.put('/api/blog/post/:postId', auth, async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const {
+      title, content, meta_title, meta_description, slug_url,
+      main_keyword, sub_keywords, internal_links, external_links,
+      faq, cover_image_alt, word_count,
+    } = req.body;
+
+    const updates = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (title !== undefined) updates.title = title;
+    if (content !== undefined) {
+      updates.content = content;
+      updates.word_count = content.split(/\s+/).length;
+      updates.reading_time = Math.ceil(updates.word_count / 200);
+    }
+    if (meta_title !== undefined) updates.meta_title = meta_title;
+    if (meta_description !== undefined) updates.meta_description = meta_description;
+    if (slug_url !== undefined) updates.slug_url = slug_url;
+    if (main_keyword !== undefined) updates.main_keyword = main_keyword;
+    if (sub_keywords !== undefined) updates.sub_keywords = sub_keywords;
+    if (internal_links !== undefined) updates.internal_links = internal_links;
+    if (external_links !== undefined) updates.external_links = external_links;
+    if (faq !== undefined) updates.faq = faq;
+    if (cover_image_alt !== undefined) updates.cover_image_alt = cover_image_alt;
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    });
+
+    res.json({ success: true, postId, updates });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 3. 上传封面图
+app.post('/api/blog/post/:postId/cover-image', auth, async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const { imageBase64, fileName, altText } = req.body;
+
+    if (!imageBase64) return res.status(400).json({ error: 'imageBase64 is required' });
+
+    const originalSize = Buffer.byteLength(imageBase64.replace(/^data:image\/\w+;base64,/, ''), 'base64');
+    const compressedBuffer = await compressImage(imageBase64);
+    const compressedSize = compressedBuffer.length;
+    const cloudinaryResult = await uploadToCloudinary(compressedBuffer, `cover-${postId}`);
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        cover_image_url: cloudinaryResult.secure_url,
+        cover_image_cloudinary_id: cloudinaryResult.public_id,
+        cover_image_alt: altText || '',
+        image_url: cloudinaryResult.secure_url,
+        image_width: cloudinaryResult.width,
+        image_height: cloudinaryResult.height,
+        image_original_size: originalSize,
+        image_compressed_size: compressedSize,
+        updated_at: new Date().toISOString(),
+      }),
+    });
+
+    res.json({
+      success: true,
+      imageUrl: cloudinaryResult.secure_url,
+      cloudinaryId: cloudinaryResult.public_id,
+      originalSize,
+      compressedSize,
+      compressionRate: `${((1 - compressedSize / originalSize) * 100).toFixed(1)}%`,
+      width: cloudinaryResult.width,
+      height: cloudinaryResult.height,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 4. 上传正文图片
+app.post('/api/blog/post/:postId/content-image', auth, async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const { imageBase64, fileName, altText } = req.body;
+
+    if (!imageBase64) return res.status(400).json({ error: 'imageBase64 is required' });
+
+    const compressedBuffer = await compressImage(imageBase64);
+    const cloudinaryResult = await uploadToCloudinary(compressedBuffer, `content-${postId}-${Date.now()}`);
+
+    // 获取现有图片列表
+    const posts = await sb(`blog_posts?id=eq.${postId}&select=content_images`);
+    const existingImages = posts[0]?.content_images || [];
+
+    const newImage = {
+      id: uuidv4(),
+      url: cloudinaryResult.secure_url,
+      cloudinaryId: cloudinaryResult.public_id,
+      altText: altText || '',
+      width: cloudinaryResult.width,
+      height: cloudinaryResult.height,
+    };
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        content_images: [...existingImages, newImage],
+        updated_at: new Date().toISOString(),
+      }),
+    });
+
+    res.json({ success: true, image: newImage });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 5. 删除正文图片
+app.delete('/api/blog/post/:postId/content-image/:imageId', auth, async (req, res) => {
+  try {
+    const { postId, imageId } = req.params;
+
+    const posts = await sb(`blog_posts?id=eq.${postId}&select=content_images`);
+    const existingImages = posts[0]?.content_images || [];
+    const updatedImages = existingImages.filter(img => img.id !== imageId);
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        content_images: updatedImages,
+        updated_at: new Date().toISOString(),
+      }),
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 6. 更新图片 Alt Text
+app.patch('/api/blog/post/:postId/content-image/:imageId/alt', auth, async (req, res) => {
+  try {
+    const { postId, imageId } = req.params;
+    const { altText } = req.body;
+
+    const posts = await sb(`blog_posts?id=eq.${postId}&select=content_images`);
+    const existingImages = posts[0]?.content_images || [];
+    const updatedImages = existingImages.map(img =>
+      img.id === imageId ? { ...img, altText } : img
+    );
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        content_images: updatedImages,
+        updated_at: new Date().toISOString(),
+      }),
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 7. 自动生成 Slug
+app.post('/api/blog/post/:postId/generate-slug', auth, async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const posts = await sb(`blog_posts?id=eq.${postId}&select=title`);
+    if (!posts || posts.length === 0) return res.status(404).json({ error: 'Post not found' });
+
+    const slug = posts[0].title
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .slice(0, 80);
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ slug_url: slug, updated_at: new Date().toISOString() }),
+    });
+
+    res.json({ success: true, slug });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 8. 自动生成 Meta Title 和 Meta Description
+app.post('/api/blog/post/:postId/generate-meta', auth, async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const { model = 'deepseek' } = req.body;
+
+    const posts = await sb(`blog_posts?id=eq.${postId}`);
+    if (!posts || posts.length === 0) return res.status(404).json({ error: 'Post not found' });
+
+    const post = posts[0];
+    const prompt = `基于以下文章信息，生成 SEO 优化的 Meta Title 和 Meta Description。
+
+文章标题：${post.title}
+主关键词：${post.main_keyword || post.keywords?.[0] || ''}
+文章内容摘要：${post.content?.slice(0, 500) || ''}
+
+要求：
+- Meta Title：30-60 字符，包含主关键词，吸引点击
+- Meta Description：120-160 字符，包含主关键词，描述文章价值
+
+只返回 JSON 格式：
+{
+  "meta_title": "...",
+  "meta_description": "..."
+}`;
+
+    const content = await generateContentWithAI(post.title, prompt, model);
+
+    let meta;
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      meta = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+    } catch {
+      meta = { meta_title: post.title, meta_description: post.content?.slice(0, 150) || '' };
+    }
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        meta_title: meta.meta_title,
+        meta_description: meta.meta_description,
+        updated_at: new Date().toISOString(),
+      }),
+    });
+
+    res.json({ success: true, meta_title: meta.meta_title, meta_description: meta.meta_description });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = app;

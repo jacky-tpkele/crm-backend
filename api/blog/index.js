@@ -600,4 +600,316 @@ router.get('/models', (req, res) => {
   });
 });
 
+// ──────────────────────────────────────────
+// Phase 3: SEO 优化 + 链接管理 + FAQ
+// ──────────────────────────────────────────
+
+// 9. 生成 SEO 元数据
+router.post('/generate-seo', async (req, res) => {
+  try {
+    const { postId, modelType = 'claude' } = req.body;
+
+    if (!postId) {
+      return res.status(400).json({ error: 'Missing postId' });
+    }
+
+    // 获取文章
+    const posts = await sb(`blog_posts?id=eq.${postId}`);
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    const post = posts[0];
+    const model = AI_MODELS[modelType];
+    if (!model || !model.apiKey) {
+      return res.status(400).json({ error: `Model ${modelType} not configured` });
+    }
+
+    // 生成 SEO 元数据
+    const seoPrompt = `
+你是 SEO 专家。请为以下文章生成 SEO 元数据。
+
+文章标题：${post.title}
+文章内容摘要：${post.content.substring(0, 500)}
+
+请返回 JSON 格式（不要包含 markdown 代码块）：
+{
+  "meta_title": "SEO 优化的标题（50-60 字符）",
+  "meta_description": "SEO 优化的描述（150-160 字符）",
+  "main_keyword": "主关键词",
+  "sub_keywords": ["子关键词1", "子关键词2", "子关键词3"]
+}
+    `;
+
+    let seoData;
+    if (modelType === 'claude') {
+      const response = await fetch(model.endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': model.apiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: model.model,
+          max_tokens: 500,
+          messages: [{ role: 'user', content: seoPrompt }],
+        }),
+      });
+      const result = await response.json();
+      const content = result.content[0].text;
+      seoData = JSON.parse(content);
+    } else if (modelType === 'gpt') {
+      const response = await fetch(model.endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${model.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: model.model,
+          messages: [{ role: 'user', content: seoPrompt }],
+          temperature: 0.7,
+        }),
+      });
+      const result = await response.json();
+      seoData = JSON.parse(result.choices[0].message.content);
+    }
+
+    // 计算字数和阅读时间
+    const wordCount = post.content.split(/\s+/).length;
+    const readingTime = Math.ceil(wordCount / 200); // 假设每分钟 200 字
+
+    // 更新数据库
+    const updates = {
+      meta_title: seoData.meta_title,
+      meta_description: seoData.meta_description,
+      main_keyword: seoData.main_keyword,
+      sub_keywords: seoData.sub_keywords,
+      word_count: wordCount,
+      reading_time: readingTime,
+      updated_at: new Date().toISOString(),
+    };
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    });
+
+    res.json({
+      success: true,
+      postId,
+      seoData: {
+        ...seoData,
+        wordCount,
+        readingTime,
+      },
+    });
+  } catch (error) {
+    console.error('Error generating SEO:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 10. 生成内部/外部链接推荐
+router.post('/generate-links', async (req, res) => {
+  try {
+    const { postId, modelType = 'claude' } = req.body;
+
+    if (!postId) {
+      return res.status(400).json({ error: 'Missing postId' });
+    }
+
+    // 获取文章
+    const posts = await sb(`blog_posts?id=eq.${postId}`);
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    const post = posts[0];
+    const model = AI_MODELS[modelType];
+    if (!model || !model.apiKey) {
+      return res.status(400).json({ error: `Model ${modelType} not configured` });
+    }
+
+    // 获取所有已发布的文章用于内部链接推荐
+    const publishedPosts = await sb('blog_posts?status=eq.published&select=id,title,main_keyword');
+
+    const linksPrompt = `
+你是内容策略专家。请为以下文章推荐内部和外部链接。
+
+文章标题：${post.title}
+文章关键词：${post.main_keyword}
+文章内容摘要：${post.content.substring(0, 500)}
+
+已发布的相关文章：
+${publishedPosts.map(p => `- ${p.title} (关键词: ${p.main_keyword})`).join('\n')}
+
+请返回 JSON 格式（不要包含 markdown 代码块）：
+{
+  "internal_links": [
+    {"title": "相关文章标题", "url": "/blog/slug", "reason": "链接原因"}
+  ],
+  "external_links": [
+    {"title": "外部资源标题", "url": "https://example.com", "reason": "链接原因"}
+  ]
+}
+
+最多推荐 3 个内部链接和 3 个外部链接。
+    `;
+
+    let linksData;
+    if (modelType === 'claude') {
+      const response = await fetch(model.endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': model.apiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: model.model,
+          max_tokens: 800,
+          messages: [{ role: 'user', content: linksPrompt }],
+        }),
+      });
+      const result = await response.json();
+      const content = result.content[0].text;
+      linksData = JSON.parse(content);
+    } else if (modelType === 'gpt') {
+      const response = await fetch(model.endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${model.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: model.model,
+          messages: [{ role: 'user', content: linksPrompt }],
+          temperature: 0.7,
+        }),
+      });
+      const result = await response.json();
+      linksData = JSON.parse(result.choices[0].message.content);
+    }
+
+    // 更新数据库
+    const updates = {
+      internal_links: linksData.internal_links || [],
+      external_links: linksData.external_links || [],
+      updated_at: new Date().toISOString(),
+    };
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    });
+
+    res.json({
+      success: true,
+      postId,
+      linksData,
+    });
+  } catch (error) {
+    console.error('Error generating links:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 11. 生成 FAQ
+router.post('/generate-faq', async (req, res) => {
+  try {
+    const { postId, modelType = 'claude' } = req.body;
+
+    if (!postId) {
+      return res.status(400).json({ error: 'Missing postId' });
+    }
+
+    // 获取文章
+    const posts = await sb(`blog_posts?id=eq.${postId}`);
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    const post = posts[0];
+    const model = AI_MODELS[modelType];
+    if (!model || !model.apiKey) {
+      return res.status(400).json({ error: `Model ${modelType} not configured` });
+    }
+
+    // 生成 FAQ
+    const faqPrompt = `
+你是内容编辑。请根据以下文章内容生成 5-7 个常见问题和答案。
+
+文章标题：${post.title}
+文章内容：${post.content}
+
+请返回 JSON 格式（不要包含 markdown 代码块）：
+{
+  "faq": [
+    {"question": "问题1？", "answer": "答案1"},
+    {"question": "问题2？", "answer": "答案2"}
+  ]
+}
+
+确保问题和答案都简洁明了，适合在网页上展示。
+    `;
+
+    let faqData;
+    if (modelType === 'claude') {
+      const response = await fetch(model.endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': model.apiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: model.model,
+          max_tokens: 1000,
+          messages: [{ role: 'user', content: faqPrompt }],
+        }),
+      });
+      const result = await response.json();
+      const content = result.content[0].text;
+      faqData = JSON.parse(content);
+    } else if (modelType === 'gpt') {
+      const response = await fetch(model.endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${model.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: model.model,
+          messages: [{ role: 'user', content: faqPrompt }],
+          temperature: 0.7,
+        }),
+      });
+      const result = await response.json();
+      faqData = JSON.parse(result.choices[0].message.content);
+    }
+
+    // 更新数据库
+    const updates = {
+      faq: faqData.faq || [],
+      updated_at: new Date().toISOString(),
+    };
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    });
+
+    res.json({
+      success: true,
+      postId,
+      faqData,
+    });
+  } catch (error) {
+    console.error('Error generating FAQ:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
