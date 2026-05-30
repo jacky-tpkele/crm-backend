@@ -3117,6 +3117,492 @@ app.post('/api/chat/push/test', auth, async (req, res) => {
   }
 });
 
+// ════════════════════════════════════════════════════════════════════
+// BLOG 自动化 API
+// ════════════════════════════════════════════════════════════════════
+
+const cloudinary = require('cloudinary').v2;
+const sharp = require('sharp');
+const { v4: uuidv4 } = require('uuid');
+
+// Cloudinary 配置
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// AI 模型配置
+const AI_MODELS = {
+  claude: {
+    name: 'Claude',
+    apiKey: process.env.CLAUDE_API_KEY,
+    endpoint: 'https://api.anthropic.com/v1/messages',
+    model: 'claude-3-5-sonnet-20241022',
+  },
+  gpt: {
+    name: 'GPT-4',
+    apiKey: process.env.OPENAI_API_KEY,
+    endpoint: 'https://api.openai.com/v1/chat/completions',
+    model: 'gpt-4-turbo',
+  },
+  gemini: {
+    name: 'Gemini',
+    apiKey: process.env.GEMINI_API_KEY,
+    endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',
+    model: 'gemini-pro',
+  },
+  deepseek: {
+    name: 'DeepSeek',
+    apiKey: process.env.DEEPSEEK_API_KEY,
+    endpoint: 'https://api.deepseek.com/chat/completions',
+    model: 'deepseek-chat',
+  },
+};
+
+// 图片压缩配置
+const IMAGE_CONFIG = {
+  maxWidth: parseInt(process.env.IMAGE_MAX_WIDTH || '1200'),
+  maxHeight: parseInt(process.env.IMAGE_MAX_HEIGHT || '800'),
+  quality: parseInt(process.env.IMAGE_COMPRESSION_QUALITY || '85'),
+  maxSize: parseInt(process.env.IMAGE_MAX_SIZE || '200000'),
+};
+
+// AI 内容生成
+async function generateContentWithAI(keyword, title, modelType = 'claude') {
+  const model = AI_MODELS[modelType];
+  if (!model || !model.apiKey) {
+    throw new Error(`Model ${modelType} not configured or API key missing`);
+  }
+
+  const prompt = `
+你是一个专业的 BLOG 内容创作者。请为以下主题创建一篇高质量的 BLOG 文章。
+
+主题关键词：${keyword}
+文章标题：${title}
+
+要求：
+1. 文章长度：800-1200 字
+2. 格式：Markdown
+3. 包含 2-3 个主要章节
+4. 每个章节包含 2-3 个段落
+5. 在适当位置添加列表或要点
+6. 最后包含一个总结段落
+7. 不要包含图片标记或 HTML 标签
+8. 确保内容对 SEO 友好
+
+请直接返回 Markdown 格式的文章内容，不要添加任何额外的说明或标记。
+  `;
+
+  if (modelType === 'claude') {
+    const response = await fetch(model.endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': model.apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: model.model,
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    if (!response.ok) throw new Error('Claude API error');
+    const data = await response.json();
+    return data.content[0].text;
+  } else if (modelType === 'gpt') {
+    const response = await fetch(model.endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${model.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: model.model,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        max_tokens: 2000,
+      }),
+    });
+    if (!response.ok) throw new Error('GPT API error');
+    const data = await response.json();
+    return data.choices[0].message.content;
+  } else if (modelType === 'gemini') {
+    const response = await fetch(`${model.endpoint}?key=${model.apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+      }),
+    });
+    if (!response.ok) throw new Error('Gemini API error');
+    const data = await response.json();
+    return data.candidates[0].content.parts[0].text;
+  } else if (modelType === 'deepseek') {
+    const response = await fetch(model.endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${model.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: model.model,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        max_tokens: 2000,
+      }),
+    });
+    if (!response.ok) throw new Error('DeepSeek API error');
+    const data = await response.json();
+    return data.choices[0].message.content;
+  }
+}
+
+// 图片压缩
+async function compressImage(imageBase64) {
+  const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+  const buffer = Buffer.from(base64Data, 'base64');
+  const compressed = await sharp(buffer)
+    .resize(IMAGE_CONFIG.maxWidth, IMAGE_CONFIG.maxHeight, {
+      fit: 'inside',
+      withoutEnlargement: true,
+    })
+    .webp({ quality: IMAGE_CONFIG.quality })
+    .toBuffer();
+  return compressed;
+}
+
+// 上传到 Cloudinary
+async function uploadToCloudinary(imageBuffer, fileName) {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: 'blog-images',
+        resource_type: 'auto',
+        public_id: `blog-${Date.now()}-${uuidv4().slice(0, 8)}`,
+      },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      }
+    );
+    uploadStream.end(imageBuffer);
+  });
+}
+
+// 1. 生成 30 天规划
+app.post('/api/blog/generate-plan', auth, async (req, res) => {
+  try {
+    const { month, keywords, titles } = req.body;
+    if (!month || !keywords || keywords.length === 0) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const plans = [];
+    for (let i = 0; i < 120; i++) {
+      const keyword = keywords[i % keywords.length];
+      const title = titles ? titles[i % titles.length] : `${keyword} - Part ${i + 1}`;
+      plans.push({
+        plan_month: month,
+        plan_order: i + 1,
+        keyword,
+        title,
+        status: 'pending',
+      });
+    }
+
+    const result = await sb('blog_plans', {
+      method: 'POST',
+      body: JSON.stringify(plans),
+    });
+
+    res.json({
+      success: true,
+      planMonth: month,
+      totalPlans: 120,
+      plans: result,
+    });
+  } catch (error) {
+    console.error('Error generating plan:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 2. 生成文案
+app.post('/api/blog/generate-content', auth, async (req, res) => {
+  try {
+    const { planId, keyword, title, model = 'claude' } = req.body;
+    if (!planId || !keyword || !title) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const content = await generateContentWithAI(keyword, title, model);
+    const post = {
+      plan_id: planId,
+      title,
+      content,
+      keywords: [keyword],
+      status: 'draft',
+    };
+
+    const result = await sb('blog_posts', {
+      method: 'POST',
+      body: JSON.stringify(post),
+    });
+
+    res.json({
+      success: true,
+      postId: result[0].id,
+      title,
+      content,
+      keywords: [keyword],
+      model,
+      recommendedImageSize: { width: 1200, height: 540, ratio: '16:9' },
+    });
+  } catch (error) {
+    console.error('Error generating content:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 3. 编辑文案
+app.put('/api/blog/edit-content', auth, async (req, res) => {
+  try {
+    const { postId, title, content, keywords } = req.body;
+    if (!postId) return res.status(400).json({ error: 'Missing postId' });
+
+    const updates = {
+      title: title || undefined,
+      content: content || undefined,
+      keywords: keywords || undefined,
+      updated_at: new Date().toISOString(),
+    };
+    Object.keys(updates).forEach(key => updates[key] === undefined && delete updates[key]);
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    });
+
+    res.json({ success: true, postId, ...updates });
+  } catch (error) {
+    console.error('Error editing content:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 4. 上传图片
+app.post('/api/blog/upload-image', auth, async (req, res) => {
+  try {
+    const { postId, imageBase64, fileName } = req.body;
+    if (!postId || !imageBase64) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const originalSize = Buffer.byteLength(imageBase64, 'base64');
+    const compressedBuffer = await compressImage(imageBase64);
+    const compressedSize = compressedBuffer.length;
+    const cloudinaryResult = await uploadToCloudinary(compressedBuffer, fileName);
+
+    const updates = {
+      image_url: cloudinaryResult.secure_url,
+      image_cloudinary_id: cloudinaryResult.public_id,
+      image_original_size: originalSize,
+      image_compressed_size: compressedSize,
+      image_width: cloudinaryResult.width,
+      image_height: cloudinaryResult.height,
+      updated_at: new Date().toISOString(),
+    };
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    });
+
+    const compressionRate = ((1 - compressedSize / originalSize) * 100).toFixed(1);
+
+    res.json({
+      success: true,
+      imageUrl: cloudinaryResult.secure_url,
+      cloudinaryId: cloudinaryResult.public_id,
+      originalSize,
+      compressedSize,
+      compressionRate: `${compressionRate}%`,
+      width: cloudinaryResult.width,
+      height: cloudinaryResult.height,
+      format: 'webp',
+    });
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 5. 预览文章
+app.get('/api/blog/preview/:postId', auth, async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const result = await sb(`blog_posts?id=eq.${postId}`);
+
+    if (!result || result.length === 0) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    const post = result[0];
+    res.json({
+      success: true,
+      postId: post.id,
+      title: post.title,
+      content: post.content,
+      keywords: post.keywords,
+      imageUrl: post.image_url,
+      imageSize: { width: post.image_width, height: post.image_height },
+      status: post.status,
+    });
+  } catch (error) {
+    console.error('Error previewing post:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 6. 发布文章
+app.post('/api/blog/publish', auth, async (req, res) => {
+  try {
+    const { postId } = req.body;
+    if (!postId) return res.status(400).json({ error: 'Missing postId' });
+
+    const post = await sb(`blog_posts?id=eq.${postId}`);
+    if (!post || post.length === 0) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    const slug = post[0].title
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
+
+    const updates = {
+      slug,
+      status: 'published',
+      published_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    });
+
+    const planId = post[0].plan_id;
+    if (planId) {
+      await sb(`blog_plans?id=eq.${planId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'published' }),
+      });
+    }
+
+    res.json({
+      success: true,
+      slug,
+      publishedAt: updates.published_at,
+      url: `https://www.tpkele.com/blog/${slug}`,
+    });
+  } catch (error) {
+    console.error('Error publishing post:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 7. 获取计划列表
+app.get('/api/blog/plans', auth, async (req, res) => {
+  try {
+    const plans = await sb('blog_plans?order=plan_month.desc,plan_order.asc&limit=500');
+    res.json({ success: true, plans });
+  } catch (error) {
+    console.error('Error fetching plans:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 8. 定时任务
+app.get('/api/blog/cron', async (req, res) => {
+  try {
+    const { token } = req.query;
+    if (token !== process.env.CRON_SECRET) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    const plans = await sb(
+      `blog_plans?status=eq.pending&plan_month=eq.${today.slice(0, 7)}&limit=4`
+    );
+
+    const results = [];
+
+    for (const plan of plans) {
+      try {
+        const content = await generateContentWithAI(plan.keyword, plan.title, 'claude');
+        const post = {
+          plan_id: plan.id,
+          title: plan.title,
+          content,
+          keywords: [plan.keyword],
+          status: 'draft',
+        };
+
+        const postResult = await sb('blog_posts', {
+          method: 'POST',
+          body: JSON.stringify(post),
+        });
+
+        await sb(`blog_plans?id=eq.${plan.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: 'content_generated' }),
+        });
+
+        results.push({
+          planId: plan.id,
+          postId: postResult[0].id,
+          title: plan.title,
+          status: 'success',
+        });
+      } catch (error) {
+        results.push({
+          planId: plan.id,
+          title: plan.title,
+          status: 'error',
+          error: error.message,
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+      generatedCount: results.filter(r => r.status === 'success').length,
+      results,
+    });
+  } catch (error) {
+    console.error('Error in cron job:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 9. 获取可用模型列表
+app.get('/api/blog/models', auth, (req, res) => {
+  const availableModels = Object.entries(AI_MODELS)
+    .filter(([key, model]) => model.apiKey)
+    .map(([key, model]) => ({
+      id: key,
+      name: model.name,
+      model: model.model,
+    }));
+
+  res.json({ success: true, models: availableModels });
+});
+
 // ── CSV 批量导入：通用（按表名 + 列映射）──
 // 前端把 CSV 解析成 rows 后调用此接口
 module.exports = app;
