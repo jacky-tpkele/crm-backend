@@ -1348,14 +1348,37 @@ router.get('/keywords/ai-recommend', async (req, res) => {
       }),
     });
 
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(`DeepSeek API error: ${error.error?.message || JSON.stringify(error)}`);
+    }
+
     const result = await response.json();
+    if (!result.choices || !result.choices[0]) {
+      throw new Error(`Invalid API response: ${JSON.stringify(result)}`);
+    }
+
     const content = result.choices[0].message.content;
-    const keywords = JSON.parse(content).keywords;
+    let keywords = [];
+
+    try {
+      const parsed = JSON.parse(content);
+      keywords = parsed.keywords || [];
+    } catch (e) {
+      // 尝试从文本中提取 JSON
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        keywords = parsed.keywords || [];
+      } else {
+        throw new Error('Failed to parse AI response');
+      }
+    }
 
     res.json({
       success: true,
       seed,
-      keywords,
+      keywords: keywords.slice(0, 50),
     });
   } catch (error) {
     console.error('Error recommending keywords:', error);
@@ -1409,6 +1432,29 @@ router.post('/keywords/batch', async (req, res) => {
     });
   } catch (error) {
     console.error('Error batch adding keywords:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 11e. 删除关键词
+router.delete('/keywords/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ error: 'Missing keyword id' });
+    }
+
+    await sb(`blog_keywords?id=eq.${id}`, {
+      method: 'DELETE',
+    });
+
+    res.json({
+      success: true,
+      message: 'Keyword deleted',
+    });
+  } catch (error) {
+    console.error('Error deleting keyword:', error);
     res.status(500).json({ error: error.message });
   }
 });

@@ -2046,6 +2046,15 @@
       };
     })();
 
+    // 获取请求头
+    function getHeaders() {
+      const token = localStorage.getItem('crm_token') || localStorage.getItem('token') || '';
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': token ? 'Bearer ' + token : ''
+      };
+    }
+
     // 全局状态
     let currentPostId = null;
     let isReviewMode = false;
@@ -2917,21 +2926,29 @@
     async function deleteKeyword(id) {
       if (!confirm('确定删除这个关键词吗？')) return;
       try {
-        await fetch(`/api/blog/keywords/${id}`, {
+        const response = await fetch(`/api/blog/keywords/${id}`, {
           method: 'DELETE',
           headers: getHeaders()
         });
-        showToast('已删除');
-        loadKeywords();
+        const data = await response.json();
+        if (data.success) {
+          showToast('✅ 已删除');
+          loadKeywords();
+        } else {
+          showToast('❌ 删除失败：' + (data.error || data.message));
+        }
       } catch (error) {
-        showToast('删除失败：' + error.message);
+        showToast('❌ 删除失败：' + error.message);
       }
     }
 
     // AI 推荐关键词
     async function getAIRecommendations() {
       const seedKeyword = document.getElementById('seedKeyword').value.trim();
-      if (!seedKeyword) { showToast('请输入种子关键词'); return; }
+      if (!seedKeyword) {
+        showToast('请输入种子关键词');
+        return;
+      }
 
       const btn = document.getElementById('aiRecommendBtn');
       btn.disabled = true;
@@ -2942,18 +2959,24 @@
           method: 'GET',
           headers: getHeaders()
         });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'API error');
+        }
+
         const data = await response.json();
 
-        if (data.success) {
-          recommendData = data.keywords || [];
+        if (data.success && data.keywords && data.keywords.length > 0) {
+          recommendData = data.keywords;
           renderRecommendations();
           document.getElementById('aiRecommendResult').style.display = 'block';
-          showToast('AI 推荐完成！');
+          showToast(`✅ AI 推荐完成！共 ${data.keywords.length} 个关键词`);
         } else {
-          showToast('推荐失败：' + data.error);
+          showToast('❌ 推荐失败：' + (data.error || '无推荐结果'));
         }
       } catch (error) {
-        showToast('错误：' + error.message);
+        showToast('❌ 错误：' + error.message);
       } finally {
         btn.disabled = false;
         btn.textContent = '🤖 AI 推荐';
@@ -2963,14 +2986,17 @@
     // 渲染推荐关键词列表
     function renderRecommendations() {
       const list = document.getElementById('recommendList');
-      if (!list || !recommendData || recommendData.length === 0) return;
+      if (!list || !recommendData || recommendData.length === 0) {
+        if (list) list.innerHTML = '<p style="color: #999;">暂无推荐</p>';
+        return;
+      }
 
-      list.innerHTML = recommendData.map(kw => `
-        <label style="display: flex; align-items: center; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 8px; cursor: pointer;">
-          <input type="checkbox" value="${kw}" data-category="general" style="margin-right: 10px;">
-          <span>${kw}</span>
+      list.innerHTML = `<div class="recommend-list">` + recommendData.map(kw => `
+        <label style="display: flex; align-items: center; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 8px; cursor: pointer; background: white;">
+          <input type="checkbox" value="${kw}" data-category="general" style="margin-right: 10px; cursor: pointer;">
+          <span style="flex: 1;">${kw}</span>
         </label>
-      `).join('');
+      `).join('') + `</div>`;
     }
 
     // 显示推荐标签页
@@ -3007,28 +3033,37 @@
     async function addSelectedKeywords() {
       const selected = [];
       document.querySelectorAll('#recommendList input[type="checkbox"]:checked').forEach(cb => {
-        selected.push({ keyword: cb.value, category: cb.dataset.category || currentRecommendTab });
+        selected.push({
+          keyword: cb.value,
+          category: cb.dataset.category || 'general',
+          difficulty: 3,
+          priority: 'medium'
+        });
       });
 
-      if (selected.length === 0) { showToast('请先选择关键词'); return; }
+      if (selected.length === 0) {
+        showToast('请先选择关键词');
+        return;
+      }
 
       try {
         const response = await fetch('/api/blog/keywords/batch', {
           method: 'POST',
           headers: getHeaders(),
-          body: JSON.stringify({ keywords: selected.map(s => ({ ...s, ai_recommended: true })) })
+          body: JSON.stringify({ keywords: selected })
         });
         const data = await response.json();
 
         if (data.success) {
-          showToast(`成功添加 ${data.addedCount} 个关键词`);
+          showToast(`✅ 成功添加 ${data.addedCount} 个关键词`);
           loadKeywords();
           clearRecommendSelection();
+          document.getElementById('aiRecommendResult').style.display = 'none';
         } else {
-          showToast('添加失败：' + data.error);
+          showToast('❌ 添加失败：' + (data.error || data.message));
         }
       } catch (error) {
-        showToast('添加失败：' + error.message);
+        showToast('❌ 添加失败：' + error.message);
       }
     }
 
