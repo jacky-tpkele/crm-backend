@@ -484,6 +484,105 @@
         opacity: 1;
       }
     }
+
+    /* 控制面板样式 */
+    .control-panel {
+      background: #f0f7ff;
+      border: 1px solid #0066cc;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .control-panel h3 {
+      margin-bottom: 15px;
+      font-size: 16px;
+      color: #333;
+    }
+
+    .control-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      padding: 12px;
+      background: white;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+
+    .control-item-label {
+      font-size: 14px;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .control-item-value {
+      font-size: 13px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .toggle-switch {
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+      background: #ccc;
+      border-radius: 12px;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.3s;
+    }
+
+    .toggle-switch.on {
+      background: #28a745;
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: left 0.3s;
+    }
+
+    .toggle-switch.on::after {
+      left: 28px;
+    }
+
+    .control-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .control-buttons button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .btn-generate-now {
+      background: #28a745;
+      color: white;
+    }
+
+    .btn-generate-now:hover {
+      background: #218838;
+    }
+
+    .btn-generate-now:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
   </style>
 </head>
 <body>
@@ -492,9 +591,52 @@
 
     <!-- 标签页 -->
     <div class="tabs">
-      <button class="tab-btn active" data-tab="keywords">关键词库</button>
+      <button class="tab-btn active" data-tab="control">控制面板</button>
+      <button class="tab-btn" data-tab="keywords">关键词库</button>
       <button class="tab-btn" data-tab="plan">生成规划</button>
       <button class="tab-btn" data-tab="list">计划列表</button>
+    </div>
+
+    <!-- 标签页 0：控制面板 -->
+    <div class="tab-content active" id="control-tab">
+      <div class="control-panel">
+        <h3>⚙️ 自动化控制面板</h3>
+
+        <div class="control-item">
+          <div>
+            <div class="control-item-label">自动生成状态</div>
+            <div class="control-item-value">每天凌晨 8 点自动生成 4 篇文案</div>
+          </div>
+          <div class="toggle-switch" id="autoToggle" onclick="toggleAutoGeneration()"></div>
+        </div>
+
+        <div class="control-item">
+          <div>
+            <div class="control-item-label">最后生成时间</div>
+            <div class="control-item-value" id="lastGenTime">加载中...</div>
+          </div>
+        </div>
+
+        <div class="control-item">
+          <div>
+            <div class="control-item-label">下次自动生成时间</div>
+            <div class="control-item-value" id="nextGenTime">加载中...</div>
+          </div>
+        </div>
+
+        <div class="control-item">
+          <div>
+            <div class="control-item-label">今日统计</div>
+            <div class="control-item-value" id="todayStats">加载中...</div>
+          </div>
+        </div>
+
+        <div class="control-buttons">
+          <button class="btn-generate-now" id="generateNowBtn" onclick="generateNow()">
+            📝 立即生成今日文案
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- 标签页 1：关键词库 -->
@@ -932,9 +1074,122 @@
       setTimeout(() => toast.remove(), 3000);
     }
 
+    // ========== 控制面板函数 ==========
+
+    // 加载控制面板状态
+    async function loadControlPanelStatus() {
+      try {
+        const response = await fetch('/api/blog/status', {
+          headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('token') || '') }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          // 更新自动生成开关
+          const toggle = document.getElementById('autoToggle');
+          if (data.autoGenerationEnabled) {
+            toggle.classList.add('on');
+          } else {
+            toggle.classList.remove('on');
+          }
+
+          // 更新最后生成时间
+          const lastGenTime = data.lastGenerationTime
+            ? new Date(data.lastGenerationTime).toLocaleString('zh-CN')
+            : '从未生成过';
+          document.getElementById('lastGenTime').textContent = lastGenTime;
+
+          // 更新下次自动生成时间
+          const nextGenTime = new Date(data.nextAutoGenTime).toLocaleString('zh-CN');
+          const hoursUntil = data.hoursUntilNextAutoGen;
+          document.getElementById('nextGenTime').textContent =
+            `${nextGenTime} (${hoursUntil} 小时后)`;
+
+          // 更新今日统计
+          const stats = data.todayStats;
+          document.getElementById('todayStats').textContent =
+            `待生成: ${stats.pending} | 已生成: ${stats.generated} | 已发布: ${stats.published}`;
+
+          // 更新立即生成按钮状态
+          const btn = document.getElementById('generateNowBtn');
+          if (data.canGenerateNow) {
+            btn.disabled = false;
+            btn.textContent = '📝 立即生成今日文案';
+          } else {
+            btn.disabled = true;
+            btn.textContent = `⏳ 冷却中，${data.hoursUntilNextAutoGen} 小时后可用`;
+          }
+        }
+      } catch (error) {
+        console.error('加载控制面板状态失败:', error);
+      }
+    }
+
+    // 切换自动生成
+    async function toggleAutoGeneration() {
+      try {
+        const toggle = document.getElementById('autoToggle');
+        const enabled = !toggle.classList.contains('on');
+
+        const response = await fetch('/api/blog/toggle-auto', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + (localStorage.getItem('token') || '')
+          },
+          body: JSON.stringify({ enabled })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          showToast(data.message);
+          loadControlPanelStatus();
+        } else {
+          showToast('切换失败: ' + data.error);
+        }
+      } catch (error) {
+        showToast('切换失败: ' + error.message);
+      }
+    }
+
+    // 立即生成
+    async function generateNow() {
+      try {
+        const btn = document.getElementById('generateNowBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ 生成中...';
+
+        const response = await fetch('/api/blog/generate-now', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + (localStorage.getItem('token') || '')
+          }
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          showToast(`成功生成 ${data.generatedCount} 篇文案`);
+          loadControlPanelStatus();
+          loadPlans();
+        } else {
+          showToast('生成失败: ' + data.error);
+        }
+      } catch (error) {
+        showToast('生成失败: ' + error.message);
+      }
+    }
+
     // 初始化
     document.getElementById('keywordInput').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') addKeyword();
+    });
+
+    // 页面加载时初始化控制面板
+    window.addEventListener('load', () => {
+      loadControlPanelStatus();
+      // 每 30 秒刷新一次状态
+      setInterval(loadControlPanelStatus, 30000);
     });
   </script>
 </body>

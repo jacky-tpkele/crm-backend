@@ -3534,6 +3534,39 @@ app.get('/api/blog/cron', async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    // 检查自动生成是否开启
+    const config = await sb('blog_config?config_key=eq.auto_generation_enabled');
+    const autoEnabled = config && config.length > 0 ? config[0].auto_generation_enabled : true;
+
+    if (!autoEnabled) {
+      return res.json({
+        success: true,
+        message: 'Auto generation is disabled',
+        timestamp: new Date().toISOString(),
+        generatedCount: 0,
+        results: [],
+      });
+    }
+
+    // 检查 12 小时冷却期
+    const lastGenConfig = await sb('blog_config?config_key=eq.last_generation_time');
+    const lastGenTime = lastGenConfig && lastGenConfig.length > 0
+      ? new Date(lastGenConfig[0].last_generation_time)
+      : null;
+
+    const now = new Date();
+    const hoursSinceLastGen = lastGenTime ? (now - lastGenTime) / (1000 * 60 * 60) : 24;
+
+    if (hoursSinceLastGen < 12) {
+      return res.json({
+        success: true,
+        message: `Cooling down. Last generation was ${hoursSinceLastGen.toFixed(1)} hours ago. Next generation available in ${(12 - hoursSinceLastGen).toFixed(1)} hours.`,
+        timestamp: new Date().toISOString(),
+        generatedCount: 0,
+        results: [],
+      });
+    }
+
     const today = new Date().toISOString().split('T')[0];
     const plans = await sb(
       `blog_plans?status=eq.pending&plan_month=eq.${today.slice(0, 7)}&limit=4`
@@ -3543,7 +3576,7 @@ app.get('/api/blog/cron', async (req, res) => {
 
     for (const plan of plans) {
       try {
-        const content = await generateContentWithAI(plan.keyword, plan.title, 'claude');
+        const content = await generateContentWithAI(plan.keyword, plan.title, 'deepseek');
         const post = {
           plan_id: plan.id,
           title: plan.title,
@@ -3578,6 +3611,15 @@ app.get('/api/blog/cron', async (req, res) => {
       }
     }
 
+    // 更新最后生成时间
+    await sb('blog_config?config_key=eq.last_generation_time', {
+      method: 'PATCH',
+      body: JSON.stringify({
+        config_value: now.toISOString(),
+        last_generation_time: now.toISOString(),
+      }),
+    });
+
     res.json({
       success: true,
       timestamp: new Date().toISOString(),
@@ -3601,6 +3643,156 @@ app.get('/api/blog/models', auth, (req, res) => {
     }));
 
   res.json({ success: true, models: availableModels });
+});
+
+// 10. 立即生成（手动触发）
+app.post('/api/blog/generate-now', auth, async (req, res) => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const plans = await sb(
+      `blog_plans?status=eq.pending&plan_month=eq.${today.slice(0, 7)}&limit=4`
+    );
+
+    if (plans.length === 0) {
+      return res.status(400).json({ error: 'No pending plans for today' });
+    }
+
+    const results = [];
+
+    for (const plan of plans) {
+      try {
+        const content = await generateContentWithAI(plan.keyword, plan.title, 'deepseek');
+        const post = {
+          plan_id: plan.id,
+          title: plan.title,
+          content,
+          keywords: [plan.keyword],
+          status: 'draft',
+        };
+
+        const postResult = await sb('blog_posts', {
+          method: 'POST',
+          body: JSON.stringify(post),
+        });
+
+        await sb(`blog_plans?id=eq.${plan.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: 'content_generated' }),
+        });
+
+        results.push({
+          planId: plan.id,
+          postId: postResult[0].id,
+          title: plan.title,
+          status: 'success',
+        });
+      } catch (error) {
+        results.push({
+          planId: plan.id,
+          title: plan.title,
+          status: 'error',
+          error: error.message,
+        });
+      }
+    }
+
+    // 更新最后生成时间（手动生成也要更新，触发 12 小时冷却）
+    const now = new Date();
+    await sb('blog_config?config_key=eq.last_generation_time', {
+      method: 'PATCH',
+      body: JSON.stringify({
+        config_value: now.toISOString(),
+        last_generation_time: now.toISOString(),
+      }),
+    });
+
+    res.json({
+      success: true,
+      message: 'Manual generation completed',
+      timestamp: now.toISOString(),
+      generatedCount: results.filter(r => r.status === 'success').length,
+      results,
+    });
+  } catch (error) {
+    console.error('Error in manual generation:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 11. 获取自动生成状态
+app.get('/api/blog/status', auth, async (req, res) => {
+  try {
+    // 获取自动生成开关状态
+    const autoConfig = await sb('blog_config?config_key=eq.auto_generation_enabled');
+    const autoEnabled = autoConfig && autoConfig.length > 0 ? autoConfig[0].auto_generation_enabled : true;
+
+    // 获取最后生成时间
+    const lastGenConfig = await sb('blog_config?config_key=eq.last_generation_time');
+    const lastGenTime = lastGenConfig && lastGenConfig.length > 0
+      ? new Date(lastGenConfig[0].last_generation_time)
+      : null;
+
+    const now = new Date();
+    const hoursSinceLastGen = lastGenTime ? (now - lastGenTime) / (1000 * 60 * 60) : 24;
+    const canGenerateNow = hoursSinceLastGen >= 12;
+    const nextAutoGenTime = lastGenTime ? new Date(lastGenTime.getTime() + 12 * 60 * 60 * 1000) : new Date();
+
+    // 获取今天的计划数
+    const today = new Date().toISOString().split('T')[0];
+    const todayPlans = await sb(
+      `blog_plans?plan_month=eq.${today.slice(0, 7)}&order=plan_order.asc`
+    );
+    const pendingCount = todayPlans.filter(p => p.status === 'pending').length;
+    const generatedCount = todayPlans.filter(p => p.status === 'content_generated').length;
+    const publishedCount = todayPlans.filter(p => p.status === 'published').length;
+
+    res.json({
+      success: true,
+      autoGenerationEnabled: autoEnabled,
+      lastGenerationTime: lastGenTime ? lastGenTime.toISOString() : null,
+      hoursSinceLastGen: hoursSinceLastGen.toFixed(1),
+      canGenerateNow,
+      nextAutoGenTime: nextAutoGenTime.toISOString(),
+      hoursUntilNextAutoGen: canGenerateNow ? 0 : (12 - hoursSinceLastGen).toFixed(1),
+      todayStats: {
+        pending: pendingCount,
+        generated: generatedCount,
+        published: publishedCount,
+        total: todayPlans.length,
+      },
+    });
+  } catch (error) {
+    console.error('Error getting status:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 12. 切换自动生成开关
+app.post('/api/blog/toggle-auto', auth, async (req, res) => {
+  try {
+    const { enabled } = req.body;
+
+    if (typeof enabled !== 'boolean') {
+      return res.status(400).json({ error: 'enabled must be boolean' });
+    }
+
+    await sb('blog_config?config_key=eq.auto_generation_enabled', {
+      method: 'PATCH',
+      body: JSON.stringify({
+        config_value: enabled.toString(),
+        auto_generation_enabled: enabled,
+      }),
+    });
+
+    res.json({
+      success: true,
+      autoGenerationEnabled: enabled,
+      message: enabled ? 'Auto generation enabled' : 'Auto generation disabled',
+    });
+  } catch (error) {
+    console.error('Error toggling auto generation:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // ── CSV 批量导入：通用（按表名 + 列映射）──
