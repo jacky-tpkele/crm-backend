@@ -2222,19 +2222,24 @@
     // 切换自动生成
     async function toggleAutoGeneration() {
       try {
+        const toggle = document.getElementById('autoToggle');
+        const enabled = !toggle.classList.contains('on');
+
         const response = await fetch('/api/blog/toggle-auto-generation', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({})
+          headers: getHeaders(),
+          body: JSON.stringify({ enabled })
         });
 
         const data = await response.json();
         if (data.success) {
-          showToast(data.autoGenerationEnabled ? '已启用自动生成' : '已禁用自动生成');
+          showToast(data.autoGenerationEnabled ? '✅ 已启用自动生成' : '✅ 已禁用自动生成');
           loadDashboard();
+        } else {
+          showToast('❌ 切换失败：' + (data.error || data.message));
         }
       } catch (error) {
-        showToast('切换失败：' + error.message);
+        showToast('❌ 切换失败：' + error.message);
       }
     }
 
@@ -2757,63 +2762,6 @@
         }
       } catch (error) {
         console.error('加载控制面板状态失败:', error);
-      }
-    }
-
-    // 切换自动生成
-    async function toggleAutoGeneration() {
-      try {
-        const toggle = document.getElementById('autoToggle');
-        const enabled = !toggle.classList.contains('on');
-
-        const response = await fetch('/api/blog/toggle-auto', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + (localStorage.getItem('crm_token') || localStorage.getItem('token') || '')
-          },
-          body: JSON.stringify({ enabled })
-        });
-
-        const data = await response.json();
-        if (data.success) {
-          showToast(data.message);
-          loadControlPanelStatus();
-        } else {
-          showToast('切换失败: ' + data.error);
-        }
-      } catch (error) {
-        showToast('切换失败: ' + error.message);
-      }
-    }
-
-    // 立即生成
-    async function generateNow() {
-      try {
-        const btn = document.getElementById('generateNowBtn');
-        btn.disabled = true;
-        btn.textContent = '⏳ 生成中...';
-
-        const response = await fetch('/api/blog/generate-now', {
-          method: 'POST',
-          headers: getHeaders(),
-          body: JSON.stringify({})
-        });
-
-        const data = await response.json();
-        if (data.success) {
-          showToast(`成功生成 ${data.generatedCount} 篇文案`);
-          loadDashboard();
-          loadPlans();
-        } else {
-          showToast('生成失败: ' + data.error);
-        }
-      } catch (error) {
-        showToast('生成失败: ' + error.message);
-      } finally {
-        const btn = document.getElementById('generateNowBtn');
-        btn.disabled = false;
-        btn.textContent = '📝 立即生成今日文章';
       }
     }
 
