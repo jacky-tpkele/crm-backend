@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BLOG 自动化</title>
   <link rel="stylesheet" href="_shared/layout.css">
+  <link rel="stylesheet" href="light-theme.css">
   <style>
     .blog-container {
       max-width: 1400px;
@@ -1929,6 +1930,21 @@
     let keywords = [];
     let plans = [];
 
+    // 获取认证 token
+    function getToken() {
+      return localStorage.getItem('crm_token');
+    }
+
+    // 获取 API 请求头
+    function getHeaders() {
+      const token = getToken();
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      return headers;
+    }
+
     // 标签页切换
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1956,7 +1972,9 @@
     // 加载控制面板数据
     async function loadDashboard() {
       try {
-        const response = await fetch('/api/blog/dashboard');
+        const response = await fetch('/api/blog/dashboard', {
+          headers: getHeaders()
+        });
         const data = await response.json();
 
         if (data.success) {
@@ -2012,7 +2030,7 @@
       try {
         const response = await fetch('/api/blog/generate-manual', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getHeaders(),
           body: JSON.stringify({})
         });
 
@@ -2040,7 +2058,7 @@
       try {
         const response = await fetch('/api/blog/retry-failed', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getHeaders(),
           body: JSON.stringify({})
         });
 
@@ -2068,7 +2086,7 @@
       try {
         const response = await fetch('/api/blog/sync-approved', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getHeaders(),
           body: JSON.stringify({})
         });
 
@@ -2092,7 +2110,7 @@
       try {
         const response = await fetch('/api/blog/toggle-auto-generation', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getHeaders(),
           body: JSON.stringify({})
         });
 
@@ -2156,7 +2174,7 @@
       try {
         const response = await fetch('/api/blog/generate-plan', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getHeaders(),
           body: JSON.stringify({
             month,
             keywords,
@@ -2180,7 +2198,9 @@
     // 加载计划列表
     async function loadPlans() {
       try {
-        const response = await fetch('/api/blog/plans');
+        const response = await fetch('/api/blog/plans', {
+          headers: getHeaders()
+        });
         const data = await response.json();
         plans = data.plans || [];
         renderPlans();
@@ -2367,7 +2387,7 @@
         try {
           const response = await fetch('/api/blog/upload-image', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getHeaders(),
             body: JSON.stringify({
               postId: currentPostId,
               imageBase64,
@@ -2411,7 +2431,7 @@
 
         await fetch('/api/blog/edit-content', {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getHeaders(),
           body: JSON.stringify({
             postId: currentPostId,
             title,
@@ -2423,7 +2443,7 @@
         // 发布
         const response = await fetch('/api/blog/publish', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getHeaders(),
           body: JSON.stringify({ postId: currentPostId })
         });
 
@@ -2495,7 +2515,7 @@
       try {
         const response = await fetch('/api/blog/approve', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getHeaders(),
           body: JSON.stringify({ postId: currentPostId })
         });
 
@@ -2520,7 +2540,7 @@
       try {
         const response = await fetch('/api/blog/reject', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getHeaders(),
           body: JSON.stringify({
             postId: currentPostId,
             reason
@@ -2771,7 +2791,7 @@
       try {
         const response = await fetch('/api/blog/keywords', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getHeaders(),
           body: JSON.stringify({ keyword, category, difficulty, priority })
         });
         const data = await response.json();
@@ -2812,7 +2832,7 @@
       try {
         const response = await fetch('/api/blog/keywords/ai-recommend', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getHeaders(),
           body: JSON.stringify({ seedKeyword })
         });
         const data = await response.json();
@@ -2875,7 +2895,7 @@
       try {
         const response = await fetch('/api/blog/keywords/batch', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getHeaders(),
           body: JSON.stringify({ keywords: selected.map(s => ({ ...s, ai_recommended: true })) })
         });
         const data = await response.json();
@@ -2958,7 +2978,7 @@
       try {
         const response = await fetch('/api/blog/generate-plan-v2', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getHeaders(),
           body: JSON.stringify({ month, dailyCount, typeRatio, titleTemplate: selectedTemplate, customTitles: customTemplate ? [customTemplate] : [] })
         });
         const data = await response.json();
@@ -3012,7 +3032,7 @@
       try {
         const response = await fetch('/api/blog/generate-seo', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getHeaders(),
           body: JSON.stringify({ postId: currentPostId, modelType: 'claude' })
         });
 
@@ -3073,7 +3093,7 @@
       try {
         const response = await fetch('/api/blog/generate-links', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getHeaders(),
           body: JSON.stringify({ postId: currentPostId, modelType: 'claude' })
         });
 
@@ -3146,7 +3166,7 @@
       try {
         const response = await fetch('/api/blog/generate-faq', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getHeaders(),
           body: JSON.stringify({ postId: currentPostId, modelType: 'claude' })
         });
 
