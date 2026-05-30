@@ -6,9 +6,13 @@ const { ImapFlow } = require('imapflow');
 const { simpleParser } = require('mailparser');
 const crypto = require('crypto');
 const webpush = require('web-push');
+const blogRouter = require('./blog/index.js');
 
 const app = express();
 app.use(express.json({ limit: '20mb' }));
+
+// 集成 BLOG 自动化路由
+app.use('/api/blog', blogRouter);
 
 const SB_URL  = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SB_KEY  = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
