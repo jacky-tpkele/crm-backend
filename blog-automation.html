@@ -1511,6 +1511,26 @@
     .btn-generate-faq:hover {
       background: #000;
     }
+    .pubtab-btn {
+      padding: 6px 12px;
+      border: 1px solid #ddd;
+      background: white;
+      color: #555;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .pubtab-btn:hover { background: #f5f5f5; }
+    .pubtab-btn.pubtab-active {
+      background: #333;
+      color: white;
+      border-color: #333;
+    }
+    .pubtab-btn span {
+      margin-left: 4px;
+      opacity: 0.75;
+      font-size: 11px;
+    }
   </style>
 </head>
 <body>
@@ -1529,6 +1549,7 @@
           <button class="tab-btn" data-tab="plan">📅 生成规划</button>
           <button class="tab-btn" data-tab="list">📝 计划列表</button>
           <button class="tab-btn" data-tab="review">🔍 待审核 <span id="tabPendingBadge" style="display:none;background:#ff6b35;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">0</span></button>
+          <button class="tab-btn" data-tab="published">📚 已发布 <span id="tabPublishedBadge" style="display:none;background:#10B981;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">0</span></button>
         </div>
       </div>
 
@@ -1580,7 +1601,7 @@
             <div class="stat-value" id="statPending">0</div>
             <div class="stat-unit">篇</div>
           </div>
-          <div class="stat-card">
+          <div class="stat-card" style="cursor:pointer;" onclick="switchToPublishedTab()" title="点击查看已发布文章">
             <div class="stat-label">已发布</div>
             <div class="stat-value" id="statPublished">0</div>
             <div class="stat-unit">篇</div>
@@ -1860,6 +1881,38 @@
       </div>
 
       <div id="reviewListContainer">
+        <div style="text-align:center;color:#999;padding:40px;">加载中...</div>
+      </div>
+    </div>
+
+    <!-- 标签页 5：已发布 -->
+    <div class="tab-content" id="published-tab">
+      <div class="plan-list-header">
+        <div class="plan-stats">
+          <span id="publishedStatusToggle" style="display:inline-flex;gap:6px;margin-right:14px;">
+            <button class="pubtab-btn pubtab-active" data-pub-status="published" onclick="switchPublishedStatus('published')">📚 已发布 <span id="pubCountPublished">0</span></button>
+            <button class="pubtab-btn" data-pub-status="archived" onclick="switchPublishedStatus('archived')">📦 已下线 <span id="pubCountArchived">0</span></button>
+          </span>
+        </div>
+        <button onclick="loadPublishedList()" style="padding:8px 14px;border:1px solid #ddd;background:white;border-radius:4px;cursor:pointer;">🔄 刷新</button>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-bottom:14px;align-items:center;flex-wrap:wrap;">
+        <select id="publishedFilterType" onchange="loadPublishedList()" style="padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;">
+          <option value="all">全部类型</option>
+          <option value="product">产品知识</option>
+          <option value="buying">选型指南</option>
+          <option value="comparison">对比文章</option>
+          <option value="application">应用场景</option>
+          <option value="faq">FAQ</option>
+        </select>
+        <input type="month" id="publishedFilterMonth" onchange="loadPublishedList()" style="padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;">
+        <input type="text" id="publishedFilterSearch" placeholder="🔍 搜标题..." style="padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;flex:1;min-width:180px;">
+        <button onclick="loadPublishedList()" style="padding:7px 14px;border:1px solid #333;background:#333;color:white;border-radius:3px;cursor:pointer;font-size:12px;">应用</button>
+        <button onclick="resetPublishedFilters()" style="padding:7px 14px;border:1px solid #ddd;background:white;color:#555;border-radius:3px;cursor:pointer;font-size:12px;">重置</button>
+      </div>
+
+      <div id="publishedListContainer">
         <div style="text-align:center;color:#999;padding:40px;">加载中...</div>
       </div>
     </div>
@@ -2175,6 +2228,8 @@
           loadKeywords();
         } else if (tabName === 'review') {
           loadReviewList();
+        } else if (tabName === 'published') {
+          loadPublishedList();
         }
       });
     });
@@ -2182,6 +2237,12 @@
     // 控制面板"待审核"卡片点击 → 切到 review tab
     function switchToReviewTab() {
       const btn = document.querySelector('.tab-btn[data-tab="review"]');
+      if (btn) btn.click();
+    }
+
+    // 控制面板"已发布"卡片点击 → 切到 published tab
+    function switchToPublishedTab() {
+      const btn = document.querySelector('.tab-btn[data-tab="published"]');
       if (btn) btn.click();
     }
 
@@ -2278,6 +2339,226 @@
         } else {
           showToast('拒绝失败：' + (d.error || ''));
         }
+      } catch (e) {
+        showToast('错误：' + e.message);
+      }
+    }
+
+    // ════════════════════════════════════════════
+    // 已发布文章管理
+    // ════════════════════════════════════════════
+    let currentPubStatus = 'published';
+
+    function switchPublishedStatus(s) {
+      currentPubStatus = s;
+      document.querySelectorAll('.pubtab-btn').forEach(b => {
+        b.classList.toggle('pubtab-active', b.dataset.pubStatus === s);
+      });
+      loadPublishedList();
+    }
+
+    function resetPublishedFilters() {
+      document.getElementById('publishedFilterType').value = 'all';
+      document.getElementById('publishedFilterMonth').value = '';
+      document.getElementById('publishedFilterSearch').value = '';
+      loadPublishedList();
+    }
+
+    async function loadPublishedList() {
+      const container = document.getElementById('publishedListContainer');
+      container.innerHTML = '<div style="text-align:center;color:#999;padding:40px;">加载中...</div>';
+
+      const articleType = document.getElementById('publishedFilterType').value;
+      const month = document.getElementById('publishedFilterMonth').value;
+      const search = document.getElementById('publishedFilterSearch').value.trim();
+
+      const params = new URLSearchParams({ status: currentPubStatus });
+      if (articleType && articleType !== 'all') params.set('articleType', articleType);
+      if (month) params.set('month', month);
+      if (search) params.set('search', search);
+
+      try {
+        const r = await fetch('/api/blog/published?' + params.toString());
+        const d = await r.json();
+        if (!d.success) {
+          container.innerHTML = `<div style="text-align:center;color:#d32f2f;padding:40px;">加载失败：${d.error || ''}</div>`;
+          return;
+        }
+
+        document.getElementById('pubCountPublished').textContent = d.counts.published;
+        document.getElementById('pubCountArchived').textContent = d.counts.archived;
+        const badge = document.getElementById('tabPublishedBadge');
+        if (badge) {
+          badge.textContent = d.counts.published;
+          badge.style.display = d.counts.published > 0 ? 'inline-block' : 'none';
+        }
+
+        const posts = d.posts || [];
+        if (posts.length === 0) {
+          const emptyMsg = currentPubStatus === 'published'
+            ? '没有符合条件的已发布文章'
+            : '没有已下线的文章';
+          container.innerHTML = `
+            <div style="text-align:center;color:#999;padding:60px;border:1px dashed #ddd;border-radius:8px;">
+              <div style="font-size:42px;margin-bottom:8px;">${currentPubStatus === 'published' ? '📭' : '📦'}</div>
+              <div>${emptyMsg}</div>
+            </div>`;
+          return;
+        }
+
+        container.innerHTML = `
+          <div style="display:grid;gap:12px;">
+            ${posts.map(p => renderPublishedCard(p)).join('')}
+          </div>`;
+      } catch (e) {
+        container.innerHTML = `<div style="text-align:center;color:#d32f2f;padding:40px;">错误：${e.message}</div>`;
+      }
+    }
+
+    function renderPublishedCard(p) {
+      const typeLabels = { product:'产品知识', buying:'选型指南', comparison:'对比文章', application:'应用场景', faq:'FAQ' };
+      const typeLabel = typeLabels[p.article_type] || p.article_type || '未分类';
+      const cover = p.cover_image_url
+        ? `<img src="${p.cover_image_url}" style="width:160px;height:90px;object-fit:cover;border-radius:6px;flex-shrink:0;" alt="">`
+        : `<div style="width:160px;height:90px;background:#f0f0f0;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:12px;flex-shrink:0;">无封面</div>`;
+
+      const dateStr = currentPubStatus === 'published'
+        ? (p.published_at ? new Date(p.published_at).toLocaleString('zh-CN') : '—')
+        : (p.archived_at ? new Date(p.archived_at).toLocaleString('zh-CN') : '—');
+      const dateLabel = currentPubStatus === 'published' ? '📅 发布于' : '📦 下线于';
+
+      const slug = p.slug || p.slug_url || '';
+      const websiteUrl = `https://www.tpkele.com/blog/${slug}`;
+
+      const isPublished = currentPubStatus === 'published';
+
+      return `
+        <div style="display:flex;gap:14px;padding:14px;border:1px solid #e5e5e5;border-radius:8px;background:white;${!isPublished ? 'opacity:0.78;' : ''}">
+          ${cover}
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:15px;margin-bottom:6px;color:#222;">${escapeHtml(p.title || '(无标题)')}</div>
+            <div style="font-size:12px;color:#666;margin-bottom:4px;">
+              <span style="background:#e6f4ef;color:#10B981;padding:2px 8px;border-radius:10px;margin-right:6px;">${escapeHtml(typeLabel)}</span>
+              ${p.main_keyword ? `<span style="margin-right:8px;color:#888;">🔑 ${escapeHtml(p.main_keyword)}</span>` : ''}
+            </div>
+            <div style="font-size:11px;color:#999;margin-bottom:4px;">
+              <span style="margin-right:10px;">${dateLabel} ${dateStr}</span>
+              <span style="margin-right:10px;">📝 ${p.word_count || 0} 字</span>
+              <span>⏱ ${p.reading_time || 0} 分钟</span>
+            </div>
+            ${slug ? `<div style="font-size:11px;color:#1a73e8;font-family:Consolas,Menlo,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">/blog/${escapeHtml(slug)}</div>` : ''}
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">
+            ${isPublished ? `<a href="${websiteUrl}" target="_blank" rel="noopener" style="text-align:center;padding:6px 14px;background:#10B981;color:white;border:none;border-radius:4px;text-decoration:none;font-size:12px;">🌐 网站查看</a>` : ''}
+            <button onclick="openReviewWorkspace('${p.id}')" style="padding:6px 14px;border:1px solid #ddd;background:white;color:#333;border-radius:4px;cursor:pointer;font-size:12px;">✏ 重新编辑</button>
+            <button onclick="viewAuditLog('${p.id}', '${escapeHtml(p.title || '').replace(/'/g, "\\'")}')" style="padding:6px 14px;border:1px solid #ddd;background:white;color:#555;border-radius:4px;cursor:pointer;font-size:12px;">📜 历史</button>
+            ${isPublished
+              ? `<button onclick="unpublishPost('${p.id}')" style="padding:6px 14px;border:1px solid #ddd;background:white;color:#ef6c00;border-radius:4px;cursor:pointer;font-size:12px;">📥 下线</button>`
+              : `<button onclick="republishPost('${p.id}')" style="padding:6px 14px;border:1px solid #10B981;background:white;color:#10B981;border-radius:4px;cursor:pointer;font-size:12px;">🚀 重新上线</button>`
+            }
+            <button onclick="deletePostPermanent('${p.id}', '${escapeHtml(p.title || '').replace(/'/g, "\\'")}')" style="padding:6px 14px;border:1px solid #fcc;background:white;color:#d32f2f;border-radius:4px;cursor:pointer;font-size:12px;">🗑 永久删除</button>
+          </div>
+        </div>`;
+    }
+
+    async function unpublishPost(postId) {
+      if (!confirm('下线此文章？\n\n网站上的文章页将立刻 404，但 CRM 仍能看到（在"已下线"标签里）。\n\n以后想恢复，可以再点"重新上线"。')) return;
+      try {
+        const r = await fetch(`/api/blog/post/${postId}/unpublish`, { method: 'POST' });
+        const d = await r.json();
+        if (d.success) {
+          showToast('✓ 已下线');
+          loadPublishedList();
+          loadDashboard();
+        } else {
+          showToast('下线失败：' + (d.error || ''));
+        }
+      } catch (e) {
+        showToast('错误：' + e.message);
+      }
+    }
+
+    async function republishPost(postId) {
+      if (!confirm('重新上线此文章？\n\n文章将在 30 秒内重新出现在网站上。')) return;
+      try {
+        const r = await fetch(`/api/blog/post/${postId}/republish`, { method: 'POST' });
+        const d = await r.json();
+        if (d.success) {
+          showToast('✓ 已重新上线');
+          loadPublishedList();
+          loadDashboard();
+        } else {
+          showToast('上线失败：' + (d.error || ''));
+        }
+      } catch (e) {
+        showToast('错误：' + e.message);
+      }
+    }
+
+    async function deletePostPermanent(postId, title) {
+      const a = confirm(`⚠️ 永久删除「${title}」？\n\n此操作不可撤销，数据库中的文章记录将彻底消失。\n（封面图、正文插图保留在 CDN 不删除）\n\n确定继续？`);
+      if (!a) return;
+      const b = prompt(`再次确认：输入"DELETE"删除`);
+      if (b !== 'DELETE') {
+        showToast('已取消（确认文字不正确）');
+        return;
+      }
+      try {
+        const r = await fetch(`/api/blog/post/${postId}`, { method: 'DELETE' });
+        const d = await r.json();
+        if (d.success) {
+          showToast('✓ 已永久删除');
+          loadPublishedList();
+          loadDashboard();
+        } else {
+          showToast('删除失败：' + (d.error || ''));
+        }
+      } catch (e) {
+        showToast('错误：' + e.message);
+      }
+    }
+
+    async function viewAuditLog(postId, title) {
+      try {
+        const r = await fetch(`/api/blog/post/${postId}/audit`);
+        const d = await r.json();
+        if (!d.success) { showToast('加载历史失败'); return; }
+        const logs = d.logs || [];
+        const actionLabels = {
+          created: '🆕 创建',
+          regenerated: '🔄 重新生成',
+          edited: '✏ 编辑',
+          approved_published: '✅ 批准并发布',
+          archived: '📥 下线',
+          republished: '🚀 重新上线',
+          deleted: '🗑 删除',
+          image_uploaded: '🖼 上传图片',
+        };
+        const html = logs.length === 0
+          ? '<div style="text-align:center;color:#999;padding:30px;">暂无历史记录</div>'
+          : logs.map(l => `
+              <div style="border-left:3px solid #10B981;padding:8px 12px;margin-bottom:6px;background:#fafafa;border-radius:0 4px 4px 0;">
+                <div style="font-weight:600;color:#333;font-size:13px;">${actionLabels[l.action] || l.action}</div>
+                <div style="font-size:11px;color:#888;">${new Date(l.created_at).toLocaleString('zh-CN')}</div>
+                ${l.detail ? `<div style="font-size:12px;color:#555;margin-top:3px;">${escapeHtml(l.detail)}</div>` : ''}
+              </div>`).join('');
+
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9500;display:flex;align-items:center;justify-content:center;';
+        modal.innerHTML = `
+          <div style="background:white;padding:20px 24px;border-radius:8px;width:520px;max-width:90vw;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+              <div>
+                <div style="font-weight:600;font-size:14px;color:#333;">📜 文章历史</div>
+                <div style="font-size:12px;color:#888;margin-top:2px;">${escapeHtml(title)}</div>
+              </div>
+              <button onclick="this.closest('[data-audit-modal]').remove()" style="border:none;background:transparent;font-size:20px;cursor:pointer;color:#999;">×</button>
+            </div>
+            <div style="overflow-y:auto;flex:1;">${html}</div>
+          </div>`;
+        modal.setAttribute('data-audit-modal', '1');
+        modal.onclick = e => { if (e.target === modal) modal.remove(); };
+        document.body.appendChild(modal);
       } catch (e) {
         showToast('错误：' + e.message);
       }

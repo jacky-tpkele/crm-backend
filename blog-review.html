@@ -423,12 +423,27 @@
     <button class="back-btn" onclick="goBack()">← 返回列表</button>
     <div class="title" id="topTitle">加载中...</div>
     <span class="status-badge" id="topStatus">—</span>
-    <div class="actions">
+    <div class="actions" id="topActions">
       <button class="btn-preview-site" onclick="openSitePreview()">🌐 在网站预览</button>
       <button onclick="openRegenerateMenu()" title="用新 Prompt 重新生成（保留封面图和正文插图）">🔄 重新生成</button>
-      <button class="btn-reject" onclick="rejectArticle()">✗ 拒绝</button>
-      <button class="btn-save" onclick="saveAll()">💾 保存草稿</button>
-      <button class="btn-approve" onclick="approveArticle()">✓ 批准并发布</button>
+      <!-- 不同状态显示不同按钮组 -->
+      <span id="actionsForPending" style="display:none;">
+        <button class="btn-reject" onclick="rejectArticle()">✗ 拒绝</button>
+        <button class="btn-save" onclick="saveAll()">💾 保存草稿</button>
+        <button class="btn-approve" onclick="approveArticle()">✓ 批准并发布</button>
+      </span>
+      <span id="actionsForPublished" style="display:none;">
+        <button class="btn-save" onclick="saveAndUpdate()" title="保存改动 → 立即生效到网站">💾 保存改动</button>
+        <button class="btn-save" onclick="saveAndRequeue()" title="保存改动 → 状态改回待审核（先下线）">🔁 改完重新审核</button>
+        <button onclick="unpublishFromReview()" style="color:#ef6c00;border-color:#fdb !important;">📥 下线文章</button>
+      </span>
+      <span id="actionsForArchived" style="display:none;">
+        <button class="btn-save" onclick="saveAll()">💾 保存改动</button>
+        <button class="btn-approve" onclick="republishFromReview()">🚀 重新上线</button>
+      </span>
+      <span id="actionsForOther" style="display:none;">
+        <button class="btn-save" onclick="saveAll()">💾 保存改动</button>
+      </span>
     </div>
   </div>
 
@@ -702,6 +717,8 @@
       const sb = document.getElementById('topStatus');
       sb.textContent = statusLabel(post.status);
       sb.className = 'status-badge status-' + (post.status || '');
+      // 根据状态切换顶部按钮组
+      renderActionsByStatus(post.status);
       document.getElementById('contentEditor').value = post.content || '';
       document.getElementById('fTitle').value = post.title || '';
       document.getElementById('fMainKw').value = post.main_keyword || (post.keywords && post.keywords[0]) || '';
@@ -719,8 +736,19 @@
       loadSitePagesOnce();
     }
 
+    function renderActionsByStatus(status) {
+      const ids = ['actionsForPending', 'actionsForPublished', 'actionsForArchived', 'actionsForOther'];
+      ids.forEach(id => { document.getElementById(id).style.display = 'none'; });
+      let target;
+      if (status === 'published') target = 'actionsForPublished';
+      else if (status === 'archived') target = 'actionsForArchived';
+      else if (['pending_review', 'draft', 'approved'].includes(status)) target = 'actionsForPending';
+      else target = 'actionsForOther';
+      document.getElementById(target).style.display = 'inline-flex';
+    }
+
     function statusLabel(s) {
-      const map = { draft: '草稿', pending_review: '待审核', approved: '已批准', published: '已发布', rejected: '已拒绝' };
+      const map = { draft: '草稿', pending_review: '待审核', approved: '已批准', published: '已发布', archived: '已下线', rejected: '已拒绝' };
       return map[s] || s || '—';
     }
 
@@ -1183,6 +1211,70 @@
           setTimeout(goBack, 800);
         } else {
           showToast('批准失败：' + d.error);
+        }
+      } catch (e) {
+        showToast('错误：' + e.message);
+      }
+    }
+
+    // 已发布状态：保存改动 → 立即生效（保持 published）
+    async function saveAndUpdate() {
+      if (!confirm('保存改动并立即更新到网站？\n\n网站会在 30 秒内显示新版本。')) return;
+      try {
+        await saveAll();
+        showToast('✓ 已更新，网站 30 秒内同步');
+      } catch (e) {
+        showToast('错误：' + e.message);
+      }
+    }
+
+    // 已发布状态：保存 + 下线（适合改动较大，想再审一遍的情况）
+    async function saveAndRequeue() {
+      if (!confirm('保存改动并下线？\n\n文章会先下线（网站立刻 404），\n你可以在"已发布 → 已下线"列表里再次重新上线。\n\n适合改动较大、想再仔细看一遍的情况。')) return;
+      try {
+        await saveAll();
+        const r = await fetch('/api/blog/post/' + postId + '/unpublish', { method: 'POST' });
+        const d = await r.json();
+        if (d.success) {
+          showToast('✓ 已保存并下线');
+          setTimeout(() => { window.location.href = 'blog-automation.html'; }, 1200);
+        } else {
+          showToast('下线失败：' + (d.error || ''));
+        }
+      } catch (e) {
+        showToast('错误：' + e.message);
+      }
+    }
+
+    // 已发布状态：从审核工作台直接下线
+    async function unpublishFromReview() {
+      if (!confirm('立即下线此文章？\n\n网站会立刻 404，但 CRM 还能看到（在"已下线"标签）。')) return;
+      try {
+        const r = await fetch('/api/blog/post/' + postId + '/unpublish', { method: 'POST' });
+        const d = await r.json();
+        if (d.success) {
+          showToast('✓ 已下线');
+          setTimeout(() => { window.location.href = 'blog-automation.html'; }, 800);
+        } else {
+          showToast('下线失败：' + (d.error || ''));
+        }
+      } catch (e) {
+        showToast('错误：' + e.message);
+      }
+    }
+
+    // 已下线状态：重新上线
+    async function republishFromReview() {
+      if (!confirm('重新上线此文章？\n\n网站 30 秒内重新出现。')) return;
+      if (dirty) await saveAll();
+      try {
+        const r = await fetch('/api/blog/post/' + postId + '/republish', { method: 'POST' });
+        const d = await r.json();
+        if (d.success) {
+          showToast('✓ 已重新上线');
+          await loadPost();
+        } else {
+          showToast('上线失败：' + (d.error || ''));
         }
       } catch (e) {
         showToast('错误：' + e.message);

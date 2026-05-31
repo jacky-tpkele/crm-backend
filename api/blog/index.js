@@ -2613,4 +2613,180 @@ router.get('/site-pages-list', async (req, res) => {
   }
 });
 
+// ──────────────────────────────────────────
+// 16. 已发布文章管理（列表 / 下线 / 上线 / 永久删除 / 审计日志）
+// ──────────────────────────────────────────
+
+// 通用：写一条 audit log（失败不阻断主流程）
+async function writeAuditLog(postId, action, detail, meta) {
+  if (!postId || !action) return;
+  try {
+    await sb('blog_audit_log', {
+      method: 'POST',
+      body: JSON.stringify({
+        post_id: postId,
+        action,
+        detail: detail || '',
+        meta: meta || {},
+      }),
+    });
+  } catch (e) {
+    console.warn('audit log write failed:', e.message);
+  }
+}
+
+// 16a. 已发布文章列表（支持类型/月份/标题搜索 + 也含 archived 用于切换 tab）
+router.get('/published', async (req, res) => {
+  try {
+    const { status = 'published', articleType, month, search, limit = 100 } = req.query;
+
+    const safeStatus = ['published', 'archived'].includes(status) ? status : 'published';
+    const orderField = safeStatus === 'archived' ? 'archived_at.desc' : 'published_at.desc';
+
+    let query = `blog_posts?status=eq.${safeStatus}&select=id,title,slug,slug_url,article_type,main_keyword,word_count,reading_time,cover_image_url,published_at,archived_at,updated_at&order=${orderField}&limit=${limit}`;
+
+    if (articleType && articleType !== 'all') {
+      query += `&article_type=eq.${encodeURIComponent(articleType)}`;
+    }
+    if (month && /^\d{4}-\d{2}$/.test(month)) {
+      const dateField = safeStatus === 'archived' ? 'archived_at' : 'published_at';
+      query += `&${dateField}=gte.${month}-01T00:00:00&${dateField}=lt.${nextMonthIso(month)}`;
+    }
+    if (search && search.trim()) {
+      query += `&title=ilike.*${encodeURIComponent(search.trim())}*`;
+    }
+
+    const posts = await sb(query);
+
+    // 同时返回未筛选的总数（统计卡片用）
+    const allPublished = await sb('blog_posts?status=eq.published&select=id');
+    const allArchived = await sb('blog_posts?status=eq.archived&select=id');
+
+    res.json({
+      success: true,
+      posts,
+      counts: {
+        published: (allPublished || []).length,
+        archived: (allArchived || []).length,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching published list:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+function nextMonthIso(yyyymm) {
+  const [y, m] = yyyymm.split('-').map(Number);
+  // 用 UTC 避免时区偏差。m 是 1-12，UTC month 是 0-11，传 m 直接得到下个月
+  const next = new Date(Date.UTC(y, m, 1));
+  return next.toISOString().split('T')[0] + 'T00:00:00';
+}
+
+// 16b. 下线文章（status: published → archived）
+router.post('/post/:postId/unpublish', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const posts = await sb(`blog_posts?id=eq.${postId}&select=id,title,status`);
+    if (!posts || posts.length === 0) return res.status(404).json({ error: 'Post not found' });
+    if (posts[0].status !== 'published') {
+      return res.status(400).json({ error: `当前状态 ${posts[0].status}，只能从 published 下线` });
+    }
+
+    const now = new Date().toISOString();
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        status: 'archived',
+        archived_at: now,
+        updated_at: now,
+      }),
+    });
+
+    await writeAuditLog(postId, 'archived', `Article taken offline: ${posts[0].title}`, {});
+
+    res.json({ success: true, postId, status: 'archived' });
+  } catch (error) {
+    console.error('Error unpublishing post:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 16c. 重新上线文章（status: archived → published）
+router.post('/post/:postId/republish', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const posts = await sb(`blog_posts?id=eq.${postId}&select=id,title,status,slug`);
+    if (!posts || posts.length === 0) return res.status(404).json({ error: 'Post not found' });
+    if (posts[0].status !== 'archived') {
+      return res.status(400).json({ error: `当前状态 ${posts[0].status}，只能从 archived 重新上线` });
+    }
+
+    const now = new Date().toISOString();
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        status: 'published',
+        archived_at: null,
+        updated_at: now,
+      }),
+    });
+
+    await writeAuditLog(postId, 'republished', `Article republished: ${posts[0].title}`, {});
+
+    res.json({
+      success: true,
+      postId,
+      status: 'published',
+      url: `https://www.tpkele.com/blog/${posts[0].slug}`,
+    });
+  } catch (error) {
+    console.error('Error republishing post:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 16d. 永久删除文章（不删 Cloudinary 图片）
+router.delete('/post/:postId', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const posts = await sb(`blog_posts?id=eq.${postId}&select=id,title,status,slug`);
+    if (!posts || posts.length === 0) return res.status(404).json({ error: 'Post not found' });
+
+    // 先写一条 audit log（之后 ON DELETE CASCADE 也会清掉，但提前写有意义）
+    await writeAuditLog(postId, 'deleted', `Permanently deleted: ${posts[0].title}`, {
+      slug: posts[0].slug,
+      previousStatus: posts[0].status,
+    });
+
+    // 同时清理 plan 关联
+    await sb(`blog_plans?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'pending' }),
+    }).catch(() => {});
+
+    // 删 post 行（关联的 audit log 会被 cascade 删除）
+    await sb(`blog_posts?id=eq.${postId}`, { method: 'DELETE' });
+
+    res.json({ success: true, postId, deleted: true });
+  } catch (error) {
+    console.error('Error deleting post:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 16e. 文章审计日志（时间线）
+router.get('/post/:postId/audit', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const logs = await sb(
+      `blog_audit_log?post_id=eq.${postId}&select=*&order=created_at.desc&limit=100`
+    );
+    res.json({ success: true, logs: logs || [] });
+  } catch (error) {
+    console.error('Error fetching audit log:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
