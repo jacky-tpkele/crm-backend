@@ -9,6 +9,7 @@ const fetch = require('node-fetch');
 const cloudinary = require('cloudinary').v2;
 const sharp = require('sharp');
 const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 
 const router = express.Router();
 
@@ -2100,6 +2101,33 @@ Return: {"meta_title":"...","meta_description":"..."}`;
     });
     res.json({ success: true, meta });
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 12l. 生成预览 token（一次性、1 小时过期，写到 blog_preview_tokens 表）
+router.post('/post/:postId/preview-token', async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    // 校验文章存在
+    const posts = await sb(`blog_posts?id=eq.${postId}&select=id`);
+    if (!posts || posts.length === 0) return res.status(404).json({ error: 'Post not found' });
+
+    const token = crypto.randomBytes(24).toString('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+
+    await sb('blog_preview_tokens', {
+      method: 'POST',
+      body: JSON.stringify({ token, post_id: postId, expires_at: expiresAt }),
+    });
+
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.tpkele.com';
+    const url = `${siteUrl}/blog/preview/${postId}?token=${token}`;
+
+    res.json({ success: true, token, expiresAt, url });
+  } catch (error) {
+    console.error('preview-token error:', error);
     res.status(500).json({ error: error.message });
   }
 });

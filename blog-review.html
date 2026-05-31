@@ -4,37 +4,39 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>文章审核工作台</title>
-  <link rel="stylesheet" href="light-theme.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif;
-      background: #f7f9f8;
-      color: #222;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Microsoft YaHei', sans-serif;
+      background: #ffffff;
+      color: #333;
       font-size: 14px;
       overflow: hidden;
     }
+    a { color: #333; }
 
+    /* 顶栏 */
     .review-topbar {
       height: 56px;
-      background: #0F1F1C;
-      color: #E6F4EF;
+      background: #ffffff;
+      color: #333;
       display: flex;
       align-items: center;
       padding: 0 20px;
-      gap: 16px;
-      border-bottom: 1px solid #162623;
+      gap: 14px;
+      border-bottom: 1px solid #ddd;
     }
     .review-topbar .back-btn {
-      background: transparent;
-      border: 1px solid #34D399;
-      color: #34D399;
-      padding: 6px 12px;
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      color: #333;
+      padding: 7px 13px;
       border-radius: 4px;
       cursor: pointer;
       font-size: 13px;
     }
+    .review-topbar .back-btn:hover { background: #efefef; }
     .review-topbar .title {
       flex: 1;
       font-size: 15px;
@@ -47,24 +49,35 @@
       padding: 3px 10px;
       border-radius: 10px;
       font-size: 12px;
-      background: #cfe2ff;
-      color: #084298;
+      background: #f0f0f0;
+      color: #555;
     }
-    .review-topbar .actions {
-      display: flex;
-      gap: 8px;
-    }
+    .review-topbar .status-pending_review { background: #fff3cd; color: #664d03; }
+    .review-topbar .status-approved { background: #d1e7dd; color: #0f5132; }
+    .review-topbar .status-published { background: #cfe2ff; color: #084298; }
+    .review-topbar .actions { display: flex; gap: 8px; }
     .review-topbar .actions button {
       padding: 7px 14px;
-      border: none;
+      border: 1px solid #ddd;
+      background: white;
+      color: #333;
       border-radius: 4px;
       cursor: pointer;
       font-size: 13px;
     }
-    .btn-save { background: #6EE7B7; color: #0F1F1C; }
-    .btn-reject { background: transparent; color: #ff8a80; border: 1px solid #ff8a80 !important; }
-    .btn-approve { background: #10B981; color: white; font-weight: 600; }
+    .review-topbar .actions button:hover { background: #f5f5f5; }
+    .btn-preview-site { background: #fff !important; border-color: #333 !important; }
+    .btn-save { background: #fff !important; }
+    .btn-reject { color: #d32f2f !important; border-color: #f5c2c7 !important; }
+    .btn-approve {
+      background: #333 !important;
+      color: white !important;
+      border-color: #333 !important;
+      font-weight: 500;
+    }
+    .btn-approve:hover { background: #555 !important; }
 
+    /* 主体两栏 */
     .review-body {
       display: flex;
       height: calc(100vh - 56px);
@@ -72,12 +85,12 @@
     .review-left {
       flex: 1;
       min-width: 0;
-      background: white;
-      border-right: 1px solid #e0e0e0;
+      background: #ffffff;
+      border-right: 1px solid #ddd;
       display: flex;
       flex-direction: column;
     }
-    .review-left .editor-toolbar {
+    .editor-toolbar {
       padding: 8px 14px;
       border-bottom: 1px solid #eee;
       display: flex;
@@ -86,58 +99,73 @@
       background: #fafafa;
     }
     .editor-toolbar button {
-      padding: 4px 10px;
+      padding: 5px 12px;
       border: 1px solid #ddd;
       background: white;
+      color: #555;
       border-radius: 3px;
       cursor: pointer;
       font-size: 12px;
     }
+    .editor-toolbar button:hover { background: #f5f5f5; }
     .editor-toolbar button.active {
-      background: #10B981;
+      background: #333;
       color: white;
-      border-color: #10B981;
+      border-color: #333;
     }
-    .review-left .editor-area {
+    .editor-area {
       flex: 1;
       overflow: hidden;
       display: flex;
     }
-    .review-left textarea.markdown-edit {
+    textarea.markdown-edit {
       flex: 1;
       width: 100%;
       padding: 18px 24px;
       border: none;
       outline: none;
       resize: none;
-      font-family: 'Consolas', 'Menlo', monospace;
+      font-family: 'Consolas', 'Menlo', 'Monaco', monospace;
       font-size: 13px;
       line-height: 1.7;
       background: white;
+      color: #333;
     }
-    .review-left .markdown-preview {
+    .markdown-preview {
       flex: 1;
       padding: 18px 28px;
       overflow-y: auto;
       line-height: 1.7;
+      color: #333;
+      background: white;
     }
-    .markdown-preview h1 { font-size: 24px; margin: 16px 0 10px; }
-    .markdown-preview h2 { font-size: 19px; margin: 22px 0 10px; padding-bottom: 4px; border-bottom: 1px solid #eee; }
-    .markdown-preview h3 { font-size: 16px; margin: 16px 0 8px; }
+    .markdown-preview h1 { font-size: 24px; margin: 16px 0 10px; color: #222; }
+    .markdown-preview h2 { font-size: 19px; margin: 22px 0 10px; padding-bottom: 4px; border-bottom: 1px solid #eee; color: #222; }
+    .markdown-preview h3 { font-size: 16px; margin: 16px 0 8px; color: #222; }
     .markdown-preview p { margin: 8px 0; }
-    .markdown-preview ul, .markdown-preview ol { margin: 8px 0 8px 20px; }
-    .markdown-preview img { max-width: 100%; height: auto; border-radius: 4px; margin: 10px 0; display: block; }
-    .markdown-preview code { background: #f4f4f4; padding: 1px 4px; border-radius: 2px; font-size: 0.92em; }
+    .markdown-preview ul, .markdown-preview ol { margin: 8px 0 8px 22px; }
+    .markdown-preview li { margin: 4px 0; }
+    .markdown-preview img { max-width: 100%; height: auto; border-radius: 4px; margin: 12px 0; display: block; }
+    .markdown-preview code {
+      background: #f4f4f4;
+      padding: 1px 5px;
+      border-radius: 2px;
+      font-size: 0.92em;
+      font-family: 'Consolas', 'Monaco', monospace;
+    }
+    .markdown-preview a { color: #1a73e8; text-decoration: underline; }
 
+    /* 右侧栏 */
     .review-right {
       width: 420px;
-      background: #f7f9f8;
+      background: #f5f5f5;
       overflow-y: auto;
       padding: 16px;
+      border-left: 1px solid #ddd;
     }
     .panel {
       background: white;
-      border: 1px solid #e0e0e0;
+      border: 1px solid #ddd;
       border-radius: 6px;
       margin-bottom: 14px;
       overflow: hidden;
@@ -151,11 +179,26 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      color: #333;
+    }
+    .panel-header button {
+      padding: 4px 10px;
+      border: 1px solid #ddd;
+      background: white;
+      color: #555;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .panel-header button:hover { background: #f5f5f5; }
+    .panel-header button.primary {
+      background: #333;
+      color: white;
+      border-color: #333;
     }
     .panel-body { padding: 12px 14px; }
-    .field {
-      margin-bottom: 10px;
-    }
+
+    .field { margin-bottom: 10px; }
     .field label {
       display: block;
       font-size: 12px;
@@ -164,21 +207,30 @@
     }
     .field input, .field textarea, .field select {
       width: 100%;
-      padding: 6px 9px;
+      padding: 7px 9px;
       border: 1px solid #ddd;
       border-radius: 3px;
       font-size: 13px;
       font-family: inherit;
+      background: white;
+      color: #333;
+    }
+    .field input:focus, .field textarea:focus, .field select:focus {
+      outline: none;
+      border-color: #333;
     }
     .field textarea { resize: vertical; min-height: 60px; }
     .field-help {
       font-size: 11px;
       color: #999;
-      margin-top: 2px;
+      margin-top: 3px;
     }
+    .field-help a { color: #1a73e8; text-decoration: none; }
+    .field-help a:hover { text-decoration: underline; }
 
+    /* 图片插槽 */
     .image-slot {
-      border: 1px dashed #ccc;
+      border: 1px dashed #ddd;
       border-radius: 4px;
       padding: 12px;
       margin-bottom: 10px;
@@ -188,6 +240,7 @@
       font-size: 12px;
       font-weight: 600;
       margin-bottom: 4px;
+      color: #333;
     }
     .image-slot .slot-spec {
       font-size: 11px;
@@ -196,16 +249,18 @@
     }
     .image-slot .slot-preview {
       width: 100%;
-      max-height: 120px;
+      max-height: 130px;
       object-fit: cover;
       border-radius: 3px;
       margin-bottom: 6px;
       display: block;
+      border: 1px solid #eee;
     }
     .image-slot .slot-empty {
       width: 100%;
       height: 90px;
-      background: #efefef;
+      background: #fff;
+      border: 1px solid #eee;
       border-radius: 3px;
       display: flex;
       align-items: center;
@@ -215,48 +270,50 @@
       margin-bottom: 6px;
     }
     .image-slot button {
-      padding: 5px 10px;
+      padding: 5px 11px;
       border: 1px solid #ddd;
       background: white;
+      color: #333;
       border-radius: 3px;
       cursor: pointer;
       font-size: 12px;
       margin-right: 6px;
     }
+    .image-slot button:hover { background: #f5f5f5; }
     .image-slot button.primary {
-      background: #10B981;
+      background: #333;
       color: white;
-      border-color: #10B981;
+      border-color: #333;
     }
+    .image-slot button.primary:hover { background: #555; }
 
+    /* SEO 评分 */
     .seo-score {
-      padding: 14px;
+      padding: 16px;
       text-align: center;
-      background: #f0fdf4;
-      border-bottom: 1px solid #d1fae5;
+      background: #fafafa;
+      border-bottom: 1px solid #eee;
     }
     .seo-score .score-num {
-      font-size: 36px;
+      font-size: 38px;
       font-weight: 700;
-      color: #10B981;
+      color: #2e7d32;
+      line-height: 1;
     }
-    .seo-score .score-num.warn { color: #f59e0b; }
-    .seo-score .score-num.bad { color: #ef4444; }
+    .seo-score .score-num.warn { color: #ef6c00; }
+    .seo-score .score-num.bad { color: #c62828; }
     .seo-score .score-label {
       font-size: 12px;
       color: #666;
-      margin-top: 4px;
+      margin-top: 6px;
     }
-    .seo-checks {
-      max-height: 360px;
-      overflow-y: auto;
-    }
+    .seo-checks { max-height: 360px; overflow-y: auto; }
     .seo-check-item {
-      padding: 8px 14px;
+      padding: 9px 14px;
       border-bottom: 1px solid #f5f5f5;
       display: flex;
       align-items: flex-start;
-      gap: 8px;
+      gap: 10px;
       font-size: 12px;
     }
     .seo-check-item:last-child { border-bottom: none; }
@@ -264,16 +321,22 @@
       width: 18px;
       flex-shrink: 0;
       font-weight: bold;
+      font-size: 14px;
     }
-    .seo-check-item.passed .check-icon { color: #10B981; }
-    .seo-check-item.failed .check-icon { color: #ef4444; }
-    .seo-check-item .check-name { font-weight: 500; }
-    .seo-check-item .check-detail { color: #888; font-size: 11px; margin-top: 2px; }
+    .seo-check-item.passed .check-icon { color: #2e7d32; }
+    .seo-check-item.failed .check-icon { color: #c62828; }
+    .seo-check-item .check-name { font-weight: 500; color: #333; }
+    .seo-check-item .check-detail {
+      color: #777;
+      font-size: 11px;
+      margin-top: 2px;
+    }
 
+    /* 章节卡 */
     .section-card {
       border: 1px solid #eee;
       border-radius: 4px;
-      padding: 10px;
+      padding: 11px;
       margin-bottom: 8px;
       background: white;
     }
@@ -281,37 +344,66 @@
       font-size: 12px;
       font-weight: 600;
       margin-bottom: 4px;
-      color: #10B981;
+      color: #333;
     }
     .section-card .section-suggestion {
       font-size: 11px;
       color: #666;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+      padding: 6px 8px;
+      background: #fafafa;
+      border-left: 2px solid #999;
+      border-radius: 2px;
       font-style: italic;
     }
     .section-card .section-image {
       width: 100%;
-      max-height: 100px;
+      max-height: 110px;
       object-fit: cover;
       border-radius: 3px;
       margin-bottom: 6px;
       display: block;
+      border: 1px solid #eee;
     }
     .section-card button {
       padding: 4px 10px;
       border: 1px solid #ddd;
       background: white;
+      color: #555;
       border-radius: 3px;
       cursor: pointer;
       font-size: 11px;
+      margin-right: 4px;
     }
+    .section-card button:hover { background: #f5f5f5; }
+    .section-card button.danger { color: #d32f2f; border-color: #f5c2c7; }
 
+    /* chip */
+    .chip {
+      display: inline-block;
+      padding: 3px 9px;
+      background: #f0f0f0;
+      color: #333;
+      border-radius: 10px;
+      font-size: 11px;
+      margin-right: 5px;
+      margin-bottom: 4px;
+      border: 1px solid #e0e0e0;
+    }
+    .chip .x {
+      cursor: pointer;
+      margin-left: 5px;
+      color: #999;
+    }
+    .chip .x:hover { color: #d32f2f; }
+
+    /* toast */
     .toast {
       position: fixed;
       top: 70px;
       right: 20px;
-      background: #0F1F1C;
-      color: #E6F4EF;
+      background: #333;
+      color: white;
       padding: 10px 16px;
       border-radius: 4px;
       font-size: 13px;
@@ -319,34 +411,9 @@
       opacity: 0;
       transition: opacity 0.3s;
       pointer-events: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
     .toast.show { opacity: 1; }
-
-    .loading-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(255,255,255,0.7);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 999;
-    }
-
-    .chip {
-      display: inline-block;
-      padding: 2px 9px;
-      background: #e6f4ef;
-      color: #10B981;
-      border-radius: 10px;
-      font-size: 11px;
-      margin-right: 5px;
-      margin-bottom: 4px;
-    }
-    .chip .x {
-      cursor: pointer;
-      margin-left: 4px;
-      color: #999;
-    }
 
     input[type=file] { display: none; }
   </style>
@@ -357,6 +424,7 @@
     <div class="title" id="topTitle">加载中...</div>
     <span class="status-badge" id="topStatus">—</span>
     <div class="actions">
+      <button class="btn-preview-site" onclick="openSitePreview()">🌐 在网站预览</button>
       <button class="btn-reject" onclick="rejectArticle()">✗ 拒绝</button>
       <button class="btn-save" onclick="saveAll()">💾 保存草稿</button>
       <button class="btn-approve" onclick="approveArticle()">✓ 批准并发布</button>
@@ -364,12 +432,11 @@
   </div>
 
   <div class="review-body">
-    <!-- 左侧：内容编辑/预览 -->
     <div class="review-left">
       <div class="editor-toolbar">
         <button id="modeEdit" class="active" onclick="setMode('edit')">📝 编辑 Markdown</button>
-        <button id="modePreview" onclick="setMode('preview')">👁 预览</button>
-        <span style="margin-left:auto;font-size:12px;color:#666;" id="wordCountInfo">— 字</span>
+        <button id="modePreview" onclick="setMode('preview')">👁 简易预览</button>
+        <span style="margin-left:auto;font-size:12px;color:#999;" id="wordCountInfo">— 字</span>
       </div>
       <div class="editor-area">
         <textarea id="contentEditor" class="markdown-edit" placeholder="文章内容..." oninput="onContentChange()"></textarea>
@@ -377,7 +444,6 @@
       </div>
     </div>
 
-    <!-- 右侧：信息/图片/SEO/链接 -->
     <div class="review-right">
       <!-- 1. 基本信息 -->
       <div class="panel">
@@ -400,7 +466,7 @@
             <label>Slug (URL 路径)</label>
             <input id="fSlug" type="text" placeholder="auto-generated-from-title">
             <div class="field-help">
-              <a href="#" onclick="event.preventDefault();autoGenerateSlug();" style="color:#10B981;">⚡ 根据标题生成</a>
+              <a href="#" onclick="event.preventDefault();autoGenerateSlug();">⚡ 根据标题生成</a>
             </div>
           </div>
           <div class="field">
@@ -414,7 +480,7 @@
             <div class="field-help" id="metaDescLen">0 字符（建议 120-160）</div>
           </div>
           <div class="field">
-            <a href="#" onclick="event.preventDefault();autoGenerateMeta();" style="color:#10B981;font-size:12px;">⚡ AI 生成 Meta Title + Description</a>
+            <a href="#" onclick="event.preventDefault();autoGenerateMeta();" style="color:#1a73e8;font-size:12px;">⚡ AI 生成 Meta Title + Description</a>
           </div>
         </div>
       </div>
@@ -423,18 +489,16 @@
       <div class="panel">
         <div class="panel-header">🖼 图片管理</div>
         <div class="panel-body">
-          <!-- 封面图 -->
           <div class="image-slot">
             <div class="slot-title">封面图（必填）</div>
-            <div class="slot-spec">用于文章列表卡片，建议 1200×675 (16:9)</div>
+            <div class="slot-spec">用于文章列表卡片，建议 1200×675 (16:9)，自动转 WebP + CDN</div>
             <img id="coverPreview" class="slot-preview" style="display:none;">
             <div id="coverEmpty" class="slot-empty">未上传</div>
             <input type="file" id="coverFile" accept="image/*" onchange="uploadCover(event)">
             <button class="primary" onclick="document.getElementById('coverFile').click()">📤 上传封面</button>
-            <input id="fCoverAlt" type="text" placeholder="封面 Alt 文本（SEO 重要）" style="width:100%;padding:5px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;margin-top:6px;" onchange="saveCoverAlt()">
+            <input id="fCoverAlt" type="text" placeholder="封面 Alt 文本（SEO 重要）" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;margin-top:6px;" onchange="saveCoverAlt()">
           </div>
 
-          <!-- OG 分享图 -->
           <div class="image-slot">
             <div class="slot-title">OG 分享图（选填）</div>
             <div class="slot-spec">社交分享卡，建议 1200×630。留空则用封面。</div>
@@ -446,11 +510,11 @@
         </div>
       </div>
 
-      <!-- 3. 正文插图（按 H2 章节） -->
+      <!-- 3. 正文插图 -->
       <div class="panel">
         <div class="panel-header">
           <span>📷 正文插图</span>
-          <button onclick="loadImageSuggestions()" style="padding:4px 10px;border:1px solid #ddd;background:white;border-radius:3px;cursor:pointer;font-size:12px;">🤖 AI 推荐位置</button>
+          <button onclick="loadImageSuggestions()">🤖 AI 推荐位置</button>
         </div>
         <div class="panel-body">
           <div id="sectionsBox">
@@ -465,7 +529,7 @@
       <div class="panel">
         <div class="panel-header">
           <span>🔍 SEO 质检</span>
-          <button onclick="runSeoCheck()" style="padding:4px 10px;border:1px solid #10B981;background:#10B981;color:white;border-radius:3px;cursor:pointer;font-size:12px;">▶ 运行质检</button>
+          <button class="primary" onclick="runSeoCheck()">▶ 运行质检</button>
         </div>
         <div id="seoResult">
           <div style="padding:14px;text-align:center;color:#999;font-size:12px;">
@@ -536,7 +600,9 @@
 
     function renderAll() {
       document.getElementById('topTitle').textContent = post.title || '(无标题)';
-      document.getElementById('topStatus').textContent = statusLabel(post.status);
+      const sb = document.getElementById('topStatus');
+      sb.textContent = statusLabel(post.status);
+      sb.className = 'status-badge status-' + (post.status || '');
       document.getElementById('contentEditor').value = post.content || '';
       document.getElementById('fTitle').value = post.title || '';
       document.getElementById('fMainKw').value = post.main_keyword || (post.keywords && post.keywords[0]) || '';
@@ -643,7 +709,6 @@
       html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
       html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
       html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-      // 段落与列表（粗略）
       const lines = html.split('\n');
       const out = [];
       let inUl = false, inOl = false, inP = [];
@@ -686,9 +751,9 @@
       const tEl = document.getElementById('metaTitleLen');
       const dEl = document.getElementById('metaDescLen');
       tEl.textContent = `${t} 字符（建议 30-60）`;
-      tEl.style.color = (t >= 30 && t <= 60) ? '#10B981' : '#999';
+      tEl.style.color = (t >= 30 && t <= 60) ? '#2e7d32' : '#999';
       dEl.textContent = `${d} 字符（建议 120-160）`;
-      dEl.style.color = (d >= 120 && d <= 160) ? '#10B981' : '#999';
+      dEl.style.color = (d >= 120 && d <= 160) ? '#2e7d32' : '#999';
       dirty = true;
     }
 
@@ -733,7 +798,6 @@
     }
 
     async function autoGenerateSlug() {
-      // 用当前标题生成（保存后再调）
       if (dirty) await saveAll();
       const r = await fetch('/api/blog/post/' + postId + '/generate-slug', { method: 'POST' });
       const d = await r.json();
@@ -788,7 +852,7 @@
         if (d.success) {
           post.cover_image_url = d.imageUrl;
           renderCover();
-          showToast('✓ 封面已上传');
+          showToast('✓ 封面已上传（已自动转 WebP）');
         } else {
           showToast('上传失败：' + d.error);
         }
@@ -861,7 +925,7 @@
             ${img ? `<img class="section-image" src="${img.url}">` : ''}
             <input type="file" accept="image/*" id="secFile${i}" onchange="uploadSectionImage(event, ${i}, '${escapeHtml(s.suggestion).replace(/'/g, "\\'")}')">
             <button onclick="document.getElementById('secFile${i}').click()">${img ? '🔄 替换' : '📤 上传插图'}</button>
-            ${img ? `<button onclick="deleteSectionImage('${img.id}')" style="color:#d32f2f;">删除</button>` : ''}
+            ${img ? `<button class="danger" onclick="deleteSectionImage('${img.id}')">删除</button>` : ''}
           </div>`;
       }).join('');
     }
@@ -942,6 +1006,23 @@
             </div>`).join('')}
         </div>`;
       document.getElementById('seoResult').innerHTML = html;
+    }
+
+    async function openSitePreview() {
+      showToast('生成预览链接...');
+      if (dirty) await saveAll();
+      try {
+        const r = await fetch('/api/blog/post/' + postId + '/preview-token', { method: 'POST' });
+        const d = await r.json();
+        if (d.success && d.url) {
+          window.open(d.url, '_blank');
+          showToast('已在新窗口打开（链接 1 小时有效）');
+        } else {
+          showToast('生成失败：' + (d.error || '未知错误'));
+        }
+      } catch (e) {
+        showToast('错误：' + e.message);
+      }
     }
 
     async function approveArticle() {
