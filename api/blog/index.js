@@ -97,16 +97,55 @@ function parseAIJson(content) {
   let text = String(content).trim();
   // 剥除 ```json ... ``` 包裹
   text = text.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
-  // 如果仍不是纯 JSON，提取第一个 {...} 或 [...] 块
   try {
     return JSON.parse(text);
-  } catch {
-    const objMatch = text.match(/\{[\s\S]*\}/);
-    const arrMatch = text.match(/\[[\s\S]*\]/);
-    const candidate = objMatch ? objMatch[0] : (arrMatch ? arrMatch[0] : null);
-    if (!candidate) throw new Error('Failed to parse AI JSON response');
-    return JSON.parse(candidate);
+  } catch (e1) {
+    // 提取第一个完整的 {...} 块（处理嵌套）
+    const candidate = extractBalancedJson(text);
+    if (!candidate) {
+      const preview = text.slice(0, 200).replace(/\s+/g, ' ');
+      throw new Error(`Failed to parse AI JSON response. Preview: "${preview}..."`);
+    }
+    try {
+      return JSON.parse(candidate);
+    } catch (e2) {
+      const preview = candidate.slice(0, 200).replace(/\s+/g, ' ');
+      throw new Error(`AI JSON malformed: ${e2.message}. Preview: "${preview}..."`);
+    }
   }
+}
+
+// 提取第一个嵌套层级匹配的 {...} 子串（应付 AI 在 JSON 前后插入说明文字）
+function extractBalancedJson(text) {
+  const start = text.indexOf('{');
+  if (start < 0) {
+    const arrStart = text.indexOf('[');
+    if (arrStart < 0) return null;
+    return extractBalanced(text, arrStart, '[', ']');
+  }
+  return extractBalanced(text, start, '{', '}');
+}
+
+function extractBalanced(text, start, open, close) {
+  let depth = 0;
+  let inString = false;
+  let escape = false;
+  for (let i = start; i < text.length; i++) {
+    const c = text[i];
+    if (inString) {
+      if (escape) { escape = false; continue; }
+      if (c === '\\') { escape = true; continue; }
+      if (c === '"') inString = false;
+      continue;
+    }
+    if (c === '"') { inString = true; continue; }
+    if (c === open) depth++;
+    else if (c === close) {
+      depth--;
+      if (depth === 0) return text.slice(start, i + 1);
+    }
+  }
+  return null;
 }
 
 // ──────────────────────────────────────────
@@ -164,7 +203,8 @@ async function generateWithDeepSeek(prompt, model) {
       model: model.model,
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
-      max_tokens: 2000,
+      max_tokens: 6000,
+      response_format: { type: 'json_object' },
     }),
   });
 
@@ -192,7 +232,7 @@ async function generateWithClaude(prompt, model) {
     },
     body: JSON.stringify({
       model: model.model,
-      max_tokens: 2000,
+      max_tokens: 6000,
       messages: [
         {
           role: 'user',
@@ -227,7 +267,8 @@ async function generateWithGPT(prompt, model) {
         },
       ],
       temperature: 0.7,
-      max_tokens: 2000,
+      max_tokens: 6000,
+      response_format: { type: 'json_object' },
     }),
   });
 
