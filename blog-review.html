@@ -537,6 +537,42 @@
           </div>
         </div>
       </div>
+
+      <!-- 5. 链接管理（内链 + 外链） -->
+      <div class="panel">
+        <div class="panel-header">🔗 链接管理</div>
+        <div class="panel-body">
+          <!-- 内链 -->
+          <div style="font-size:12px;font-weight:600;color:#333;margin-bottom:6px;">内链（Internal Links）</div>
+          <div id="internalLinksList" style="margin-bottom:8px;"></div>
+          <div style="border:1px solid #eee;border-radius:4px;padding:10px;margin-bottom:14px;background:#fafafa;">
+            <div style="font-size:11px;color:#666;margin-bottom:6px;">＋ 添加内链</div>
+            <input id="newInternalAnchor" type="text" placeholder="锚文本（例如：MCB tripping curves）" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;margin-bottom:5px;">
+            <select id="newInternalUrl" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;margin-bottom:5px;">
+              <option value="">选择目标页面 ▾</option>
+            </select>
+            <input id="newInternalReason" type="text" placeholder="链接说明（可选）" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;margin-bottom:6px;">
+            <div style="display:flex;gap:5px;">
+              <button onclick="addInternalLink(false)" style="flex:1;padding:5px;font-size:11px;border:1px solid #ddd;background:white;border-radius:3px;cursor:pointer;">仅添加到列表</button>
+              <button onclick="addInternalLink(true)" style="flex:1;padding:5px;font-size:11px;border:1px solid #333;background:#333;color:white;border-radius:3px;cursor:pointer;">插入到正文</button>
+            </div>
+          </div>
+
+          <!-- 外链 -->
+          <div style="font-size:12px;font-weight:600;color:#333;margin-bottom:6px;">外链（External Links）</div>
+          <div id="externalLinksList" style="margin-bottom:8px;"></div>
+          <div style="border:1px solid #eee;border-radius:4px;padding:10px;background:#fafafa;">
+            <div style="font-size:11px;color:#666;margin-bottom:6px;">＋ 添加外链（IEC、IEEE 等权威来源）</div>
+            <input id="newExternalAnchor" type="text" placeholder="锚文本（例如：IEC 60898 Standard）" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;margin-bottom:5px;">
+            <input id="newExternalUrl" type="text" placeholder="https://..." style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;margin-bottom:5px;">
+            <input id="newExternalReason" type="text" placeholder="链接说明（可选）" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;margin-bottom:6px;">
+            <div style="display:flex;gap:5px;">
+              <button onclick="addExternalLink(false)" style="flex:1;padding:5px;font-size:11px;border:1px solid #ddd;background:white;border-radius:3px;cursor:pointer;">仅添加到列表</button>
+              <button onclick="addExternalLink(true)" style="flex:1;padding:5px;font-size:11px;border:1px solid #333;background:#333;color:white;border-radius:3px;cursor:pointer;">插入到正文</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -615,6 +651,9 @@
       renderSubKw(post.sub_keywords || []);
       renderCover();
       renderOg();
+      renderInternalLinks();
+      renderExternalLinks();
+      loadSitePagesOnce();
     }
 
     function statusLabel(s) {
@@ -1065,6 +1104,193 @@
       } catch (e) {
         showToast('错误：' + e.message);
       }
+    }
+
+    // ════ 链接管理 ════
+    let sitePagesCache = null;
+
+    async function loadSitePagesOnce() {
+      if (sitePagesCache) {
+        fillInternalUrlSelect();
+        return;
+      }
+      try {
+        const r = await fetch('/api/blog/site-pages-list');
+        const d = await r.json();
+        if (d.success) {
+          sitePagesCache = d.pages;
+          fillInternalUrlSelect();
+        }
+      } catch (e) {
+        console.warn('site-pages-list 加载失败', e);
+      }
+    }
+
+    function fillInternalUrlSelect() {
+      const sel = document.getElementById('newInternalUrl');
+      if (!sitePagesCache) return;
+      const groups = [
+        { label: 'Blog 文章', items: sitePagesCache.blogs || [] },
+        { label: 'Blog 分类', items: sitePagesCache.blogCategories || [] },
+        { label: '产品页', items: sitePagesCache.products || [] },
+        { label: '产品分类', items: sitePagesCache.productCategories || [] },
+      ];
+      sel.innerHTML = '<option value="">选择目标页面 ▾</option>' +
+        groups.filter(g => g.items.length > 0).map(g =>
+          `<optgroup label="${g.label}">` +
+          g.items.map(i => `<option value="${i.url}">${escapeHtml(i.title)}</option>`).join('') +
+          `</optgroup>`
+        ).join('');
+    }
+
+    function renderInternalLinks() {
+      const box = document.getElementById('internalLinksList');
+      const links = post.internal_links || [];
+      if (!links || links.length === 0) {
+        box.innerHTML = '<div style="font-size:11px;color:#bbb;padding:6px 0;">暂无内链</div>';
+        return;
+      }
+      box.innerHTML = links.map((l, i) => `
+        <div style="border:1px solid #eee;border-radius:3px;padding:6px 8px;margin-bottom:4px;background:white;font-size:11px;display:flex;align-items:center;gap:6px;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:500;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(l.title || l.anchor || '(无锚文本)')}</div>
+            <div style="color:#999;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">→ ${escapeHtml(l.url || '')}</div>
+          </div>
+          <button onclick="removeInternalLink(${i})" style="border:none;background:none;color:#d32f2f;cursor:pointer;font-size:14px;flex-shrink:0;">×</button>
+        </div>
+      `).join('');
+    }
+
+    function renderExternalLinks() {
+      const box = document.getElementById('externalLinksList');
+      const links = post.external_links || [];
+      if (!links || links.length === 0) {
+        box.innerHTML = '<div style="font-size:11px;color:#bbb;padding:6px 0;">暂无外链</div>';
+        return;
+      }
+      box.innerHTML = links.map((l, i) => `
+        <div style="border:1px solid #eee;border-radius:3px;padding:6px 8px;margin-bottom:4px;background:white;font-size:11px;display:flex;align-items:center;gap:6px;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:500;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(l.title || l.anchor || '(无锚文本)')}</div>
+            <div style="color:#999;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">→ ${escapeHtml(l.url || '')}</div>
+          </div>
+          <button onclick="removeExternalLink(${i})" style="border:none;background:none;color:#d32f2f;cursor:pointer;font-size:14px;flex-shrink:0;">×</button>
+        </div>
+      `).join('');
+    }
+
+    async function addInternalLink(insertToContent) {
+      const anchor = document.getElementById('newInternalAnchor').value.trim();
+      const url = document.getElementById('newInternalUrl').value;
+      const reason = document.getElementById('newInternalReason').value.trim();
+
+      if (!anchor) { showToast('请填写锚文本'); return; }
+      if (!url) { showToast('请选择目标页面'); return; }
+
+      const links = post.internal_links || [];
+      links.push({ title: anchor, url, reason: reason || undefined });
+      post.internal_links = links;
+
+      // 写库
+      try {
+        await fetch('/api/blog/post/' + postId, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ internal_links: links }),
+        });
+
+        if (insertToContent) {
+          insertLinkToContent(anchor, url);
+        }
+
+        document.getElementById('newInternalAnchor').value = '';
+        document.getElementById('newInternalUrl').value = '';
+        document.getElementById('newInternalReason').value = '';
+        renderInternalLinks();
+        showToast(insertToContent ? '✓ 已插入正文 + 添加到列表' : '✓ 已添加到列表');
+      } catch (e) {
+        showToast('错误：' + e.message);
+      }
+    }
+
+    async function removeInternalLink(idx) {
+      const links = (post.internal_links || []).slice();
+      links.splice(idx, 1);
+      post.internal_links = links;
+      try {
+        await fetch('/api/blog/post/' + postId, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ internal_links: links }),
+        });
+        renderInternalLinks();
+        showToast('已删除');
+      } catch (e) {
+        showToast('错误：' + e.message);
+      }
+    }
+
+    async function addExternalLink(insertToContent) {
+      const anchor = document.getElementById('newExternalAnchor').value.trim();
+      const url = document.getElementById('newExternalUrl').value.trim();
+      const reason = document.getElementById('newExternalReason').value.trim();
+
+      if (!anchor) { showToast('请填写锚文本'); return; }
+      if (!url || !/^https?:\/\//.test(url)) { showToast('请填写完整的 https:// URL'); return; }
+
+      const links = post.external_links || [];
+      links.push({ title: anchor, url, reason: reason || undefined });
+      post.external_links = links;
+
+      try {
+        await fetch('/api/blog/post/' + postId, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ external_links: links }),
+        });
+
+        if (insertToContent) {
+          insertLinkToContent(anchor, url);
+        }
+
+        document.getElementById('newExternalAnchor').value = '';
+        document.getElementById('newExternalUrl').value = '';
+        document.getElementById('newExternalReason').value = '';
+        renderExternalLinks();
+        showToast(insertToContent ? '✓ 已插入正文 + 添加到列表' : '✓ 已添加到列表');
+      } catch (e) {
+        showToast('错误：' + e.message);
+      }
+    }
+
+    async function removeExternalLink(idx) {
+      const links = (post.external_links || []).slice();
+      links.splice(idx, 1);
+      post.external_links = links;
+      try {
+        await fetch('/api/blog/post/' + postId, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ external_links: links }),
+        });
+        renderExternalLinks();
+        showToast('已删除');
+      } catch (e) {
+        showToast('错误：' + e.message);
+      }
+    }
+
+    function insertLinkToContent(anchor, url) {
+      const editor = document.getElementById('contentEditor');
+      const start = editor.selectionStart;
+      const end = editor.selectionEnd;
+      const v = editor.value;
+      const md = `[${anchor}](${url})`;
+      editor.value = v.slice(0, start) + md + v.slice(end);
+      editor.focus();
+      editor.selectionStart = editor.selectionEnd = start + md.length;
+      dirty = true;
+      onContentChange();
     }
 
     window.addEventListener('beforeunload', e => {

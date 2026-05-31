@@ -1706,7 +1706,7 @@ router.put('/post/:postId', async (req, res) => {
     const fields = [
       'title', 'content', 'meta_title', 'meta_description', 'slug_url',
       'main_keyword', 'sub_keywords', 'internal_links', 'external_links',
-      'faq', 'cover_image_alt',
+      'faq', 'cover_image_alt', 'article_type',
     ];
     const updates = { updated_at: new Date().toISOString() };
     for (const f of fields) {
@@ -2128,6 +2128,232 @@ router.post('/post/:postId/preview-token', async (req, res) => {
     res.json({ success: true, token, expiresAt, url });
   } catch (error) {
     console.error('preview-token error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ──────────────────────────────────────────
+// 13. plan 单条管理（删除 / 编辑 / 立即跑某条）
+// ──────────────────────────────────────────
+
+// 13a. 删除一条 plan
+router.delete('/plans/:planId', async (req, res) => {
+  try {
+    await sb(`blog_plans?id=eq.${req.params.planId}`, { method: 'DELETE' });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 13b. 编辑一条 plan（关键词/标题/类型）
+router.patch('/plans/:planId', async (req, res) => {
+  try {
+    const updates = {};
+    ['keyword', 'title', 'article_type'].forEach(k => {
+      if (req.body[k] !== undefined) updates[k] = req.body[k];
+    });
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ error: 'No updatable fields' });
+    }
+
+    await sb(`blog_plans?id=eq.${req.params.planId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 13c. 立即跑一条 plan（不弹窗，直接生成对应文章）
+router.post('/plans/:planId/generate-now', async (req, res) => {
+  try {
+    const { modelType = 'deepseek' } = req.body;
+    const plans = await sb(`blog_plans?id=eq.${req.params.planId}&select=*`);
+    if (!plans || plans.length === 0) return res.status(404).json({ error: 'Plan not found' });
+
+    const plan = plans[0];
+    const content = await generateContentWithAI(plan.keyword, plan.title, modelType);
+
+    const post = {
+      plan_id: plan.id,
+      title: plan.title,
+      content,
+      keywords: [plan.keyword],
+      article_type: plan.article_type || null,
+      status: 'pending_review',
+    };
+
+    const postResult = await sb('blog_posts', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify(post),
+    });
+
+    await sb(`blog_plans?id=eq.${plan.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'content_generated' }),
+    });
+
+    // 关键词使用计数
+    try {
+      const kw = await sb(`blog_keywords?keyword=eq.${encodeURIComponent(plan.keyword)}&select=id,used_count`);
+      if (kw && kw[0]) {
+        await sb(`blog_keywords?id=eq.${kw[0].id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            used_count: (kw[0].used_count || 0) + 1,
+            last_used_date: new Date().toISOString().split('T')[0],
+          }),
+        });
+      }
+    } catch {}
+
+    res.json({
+      success: true,
+      planId: plan.id,
+      postId: postResult[0]?.id,
+      title: plan.title,
+    });
+  } catch (error) {
+    console.error('Error generating from plan:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ──────────────────────────────────────────
+// 14. 手动模式：明确指定关键词 + 类型 + 模型生成一篇
+// ──────────────────────────────────────────
+router.post('/generate-manual', async (req, res) => {
+  try {
+    const { keyword, articleType = 'product', model = 'deepseek', title } = req.body;
+
+    if (!keyword || !keyword.trim()) {
+      return res.status(400).json({ error: '关键词不能为空' });
+    }
+
+    const finalTitle = (title && title.trim()) || autoTitleByType(articleType, keyword);
+    const content = await generateContentWithAI(keyword, finalTitle, model);
+
+    const post = {
+      plan_id: null,
+      title: finalTitle,
+      content,
+      keywords: [keyword],
+      article_type: articleType,
+      main_keyword: keyword,
+      status: 'pending_review',
+    };
+
+    const result = await sb('blog_posts', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify(post),
+    });
+
+    // 计数
+    try {
+      const kw = await sb(`blog_keywords?keyword=eq.${encodeURIComponent(keyword)}&select=id,used_count`);
+      if (kw && kw[0]) {
+        await sb(`blog_keywords?id=eq.${kw[0].id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            used_count: (kw[0].used_count || 0) + 1,
+            last_used_date: new Date().toISOString().split('T')[0],
+          }),
+        });
+      }
+    } catch {}
+
+    res.json({
+      success: true,
+      postId: result[0]?.id,
+      title: finalTitle,
+      articleType,
+    });
+  } catch (error) {
+    console.error('Error in generate-manual:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+function autoTitleByType(type, keyword) {
+  const tpl = {
+    product: `Complete Guide to ${keyword}`,
+    buying: `How to Choose the Right ${keyword}`,
+    comparison: `${keyword}: Key Differences Explained`,
+    application: `How to Use ${keyword} in Your Project`,
+    faq: `${keyword} FAQ: Expert Answers`,
+  };
+  return tpl[type] || `Complete Guide to ${keyword}`;
+}
+
+// ──────────────────────────────────────────
+// 15. 网站可链向的页面列表（给审核工作台的"添加内链"下拉用）
+// ──────────────────────────────────────────
+router.get('/site-pages-list', async (req, res) => {
+  try {
+    // 已发布 blog 文章
+    const blogs = await sb('blog_posts?status=eq.published&select=slug_url,title,article_type&order=published_at.desc');
+
+    // 静态产品页 / 分类页（写死一份基础列表，比扫描 site.ts 简单可靠）
+    const staticPages = {
+      products: [
+        { slug: 'ac-mcb-1p', name: 'AC MCB 1P' },
+        { slug: 'ac-mcb-2p', name: 'AC MCB 2P' },
+        { slug: 'ac-mcb-3p', name: 'AC MCB 3P' },
+        { slug: 'ac-mcb-4p', name: 'AC MCB 4P' },
+        { slug: 'dc-mcb-1p', name: 'DC MCB 1P' },
+        { slug: 'dc-mcb-2p', name: 'DC MCB 2P' },
+        { slug: 'dc-mcb-3p', name: 'DC MCB 3P' },
+        { slug: 'dc-mcb-4p', name: 'DC MCB 4P' },
+        { slug: 'ac-spd', name: 'AC SPD' },
+        { slug: 'dc-spd', name: 'DC SPD' },
+        { slug: 'ats', name: 'ATS Automatic Transfer Switch' },
+        { slug: 'pv-combiner-box', name: 'PV Combiner Box' },
+        { slug: 'voltage-protector', name: 'Voltage Protector' },
+        { slug: 'din-rail-energy-meter', name: 'DIN Rail Energy Meter' },
+      ],
+      categories: [
+        { slug: 'mcb/ac-mcb', name: 'AC MCB Category' },
+        { slug: 'mcb/dc-mcb', name: 'DC MCB Category' },
+        { slug: 'spd/ac-spd', name: 'AC SPD Category' },
+        { slug: 'spd/dc-spd', name: 'DC SPD Category' },
+      ],
+      blogCategories: [
+        { slug: 'product', name: 'Product Knowledge' },
+        { slug: 'buying', name: 'Selection Guides' },
+        { slug: 'comparison', name: 'Comparisons' },
+        { slug: 'application', name: 'Applications' },
+        { slug: 'faq', name: 'FAQs' },
+      ],
+    };
+
+    res.json({
+      success: true,
+      pages: {
+        blogs: (blogs || []).map(b => ({
+          url: `/blog/${b.slug_url}`,
+          title: b.title,
+          articleType: b.article_type,
+        })).filter(b => b.url && b.url !== '/blog/null'),
+        products: staticPages.products.map(p => ({
+          url: `/products/${p.slug}`,
+          title: p.name,
+        })),
+        productCategories: staticPages.categories.map(c => ({
+          url: `/products/category/${c.slug}`,
+          title: c.name,
+        })),
+        blogCategories: staticPages.blogCategories.map(c => ({
+          url: `/blog/category/${c.slug}`,
+          title: c.name,
+        })),
+      },
+    });
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });

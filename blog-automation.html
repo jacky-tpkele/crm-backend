@@ -1867,6 +1867,87 @@
     </main><!-- /.blog-main -->
   </div><!-- /.blog-container -->
 
+  <!-- 手动生成文章弹窗 -->
+  <div id="manualGenModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9000;align-items:center;justify-content:center;">
+    <div style="background:white;padding:24px 28px;border-radius:8px;width:480px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+      <h3 style="margin:0 0 4px 0;font-size:16px;color:#333;">立即生成文章</h3>
+      <p style="font-size:12px;color:#999;margin:0 0 18px 0;">手动模式：选关键词、文章类型和 AI 模型，立即生成一篇</p>
+
+      <div style="margin-bottom:14px;">
+        <label style="display:block;font-size:12px;color:#666;margin-bottom:4px;">关键词来源</label>
+        <div style="display:flex;gap:14px;font-size:13px;margin-bottom:6px;">
+          <label><input type="radio" name="kwSource" value="lib" checked onchange="onKwSourceChange()"> 从关键词库选</label>
+          <label><input type="radio" name="kwSource" value="manual" onchange="onKwSourceChange()"> 手动输入</label>
+        </div>
+        <select id="manualKwSelect" style="width:100%;padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;">
+          <option value="">加载中...</option>
+        </select>
+        <input id="manualKwInput" type="text" placeholder="例如：solar inverter MCB" style="display:none;width:100%;padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;">
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label style="display:block;font-size:12px;color:#666;margin-bottom:4px;">文章类型</label>
+        <select id="manualArticleType" style="width:100%;padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;">
+          <option value="product">产品知识 (Product Knowledge)</option>
+          <option value="buying">选型指南 (Selection Guide)</option>
+          <option value="comparison">对比文章 (Comparison)</option>
+          <option value="application">应用场景 (Application)</option>
+          <option value="faq">FAQ 文章</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label style="display:block;font-size:12px;color:#666;margin-bottom:4px;">自定义标题（可选，留空自动生成）</label>
+        <input id="manualTitle" type="text" placeholder="留空 → 按关键词+类型自动生成" style="width:100%;padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;">
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <label style="display:block;font-size:12px;color:#666;margin-bottom:4px;">AI 模型</label>
+        <select id="manualModel" style="width:100%;padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;">
+          <option value="deepseek">DeepSeek（便宜、推荐）</option>
+          <option value="claude">Claude 3.5 Sonnet</option>
+          <option value="gpt">GPT-4 Turbo</option>
+          <option value="gemini">Gemini Pro</option>
+        </select>
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button onclick="closeManualGen()" style="padding:7px 16px;border:1px solid #ddd;background:white;color:#333;border-radius:4px;cursor:pointer;font-size:13px;">取消</button>
+        <button id="manualGenBtn" onclick="submitManualGen()" style="padding:7px 16px;border:1px solid #333;background:#333;color:white;border-radius:4px;cursor:pointer;font-size:13px;">▶ 开始生成</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- plan 编辑弹窗 -->
+  <div id="planEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9000;align-items:center;justify-content:center;">
+    <div style="background:white;padding:24px 28px;border-radius:8px;width:460px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+      <h3 style="margin:0 0 18px 0;font-size:16px;color:#333;">编辑计划</h3>
+      <input type="hidden" id="editPlanId">
+      <div style="margin-bottom:12px;">
+        <label style="display:block;font-size:12px;color:#666;margin-bottom:4px;">关键词</label>
+        <input id="editPlanKw" type="text" style="width:100%;padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;">
+      </div>
+      <div style="margin-bottom:12px;">
+        <label style="display:block;font-size:12px;color:#666;margin-bottom:4px;">标题</label>
+        <input id="editPlanTitle" type="text" style="width:100%;padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;">
+      </div>
+      <div style="margin-bottom:18px;">
+        <label style="display:block;font-size:12px;color:#666;margin-bottom:4px;">类型</label>
+        <select id="editPlanType" style="width:100%;padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;">
+          <option value="product">产品知识</option>
+          <option value="buying">选型指南</option>
+          <option value="comparison">对比文章</option>
+          <option value="application">应用场景</option>
+          <option value="faq">FAQ</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button onclick="closePlanEdit()" style="padding:7px 16px;border:1px solid #ddd;background:white;color:#333;border-radius:4px;cursor:pointer;font-size:13px;">取消</button>
+        <button onclick="submitPlanEdit()" style="padding:7px 16px;border:1px solid #333;background:#333;color:white;border-radius:4px;cursor:pointer;font-size:13px;">保存</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 预览编辑弹窗 -->
   <div class="modal" id="previewModal">
     <div class="modal-content">
@@ -2262,36 +2343,177 @@
 
     // 立即生成今日文章
     async function generateNow() {
-      const btn = document.getElementById('generateNowBtn');
+      // 打开手动模式弹窗（让用户选关键词、类型、模型）
+      await loadKeywordsForManual();
+      document.getElementById('manualGenModal').style.display = 'flex';
+    }
+
+    function closeManualGen() {
+      document.getElementById('manualGenModal').style.display = 'none';
+    }
+
+    function onKwSourceChange() {
+      const src = document.querySelector('input[name="kwSource"]:checked').value;
+      document.getElementById('manualKwSelect').style.display = src === 'lib' ? 'block' : 'none';
+      document.getElementById('manualKwInput').style.display = src === 'manual' ? 'block' : 'none';
+    }
+
+    async function loadKeywordsForManual() {
+      try {
+        const r = await fetch('/api/blog/keywords');
+        const d = await r.json();
+        const sel = document.getElementById('manualKwSelect');
+        if (d.success && d.keywords && d.keywords.length > 0) {
+          const groups = {};
+          d.keywords.forEach(k => {
+            const cat = k.category || 'general';
+            if (!groups[cat]) groups[cat] = [];
+            groups[cat].push(k);
+          });
+          const labels = { product:'产品词', buying:'采购词', comparison:'对比词', application:'应用词', faq:'FAQ词', general:'其他' };
+          sel.innerHTML = Object.entries(groups).map(([cat, list]) =>
+            `<optgroup label="${labels[cat] || cat}">` +
+            list.map(k => `<option value="${k.keyword}" data-cat="${cat}">${k.keyword}</option>`).join('') +
+            `</optgroup>`
+          ).join('');
+          // 选中后自动设置类型
+          sel.onchange = () => {
+            const opt = sel.options[sel.selectedIndex];
+            const cat = opt?.dataset?.cat;
+            if (cat && cat !== 'general') {
+              document.getElementById('manualArticleType').value = cat;
+            }
+          };
+          sel.onchange();
+        } else {
+          sel.innerHTML = '<option value="">关键词库为空，请用手动输入</option>';
+          document.querySelector('input[name="kwSource"][value="manual"]').checked = true;
+          onKwSourceChange();
+        }
+      } catch (e) {
+        document.getElementById('manualKwSelect').innerHTML = '<option value="">加载失败</option>';
+      }
+    }
+
+    async function submitManualGen() {
+      const src = document.querySelector('input[name="kwSource"]:checked').value;
+      const keyword = src === 'lib'
+        ? document.getElementById('manualKwSelect').value
+        : document.getElementById('manualKwInput').value.trim();
+
+      if (!keyword) { showToast('请选择或输入关键词'); return; }
+
+      const articleType = document.getElementById('manualArticleType').value;
+      const title = document.getElementById('manualTitle').value.trim();
+      const model = document.getElementById('manualModel').value;
+
+      const btn = document.getElementById('manualGenBtn');
       btn.disabled = true;
       btn.textContent = '生成中...';
 
       try {
-        const response = await fetch('/api/blog/generate-now', {
+        const r = await fetch('/api/blog/generate-manual', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({})
+          body: JSON.stringify({ keyword, articleType, title, model }),
         });
-
-        const data = await response.json();
-        if (data.success) {
-          if (data.generatedCount > 0) {
-            showToast(`成功生成 ${data.generatedCount} 篇文章`);
-          } else {
-            const firstErr = (data.results || []).find(r => r.status === 'error');
-            const detail = firstErr ? `：${firstErr.error}` : '（请检查关键词库或 AI 模型配置）';
-            showToast('生成 0 篇' + detail);
-            console.warn('generate-now results:', data.results);
-          }
+        const d = await r.json();
+        if (d.success) {
+          showToast(`✓ 生成成功：${d.title}`);
+          closeManualGen();
           loadDashboard();
+          // 直接打开审核工作台
+          if (d.postId) {
+            setTimeout(() => openReviewWorkspace(d.postId), 600);
+          }
         } else {
-          showToast('生成失败：' + data.error);
+          showToast('生成失败：' + (d.error || '未知错误'));
         }
-      } catch (error) {
-        showToast('错误：' + error.message);
+      } catch (e) {
+        showToast('错误：' + e.message);
       } finally {
         btn.disabled = false;
-        btn.textContent = '📝 立即生成今日文章';
+        btn.textContent = '▶ 开始生成';
+      }
+    }
+
+    // ==== Plan 单条管理 ====
+    async function generateOnePlan(planId) {
+      if (!confirm('立即生成这条计划的文章？')) return;
+      showToast('生成中...');
+      try {
+        const r = await fetch(`/api/blog/plans/${planId}/generate-now`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ modelType: 'deepseek' }),
+        });
+        const d = await r.json();
+        if (d.success) {
+          showToast(`✓ ${d.title}`);
+          loadPlans();
+          loadDashboard();
+          if (d.postId) {
+            setTimeout(() => openReviewWorkspace(d.postId), 600);
+          }
+        } else {
+          showToast('生成失败：' + (d.error || ''));
+        }
+      } catch (e) {
+        showToast('错误：' + e.message);
+      }
+    }
+
+    function editPlan(planId, keyword, title, articleType) {
+      document.getElementById('editPlanId').value = planId;
+      document.getElementById('editPlanKw').value = keyword;
+      document.getElementById('editPlanTitle').value = title;
+      document.getElementById('editPlanType').value = articleType || 'product';
+      document.getElementById('planEditModal').style.display = 'flex';
+    }
+
+    function closePlanEdit() {
+      document.getElementById('planEditModal').style.display = 'none';
+    }
+
+    async function submitPlanEdit() {
+      const planId = document.getElementById('editPlanId').value;
+      const updates = {
+        keyword: document.getElementById('editPlanKw').value.trim(),
+        title: document.getElementById('editPlanTitle').value.trim(),
+        article_type: document.getElementById('editPlanType').value,
+      };
+      try {
+        const r = await fetch(`/api/blog/plans/${planId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updates),
+        });
+        const d = await r.json();
+        if (d.success) {
+          showToast('✓ 已保存');
+          closePlanEdit();
+          loadPlans();
+        } else {
+          showToast('保存失败：' + (d.error || ''));
+        }
+      } catch (e) {
+        showToast('错误：' + e.message);
+      }
+    }
+
+    async function deletePlan(planId) {
+      if (!confirm('删除这条计划？\n（仅删除计划，不影响已生成的文章）')) return;
+      try {
+        const r = await fetch(`/api/blog/plans/${planId}`, { method: 'DELETE' });
+        const d = await r.json();
+        if (d.success) {
+          showToast('已删除');
+          loadPlans();
+        } else {
+          showToast('删除失败：' + (d.error || ''));
+        }
+      } catch (e) {
+        showToast('错误：' + e.message);
       }
     }
 
@@ -2434,6 +2656,11 @@
         const date = new Date(plan.created_at).toLocaleDateString('zh-CN');
         const seoScore = plan.seo_score || '-';
         const syncStatus = plan.sync_status || 'pending';
+        const typeLabels = { product:'产品知识', buying:'选型指南', comparison:'对比', application:'应用', faq:'FAQ' };
+        const typeLabel = typeLabels[plan.article_type] || plan.article_type || '-';
+        const isPending = plan.status === 'pending';
+        const safeKw = String(plan.keyword || '').replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+        const safeTitle = String(plan.title || '').replace(/'/g, "&#39;").replace(/"/g, "&quot;");
 
         return `
           <tr>
@@ -2441,7 +2668,7 @@
             <td>${date}</td>
             <td>${plan.keyword}</td>
             <td>${plan.title}</td>
-            <td>${plan.content_type || 'Blog'}</td>
+            <td>${typeLabel}</td>
             <td>
               ${seoScore !== '-' ? `<span class="seo-score seo-${seoScore >= 80 ? 'good' : seoScore >= 60 ? 'fair' : 'poor'}">${seoScore}</span>` : '-'}
             </td>
@@ -2456,10 +2683,11 @@
               </span>
             </td>
             <td>
-              <div class="action-buttons">
-                <button onclick="openPreview('${plan.id}')">预览</button>
-                ${plan.status === 'pending_review' ? '<button onclick="reviewPost(\''+plan.id+'\')">审核</button>' : ''}
-                ${plan.status === 'approved' ? '<button onclick="publishPost(\''+plan.id+'\')">发布</button>' : ''}
+              <div class="action-buttons" style="display:flex;gap:4px;flex-wrap:wrap;">
+                ${isPending ? `<button onclick="generateOnePlan('${plan.id}')" style="background:#333;color:white;border-color:#333;">▶ 立即生成</button>` : ''}
+                ${isPending ? `<button onclick="editPlan('${plan.id}','${safeKw}','${safeTitle}','${plan.article_type||'product'}')">编辑</button>` : ''}
+                ${isPending ? `<button onclick="deletePlan('${plan.id}')" style="color:#d32f2f;">删除</button>` : ''}
+                ${!isPending ? `<button onclick="openPreview('${plan.id}')">预览</button>` : ''}
               </div>
             </td>
           </tr>
