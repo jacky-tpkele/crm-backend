@@ -438,8 +438,12 @@
         <button id="modePreview" onclick="setMode('preview')">👁 简易预览</button>
         <span style="margin-left:auto;font-size:12px;color:#999;" id="wordCountInfo">— 字</span>
       </div>
+      <div id="selectionHint" style="display:none;padding:8px 14px;background:#fff3cd;border-bottom:1px solid #ffe69c;font-size:12px;color:#664d03;">
+        💡 已选中：<strong id="selectionText" style="color:#222;"></strong>
+        <span style="color:#888;margin-left:8px;">→ 在右侧"链接管理"里给它加链接，点"插入到正文"会自动替换</span>
+      </div>
       <div class="editor-area">
-        <textarea id="contentEditor" class="markdown-edit" placeholder="文章内容..." oninput="onContentChange()"></textarea>
+        <textarea id="contentEditor" class="markdown-edit" placeholder="文章内容..." oninput="onContentChange()" onmouseup="onEditorSelectionChange()" onkeyup="onEditorSelectionChange()" onblur="onEditorBlur()"></textarea>
         <div id="contentPreview" class="markdown-preview" style="display:none;"></div>
       </div>
     </div>
@@ -542,19 +546,31 @@
       <div class="panel">
         <div class="panel-header">🔗 链接管理</div>
         <div class="panel-body">
+          <div style="font-size:11px;color:#888;background:#f0f7ff;border:1px solid #d4e7ff;border-radius:4px;padding:8px 10px;margin-bottom:12px;line-height:1.5;">
+            💡 <strong style="color:#1a73e8;">推荐做法</strong>：先在左侧正文里<strong>选中</strong>一段文字（例如 "AC MCB 4P"），再在下面选目标页面，点"插入到正文"——会自动用链接替换选中的文字。
+          </div>
+
           <!-- 内链 -->
           <div style="font-size:12px;font-weight:600;color:#333;margin-bottom:6px;">内链（Internal Links）</div>
           <div id="internalLinksList" style="margin-bottom:8px;"></div>
           <div style="border:1px solid #eee;border-radius:4px;padding:10px;margin-bottom:14px;background:#fafafa;">
             <div style="font-size:11px;color:#666;margin-bottom:6px;">＋ 添加内链</div>
-            <input id="newInternalAnchor" type="text" placeholder="锚文本（例如：MCB tripping curves）" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;margin-bottom:5px;">
-            <select id="newInternalUrl" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;margin-bottom:5px;">
+            <label style="font-size:11px;color:#666;display:block;margin-bottom:3px;">① 链接到哪个页面：</label>
+            <select id="newInternalUrl" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;margin-bottom:6px;">
               <option value="">选择目标页面 ▾</option>
             </select>
-            <input id="newInternalReason" type="text" placeholder="链接说明（可选）" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;margin-bottom:6px;">
+
+            <label style="font-size:11px;color:#666;display:block;margin-bottom:3px;">② 锚文本（链接显示的文字）：</label>
+            <div style="display:flex;gap:4px;margin-bottom:5px;">
+              <input id="newInternalAnchor" type="text" placeholder="例如：AC MCB 4P" style="flex:1;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;">
+              <button type="button" onclick="useSelectionAsAnchor('newInternalAnchor')" style="padding:5px 8px;font-size:11px;border:1px solid #ddd;background:white;border-radius:3px;cursor:pointer;white-space:nowrap;" title="把当前左侧选中的文字填进来">⬅ 用选中</button>
+            </div>
+
+            <input id="newInternalReason" type="text" placeholder="③ 链接说明（可选，会显示在文末"相关文章"列表）" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;margin-bottom:8px;">
+
             <div style="display:flex;gap:5px;">
-              <button onclick="addInternalLink(false)" style="flex:1;padding:5px;font-size:11px;border:1px solid #ddd;background:white;border-radius:3px;cursor:pointer;">仅添加到列表</button>
-              <button onclick="addInternalLink(true)" style="flex:1;padding:5px;font-size:11px;border:1px solid #333;background:#333;color:white;border-radius:3px;cursor:pointer;">插入到正文</button>
+              <button onclick="addInternalLink(true)" style="flex:2;padding:6px;font-size:11px;border:1px solid #333;background:#333;color:white;border-radius:3px;cursor:pointer;font-weight:500;">▶ 插入到正文（推荐）</button>
+              <button onclick="addInternalLink(false)" style="flex:1;padding:6px;font-size:11px;border:1px solid #ddd;background:white;border-radius:3px;cursor:pointer;">仅加到列表</button>
             </div>
           </div>
 
@@ -563,12 +579,21 @@
           <div id="externalLinksList" style="margin-bottom:8px;"></div>
           <div style="border:1px solid #eee;border-radius:4px;padding:10px;background:#fafafa;">
             <div style="font-size:11px;color:#666;margin-bottom:6px;">＋ 添加外链（IEC、IEEE 等权威来源）</div>
-            <input id="newExternalAnchor" type="text" placeholder="锚文本（例如：IEC 60898 Standard）" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;margin-bottom:5px;">
-            <input id="newExternalUrl" type="text" placeholder="https://..." style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;margin-bottom:5px;">
-            <input id="newExternalReason" type="text" placeholder="链接说明（可选）" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;margin-bottom:6px;">
+
+            <label style="font-size:11px;color:#666;display:block;margin-bottom:3px;">① 完整 URL：</label>
+            <input id="newExternalUrl" type="text" placeholder="https://..." style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;margin-bottom:6px;">
+
+            <label style="font-size:11px;color:#666;display:block;margin-bottom:3px;">② 锚文本（链接显示的文字）：</label>
+            <div style="display:flex;gap:4px;margin-bottom:5px;">
+              <input id="newExternalAnchor" type="text" placeholder="例如：IEC 60898 Standard" style="flex:1;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;">
+              <button type="button" onclick="useSelectionAsAnchor('newExternalAnchor')" style="padding:5px 8px;font-size:11px;border:1px solid #ddd;background:white;border-radius:3px;cursor:pointer;white-space:nowrap;" title="把当前左侧选中的文字填进来">⬅ 用选中</button>
+            </div>
+
+            <input id="newExternalReason" type="text" placeholder="③ 链接说明（可选）" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;margin-bottom:8px;">
+
             <div style="display:flex;gap:5px;">
-              <button onclick="addExternalLink(false)" style="flex:1;padding:5px;font-size:11px;border:1px solid #ddd;background:white;border-radius:3px;cursor:pointer;">仅添加到列表</button>
-              <button onclick="addExternalLink(true)" style="flex:1;padding:5px;font-size:11px;border:1px solid #333;background:#333;color:white;border-radius:3px;cursor:pointer;">插入到正文</button>
+              <button onclick="addExternalLink(true)" style="flex:2;padding:6px;font-size:11px;border:1px solid #333;background:#333;color:white;border-radius:3px;cursor:pointer;font-weight:500;">▶ 插入到正文（推荐）</button>
+              <button onclick="addExternalLink(false)" style="flex:1;padding:6px;font-size:11px;border:1px solid #ddd;background:white;border-radius:3px;cursor:pointer;">仅加到列表</button>
             </div>
           </div>
         </div>
@@ -1280,15 +1305,74 @@
       }
     }
 
-    function insertLinkToContent(anchor, url) {
+    // ════ 编辑器选区跟踪 ════
+    // 记录最后一次"非空选区"，因为 textarea 失焦后选区会丢，
+    // 用户去右侧填表单时也保持知道之前选了什么。
+    let lastSelection = { start: 0, end: 0, text: '' };
+
+    function onEditorSelectionChange() {
       const editor = document.getElementById('contentEditor');
       const start = editor.selectionStart;
       const end = editor.selectionEnd;
-      const v = editor.value;
+      const text = editor.value.slice(start, end);
+      if (start !== end && text.trim()) {
+        lastSelection = { start, end, text };
+        showSelectionHint(text);
+        // 如果锚文本框是空的，自动同步选中文字
+        const intAnchor = document.getElementById('newInternalAnchor');
+        const extAnchor = document.getElementById('newExternalAnchor');
+        if (intAnchor && !intAnchor.value.trim()) intAnchor.value = text;
+        if (extAnchor && !extAnchor.value.trim()) extAnchor.value = text;
+      }
+    }
+
+    function onEditorBlur() {
+      // 失焦不清提示，让用户在右侧填表时还能看到之前选了啥
+      // 但更新 lastSelection 的时机依然是 selection change
+    }
+
+    function showSelectionHint(text) {
+      const hint = document.getElementById('selectionHint');
+      const span = document.getElementById('selectionText');
+      span.textContent = text.length > 60 ? text.slice(0, 60) + '…' : text;
+      hint.style.display = 'block';
+    }
+
+    function clearSelectionHint() {
+      document.getElementById('selectionHint').style.display = 'none';
+      lastSelection = { start: 0, end: 0, text: '' };
+    }
+
+    function useSelectionAsAnchor(inputId) {
+      if (lastSelection.text) {
+        document.getElementById(inputId).value = lastSelection.text;
+        document.getElementById(inputId).focus();
+      } else {
+        showToast('请先在左侧正文里选中一段文字');
+      }
+    }
+
+    // 插入链接：有选区时替换选区，没选区时在光标位置插入
+    function insertLinkToContent(anchor, url) {
+      const editor = document.getElementById('contentEditor');
       const md = `[${anchor}](${url})`;
+
+      let start, end;
+      // 优先使用记录的"上一次有效选区"，因为表单交互可能让 textarea 失焦
+      if (lastSelection.text && editor.value.slice(lastSelection.start, lastSelection.end) === lastSelection.text) {
+        start = lastSelection.start;
+        end = lastSelection.end;
+      } else {
+        start = editor.selectionStart;
+        end = editor.selectionEnd;
+      }
+
+      const v = editor.value;
       editor.value = v.slice(0, start) + md + v.slice(end);
       editor.focus();
       editor.selectionStart = editor.selectionEnd = start + md.length;
+      lastSelection = { start: start + md.length, end: start + md.length, text: '' };
+      clearSelectionHint();
       dirty = true;
       onContentChange();
     }
