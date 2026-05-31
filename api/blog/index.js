@@ -278,6 +278,134 @@ async function uploadToCloudinary(imageBuffer, fileName) {
 // API 路由
 // ──────────────────────────────────────────
 
+// 1b. 生成 30 天规划（升级版，支持类型比例和每天篇数）
+router.post('/generate-plan-v2', async (req, res) => {
+  try {
+    const {
+      month,
+      dailyCount = 4,
+      typeRatio = { product: 40, comparison: 25, application: 20, buying: 10, faq: 5 },
+      titleTemplate = 'auto',
+      customTitles = [],
+    } = req.body;
+
+    if (!month) return res.status(400).json({ error: 'month is required' });
+
+    const allKeywords = await sb('blog_keywords?select=*&order=priority.asc,used_count.asc');
+    if (!allKeywords || allKeywords.length === 0) {
+      return res.status(400).json({ error: '关键词库为空，请先添加关键词' });
+    }
+
+    const keywordsByCategory = {
+      product: allKeywords.filter(k => k.category === 'product'),
+      comparison: allKeywords.filter(k => k.category === 'comparison'),
+      application: allKeywords.filter(k => k.category === 'application'),
+      buying: allKeywords.filter(k => k.category === 'buying'),
+      faq: allKeywords.filter(k => k.category === 'faq'),
+    };
+
+    // 没有任何分类匹配时，把全部关键词视为 product 兜底
+    const hasAnyCategorized = Object.values(keywordsByCategory).some(arr => arr.length > 0);
+    if (!hasAnyCategorized) {
+      keywordsByCategory.product = allKeywords;
+    }
+
+    const [yy, mm] = month.split('-').map(n => parseInt(n, 10));
+    const daysInMonth = new Date(yy, mm, 0).getDate();
+    const totalPosts = daysInMonth * dailyCount;
+
+    const typeDistribution = {};
+    let remaining = totalPosts;
+    const types = Object.keys(typeRatio);
+
+    types.forEach((type, idx) => {
+      if (idx === types.length - 1) {
+        typeDistribution[type] = remaining;
+      } else {
+        typeDistribution[type] = Math.round(totalPosts * typeRatio[type] / 100);
+        remaining -= typeDistribution[type];
+      }
+    });
+
+    const typeQueues = {};
+    for (const type of types) {
+      let kwList = keywordsByCategory[type] || [];
+      // 该类型下没有关键词时，从全库借用，避免插入 NULL
+      if (kwList.length === 0) kwList = allKeywords;
+      typeQueues[type] = [];
+      for (let i = 0; i < typeDistribution[type]; i++) {
+        typeQueues[type].push(kwList[i % kwList.length]);
+      }
+    }
+
+    const allTypedPosts = [];
+    for (const type of types) {
+      for (const kw of typeQueues[type]) {
+        allTypedPosts.push({ type, keyword: kw });
+      }
+    }
+
+    for (let i = allTypedPosts.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allTypedPosts[i], allTypedPosts[j]] = [allTypedPosts[j], allTypedPosts[i]];
+    }
+
+    const titleTemplates = {
+      product: ['What Is {keyword}?', 'Complete Guide to {keyword}', '{keyword}: Everything You Need to Know'],
+      comparison: ['{keyword}: Key Differences Explained', 'Comparing {keyword}: Which Is Better?'],
+      application: ['How to Use {keyword} in Your Project', '{keyword} for Solar Systems'],
+      buying: ['How to Choose the Right {keyword}', 'Best {keyword} for Your Needs'],
+      faq: ['10 Common Questions About {keyword}', '{keyword} FAQ: Expert Answers'],
+    };
+
+    const plans = [];
+    let orderNum = 1;
+    for (let i = 0; i < allTypedPosts.length; i++) {
+      const { type, keyword } = allTypedPosts[i];
+      const kw = keyword ? keyword.keyword : 'electrical protection';
+
+      let title;
+      if (titleTemplate === 'auto') {
+        const templates = titleTemplates[type] || titleTemplates.product;
+        const tmpl = templates[i % templates.length];
+        title = tmpl.replace('{keyword}', kw);
+      } else if (customTitles.length > 0) {
+        title = customTitles[i % customTitles.length].replace('{keyword}', kw);
+      } else {
+        title = `${kw} Guide`;
+      }
+
+      plans.push({
+        plan_month: month,
+        plan_order: orderNum++,
+        keyword: kw,
+        title,
+        article_type: type,
+        daily_count: dailyCount,
+        status: 'pending',
+      });
+    }
+
+    const result = await sb('blog_plans', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify(plans),
+    });
+
+    res.json({
+      success: true,
+      planMonth: month,
+      totalPlans: plans.length,
+      dailyCount,
+      typeDistribution,
+      plans: result,
+    });
+  } catch (error) {
+    console.error('Error generating plan v2:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // 1. 生成 30 天规划
 router.post('/generate-plan', async (req, res) => {
   try {

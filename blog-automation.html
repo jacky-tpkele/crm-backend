@@ -2145,7 +2145,14 @@
 
         const data = await response.json();
         if (data.success) {
-          showToast(`成功生成 ${data.generatedCount} 篇文章`);
+          if (data.generatedCount > 0) {
+            showToast(`成功生成 ${data.generatedCount} 篇文章`);
+          } else {
+            const firstErr = (data.results || []).find(r => r.status === 'error');
+            const detail = firstErr ? `：${firstErr.error}` : '（请检查关键词库或 AI 模型配置）';
+            showToast('生成 0 篇' + detail);
+            console.warn('generate-now results:', data.results);
+          }
           loadDashboard();
         } else {
           showToast('生成失败：' + data.error);
