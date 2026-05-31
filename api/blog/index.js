@@ -1540,15 +1540,18 @@ router.post('/approve', async (req, res) => {
     }
     const post = posts[0];
 
-    let slug = (post.slug_url || '').trim();
-    if (!slug) {
-      slug = post.title
+    let baseSlug = (post.slug_url || '').trim();
+    if (!baseSlug) {
+      baseSlug = post.title
         .toLowerCase()
         .replace(/[^\w\s-]/g, '')
         .replace(/\s+/g, '-')
         .replace(/-+/g, '-')
         .slice(0, 80);
     }
+
+    // 处理 slug 唯一性冲突：同名 slug 已被别的 post 占用时，追加 -2/-3/...
+    const slug = await ensureUniqueSlug(baseSlug, postId);
 
     const now = new Date().toISOString();
     const updates = {
@@ -1587,6 +1590,22 @@ router.post('/approve', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+// slug 唯一性兜底：同 baseSlug 已被其他 post 占用时，自动加 -2 / -3 ...
+async function ensureUniqueSlug(baseSlug, currentPostId) {
+  let candidate = baseSlug;
+  let n = 1;
+  // 最多查 50 次，防止意外死循环
+  for (let i = 0; i < 50; i++) {
+    const conflicts = await sb(`blog_posts?slug=eq.${encodeURIComponent(candidate)}&select=id`);
+    const others = (conflicts || []).filter(p => p.id !== currentPostId);
+    if (others.length === 0) return candidate;
+    n += 1;
+    candidate = `${baseSlug}-${n}`;
+  }
+  // 兜底：用时间戳后缀
+  return `${baseSlug}-${Date.now()}`;
+}
 
 // 8. 拒绝文章
 router.post('/reject', async (req, res) => {
