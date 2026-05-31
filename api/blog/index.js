@@ -1931,6 +1931,10 @@ router.post('/post/:postId/cover-image', async (req, res) => {
         cover_image_url: cdn.secure_url,
         cover_image_cloudinary_id: cdn.public_id,
         cover_image_alt: altText || '',
+        // 同步老字段 image_url（兼容网站早期实现）
+        image_url: cdn.secure_url,
+        image_width: cdn.width,
+        image_height: cdn.height,
         updated_at: new Date().toISOString(),
       }),
     });
