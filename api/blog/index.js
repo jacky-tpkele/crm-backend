@@ -10,6 +10,7 @@ const cloudinary = require('cloudinary').v2;
 const sharp = require('sharp');
 const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
+const { buildPromptByType, VALID_TYPES } = require('./prompts');
 
 const router = express.Router();
 
@@ -265,6 +266,87 @@ async function generateWithGemini(prompt, model) {
 
   const data = await response.json();
   return data.candidates[0].content.parts[0].text;
+}
+
+// ──────────────────────────────────────────
+// 结构化生成：调用对应 article_type 的 Prompt，返回 JSON 对象
+// 包含 content + meta_title + meta_description + faq + 内/外链建议等
+// ──────────────────────────────────────────
+async function generateStructuredArticle({ keyword, title, articleType, subKeywords, modelType }) {
+  if (!VALID_TYPES.includes(articleType)) articleType = 'product';
+  const model = AI_MODELS[modelType];
+  if (!model || !model.apiKey) {
+    throw new Error(`Model ${modelType} not configured or API key missing`);
+  }
+
+  const prompt = buildPromptByType(articleType, { keyword, title, subKeywords });
+
+  let raw;
+  if (modelType === 'claude') raw = await generateWithClaude(prompt, model);
+  else if (modelType === 'gpt') raw = await generateWithGPT(prompt, model);
+  else if (modelType === 'gemini') raw = await generateWithGemini(prompt, model);
+  else if (modelType === 'deepseek') raw = await generateWithDeepSeek(prompt, model);
+  else throw new Error(`Unsupported model type: ${modelType}`);
+
+  const parsed = parseAIJson(raw);
+
+  // 校验关键字段
+  if (!parsed.title || typeof parsed.title !== 'string') {
+    throw new Error('AI response missing title');
+  }
+  if (!parsed.content || typeof parsed.content !== 'string') {
+    throw new Error('AI response missing content');
+  }
+
+  // 标准化输出（防 AI 漏字段）
+  return {
+    title: parsed.title.trim(),
+    content: parsed.content.trim(),
+    meta_title: (parsed.meta_title || '').trim(),
+    meta_description: (parsed.meta_description || '').trim(),
+    main_keyword: (parsed.main_keyword || keyword || '').trim(),
+    sub_keywords: Array.isArray(parsed.sub_keywords) ? parsed.sub_keywords.filter(s => typeof s === 'string') : [],
+    faq: Array.isArray(parsed.faq) ? parsed.faq.filter(f => f && f.question && f.answer).map(f => ({
+      question: String(f.question).trim(),
+      answer: String(f.answer).trim(),
+    })) : [],
+    internal_link_suggestions: Array.isArray(parsed.internal_link_suggestions) ? parsed.internal_link_suggestions : [],
+    external_link_suggestions: Array.isArray(parsed.external_link_suggestions) ? parsed.external_link_suggestions : [],
+  };
+}
+
+// ──────────────────────────────────────────
+// 把 structured 结果转成 blog_posts 行（不含 plan_id / status，由调用方填）
+// ──────────────────────────────────────────
+function structuredToPostRow(structured, { keyword, articleType }) {
+  const wc = (structured.content || '').split(/\s+/).filter(Boolean).length;
+  return {
+    title: structured.title,
+    content: structured.content,
+    keywords: [keyword],
+    main_keyword: structured.main_keyword || keyword,
+    sub_keywords: structured.sub_keywords || [],
+    meta_title: structured.meta_title || '',
+    meta_description: structured.meta_description || '',
+    article_type: articleType || null,
+    faq: structured.faq || [],
+    // AI 给的链接建议先存到 internal_links / external_links 字段
+    // 操作员审核时可以采纳/修改/删除
+    internal_links: (structured.internal_link_suggestions || []).map(l => ({
+      title: l.anchor || '',
+      url: l.url_hint || '',
+      reason: l.reason || '',
+      ai_suggestion: true,
+    })),
+    external_links: (structured.external_link_suggestions || []).map(l => ({
+      title: l.anchor || '',
+      url: l.url || '',
+      reason: l.reason || '',
+      ai_suggestion: true,
+    })),
+    word_count: wc,
+    reading_time: Math.max(1, Math.ceil(wc / 200)),
+  };
 }
 
 // ──────────────────────────────────────────
@@ -719,20 +801,24 @@ router.get('/cron', async (req, res) => {
 
     for (const plan of plans) {
       try {
-        // 生成文案
-        const content = await generateContentWithAI(plan.keyword, plan.title, 'claude');
-
-        // 创建 blog_post
-        const post = {
-          plan_id: plan.id,
+        const articleType = plan.article_type || 'product';
+        const structured = await generateStructuredArticle({
+          keyword: plan.keyword,
           title: plan.title,
-          content,
-          keywords: [plan.keyword],
-          status: 'draft',
+          articleType,
+          modelType: 'deepseek',
+        });
+
+        const postRow = structuredToPostRow(structured, { keyword: plan.keyword, articleType });
+        const post = {
+          ...postRow,
+          plan_id: plan.id,
+          status: 'pending_review',
         };
 
         const postResult = await sb('blog_posts', {
           method: 'POST',
+          headers: { 'Prefer': 'return=representation' },
           body: JSON.stringify(post),
         });
 
@@ -744,8 +830,8 @@ router.get('/cron', async (req, res) => {
 
         results.push({
           planId: plan.id,
-          postId: postResult[0].id,
-          title: plan.title,
+          postId: postResult[0]?.id,
+          title: structured.title,
           status: 'success',
         });
       } catch (error) {
@@ -1160,11 +1246,12 @@ router.post('/generate-now', async (req, res) => {
         });
       }
 
-      // 临时计划列表
+      // 临时计划列表（继承关键词的 category 作为 article_type）
       plans = keywords.map(kw => ({
         id: null,
         keyword: kw.keyword,
-        title: `Complete Guide to ${kw.keyword}`,
+        title: null, // 让 Prompt 自己生成标题
+        article_type: kw.category && kw.category !== 'general' ? kw.category : 'product',
       }));
     }
 
@@ -1172,13 +1259,18 @@ router.post('/generate-now', async (req, res) => {
 
     for (const plan of plans) {
       try {
-        const content = await generateContentWithAI(plan.keyword, plan.title, modelType);
-
-        const post = {
-          plan_id: plan.id,
+        const articleType = plan.article_type || 'product';
+        const structured = await generateStructuredArticle({
+          keyword: plan.keyword,
           title: plan.title,
-          content,
-          keywords: [plan.keyword],
+          articleType,
+          modelType,
+        });
+
+        const postRow = structuredToPostRow(structured, { keyword: plan.keyword, articleType });
+        const post = {
+          ...postRow,
+          plan_id: plan.id,
           status: 'pending_review',
         };
 
@@ -1212,7 +1304,7 @@ router.post('/generate-now', async (req, res) => {
         results.push({
           planId: plan.id,
           postId: postResult[0]?.id,
-          title: plan.title,
+          title: structured.title,
           status: 'success',
         });
       } catch (error) {
@@ -2175,14 +2267,19 @@ router.post('/plans/:planId/generate-now', async (req, res) => {
     if (!plans || plans.length === 0) return res.status(404).json({ error: 'Plan not found' });
 
     const plan = plans[0];
-    const content = await generateContentWithAI(plan.keyword, plan.title, modelType);
+    const articleType = plan.article_type || 'product';
 
-    const post = {
-      plan_id: plan.id,
+    const structured = await generateStructuredArticle({
+      keyword: plan.keyword,
       title: plan.title,
-      content,
-      keywords: [plan.keyword],
-      article_type: plan.article_type || null,
+      articleType,
+      modelType,
+    });
+
+    const postRow = structuredToPostRow(structured, { keyword: plan.keyword, articleType });
+    const post = {
+      ...postRow,
+      plan_id: plan.id,
       status: 'pending_review',
     };
 
@@ -2215,7 +2312,7 @@ router.post('/plans/:planId/generate-now', async (req, res) => {
       success: true,
       planId: plan.id,
       postId: postResult[0]?.id,
-      title: plan.title,
+      title: structured.title,
     });
   } catch (error) {
     console.error('Error generating from plan:', error);
@@ -2228,22 +2325,27 @@ router.post('/plans/:planId/generate-now', async (req, res) => {
 // ──────────────────────────────────────────
 router.post('/generate-manual', async (req, res) => {
   try {
-    const { keyword, articleType = 'product', model = 'deepseek', title } = req.body;
+    const { keyword, articleType = 'product', model = 'deepseek', title, subKeywords } = req.body;
 
     if (!keyword || !keyword.trim()) {
       return res.status(400).json({ error: '关键词不能为空' });
     }
 
-    const finalTitle = (title && title.trim()) || autoTitleByType(articleType, keyword);
-    const content = await generateContentWithAI(keyword, finalTitle, model);
+    const suggestedTitle = (title && title.trim()) || autoTitleByType(articleType, keyword);
 
+    // 用结构化 Prompt 一次性返回 content + meta + faq + 链接建议
+    const structured = await generateStructuredArticle({
+      keyword: keyword.trim(),
+      title: suggestedTitle,
+      articleType,
+      subKeywords,
+      modelType: model,
+    });
+
+    const postRow = structuredToPostRow(structured, { keyword: keyword.trim(), articleType });
     const post = {
+      ...postRow,
       plan_id: null,
-      title: finalTitle,
-      content,
-      keywords: [keyword],
-      article_type: articleType,
-      main_keyword: keyword,
       status: 'pending_review',
     };
 
@@ -2270,8 +2372,14 @@ router.post('/generate-manual', async (req, res) => {
     res.json({
       success: true,
       postId: result[0]?.id,
-      title: finalTitle,
+      title: structured.title,
       articleType,
+      stats: {
+        wordCount: postRow.word_count,
+        faqCount: structured.faq.length,
+        internalLinkCount: postRow.internal_links.length,
+        externalLinkCount: postRow.external_links.length,
+      },
     });
   } catch (error) {
     console.error('Error in generate-manual:', error);
@@ -2289,6 +2397,58 @@ function autoTitleByType(type, keyword) {
   };
   return tpl[type] || `Complete Guide to ${keyword}`;
 }
+
+// 14b. 重新生成已有文章（用新 Prompt redo）
+router.post('/post/:postId/regenerate', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const { modelType = 'deepseek', articleType: typeOverride } = req.body;
+
+    const posts = await sb(`blog_posts?id=eq.${postId}&select=*`);
+    if (!posts || posts.length === 0) return res.status(404).json({ error: 'Post not found' });
+    const post = posts[0];
+
+    const keyword = post.main_keyword || (post.keywords && post.keywords[0]) || post.title;
+    const articleType = typeOverride || post.article_type || 'product';
+
+    const structured = await generateStructuredArticle({
+      keyword,
+      title: post.title,
+      articleType,
+      subKeywords: post.sub_keywords,
+      modelType,
+    });
+
+    const postRow = structuredToPostRow(structured, { keyword, articleType });
+
+    // 重生成时保留原本人工已加的资源（封面、正文插图、slug）
+    const updates = {
+      ...postRow,
+      // 不覆盖：cover_image_url, cover_image_alt, og_image_url, content_images, slug_url
+      updated_at: new Date().toISOString(),
+    };
+    delete updates.keywords; // keywords 字段保留原值
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    });
+
+    res.json({
+      success: true,
+      postId,
+      title: structured.title,
+      articleType,
+      stats: {
+        wordCount: postRow.word_count,
+        faqCount: structured.faq.length,
+      },
+    });
+  } catch (error) {
+    console.error('Error regenerating:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // ──────────────────────────────────────────
 // 15. 网站可链向的页面列表（给审核工作台的"添加内链"下拉用）

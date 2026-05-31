@@ -425,9 +425,47 @@
     <span class="status-badge" id="topStatus">—</span>
     <div class="actions">
       <button class="btn-preview-site" onclick="openSitePreview()">🌐 在网站预览</button>
+      <button onclick="openRegenerateMenu()" title="用新 Prompt 重新生成（保留封面图和正文插图）">🔄 重新生成</button>
       <button class="btn-reject" onclick="rejectArticle()">✗ 拒绝</button>
       <button class="btn-save" onclick="saveAll()">💾 保存草稿</button>
       <button class="btn-approve" onclick="approveArticle()">✓ 批准并发布</button>
+    </div>
+  </div>
+
+  <!-- 重新生成弹窗 -->
+  <div id="regenModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9000;align-items:center;justify-content:center;">
+    <div style="background:white;padding:24px 28px;border-radius:8px;width:460px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+      <h3 style="margin:0 0 4px 0;font-size:16px;color:#333;">🔄 重新生成文章</h3>
+      <p style="font-size:12px;color:#888;margin:0 0 16px 0;line-height:1.5;">
+        用最新的 Prompt 模板按所选类型重新生成全文 + Meta + FAQ + 链接建议。<br>
+        <strong style="color:#664d03;">封面图、OG 图、正文插图、Slug 会保留。</strong>
+      </p>
+
+      <div style="margin-bottom:14px;">
+        <label style="display:block;font-size:12px;color:#666;margin-bottom:4px;">文章类型</label>
+        <select id="regenType" style="width:100%;padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;">
+          <option value="product">产品知识 (Product Knowledge)</option>
+          <option value="buying">选型指南 (Selection Guide)</option>
+          <option value="comparison">对比文章 (Comparison)</option>
+          <option value="application">应用场景 (Application)</option>
+          <option value="faq">FAQ 文章</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <label style="display:block;font-size:12px;color:#666;margin-bottom:4px;">AI 模型</label>
+        <select id="regenModel" style="width:100%;padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;">
+          <option value="deepseek">DeepSeek（便宜、推荐）</option>
+          <option value="claude">Claude 3.5 Sonnet</option>
+          <option value="gpt">GPT-4 Turbo</option>
+          <option value="gemini">Gemini Pro</option>
+        </select>
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button onclick="closeRegenerateMenu()" style="padding:7px 16px;border:1px solid #ddd;background:white;color:#333;border-radius:4px;cursor:pointer;font-size:13px;">取消</button>
+        <button id="regenBtn" onclick="submitRegenerate()" style="padding:7px 16px;border:1px solid #333;background:#333;color:white;border-radius:4px;cursor:pointer;font-size:13px;">🔄 重新生成</button>
+      </div>
     </div>
   </div>
 
@@ -1086,6 +1124,47 @@
         }
       } catch (e) {
         showToast('错误：' + e.message);
+      }
+    }
+
+    function openRegenerateMenu() {
+      // 默认选当前文章的类型
+      const t = (post && post.article_type) || 'product';
+      document.getElementById('regenType').value = t;
+      document.getElementById('regenModal').style.display = 'flex';
+    }
+
+    function closeRegenerateMenu() {
+      document.getElementById('regenModal').style.display = 'none';
+    }
+
+    async function submitRegenerate() {
+      const articleType = document.getElementById('regenType').value;
+      const modelType = document.getElementById('regenModel').value;
+      const btn = document.getElementById('regenBtn');
+      btn.disabled = true;
+      btn.textContent = 'AI 生成中（约 30s）...';
+
+      try {
+        if (dirty) await saveAll();
+        const r = await fetch('/api/blog/post/' + postId + '/regenerate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ articleType, modelType }),
+        });
+        const d = await r.json();
+        if (d.success) {
+          showToast(`✓ 重新生成完成（${d.stats?.wordCount || '?'} 字 · ${d.stats?.faqCount || 0} 条 FAQ）`);
+          closeRegenerateMenu();
+          await loadPost();
+        } else {
+          showToast('失败：' + (d.error || '未知错误'));
+        }
+      } catch (e) {
+        showToast('错误：' + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🔄 重新生成';
       }
     }
 
