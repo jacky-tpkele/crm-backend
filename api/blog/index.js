@@ -144,9 +144,40 @@ Return ONLY the Markdown article. Do not add any preamble or explanation.
     return await generateWithGPT(prompt, model);
   } else if (modelType === 'gemini') {
     return await generateWithGemini(prompt, model);
+  } else if (modelType === 'deepseek') {
+    return await generateWithDeepSeek(prompt, model);
   } else {
     throw new Error(`Unsupported model type: ${modelType}`);
   }
+}
+
+async function generateWithDeepSeek(prompt, model) {
+  const response = await fetch(model.endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${model.apiKey}`,
+    },
+    body: JSON.stringify({
+      model: model.model,
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 2000,
+    }),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    let msg = text;
+    try { msg = JSON.parse(text)?.error?.message || text; } catch {}
+    throw new Error(`DeepSeek API error: ${msg}`);
+  }
+
+  const data = await response.json();
+  if (!data.choices || !data.choices[0]) {
+    throw new Error(`DeepSeek invalid response: ${JSON.stringify(data)}`);
+  }
+  return data.choices[0].message.content;
 }
 
 async function generateWithClaude(prompt, model) {
