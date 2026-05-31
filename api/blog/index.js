@@ -1669,4 +1669,439 @@ router.delete('/keywords/:id', async (req, res) => {
   }
 });
 
+// ──────────────────────────────────────────
+// 12. 审核工作台 API（v4 - 用 service key 绕 RLS）
+// ──────────────────────────────────────────
+
+// 12a. 获取文章详情（完整字段）
+router.get('/post/:postId', async (req, res) => {
+  try {
+    const posts = await sb(`blog_posts?id=eq.${req.params.postId}`);
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    res.json({ success: true, post: posts[0] });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 12b. 待审核文章列表
+router.get('/pending-review', async (req, res) => {
+  try {
+    const posts = await sb(
+      'blog_posts?status=eq.pending_review&select=id,title,keywords,main_keyword,word_count,reading_time,cover_image_url,created_at,updated_at&order=created_at.desc'
+    );
+    res.json({ success: true, posts });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 12c. 更新文章详情
+router.put('/post/:postId', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const fields = [
+      'title', 'content', 'meta_title', 'meta_description', 'slug_url',
+      'main_keyword', 'sub_keywords', 'internal_links', 'external_links',
+      'faq', 'cover_image_alt',
+    ];
+    const updates = { updated_at: new Date().toISOString() };
+    for (const f of fields) {
+      if (req.body[f] !== undefined) updates[f] = req.body[f];
+    }
+    if (req.body.content !== undefined) {
+      const wc = req.body.content.split(/\s+/).filter(Boolean).length;
+      updates.word_count = wc;
+      updates.reading_time = Math.max(1, Math.ceil(wc / 200));
+    }
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 12d. 上传封面图（Base64 → 压缩 → Cloudinary）
+router.post('/post/:postId/cover-image', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const { imageBase64, altText } = req.body;
+    if (!imageBase64) return res.status(400).json({ error: 'imageBase64 is required' });
+
+    const compressedBuffer = await compressImage(imageBase64);
+    const cdn = await uploadToCloudinary(compressedBuffer, `cover-${postId}`);
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        cover_image_url: cdn.secure_url,
+        cover_image_cloudinary_id: cdn.public_id,
+        cover_image_alt: altText || '',
+        updated_at: new Date().toISOString(),
+      }),
+    });
+
+    res.json({ success: true, imageUrl: cdn.secure_url, width: cdn.width, height: cdn.height });
+  } catch (error) {
+    console.error('cover-image upload error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 12e. 上传 OG 分享图
+router.post('/post/:postId/og-image', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const { imageBase64 } = req.body;
+    if (!imageBase64) return res.status(400).json({ error: 'imageBase64 is required' });
+
+    const compressedBuffer = await compressImage(imageBase64);
+    const cdn = await uploadToCloudinary(compressedBuffer, `og-${postId}`);
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        og_image_url: cdn.secure_url,
+        og_image_cloudinary_id: cdn.public_id,
+        updated_at: new Date().toISOString(),
+      }),
+    });
+
+    res.json({ success: true, imageUrl: cdn.secure_url });
+  } catch (error) {
+    console.error('og-image upload error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 12f. 上传正文插图（关联到 H2 章节）
+router.post('/post/:postId/content-image', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const { imageBase64, altText, sectionIndex } = req.body;
+    if (!imageBase64) return res.status(400).json({ error: 'imageBase64 is required' });
+
+    const compressedBuffer = await compressImage(imageBase64);
+    const cdn = await uploadToCloudinary(compressedBuffer, `content-${postId}-${Date.now()}`);
+
+    const posts = await sb(`blog_posts?id=eq.${postId}&select=content_images,content`);
+    if (!posts || posts.length === 0) return res.status(404).json({ error: 'Post not found' });
+
+    const existing = posts[0].content_images || [];
+    const newImage = {
+      id: uuidv4(),
+      url: cdn.secure_url,
+      cloudinaryId: cdn.public_id,
+      altText: altText || '',
+      width: cdn.width,
+      height: cdn.height,
+      sectionIndex: typeof sectionIndex === 'number' ? sectionIndex : null,
+    };
+
+    // 自动把 ![alt](url) 插入到对应 H2 章节末尾
+    let content = posts[0].content || '';
+    if (typeof sectionIndex === 'number' && sectionIndex >= 0) {
+      content = insertImageAfterSection(content, sectionIndex, newImage);
+    }
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        content_images: [...existing, newImage],
+        content,
+        updated_at: new Date().toISOString(),
+      }),
+    });
+
+    res.json({ success: true, image: newImage });
+  } catch (error) {
+    console.error('content-image upload error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 12g. 删除正文插图
+router.delete('/post/:postId/content-image/:imageId', async (req, res) => {
+  try {
+    const { postId, imageId } = req.params;
+    const posts = await sb(`blog_posts?id=eq.${postId}&select=content_images,content`);
+    if (!posts || posts.length === 0) return res.status(404).json({ error: 'Post not found' });
+
+    const target = (posts[0].content_images || []).find(i => i.id === imageId);
+    const updated = (posts[0].content_images || []).filter(i => i.id !== imageId);
+    let content = posts[0].content || '';
+    if (target && target.url) {
+      content = content.split('\n').filter(line => !line.includes(target.url)).join('\n');
+    }
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        content_images: updated,
+        content,
+        updated_at: new Date().toISOString(),
+      }),
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 12h. AI 推荐正文插图位置（基于 H2 章节）
+router.post('/post/:postId/suggest-images', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const posts = await sb(`blog_posts?id=eq.${postId}&select=title,content,main_keyword,keywords`);
+    if (!posts || posts.length === 0) return res.status(404).json({ error: 'Post not found' });
+
+    const post = posts[0];
+    const sections = extractH2Sections(post.content || '');
+    if (sections.length === 0) {
+      return res.json({ success: true, sections: [] });
+    }
+
+    // 用 AI 给每节配图建议
+    const mainKw = post.main_keyword || (post.keywords && post.keywords[0]) || post.title;
+    const prompt = `You are a blog photo editor. For each section below, suggest one short image idea (5-15 words) that fits the section. Return ONLY JSON array.
+
+Article keyword: ${mainKw}
+Article title: ${post.title}
+
+Sections:
+${sections.map((s, i) => `${i + 1}. ${s.heading}`).join('\n')}
+
+Return format:
+[{"sectionIndex": 0, "suggestion": "..."}]`;
+
+    let suggestions = [];
+    try {
+      const content = await generateContentWithAI(mainKw, prompt, 'deepseek');
+      const parsed = parseAIJson(content);
+      suggestions = Array.isArray(parsed) ? parsed : (parsed.suggestions || []);
+    } catch (err) {
+      console.warn('AI image suggestion failed, using fallback:', err.message);
+      suggestions = sections.map((s, i) => ({ sectionIndex: i, suggestion: `Photo illustrating "${s.heading}"` }));
+    }
+
+    // 合并 sections + suggestions
+    const result = sections.map((s, i) => {
+      const sug = suggestions.find(x => x.sectionIndex === i);
+      return {
+        sectionIndex: i,
+        heading: s.heading,
+        suggestion: sug ? sug.suggestion : `Photo illustrating "${s.heading}"`,
+      };
+    });
+
+    res.json({ success: true, sections: result });
+  } catch (error) {
+    console.error('suggest-images error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 12i. SEO 质检（纯前端规则，不烧 token）
+router.get('/seo-check/:postId', async (req, res) => {
+  try {
+    const posts = await sb(`blog_posts?id=eq.${req.params.postId}`);
+    if (!posts || posts.length === 0) return res.status(404).json({ error: 'Post not found' });
+
+    const p = posts[0];
+    const content = p.content || '';
+    const text = content.replace(/[#*_`>\[\]\(\)]/g, ' ');
+    const words = text.split(/\s+/).filter(Boolean);
+    const wordCount = words.length;
+    const mainKw = (p.main_keyword || (p.keywords && p.keywords[0]) || '').toLowerCase();
+    const lcTitle = (p.title || '').toLowerCase();
+    const lcMetaTitle = (p.meta_title || '').toLowerCase();
+    const lcMetaDesc = (p.meta_description || '').toLowerCase();
+
+    const h2List = (content.match(/^##\s+.+$/gm) || []);
+    const h3List = (content.match(/^###\s+.+$/gm) || []);
+    const internalLinks = (content.match(/\]\((\/[^)]+)\)/g) || []).length;
+    const externalLinks = (content.match(/\]\((https?:\/\/[^)]+)\)/g) || []).length;
+    const imagesInBody = (content.match(/!\[[^\]]*\]\([^)]+\)/g) || []);
+    const altMissing = imagesInBody.filter(m => /!\[\s*\]\(/.test(m)).length;
+
+    let kwCount = 0;
+    if (mainKw) {
+      const re = new RegExp(mainKw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+      kwCount = (text.match(re) || []).length;
+    }
+    const kwDensity = wordCount > 0 ? (kwCount / wordCount) * 100 : 0;
+
+    const checks = [
+      mkCheck('title', '标题长度', p.title && p.title.length >= 30 && p.title.length <= 70,
+        `当前 ${p.title?.length || 0} 字符（建议 30-70）`),
+      mkCheck('title-kw', '标题包含主关键词', !!mainKw && lcTitle.includes(mainKw),
+        mainKw ? `主关键词「${mainKw}」${lcTitle.includes(mainKw) ? '已' : '未'}出现在标题` : '请先设置主关键词'),
+      mkCheck('meta-title', 'Meta Title 长度', p.meta_title && p.meta_title.length >= 30 && p.meta_title.length <= 60,
+        `当前 ${p.meta_title?.length || 0} 字符（建议 30-60）`),
+      mkCheck('meta-desc', 'Meta Description 长度', p.meta_description && p.meta_description.length >= 120 && p.meta_description.length <= 160,
+        `当前 ${p.meta_description?.length || 0} 字符（建议 120-160）`),
+      mkCheck('meta-kw', 'Meta 包含主关键词', !!mainKw && (lcMetaTitle.includes(mainKw) || lcMetaDesc.includes(mainKw)),
+        mainKw ? '' : '请先设置主关键词'),
+      mkCheck('slug', 'Slug 已生成', !!p.slug_url, p.slug_url ? `/${p.slug_url}` : '尚未生成'),
+      mkCheck('h2', 'H2 数量 (3-8)', h2List.length >= 3 && h2List.length <= 8,
+        `当前 ${h2List.length} 个`),
+      mkCheck('words', '字数 (800-1500)', wordCount >= 800 && wordCount <= 1800,
+        `当前 ${wordCount} 字`),
+      mkCheck('density', `关键词密度 (1-3%)`, kwDensity >= 0.8 && kwDensity <= 3,
+        `当前 ${kwDensity.toFixed(2)}%（出现 ${kwCount} 次）`),
+      mkCheck('first-para', '首段包含主关键词', !!mainKw && firstParagraphHasKeyword(content, mainKw),
+        mainKw ? '' : '请先设置主关键词'),
+      mkCheck('cover', '已上传封面图', !!p.cover_image_url, p.cover_image_url ? '已上传' : '建议 1200×675 (16:9)'),
+      mkCheck('cover-alt', '封面图 Alt 文本', !!p.cover_image_alt, p.cover_image_alt ? '已填写' : 'Alt 缺失'),
+      mkCheck('body-img', '正文配图', imagesInBody.length >= 1, `当前 ${imagesInBody.length} 张`),
+      mkCheck('img-alt', '正文图片 Alt 完整', altMissing === 0, altMissing > 0 ? `${altMissing} 张缺 alt` : '全部已填'),
+      mkCheck('internal', '内链 (≥2)', internalLinks >= 2, `当前 ${internalLinks} 条`),
+      mkCheck('external', '外链 (≥1)', externalLinks >= 1, `当前 ${externalLinks} 条`),
+      mkCheck('faq', '包含 FAQ', Array.isArray(p.faq) && p.faq.length >= 3, `当前 ${(p.faq || []).length} 条`),
+    ];
+
+    const passed = checks.filter(c => c.passed).length;
+    const score = Math.round((passed / checks.length) * 100);
+
+    res.json({
+      success: true,
+      score,
+      passedCount: passed,
+      totalCount: checks.length,
+      checks,
+      stats: { wordCount, h2Count: h2List.length, h3Count: h3List.length, internalLinks, externalLinks, kwDensity: +kwDensity.toFixed(2), kwCount, imagesInBody: imagesInBody.length },
+    });
+  } catch (error) {
+    console.error('seo-check error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+function mkCheck(key, name, passed, detail) {
+  return { key, name, passed: !!passed, detail: detail || '' };
+}
+
+function firstParagraphHasKeyword(content, kw) {
+  const lines = content.split('\n');
+  for (const line of lines) {
+    const t = line.trim();
+    if (!t || t.startsWith('#')) continue;
+    return t.toLowerCase().includes(kw);
+  }
+  return false;
+}
+
+function extractH2Sections(content) {
+  const lines = content.split('\n');
+  const sections = [];
+  let current = null;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const m = line.match(/^##\s+(.+)$/);
+    if (m) {
+      if (current) sections.push(current);
+      current = { heading: m[1].trim(), startLine: i, body: [] };
+    } else if (current) {
+      current.body.push(line);
+    }
+  }
+  if (current) sections.push(current);
+  return sections;
+}
+
+function insertImageAfterSection(content, sectionIndex, image) {
+  const lines = content.split('\n');
+  let h2Seen = -1;
+  let insertAt = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (/^##\s+/.test(lines[i])) {
+      h2Seen++;
+      if (h2Seen === sectionIndex) {
+        // 找下一段（或下一个 H2 / 文末）插入
+        for (let j = i + 1; j <= lines.length; j++) {
+          if (j === lines.length || /^##\s+/.test(lines[j])) {
+            insertAt = j;
+            break;
+          }
+        }
+        break;
+      }
+    }
+  }
+  if (insertAt === -1) {
+    return content + `\n\n![${image.altText || ''}](${image.url})\n`;
+  }
+  const before = lines.slice(0, insertAt);
+  const after = lines.slice(insertAt);
+  return [...before, '', `![${image.altText || ''}](${image.url})`, '', ...after].join('\n');
+}
+
+// 12j. 自动生成 Slug
+router.post('/post/:postId/generate-slug', async (req, res) => {
+  try {
+    const posts = await sb(`blog_posts?id=eq.${req.params.postId}&select=title`);
+    if (!posts || posts.length === 0) return res.status(404).json({ error: 'Post not found' });
+
+    const slug = posts[0].title
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .slice(0, 80);
+
+    await sb(`blog_posts?id=eq.${req.params.postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ slug_url: slug, updated_at: new Date().toISOString() }),
+    });
+    res.json({ success: true, slug });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 12k. AI 生成 Meta（title + description）
+router.post('/post/:postId/generate-meta', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const { model = 'deepseek' } = req.body;
+    const posts = await sb(`blog_posts?id=eq.${postId}`);
+    if (!posts || posts.length === 0) return res.status(404).json({ error: 'Post not found' });
+
+    const post = posts[0];
+    const prompt = `Generate SEO meta for this article. Return ONLY JSON.
+
+Title: ${post.title}
+Main keyword: ${post.main_keyword || (post.keywords && post.keywords[0]) || ''}
+Excerpt: ${(post.content || '').slice(0, 500)}
+
+Requirements:
+- meta_title: 30-60 chars, include main keyword
+- meta_description: 120-160 chars, include main keyword
+
+Return: {"meta_title":"...","meta_description":"..."}`;
+
+    const content = await generateContentWithAI(post.title, prompt, model);
+    const meta = parseAIJson(content);
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        meta_title: meta.meta_title || '',
+        meta_description: meta.meta_description || '',
+        updated_at: new Date().toISOString(),
+      }),
+    });
+    res.json({ success: true, meta });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

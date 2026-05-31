@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文章审核工作台</title>
+  <link rel="stylesheet" href="light-theme.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif;
+      background: #f7f9f8;
+      color: #222;
+      font-size: 14px;
+      overflow: hidden;
+    }
+
+    .review-topbar {
+      height: 56px;
+      background: #0F1F1C;
+      color: #E6F4EF;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 16px;
+      border-bottom: 1px solid #162623;
+    }
+    .review-topbar .back-btn {
+      background: transparent;
+      border: 1px solid #34D399;
+      color: #34D399;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .review-topbar .title {
+      flex: 1;
+      font-size: 15px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .review-topbar .status-badge {
+      padding: 3px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      background: #cfe2ff;
+      color: #084298;
+    }
+    .review-topbar .actions {
+      display: flex;
+      gap: 8px;
+    }
+    .review-topbar .actions button {
+      padding: 7px 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .btn-save { background: #6EE7B7; color: #0F1F1C; }
+    .btn-reject { background: transparent; color: #ff8a80; border: 1px solid #ff8a80 !important; }
+    .btn-approve { background: #10B981; color: white; font-weight: 600; }
+
+    .review-body {
+      display: flex;
+      height: calc(100vh - 56px);
+    }
+    .review-left {
+      flex: 1;
+      min-width: 0;
+      background: white;
+      border-right: 1px solid #e0e0e0;
+      display: flex;
+      flex-direction: column;
+    }
+    .review-left .editor-toolbar {
+      padding: 8px 14px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: #fafafa;
+    }
+    .editor-toolbar button {
+      padding: 4px 10px;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .editor-toolbar button.active {
+      background: #10B981;
+      color: white;
+      border-color: #10B981;
+    }
+    .review-left .editor-area {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+    }
+    .review-left textarea.markdown-edit {
+      flex: 1;
+      width: 100%;
+      padding: 18px 24px;
+      border: none;
+      outline: none;
+      resize: none;
+      font-family: 'Consolas', 'Menlo', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      background: white;
+    }
+    .review-left .markdown-preview {
+      flex: 1;
+      padding: 18px 28px;
+      overflow-y: auto;
+      line-height: 1.7;
+    }
+    .markdown-preview h1 { font-size: 24px; margin: 16px 0 10px; }
+    .markdown-preview h2 { font-size: 19px; margin: 22px 0 10px; padding-bottom: 4px; border-bottom: 1px solid #eee; }
+    .markdown-preview h3 { font-size: 16px; margin: 16px 0 8px; }
+    .markdown-preview p { margin: 8px 0; }
+    .markdown-preview ul, .markdown-preview ol { margin: 8px 0 8px 20px; }
+    .markdown-preview img { max-width: 100%; height: auto; border-radius: 4px; margin: 10px 0; display: block; }
+    .markdown-preview code { background: #f4f4f4; padding: 1px 4px; border-radius: 2px; font-size: 0.92em; }
+
+    .review-right {
+      width: 420px;
+      background: #f7f9f8;
+      overflow-y: auto;
+      padding: 16px;
+    }
+    .panel {
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 10px 14px;
+      background: #fafafa;
+      font-weight: 600;
+      font-size: 13px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .panel-body { padding: 12px 14px; }
+    .field {
+      margin-bottom: 10px;
+    }
+    .field label {
+      display: block;
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+    .field input, .field textarea, .field select {
+      width: 100%;
+      padding: 6px 9px;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      font-size: 13px;
+      font-family: inherit;
+    }
+    .field textarea { resize: vertical; min-height: 60px; }
+    .field-help {
+      font-size: 11px;
+      color: #999;
+      margin-top: 2px;
+    }
+
+    .image-slot {
+      border: 1px dashed #ccc;
+      border-radius: 4px;
+      padding: 12px;
+      margin-bottom: 10px;
+      background: #fafafa;
+    }
+    .image-slot .slot-title {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .image-slot .slot-spec {
+      font-size: 11px;
+      color: #888;
+      margin-bottom: 8px;
+    }
+    .image-slot .slot-preview {
+      width: 100%;
+      max-height: 120px;
+      object-fit: cover;
+      border-radius: 3px;
+      margin-bottom: 6px;
+      display: block;
+    }
+    .image-slot .slot-empty {
+      width: 100%;
+      height: 90px;
+      background: #efefef;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #aaa;
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+    .image-slot button {
+      padding: 5px 10px;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 12px;
+      margin-right: 6px;
+    }
+    .image-slot button.primary {
+      background: #10B981;
+      color: white;
+      border-color: #10B981;
+    }
+
+    .seo-score {
+      padding: 14px;
+      text-align: center;
+      background: #f0fdf4;
+      border-bottom: 1px solid #d1fae5;
+    }
+    .seo-score .score-num {
+      font-size: 36px;
+      font-weight: 700;
+      color: #10B981;
+    }
+    .seo-score .score-num.warn { color: #f59e0b; }
+    .seo-score .score-num.bad { color: #ef4444; }
+    .seo-score .score-label {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+    .seo-checks {
+      max-height: 360px;
+      overflow-y: auto;
+    }
+    .seo-check-item {
+      padding: 8px 14px;
+      border-bottom: 1px solid #f5f5f5;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 12px;
+    }
+    .seo-check-item:last-child { border-bottom: none; }
+    .seo-check-item .check-icon {
+      width: 18px;
+      flex-shrink: 0;
+      font-weight: bold;
+    }
+    .seo-check-item.passed .check-icon { color: #10B981; }
+    .seo-check-item.failed .check-icon { color: #ef4444; }
+    .seo-check-item .check-name { font-weight: 500; }
+    .seo-check-item .check-detail { color: #888; font-size: 11px; margin-top: 2px; }
+
+    .section-card {
+      border: 1px solid #eee;
+      border-radius: 4px;
+      padding: 10px;
+      margin-bottom: 8px;
+      background: white;
+    }
+    .section-card .section-heading {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #10B981;
+    }
+    .section-card .section-suggestion {
+      font-size: 11px;
+      color: #666;
+      margin-bottom: 6px;
+      font-style: italic;
+    }
+    .section-card .section-image {
+      width: 100%;
+      max-height: 100px;
+      object-fit: cover;
+      border-radius: 3px;
+      margin-bottom: 6px;
+      display: block;
+    }
+    .section-card button {
+      padding: 4px 10px;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    .toast {
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      background: #0F1F1C;
+      color: #E6F4EF;
+      padding: 10px 16px;
+      border-radius: 4px;
+      font-size: 13px;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; }
+
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+
+    .chip {
+      display: inline-block;
+      padding: 2px 9px;
+      background: #e6f4ef;
+      color: #10B981;
+      border-radius: 10px;
+      font-size: 11px;
+      margin-right: 5px;
+      margin-bottom: 4px;
+    }
+    .chip .x {
+      cursor: pointer;
+      margin-left: 4px;
+      color: #999;
+    }
+
+    input[type=file] { display: none; }
+  </style>
+</head>
+<body>
+  <div class="review-topbar">
+    <button class="back-btn" onclick="goBack()">← 返回列表</button>
+    <div class="title" id="topTitle">加载中...</div>
+    <span class="status-badge" id="topStatus">—</span>
+    <div class="actions">
+      <button class="btn-reject" onclick="rejectArticle()">✗ 拒绝</button>
+      <button class="btn-save" onclick="saveAll()">💾 保存草稿</button>
+      <button class="btn-approve" onclick="approveArticle()">✓ 批准并发布</button>
+    </div>
+  </div>
+
+  <div class="review-body">
+    <!-- 左侧：内容编辑/预览 -->
+    <div class="review-left">
+      <div class="editor-toolbar">
+        <button id="modeEdit" class="active" onclick="setMode('edit')">📝 编辑 Markdown</button>
+        <button id="modePreview" onclick="setMode('preview')">👁 预览</button>
+        <span style="margin-left:auto;font-size:12px;color:#666;" id="wordCountInfo">— 字</span>
+      </div>
+      <div class="editor-area">
+        <textarea id="contentEditor" class="markdown-edit" placeholder="文章内容..." oninput="onContentChange()"></textarea>
+        <div id="contentPreview" class="markdown-preview" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- 右侧：信息/图片/SEO/链接 -->
+    <div class="review-right">
+      <!-- 1. 基本信息 -->
+      <div class="panel">
+        <div class="panel-header">📄 基本信息</div>
+        <div class="panel-body">
+          <div class="field">
+            <label>标题</label>
+            <input id="fTitle" type="text">
+          </div>
+          <div class="field">
+            <label>主关键词</label>
+            <input id="fMainKw" type="text" placeholder="设置后 SEO 检查更精准">
+          </div>
+          <div class="field">
+            <label>子关键词</label>
+            <div id="subKwBox"></div>
+            <input type="text" id="subKwInput" placeholder="输入回车添加" onkeydown="onSubKwKey(event)" style="margin-top:6px;">
+          </div>
+          <div class="field">
+            <label>Slug (URL 路径)</label>
+            <input id="fSlug" type="text" placeholder="auto-generated-from-title">
+            <div class="field-help">
+              <a href="#" onclick="event.preventDefault();autoGenerateSlug();" style="color:#10B981;">⚡ 根据标题生成</a>
+            </div>
+          </div>
+          <div class="field">
+            <label>Meta Title</label>
+            <input id="fMetaTitle" type="text" maxlength="80">
+            <div class="field-help" id="metaTitleLen">0 字符（建议 30-60）</div>
+          </div>
+          <div class="field">
+            <label>Meta Description</label>
+            <textarea id="fMetaDesc" maxlength="200"></textarea>
+            <div class="field-help" id="metaDescLen">0 字符（建议 120-160）</div>
+          </div>
+          <div class="field">
+            <a href="#" onclick="event.preventDefault();autoGenerateMeta();" style="color:#10B981;font-size:12px;">⚡ AI 生成 Meta Title + Description</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. 图片管理 -->
+      <div class="panel">
+        <div class="panel-header">🖼 图片管理</div>
+        <div class="panel-body">
+          <!-- 封面图 -->
+          <div class="image-slot">
+            <div class="slot-title">封面图（必填）</div>
+            <div class="slot-spec">用于文章列表卡片，建议 1200×675 (16:9)</div>
+            <img id="coverPreview" class="slot-preview" style="display:none;">
+            <div id="coverEmpty" class="slot-empty">未上传</div>
+            <input type="file" id="coverFile" accept="image/*" onchange="uploadCover(event)">
+            <button class="primary" onclick="document.getElementById('coverFile').click()">📤 上传封面</button>
+            <input id="fCoverAlt" type="text" placeholder="封面 Alt 文本（SEO 重要）" style="width:100%;padding:5px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;margin-top:6px;" onchange="saveCoverAlt()">
+          </div>
+
+          <!-- OG 分享图 -->
+          <div class="image-slot">
+            <div class="slot-title">OG 分享图（选填）</div>
+            <div class="slot-spec">社交分享卡，建议 1200×630。留空则用封面。</div>
+            <img id="ogPreview" class="slot-preview" style="display:none;">
+            <div id="ogEmpty" class="slot-empty">用封面图</div>
+            <input type="file" id="ogFile" accept="image/*" onchange="uploadOg(event)">
+            <button onclick="document.getElementById('ogFile').click()">📤 上传 OG 图</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. 正文插图（按 H2 章节） -->
+      <div class="panel">
+        <div class="panel-header">
+          <span>📷 正文插图</span>
+          <button onclick="loadImageSuggestions()" style="padding:4px 10px;border:1px solid #ddd;background:white;border-radius:3px;cursor:pointer;font-size:12px;">🤖 AI 推荐位置</button>
+        </div>
+        <div class="panel-body">
+          <div id="sectionsBox">
+            <div style="font-size:12px;color:#999;text-align:center;padding:14px;">
+              点"AI 推荐位置"扫文章 H2 章节，每节给配图建议
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. SEO 质检 -->
+      <div class="panel">
+        <div class="panel-header">
+          <span>🔍 SEO 质检</span>
+          <button onclick="runSeoCheck()" style="padding:4px 10px;border:1px solid #10B981;background:#10B981;color:white;border-radius:3px;cursor:pointer;font-size:12px;">▶ 运行质检</button>
+        </div>
+        <div id="seoResult">
+          <div style="padding:14px;text-align:center;color:#999;font-size:12px;">
+            点"运行质检"打分 + 给具体改进建议
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    (function() {
+      const _fetch = window.fetch;
+      window.fetch = function(input, init) {
+        const url = typeof input === 'string' ? input : input.url;
+        if (url && url.startsWith('/api/')) {
+          init = init || {};
+          init.headers = init.headers || {};
+          const token = localStorage.getItem('crm_token') || localStorage.getItem('token') || '';
+          if (token && !(init.headers['Authorization'] || init.headers['authorization'])) {
+            if (init.headers instanceof Headers) {
+              init.headers.set('Authorization', 'Bearer ' + token);
+            } else {
+              init.headers['Authorization'] = 'Bearer ' + token;
+            }
+          }
+        }
+        return _fetch.call(this, input, init);
+      };
+    })();
+
+    const postId = new URLSearchParams(location.search).get('postId');
+    let post = null;
+    let dirty = false;
+
+    if (!postId) {
+      alert('缺少 postId 参数');
+      goBack();
+    }
+
+    function goBack() {
+      window.location.href = 'blog-automation.html';
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2400);
+    }
+
+    async function loadPost() {
+      try {
+        const r = await fetch('/api/blog/post/' + postId);
+        const d = await r.json();
+        if (!d.success) {
+          showToast('加载失败：' + d.error);
+          return;
+        }
+        post = d.post;
+        renderAll();
+      } catch (e) {
+        showToast('错误：' + e.message);
+      }
+    }
+
+    function renderAll() {
+      document.getElementById('topTitle').textContent = post.title || '(无标题)';
+      document.getElementById('topStatus').textContent = statusLabel(post.status);
+      document.getElementById('contentEditor').value = post.content || '';
+      document.getElementById('fTitle').value = post.title || '';
+      document.getElementById('fMainKw').value = post.main_keyword || (post.keywords && post.keywords[0]) || '';
+      document.getElementById('fSlug').value = post.slug_url || '';
+      document.getElementById('fMetaTitle').value = post.meta_title || '';
+      document.getElementById('fMetaDesc').value = post.meta_description || '';
+      document.getElementById('fCoverAlt').value = post.cover_image_alt || '';
+      updateMetaCounters();
+      updateWordCount();
+      renderSubKw(post.sub_keywords || []);
+      renderCover();
+      renderOg();
+    }
+
+    function statusLabel(s) {
+      const map = { draft: '草稿', pending_review: '待审核', approved: '已批准', published: '已发布', rejected: '已拒绝' };
+      return map[s] || s || '—';
+    }
+
+    function renderCover() {
+      const img = document.getElementById('coverPreview');
+      const empty = document.getElementById('coverEmpty');
+      if (post.cover_image_url) {
+        img.src = post.cover_image_url;
+        img.style.display = 'block';
+        empty.style.display = 'none';
+      } else {
+        img.style.display = 'none';
+        empty.style.display = 'flex';
+      }
+    }
+
+    function renderOg() {
+      const img = document.getElementById('ogPreview');
+      const empty = document.getElementById('ogEmpty');
+      if (post.og_image_url) {
+        img.src = post.og_image_url;
+        img.style.display = 'block';
+        empty.style.display = 'none';
+      } else {
+        img.style.display = 'none';
+        empty.style.display = 'flex';
+      }
+    }
+
+    function renderSubKw(arr) {
+      const box = document.getElementById('subKwBox');
+      box.innerHTML = (arr || []).map((k, i) => `<span class="chip">${escapeHtml(k)}<span class="x" onclick="removeSubKw(${i})">×</span></span>`).join('');
+      post.sub_keywords = arr;
+    }
+
+    function removeSubKw(i) {
+      const arr = (post.sub_keywords || []).slice();
+      arr.splice(i, 1);
+      renderSubKw(arr);
+      dirty = true;
+    }
+
+    function onSubKwKey(e) {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      const v = e.target.value.trim();
+      if (!v) return;
+      const arr = (post.sub_keywords || []).slice();
+      arr.push(v);
+      renderSubKw(arr);
+      e.target.value = '';
+      dirty = true;
+    }
+
+    function escapeHtml(s) {
+      return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    function setMode(mode) {
+      const editor = document.getElementById('contentEditor');
+      const preview = document.getElementById('contentPreview');
+      const editBtn = document.getElementById('modeEdit');
+      const prevBtn = document.getElementById('modePreview');
+      if (mode === 'preview') {
+        preview.innerHTML = renderMarkdown(editor.value);
+        editor.style.display = 'none';
+        preview.style.display = 'block';
+        editBtn.classList.remove('active');
+        prevBtn.classList.add('active');
+      } else {
+        editor.style.display = 'block';
+        preview.style.display = 'none';
+        editBtn.classList.add('active');
+        prevBtn.classList.remove('active');
+      }
+    }
+
+    function renderMarkdown(md) {
+      let html = escapeHtml(md);
+      html = html.replace(/^###### (.+)$/gm, '<h6>$1</h6>')
+                 .replace(/^##### (.+)$/gm, '<h5>$1</h5>')
+                 .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
+                 .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+                 .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+                 .replace(/^# (.+)$/gm, '<h1>$1</h1>');
+      html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
+      html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+      html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+      html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+      // 段落与列表（粗略）
+      const lines = html.split('\n');
+      const out = [];
+      let inUl = false, inOl = false, inP = [];
+      const flushP = () => { if (inP.length) { out.push('<p>' + inP.join(' ') + '</p>'); inP = []; } };
+      for (const line of lines) {
+        const t = line.trim();
+        if (!t) { flushP(); if (inUl) { out.push('</ul>'); inUl = false; } if (inOl) { out.push('</ol>'); inOl = false; } continue; }
+        if (/^<h\d>/.test(t)) { flushP(); if (inUl) { out.push('</ul>'); inUl = false; } if (inOl) { out.push('</ol>'); inOl = false; } out.push(t); continue; }
+        if (/^<img/.test(t)) { flushP(); out.push(t); continue; }
+        const ul = t.match(/^[-*]\s+(.+)$/);
+        const ol = t.match(/^\d+\.\s+(.+)$/);
+        if (ul) { flushP(); if (!inUl) { out.push('<ul>'); inUl = true; } out.push('<li>' + ul[1] + '</li>'); continue; }
+        if (ol) { flushP(); if (!inOl) { out.push('<ol>'); inOl = true; } out.push('<li>' + ol[1] + '</li>'); continue; }
+        inP.push(t);
+      }
+      flushP(); if (inUl) out.push('</ul>'); if (inOl) out.push('</ol>');
+      return out.join('\n');
+    }
+
+    function onContentChange() {
+      dirty = true;
+      updateWordCount();
+    }
+
+    function updateWordCount() {
+      const v = document.getElementById('contentEditor').value;
+      const wc = v.split(/\s+/).filter(Boolean).length;
+      document.getElementById('wordCountInfo').textContent = `${wc} 字`;
+    }
+
+    document.getElementById('fMetaTitle').addEventListener('input', updateMetaCounters);
+    document.getElementById('fMetaDesc').addEventListener('input', updateMetaCounters);
+    document.getElementById('fTitle').addEventListener('input', () => dirty = true);
+    document.getElementById('fMainKw').addEventListener('input', () => dirty = true);
+    document.getElementById('fSlug').addEventListener('input', () => dirty = true);
+
+    function updateMetaCounters() {
+      const t = document.getElementById('fMetaTitle').value.length;
+      const d = document.getElementById('fMetaDesc').value.length;
+      const tEl = document.getElementById('metaTitleLen');
+      const dEl = document.getElementById('metaDescLen');
+      tEl.textContent = `${t} 字符（建议 30-60）`;
+      tEl.style.color = (t >= 30 && t <= 60) ? '#10B981' : '#999';
+      dEl.textContent = `${d} 字符（建议 120-160）`;
+      dEl.style.color = (d >= 120 && d <= 160) ? '#10B981' : '#999';
+      dirty = true;
+    }
+
+    async function saveAll() {
+      const body = {
+        title: document.getElementById('fTitle').value,
+        content: document.getElementById('contentEditor').value,
+        main_keyword: document.getElementById('fMainKw').value,
+        sub_keywords: post.sub_keywords || [],
+        slug_url: document.getElementById('fSlug').value,
+        meta_title: document.getElementById('fMetaTitle').value,
+        meta_description: document.getElementById('fMetaDesc').value,
+        cover_image_alt: document.getElementById('fCoverAlt').value,
+      };
+      try {
+        const r = await fetch('/api/blog/post/' + postId, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const d = await r.json();
+        if (d.success) {
+          dirty = false;
+          showToast('✓ 已保存');
+          await loadPost();
+        } else {
+          showToast('保存失败：' + d.error);
+        }
+      } catch (e) {
+        showToast('错误：' + e.message);
+      }
+    }
+
+    async function saveCoverAlt() {
+      try {
+        await fetch('/api/blog/post/' + postId, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cover_image_alt: document.getElementById('fCoverAlt').value }),
+        });
+      } catch {}
+    }
+
+    async function autoGenerateSlug() {
+      // 用当前标题生成（保存后再调）
+      if (dirty) await saveAll();
+      const r = await fetch('/api/blog/post/' + postId + '/generate-slug', { method: 'POST' });
+      const d = await r.json();
+      if (d.success) {
+        document.getElementById('fSlug').value = d.slug;
+        showToast('✓ Slug 已生成');
+      } else {
+        showToast('生成失败：' + d.error);
+      }
+    }
+
+    async function autoGenerateMeta() {
+      showToast('AI 生成中...');
+      if (dirty) await saveAll();
+      const r = await fetch('/api/blog/post/' + postId + '/generate-meta', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'deepseek' }),
+      });
+      const d = await r.json();
+      if (d.success) {
+        document.getElementById('fMetaTitle').value = d.meta.meta_title || '';
+        document.getElementById('fMetaDesc').value = d.meta.meta_description || '';
+        updateMetaCounters();
+        showToast('✓ Meta 已生成');
+      } else {
+        showToast('生成失败：' + d.error);
+      }
+    }
+
+    async function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = e => resolve(e.target.result);
+        r.onerror = reject;
+        r.readAsDataURL(file);
+      });
+    }
+
+    async function uploadCover(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      showToast('上传中...');
+      try {
+        const b64 = await fileToBase64(file);
+        const r = await fetch('/api/blog/post/' + postId + '/cover-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageBase64: b64, altText: document.getElementById('fCoverAlt').value }),
+        });
+        const d = await r.json();
+        if (d.success) {
+          post.cover_image_url = d.imageUrl;
+          renderCover();
+          showToast('✓ 封面已上传');
+        } else {
+          showToast('上传失败：' + d.error);
+        }
+      } catch (err) {
+        showToast('错误：' + err.message);
+      } finally {
+        e.target.value = '';
+      }
+    }
+
+    async function uploadOg(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      showToast('上传中...');
+      try {
+        const b64 = await fileToBase64(file);
+        const r = await fetch('/api/blog/post/' + postId + '/og-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageBase64: b64 }),
+        });
+        const d = await r.json();
+        if (d.success) {
+          post.og_image_url = d.imageUrl;
+          renderOg();
+          showToast('✓ OG 图已上传');
+        } else {
+          showToast('上传失败：' + d.error);
+        }
+      } catch (err) {
+        showToast('错误：' + err.message);
+      } finally {
+        e.target.value = '';
+      }
+    }
+
+    async function loadImageSuggestions() {
+      const box = document.getElementById('sectionsBox');
+      box.innerHTML = '<div style="font-size:12px;color:#999;text-align:center;padding:14px;">扫描中...</div>';
+      try {
+        if (dirty) await saveAll();
+        const r = await fetch('/api/blog/post/' + postId + '/suggest-images', { method: 'POST' });
+        const d = await r.json();
+        if (!d.success) {
+          box.innerHTML = '<div style="font-size:12px;color:#d32f2f;padding:14px;">' + (d.error || '失败') + '</div>';
+          return;
+        }
+        renderSections(d.sections);
+      } catch (e) {
+        box.innerHTML = '<div style="font-size:12px;color:#d32f2f;padding:14px;">错误：' + e.message + '</div>';
+      }
+    }
+
+    function renderSections(sections) {
+      const box = document.getElementById('sectionsBox');
+      if (!sections || sections.length === 0) {
+        box.innerHTML = '<div style="font-size:12px;color:#999;text-align:center;padding:14px;">未发现 H2 章节，先在文章里加 ## 标题</div>';
+        return;
+      }
+      const existing = (post.content_images || []).reduce((acc, img) => {
+        if (typeof img.sectionIndex === 'number') acc[img.sectionIndex] = img;
+        return acc;
+      }, {});
+      box.innerHTML = sections.map((s, i) => {
+        const img = existing[i];
+        return `
+          <div class="section-card">
+            <div class="section-heading">${escapeHtml(s.heading)}</div>
+            <div class="section-suggestion">💡 ${escapeHtml(s.suggestion)}</div>
+            ${img ? `<img class="section-image" src="${img.url}">` : ''}
+            <input type="file" accept="image/*" id="secFile${i}" onchange="uploadSectionImage(event, ${i}, '${escapeHtml(s.suggestion).replace(/'/g, "\\'")}')">
+            <button onclick="document.getElementById('secFile${i}').click()">${img ? '🔄 替换' : '📤 上传插图'}</button>
+            ${img ? `<button onclick="deleteSectionImage('${img.id}')" style="color:#d32f2f;">删除</button>` : ''}
+          </div>`;
+      }).join('');
+    }
+
+    async function uploadSectionImage(e, sectionIndex, defaultAlt) {
+      const file = e.target.files[0];
+      if (!file) return;
+      showToast('上传中...');
+      try {
+        const b64 = await fileToBase64(file);
+        const r = await fetch('/api/blog/post/' + postId + '/content-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageBase64: b64, altText: defaultAlt || '', sectionIndex }),
+        });
+        const d = await r.json();
+        if (d.success) {
+          showToast('✓ 已插入正文');
+          await loadPost();
+          await loadImageSuggestions();
+        } else {
+          showToast('上传失败：' + d.error);
+        }
+      } catch (err) {
+        showToast('错误：' + err.message);
+      } finally {
+        e.target.value = '';
+      }
+    }
+
+    async function deleteSectionImage(imgId) {
+      if (!confirm('删除这张图？')) return;
+      try {
+        const r = await fetch('/api/blog/post/' + postId + '/content-image/' + imgId, { method: 'DELETE' });
+        const d = await r.json();
+        if (d.success) {
+          showToast('已删除');
+          await loadPost();
+          await loadImageSuggestions();
+        }
+      } catch (e) {
+        showToast('错误：' + e.message);
+      }
+    }
+
+    async function runSeoCheck() {
+      const box = document.getElementById('seoResult');
+      box.innerHTML = '<div style="padding:14px;text-align:center;color:#999;font-size:12px;">检查中...</div>';
+      if (dirty) await saveAll();
+      try {
+        const r = await fetch('/api/blog/seo-check/' + postId);
+        const d = await r.json();
+        if (!d.success) {
+          box.innerHTML = '<div style="padding:14px;color:#d32f2f;font-size:12px;">' + (d.error || '失败') + '</div>';
+          return;
+        }
+        renderSeoResult(d);
+      } catch (e) {
+        box.innerHTML = '<div style="padding:14px;color:#d32f2f;font-size:12px;">错误：' + e.message + '</div>';
+      }
+    }
+
+    function renderSeoResult(d) {
+      const cls = d.score >= 80 ? '' : d.score >= 60 ? 'warn' : 'bad';
+      const html = `
+        <div class="seo-score">
+          <div class="score-num ${cls}">${d.score}</div>
+          <div class="score-label">通过 ${d.passedCount}/${d.totalCount} · 关键词密度 ${d.stats.kwDensity}% · 字数 ${d.stats.wordCount}</div>
+        </div>
+        <div class="seo-checks">
+          ${d.checks.map(c => `
+            <div class="seo-check-item ${c.passed ? 'passed' : 'failed'}">
+              <div class="check-icon">${c.passed ? '✓' : '✗'}</div>
+              <div style="flex:1;">
+                <div class="check-name">${c.name}</div>
+                ${c.detail ? `<div class="check-detail">${escapeHtml(c.detail)}</div>` : ''}
+              </div>
+            </div>`).join('')}
+        </div>`;
+      document.getElementById('seoResult').innerHTML = html;
+    }
+
+    async function approveArticle() {
+      if (!confirm('批准这篇文章？批准后会同步到网站。')) return;
+      if (dirty) await saveAll();
+      try {
+        const r = await fetch('/api/blog/approve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ postId }),
+        });
+        const d = await r.json();
+        if (d.success) {
+          showToast('✓ 已批准');
+          setTimeout(goBack, 800);
+        } else {
+          showToast('批准失败：' + d.error);
+        }
+      } catch (e) {
+        showToast('错误：' + e.message);
+      }
+    }
+
+    async function rejectArticle() {
+      const reason = prompt('拒绝原因（必填）：');
+      if (!reason) return;
+      try {
+        const r = await fetch('/api/blog/reject', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ postId, reason }),
+        });
+        const d = await r.json();
+        if (d.success) {
+          showToast('已拒绝');
+          setTimeout(goBack, 800);
+        } else {
+          showToast('拒绝失败：' + d.error);
+        }
+      } catch (e) {
+        showToast('错误：' + e.message);
+      }
+    }
+
+    window.addEventListener('beforeunload', e => {
+      if (dirty) {
+        e.preventDefault();
+        e.returnValue = '有未保存的修改，确定离开？';
+      }
+    });
+
+    loadPost();
+  </script>
+</body>
+</html>

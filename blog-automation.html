@@ -1528,6 +1528,7 @@
           <button class="tab-btn" data-tab="keywords">🔑 关键词库</button>
           <button class="tab-btn" data-tab="plan">📅 生成规划</button>
           <button class="tab-btn" data-tab="list">📝 计划列表</button>
+          <button class="tab-btn" data-tab="review">🔍 待审核 <span id="tabPendingBadge" style="display:none;background:#ff6b35;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">0</span></button>
         </div>
       </div>
 
@@ -1574,7 +1575,7 @@
             <div class="stat-value" id="statGenerated">0</div>
             <div class="stat-unit">篇</div>
           </div>
-          <div class="stat-card">
+          <div class="stat-card" style="cursor:pointer;" onclick="switchToReviewTab()" title="点击查看待审核列表">
             <div class="stat-label">待审核</div>
             <div class="stat-value" id="statPending">0</div>
             <div class="stat-unit">篇</div>
@@ -1847,6 +1848,21 @@
         </tbody>
       </table>
     </div>
+
+    <!-- 标签页 4：待审核 -->
+    <div class="tab-content" id="review-tab">
+      <div class="plan-list-header">
+        <div class="plan-stats">
+          待审核 <strong id="reviewTotalCount">0</strong> 篇文章
+          <span style="color:#666;font-size:12px;margin-left:8px;">点"审核"进入工作台：补图片、SEO 质检、批准发布</span>
+        </div>
+        <button onclick="loadReviewList()" style="padding:8px 14px;border:1px solid #ddd;background:white;border-radius:4px;cursor:pointer;">🔄 刷新</button>
+      </div>
+
+      <div id="reviewListContainer">
+        <div style="text-align:center;color:#999;padding:40px;">加载中...</div>
+      </div>
+    </div>
       </div><!-- /.blog-main-content -->
     </main><!-- /.blog-main -->
   </div><!-- /.blog-container -->
@@ -2076,9 +2092,115 @@
           loadDashboard();
         } else if (tabName === 'keywords') {
           loadKeywords();
+        } else if (tabName === 'review') {
+          loadReviewList();
         }
       });
     });
+
+    // 控制面板"待审核"卡片点击 → 切到 review tab
+    function switchToReviewTab() {
+      const btn = document.querySelector('.tab-btn[data-tab="review"]');
+      if (btn) btn.click();
+    }
+
+    // 加载待审核列表
+    async function loadReviewList() {
+      const container = document.getElementById('reviewListContainer');
+      container.innerHTML = '<div style="text-align:center;color:#999;padding:40px;">加载中...</div>';
+      try {
+        const response = await fetch('/api/blog/pending-review');
+        const data = await response.json();
+        if (!data.success) {
+          container.innerHTML = `<div style="text-align:center;color:#d32f2f;padding:40px;">加载失败：${data.error || ''}</div>`;
+          return;
+        }
+
+        const posts = data.posts || [];
+        document.getElementById('reviewTotalCount').textContent = posts.length;
+        const badge = document.getElementById('tabPendingBadge');
+        if (badge) {
+          badge.textContent = posts.length;
+          badge.style.display = posts.length > 0 ? 'inline-block' : 'none';
+        }
+
+        if (posts.length === 0) {
+          container.innerHTML = `
+            <div style="text-align:center;color:#999;padding:60px;border:1px dashed #ddd;border-radius:8px;">
+              <div style="font-size:42px;margin-bottom:8px;">✅</div>
+              <div>暂无待审核文章</div>
+              <div style="margin-top:8px;font-size:12px;">到「控制面板」点"立即生成今日文章"，或等定时任务运行</div>
+            </div>`;
+          return;
+        }
+
+        container.innerHTML = `
+          <div style="display:grid;gap:12px;">
+            ${posts.map(p => renderReviewCard(p)).join('')}
+          </div>`;
+      } catch (error) {
+        container.innerHTML = `<div style="text-align:center;color:#d32f2f;padding:40px;">错误：${error.message}</div>`;
+      }
+    }
+
+    function renderReviewCard(p) {
+      const cover = p.cover_image_url
+        ? `<img src="${p.cover_image_url}" style="width:160px;height:90px;object-fit:cover;border-radius:6px;flex-shrink:0;" alt="">`
+        : `<div style="width:160px;height:90px;background:#f0f0f0;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:12px;flex-shrink:0;">⚠ 缺封面图</div>`;
+      const time = p.created_at ? new Date(p.created_at).toLocaleString('zh-CN') : '';
+      const kw = p.main_keyword || (p.keywords && p.keywords[0]) || '—';
+      const wc = p.word_count || 0;
+      const rt = p.reading_time || 0;
+      return `
+        <div style="display:flex;gap:14px;padding:14px;border:1px solid #e5e5e5;border-radius:8px;background:white;">
+          ${cover}
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:15px;margin-bottom:6px;color:#222;">${escapeHtml(p.title || '(无标题)')}</div>
+            <div style="font-size:12px;color:#666;margin-bottom:4px;">
+              <span style="background:#e6f4ef;color:#10B981;padding:2px 8px;border-radius:10px;margin-right:6px;">${escapeHtml(kw)}</span>
+              <span style="margin-right:10px;">📝 ${wc} 字</span>
+              <span style="margin-right:10px;">⏱ ${rt} 分钟</span>
+              <span>🕐 ${time}</span>
+            </div>
+            <div style="font-size:12px;color:${p.cover_image_url ? '#10B981' : '#ff6b35'};">
+              ${p.cover_image_url ? '✓ 已配封面' : '⚠ 未配封面'}
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+            <button onclick="openReviewWorkspace('${p.id}')" style="padding:8px 16px;background:#10B981;color:white;border:none;border-radius:4px;cursor:pointer;font-size:13px;">📝 进入审核</button>
+            <button onclick="quickReject('${p.id}')" style="padding:6px 16px;background:white;color:#999;border:1px solid #ddd;border-radius:4px;cursor:pointer;font-size:12px;">拒绝</button>
+          </div>
+        </div>`;
+    }
+
+    function escapeHtml(s) {
+      return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    function openReviewWorkspace(postId) {
+      window.location.href = `blog-review.html?postId=${encodeURIComponent(postId)}`;
+    }
+
+    async function quickReject(postId) {
+      const reason = prompt('拒绝原因（可选）：');
+      if (reason === null) return;
+      try {
+        const r = await fetch('/api/blog/reject', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ postId, reason: reason || '不符合要求' }),
+        });
+        const d = await r.json();
+        if (d.success) {
+          showToast('已拒绝');
+          loadReviewList();
+        } else {
+          showToast('拒绝失败：' + (d.error || ''));
+        }
+      } catch (e) {
+        showToast('错误：' + e.message);
+      }
+    }
 
     // 加载控制面板数据
     async function loadDashboard() {
@@ -2100,6 +2222,14 @@
           document.getElementById('statPending').textContent = data.todayStats.pending_review;
           document.getElementById('statPublished').textContent = data.todayStats.published;
           document.getElementById('statFailed').textContent = data.todayStats.failed;
+
+          // 同步顶部 tab 的待审核 badge
+          const badge = document.getElementById('tabPendingBadge');
+          if (badge) {
+            const n = data.todayStats.pending_review || 0;
+            badge.textContent = n;
+            badge.style.display = n > 0 ? 'inline-block' : 'none';
+          }
 
           // 更新最近运行记录
           if (data.lastGenerationLog) {
