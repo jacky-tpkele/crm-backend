@@ -8,110 +8,123 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Microsoft YaHei', sans-serif;
-      background: #ffffff;
-      color: #333;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Microsoft YaHei', sans-serif;
+      background: #FFFFFF;
+      color: #1D1D1F;
       font-size: 14px;
       overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      letter-spacing: -0.01em;
     }
-    a { color: #333; }
+    a { color: #007AFF; }
 
     /* 顶栏 */
     .review-topbar {
-      height: 56px;
-      background: #ffffff;
-      color: #333;
+      height: 60px;
+      background: #FFFFFF;
+      color: #1D1D1F;
       display: flex;
       align-items: center;
-      padding: 0 20px;
+      padding: 0 24px;
       gap: 14px;
-      border-bottom: 1px solid #ddd;
+      border-bottom: 1px solid #E5E5E7;
     }
     .review-topbar .back-btn {
-      background: #f5f5f5;
-      border: 1px solid #ddd;
-      color: #333;
-      padding: 7px 13px;
-      border-radius: 4px;
+      background: #FFFFFF;
+      border: 1px solid #E5E5E7;
+      color: #1D1D1F;
+      padding: 7px 14px;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 13px;
+      font-weight: 500;
+      transition: all 0.15s ease;
     }
-    .review-topbar .back-btn:hover { background: #efefef; }
+    .review-topbar .back-btn:hover { background: #F5F5F7; border-color: #D2D2D7; }
     .review-topbar .title {
       flex: 1;
       font-size: 15px;
-      font-weight: 500;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: #1D1D1F;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .review-topbar .status-badge {
-      padding: 3px 10px;
-      border-radius: 10px;
-      font-size: 12px;
-      background: #f0f0f0;
-      color: #555;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 500;
+      background: #F2F2F4;
+      color: #6E6E73;
     }
-    .review-topbar .status-pending_review { background: #fff3cd; color: #664d03; }
-    .review-topbar .status-approved { background: #d1e7dd; color: #0f5132; }
-    .review-topbar .status-published { background: #cfe2ff; color: #084298; }
+    .review-topbar .status-pending_review { background: #FFF8E1; color: #8A6D00; }
+    .review-topbar .status-approved { background: #E6F6EB; color: #0F7A3A; }
+    .review-topbar .status-published { background: #E8F1FF; color: #0066D6; }
     .review-topbar .actions { display: flex; gap: 8px; }
     .review-topbar .actions button {
       padding: 7px 14px;
-      border: 1px solid #ddd;
-      background: white;
-      color: #333;
-      border-radius: 4px;
+      border: 1px solid #E5E5E7;
+      background: #FFFFFF;
+      color: #1D1D1F;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 13px;
+      font-weight: 500;
+      transition: all 0.15s ease;
     }
-    .review-topbar .actions button:hover { background: #f5f5f5; }
-    .btn-preview-site { background: #fff !important; border-color: #333 !important; }
-    .btn-save { background: #fff !important; }
-    .btn-reject { color: #d32f2f !important; border-color: #f5c2c7 !important; }
+    .review-topbar .actions button:hover { background: #F5F5F7; border-color: #D2D2D7; }
+    .btn-preview-site { background: #FFFFFF !important; border-color: #007AFF !important; color: #007AFF !important; }
+    .btn-preview-site:hover { background: rgba(0, 122, 255, 0.06) !important; }
+    .btn-save { background: #FFFFFF !important; }
+    .btn-reject { color: #FF3B30 !important; border-color: #FFD7D5 !important; }
+    .btn-reject:hover { background: #FFEDEC !important; }
     .btn-approve {
-      background: #333 !important;
+      background: #34C759 !important;
       color: white !important;
-      border-color: #333 !important;
+      border-color: #34C759 !important;
       font-weight: 500;
     }
-    .btn-approve:hover { background: #555 !important; }
+    .btn-approve:hover { background: #2BB14B !important; border-color: #2BB14B !important; }
 
     /* 主体两栏 */
     .review-body {
       display: flex;
-      height: calc(100vh - 56px);
+      height: calc(100vh - 60px);
     }
     .review-left {
       flex: 1;
       min-width: 0;
-      background: #ffffff;
-      border-right: 1px solid #ddd;
+      background: #FFFFFF;
+      border-right: 1px solid #E5E5E7;
       display: flex;
       flex-direction: column;
     }
     .editor-toolbar {
-      padding: 8px 14px;
-      border-bottom: 1px solid #eee;
+      padding: 10px 18px;
+      border-bottom: 1px solid #F2F2F2;
       display: flex;
-      gap: 8px;
+      gap: 6px;
       align-items: center;
-      background: #fafafa;
+      background: #FAFAFA;
     }
     .editor-toolbar button {
-      padding: 5px 12px;
-      border: 1px solid #ddd;
-      background: white;
-      color: #555;
-      border-radius: 3px;
+      padding: 6px 14px;
+      border: 1px solid #E5E5E7;
+      background: #FFFFFF;
+      color: #424245;
+      border-radius: 6px;
       cursor: pointer;
       font-size: 12px;
+      transition: all 0.15s ease;
     }
-    .editor-toolbar button:hover { background: #f5f5f5; }
+    .editor-toolbar button:hover { background: #F5F5F7; }
     .editor-toolbar button.active {
-      background: #333;
+      background: #007AFF;
       color: white;
-      border-color: #333;
+      border-color: #007AFF;
     }
     .editor-area {
       flex: 1;
@@ -121,196 +134,206 @@
     textarea.markdown-edit {
       flex: 1;
       width: 100%;
-      padding: 18px 24px;
+      padding: 22px 28px;
       border: none;
       outline: none;
       resize: none;
-      font-family: 'Consolas', 'Menlo', 'Monaco', monospace;
+      font-family: 'SF Mono', 'Consolas', 'Menlo', 'Monaco', monospace;
       font-size: 13px;
-      line-height: 1.7;
-      background: white;
-      color: #333;
+      line-height: 1.75;
+      background: #FFFFFF;
+      color: #1D1D1F;
     }
     .markdown-preview {
       flex: 1;
-      padding: 18px 28px;
+      padding: 22px 32px;
       overflow-y: auto;
-      line-height: 1.7;
-      color: #333;
-      background: white;
+      line-height: 1.75;
+      color: #1D1D1F;
+      background: #FFFFFF;
     }
-    .markdown-preview h1 { font-size: 24px; margin: 16px 0 10px; color: #222; }
-    .markdown-preview h2 { font-size: 19px; margin: 22px 0 10px; padding-bottom: 4px; border-bottom: 1px solid #eee; color: #222; }
-    .markdown-preview h3 { font-size: 16px; margin: 16px 0 8px; color: #222; }
+    .markdown-preview h1 { font-size: 26px; margin: 18px 0 12px; color: #1D1D1F; font-weight: 700; letter-spacing: -0.02em; }
+    .markdown-preview h2 { font-size: 20px; margin: 24px 0 10px; padding-bottom: 6px; border-bottom: 1px solid #F2F2F2; color: #1D1D1F; font-weight: 600; letter-spacing: -0.01em; }
+    .markdown-preview h3 { font-size: 16px; margin: 18px 0 8px; color: #1D1D1F; font-weight: 600; }
     .markdown-preview p { margin: 8px 0; }
     .markdown-preview ul, .markdown-preview ol { margin: 8px 0 8px 22px; }
     .markdown-preview li { margin: 4px 0; }
-    .markdown-preview img { max-width: 100%; height: auto; border-radius: 4px; margin: 12px 0; display: block; }
+    .markdown-preview img { max-width: 100%; height: auto; border-radius: 8px; margin: 12px 0; display: block; }
     .markdown-preview code {
-      background: #f4f4f4;
-      padding: 1px 5px;
-      border-radius: 2px;
+      background: #F5F5F7;
+      padding: 2px 6px;
+      border-radius: 4px;
       font-size: 0.92em;
-      font-family: 'Consolas', 'Monaco', monospace;
+      font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+      color: #1D1D1F;
     }
-    .markdown-preview a { color: #1a73e8; text-decoration: underline; }
+    .markdown-preview a { color: #007AFF; text-decoration: none; }
+    .markdown-preview a:hover { text-decoration: underline; }
 
     /* 右侧栏 */
     .review-right {
-      width: 420px;
-      background: #f5f5f5;
+      width: 440px;
+      background: #FAFAFA;
       overflow-y: auto;
-      padding: 16px;
-      border-left: 1px solid #ddd;
+      padding: 18px;
+      border-left: 1px solid #E5E5E7;
     }
     .panel {
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 6px;
+      background: #FFFFFF;
+      border: 1px solid #E5E5E7;
+      border-radius: 12px;
       margin-bottom: 14px;
       overflow: hidden;
     }
     .panel-header {
-      padding: 10px 14px;
-      background: #fafafa;
+      padding: 12px 16px;
+      background: transparent;
       font-weight: 600;
-      font-size: 13px;
-      border-bottom: 1px solid #eee;
+      font-size: 13.5px;
+      border-bottom: 1px solid #F2F2F2;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      color: #333;
+      color: #1D1D1F;
+      letter-spacing: -0.01em;
     }
     .panel-header button {
-      padding: 4px 10px;
-      border: 1px solid #ddd;
-      background: white;
-      color: #555;
-      border-radius: 3px;
+      padding: 5px 12px;
+      border: 1px solid #E5E5E7;
+      background: #FFFFFF;
+      color: #424245;
+      border-radius: 6px;
       cursor: pointer;
       font-size: 12px;
+      transition: all 0.15s ease;
     }
-    .panel-header button:hover { background: #f5f5f5; }
+    .panel-header button:hover { background: #F5F5F7; }
     .panel-header button.primary {
-      background: #333;
+      background: #007AFF;
       color: white;
-      border-color: #333;
+      border-color: #007AFF;
     }
-    .panel-body { padding: 12px 14px; }
+    .panel-header button.primary:hover { background: #0066D6; border-color: #0066D6; }
+    .panel-body { padding: 14px 16px; }
 
-    .field { margin-bottom: 10px; }
+    .field { margin-bottom: 12px; }
     .field label {
       display: block;
       font-size: 12px;
-      color: #666;
-      margin-bottom: 4px;
+      color: #6E6E73;
+      margin-bottom: 5px;
+      font-weight: 500;
     }
     .field input, .field textarea, .field select {
       width: 100%;
-      padding: 7px 9px;
-      border: 1px solid #ddd;
-      border-radius: 3px;
+      padding: 9px 11px;
+      border: 1px solid #E5E5E7;
+      border-radius: 8px;
       font-size: 13px;
       font-family: inherit;
-      background: white;
-      color: #333;
+      background: #FFFFFF;
+      color: #1D1D1F;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
     .field input:focus, .field textarea:focus, .field select:focus {
       outline: none;
-      border-color: #333;
+      border-color: #007AFF;
+      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
     }
     .field textarea { resize: vertical; min-height: 60px; }
     .field-help {
       font-size: 11px;
-      color: #999;
-      margin-top: 3px;
+      color: #86868B;
+      margin-top: 4px;
     }
-    .field-help a { color: #1a73e8; text-decoration: none; }
+    .field-help a { color: #007AFF; text-decoration: none; }
     .field-help a:hover { text-decoration: underline; }
 
     /* 图片插槽 */
     .image-slot {
-      border: 1px dashed #ddd;
-      border-radius: 4px;
-      padding: 12px;
-      margin-bottom: 10px;
-      background: #fafafa;
+      border: 1px dashed #D2D2D7;
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 12px;
+      background: #FAFAFA;
     }
     .image-slot .slot-title {
-      font-size: 12px;
+      font-size: 12.5px;
       font-weight: 600;
       margin-bottom: 4px;
-      color: #333;
+      color: #1D1D1F;
     }
     .image-slot .slot-spec {
       font-size: 11px;
-      color: #888;
+      color: #86868B;
       margin-bottom: 8px;
     }
     .image-slot .slot-preview {
       width: 100%;
       max-height: 130px;
       object-fit: cover;
-      border-radius: 3px;
+      border-radius: 6px;
       margin-bottom: 6px;
       display: block;
-      border: 1px solid #eee;
+      border: 1px solid #E5E5E7;
     }
     .image-slot .slot-empty {
       width: 100%;
       height: 90px;
-      background: #fff;
-      border: 1px solid #eee;
-      border-radius: 3px;
+      background: #FFFFFF;
+      border: 1px solid #E5E5E7;
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #aaa;
+      color: #86868B;
       font-size: 12px;
       margin-bottom: 6px;
     }
     .image-slot button {
-      padding: 5px 11px;
-      border: 1px solid #ddd;
-      background: white;
-      color: #333;
-      border-radius: 3px;
+      padding: 6px 12px;
+      border: 1px solid #E5E5E7;
+      background: #FFFFFF;
+      color: #1D1D1F;
+      border-radius: 6px;
       cursor: pointer;
       font-size: 12px;
       margin-right: 6px;
+      transition: all 0.15s ease;
     }
-    .image-slot button:hover { background: #f5f5f5; }
+    .image-slot button:hover { background: #F5F5F7; }
     .image-slot button.primary {
-      background: #333;
+      background: #007AFF;
       color: white;
-      border-color: #333;
+      border-color: #007AFF;
     }
-    .image-slot button.primary:hover { background: #555; }
+    .image-slot button.primary:hover { background: #0066D6; border-color: #0066D6; }
 
     /* SEO 评分 */
     .seo-score {
-      padding: 16px;
+      padding: 18px;
       text-align: center;
-      background: #fafafa;
-      border-bottom: 1px solid #eee;
+      background: transparent;
+      border-bottom: 1px solid #F2F2F2;
     }
     .seo-score .score-num {
-      font-size: 38px;
+      font-size: 42px;
       font-weight: 700;
-      color: #2e7d32;
+      color: #34C759;
       line-height: 1;
+      letter-spacing: -0.03em;
     }
-    .seo-score .score-num.warn { color: #ef6c00; }
-    .seo-score .score-num.bad { color: #c62828; }
+    .seo-score .score-num.warn { color: #FF9500; }
+    .seo-score .score-num.bad { color: #FF3B30; }
     .seo-score .score-label {
       font-size: 12px;
-      color: #666;
+      color: #6E6E73;
       margin-top: 6px;
     }
     .seo-checks { max-height: 360px; overflow-y: auto; }
     .seo-check-item {
-      padding: 9px 14px;
-      border-bottom: 1px solid #f5f5f5;
+      padding: 10px 16px;
+      border-bottom: 1px solid #F5F5F7;
       display: flex;
       align-items: flex-start;
       gap: 10px;
@@ -323,95 +346,98 @@
       font-weight: bold;
       font-size: 14px;
     }
-    .seo-check-item.passed .check-icon { color: #2e7d32; }
-    .seo-check-item.failed .check-icon { color: #c62828; }
-    .seo-check-item .check-name { font-weight: 500; color: #333; }
+    .seo-check-item.passed .check-icon { color: #34C759; }
+    .seo-check-item.failed .check-icon { color: #FF3B30; }
+    .seo-check-item .check-name { font-weight: 500; color: #1D1D1F; }
     .seo-check-item .check-detail {
-      color: #777;
+      color: #6E6E73;
       font-size: 11px;
       margin-top: 2px;
     }
 
     /* 章节卡 */
     .section-card {
-      border: 1px solid #eee;
-      border-radius: 4px;
-      padding: 11px;
+      border: 1px solid #E5E5E7;
+      border-radius: 8px;
+      padding: 12px;
       margin-bottom: 8px;
-      background: white;
+      background: #FFFFFF;
     }
     .section-card .section-heading {
-      font-size: 12px;
+      font-size: 12.5px;
       font-weight: 600;
       margin-bottom: 4px;
-      color: #333;
+      color: #1D1D1F;
     }
     .section-card .section-suggestion {
       font-size: 11px;
-      color: #666;
+      color: #6E6E73;
       margin-bottom: 8px;
-      padding: 6px 8px;
-      background: #fafafa;
-      border-left: 2px solid #999;
-      border-radius: 2px;
-      font-style: italic;
+      padding: 6px 10px;
+      background: #FAFAFA;
+      border-left: 2px solid #007AFF;
+      border-radius: 0 6px 6px 0;
+      font-style: normal;
     }
     .section-card .section-image {
       width: 100%;
       max-height: 110px;
       object-fit: cover;
-      border-radius: 3px;
+      border-radius: 6px;
       margin-bottom: 6px;
       display: block;
-      border: 1px solid #eee;
+      border: 1px solid #E5E5E7;
     }
     .section-card button {
-      padding: 4px 10px;
-      border: 1px solid #ddd;
-      background: white;
-      color: #555;
-      border-radius: 3px;
+      padding: 5px 11px;
+      border: 1px solid #E5E5E7;
+      background: #FFFFFF;
+      color: #424245;
+      border-radius: 6px;
       cursor: pointer;
       font-size: 11px;
       margin-right: 4px;
+      transition: all 0.15s ease;
     }
-    .section-card button:hover { background: #f5f5f5; }
-    .section-card button.danger { color: #d32f2f; border-color: #f5c2c7; }
+    .section-card button:hover { background: #F5F5F7; }
+    .section-card button.danger { color: #FF3B30; border-color: #FFD7D5; }
 
     /* chip */
     .chip {
       display: inline-block;
-      padding: 3px 9px;
-      background: #f0f0f0;
-      color: #333;
-      border-radius: 10px;
+      padding: 3px 10px;
+      background: #F2F2F4;
+      color: #1D1D1F;
+      border-radius: 999px;
       font-size: 11px;
       margin-right: 5px;
       margin-bottom: 4px;
-      border: 1px solid #e0e0e0;
+      border: 1px solid #E5E5E7;
     }
     .chip .x {
       cursor: pointer;
       margin-left: 5px;
-      color: #999;
+      color: #86868B;
     }
-    .chip .x:hover { color: #d32f2f; }
+    .chip .x:hover { color: #FF3B30; }
 
     /* toast */
     .toast {
       position: fixed;
-      top: 70px;
-      right: 20px;
-      background: #333;
+      top: 76px;
+      right: 24px;
+      background: rgba(28, 28, 30, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       color: white;
-      padding: 10px 16px;
-      border-radius: 4px;
+      padding: 11px 18px;
+      border-radius: 12px;
       font-size: 13px;
       z-index: 9999;
       opacity: 0;
-      transition: opacity 0.3s;
+      transition: opacity 0.25s;
       pointer-events: none;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
     }
     .toast.show { opacity: 1; }
 
@@ -435,7 +461,7 @@
       <span id="actionsForPublished" style="display:none;">
         <button class="btn-save" onclick="saveAndUpdate()" title="保存改动 → 立即生效到网站">💾 保存改动</button>
         <button class="btn-save" onclick="saveAndRequeue()" title="保存改动 → 状态改回待审核（先下线）">🔁 改完重新审核</button>
-        <button onclick="unpublishFromReview()" style="color:#ef6c00;border-color:#fdb !important;">📥 下线文章</button>
+        <button onclick="unpublishFromReview()" style="color:#FF9500;border-color:#FFE0B2 !important;">📥 下线文章</button>
       </span>
       <span id="actionsForArchived" style="display:none;">
         <button class="btn-save" onclick="saveAll()">💾 保存改动</button>
@@ -448,17 +474,17 @@
   </div>
 
   <!-- 重新生成弹窗 -->
-  <div id="regenModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9000;align-items:center;justify-content:center;">
-    <div style="background:white;padding:24px 28px;border-radius:8px;width:460px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
-      <h3 style="margin:0 0 4px 0;font-size:16px;color:#333;">🔄 重新生成文章</h3>
-      <p style="font-size:12px;color:#888;margin:0 0 16px 0;line-height:1.5;">
+  <div id="regenModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.32);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9000;align-items:center;justify-content:center;">
+    <div style="background:white;padding:26px 30px;border-radius:16px;width:480px;max-width:90vw;box-shadow:0 20px 50px rgba(0,0,0,0.18);">
+      <h3 style="margin:0 0 4px 0;font-size:17px;font-weight:600;letter-spacing:-0.01em;color:#1D1D1F;">🔄 重新生成文章</h3>
+      <p style="font-size:12.5px;color:#6E6E73;margin:0 0 16px 0;line-height:1.5;">
         用最新的 Prompt 模板按所选类型重新生成全文 + Meta + FAQ + 链接建议。<br>
-        <strong style="color:#664d03;">封面图、OG 图、正文插图、Slug 会保留。</strong>
+        <strong style="color:#8A6D00;">封面图、OG 图、正文插图、Slug 会保留。</strong>
       </p>
 
       <div style="margin-bottom:14px;">
-        <label style="display:block;font-size:12px;color:#666;margin-bottom:4px;">文章类型</label>
-        <select id="regenType" style="width:100%;padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;">
+        <label style="display:block;font-size:12px;color:#6E6E73;margin-bottom:6px;font-weight:500;">文章类型</label>
+        <select id="regenType" style="width:100%;padding:9px 11px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;">
           <option value="product">产品知识 (Product Knowledge)</option>
           <option value="buying">选型指南 (Selection Guide)</option>
           <option value="comparison">对比文章 (Comparison)</option>
@@ -468,8 +494,8 @@
       </div>
 
       <div style="margin-bottom:18px;">
-        <label style="display:block;font-size:12px;color:#666;margin-bottom:4px;">AI 模型</label>
-        <select id="regenModel" style="width:100%;padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;">
+        <label style="display:block;font-size:12px;color:#6E6E73;margin-bottom:6px;font-weight:500;">AI 模型</label>
+        <select id="regenModel" style="width:100%;padding:9px 11px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;">
           <option value="deepseek">DeepSeek（便宜、推荐）</option>
           <option value="claude">Claude 3.5 Sonnet</option>
           <option value="gpt">GPT-4 Turbo</option>
@@ -478,8 +504,8 @@
       </div>
 
       <div style="display:flex;gap:8px;justify-content:flex-end;">
-        <button onclick="closeRegenerateMenu()" style="padding:7px 16px;border:1px solid #ddd;background:white;color:#333;border-radius:4px;cursor:pointer;font-size:13px;">取消</button>
-        <button id="regenBtn" onclick="submitRegenerate()" style="padding:7px 16px;border:1px solid #333;background:#333;color:white;border-radius:4px;cursor:pointer;font-size:13px;">🔄 重新生成</button>
+        <button onclick="closeRegenerateMenu()" style="padding:8px 18px;border:1px solid #E5E5E7;background:#FFFFFF;color:#1D1D1F;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">取消</button>
+        <button id="regenBtn" onclick="submitRegenerate()" style="padding:8px 18px;border:1px solid #007AFF;background:#007AFF;color:white;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">🔄 重新生成</button>
       </div>
     </div>
   </div>
@@ -489,11 +515,11 @@
       <div class="editor-toolbar">
         <button id="modeEdit" class="active" onclick="setMode('edit')">📝 编辑 Markdown</button>
         <button id="modePreview" onclick="setMode('preview')">👁 简易预览</button>
-        <span style="margin-left:auto;font-size:12px;color:#999;" id="wordCountInfo">— 字</span>
+        <span style="margin-left:auto;font-size:12px;color:#86868B;" id="wordCountInfo">— 字</span>
       </div>
-      <div id="selectionHint" style="display:none;padding:8px 14px;background:#fff3cd;border-bottom:1px solid #ffe69c;font-size:12px;color:#664d03;">
-        💡 已选中：<strong id="selectionText" style="color:#222;"></strong>
-        <span style="color:#888;margin-left:8px;">→ 在右侧"链接管理"里给它加链接，点"插入到正文"会自动替换</span>
+      <div id="selectionHint" style="display:none;padding:10px 18px;background:#FFF8E1;border-bottom:1px solid #FFE9A8;font-size:12px;color:#8A6D00;">
+        💡 已选中：<strong id="selectionText" style="color:#1D1D1F;"></strong>
+        <span style="color:#86868B;margin-left:8px;">→ 在右侧"链接管理"里给它加链接，点"插入到正文"会自动替换</span>
       </div>
       <div class="editor-area">
         <textarea id="contentEditor" class="markdown-edit" placeholder="文章内容..." oninput="onContentChange()" onmouseup="onEditorSelectionChange()" onkeyup="onEditorSelectionChange()" onblur="onEditorBlur()"></textarea>
@@ -537,7 +563,7 @@
             <div class="field-help" id="metaDescLen">0 字符（建议 120-160）</div>
           </div>
           <div class="field">
-            <a href="#" onclick="event.preventDefault();autoGenerateMeta();" style="color:#1a73e8;font-size:12px;">⚡ AI 生成 Meta Title + Description</a>
+            <a href="#" onclick="event.preventDefault();autoGenerateMeta();" style="color:#007AFF;font-size:12px;">⚡ AI 生成 Meta Title + Description</a>
           </div>
         </div>
       </div>
@@ -553,7 +579,7 @@
             <div id="coverEmpty" class="slot-empty">未上传</div>
             <input type="file" id="coverFile" accept="image/*" onchange="uploadCover(event)">
             <button class="primary" onclick="document.getElementById('coverFile').click()">📤 上传封面</button>
-            <input id="fCoverAlt" type="text" placeholder="封面 Alt 文本（SEO 重要）" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;margin-top:6px;" onchange="saveCoverAlt()">
+            <input id="fCoverAlt" type="text" placeholder="封面 Alt 文本（SEO 重要）" style="width:100%;padding:7px 10px;border:1px solid #E5E5E7;border-radius:6px;font-size:12px;margin-top:6px;background:#FFFFFF;color:#1D1D1F;" onchange="saveCoverAlt()">
           </div>
 
           <div class="image-slot">
@@ -575,7 +601,7 @@
         </div>
         <div class="panel-body">
           <div id="sectionsBox">
-            <div style="font-size:12px;color:#999;text-align:center;padding:14px;">
+            <div style="font-size:12px;color:#86868B;text-align:center;padding:14px;">
               点"AI 推荐位置"扫文章 H2 章节，每节给配图建议
             </div>
           </div>
@@ -589,7 +615,7 @@
           <button class="primary" onclick="runSeoCheck()">▶ 运行质检</button>
         </div>
         <div id="seoResult">
-          <div style="padding:14px;text-align:center;color:#999;font-size:12px;">
+          <div style="padding:14px;text-align:center;color:#86868B;font-size:12px;">
             点"运行质检"打分 + 给具体改进建议
           </div>
         </div>
@@ -599,54 +625,54 @@
       <div class="panel">
         <div class="panel-header">🔗 链接管理</div>
         <div class="panel-body">
-          <div style="font-size:11px;color:#888;background:#f0f7ff;border:1px solid #d4e7ff;border-radius:4px;padding:8px 10px;margin-bottom:12px;line-height:1.5;">
-            💡 <strong style="color:#1a73e8;">推荐做法</strong>：先在左侧正文里<strong>选中</strong>一段文字（例如 "AC MCB 4P"），再在下面选目标页面，点"插入到正文"——会自动用链接替换选中的文字。
+          <div style="font-size:11px;color:#0066D6;background:#F5F8FF;border:1px solid #DCE7FF;border-radius:8px;padding:10px 12px;margin-bottom:14px;line-height:1.55;">
+            💡 <strong style="color:#0066D6;">推荐做法</strong>：先在左侧正文里<strong>选中</strong>一段文字（例如 "AC MCB 4P"），再在下面选目标页面，点"插入到正文"——会自动用链接替换选中的文字。
           </div>
 
           <!-- 内链 -->
-          <div style="font-size:12px;font-weight:600;color:#333;margin-bottom:6px;">内链（Internal Links）</div>
+          <div style="font-size:12.5px;font-weight:600;color:#1D1D1F;margin-bottom:8px;">内链（Internal Links）</div>
           <div id="internalLinksList" style="margin-bottom:8px;"></div>
-          <div style="border:1px solid #eee;border-radius:4px;padding:10px;margin-bottom:14px;background:#fafafa;">
-            <div style="font-size:11px;color:#666;margin-bottom:6px;">＋ 添加内链</div>
-            <label style="font-size:11px;color:#666;display:block;margin-bottom:3px;">① 链接到哪个页面：</label>
-            <select id="newInternalUrl" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;margin-bottom:6px;">
+          <div style="border:1px solid #E5E5E7;border-radius:10px;padding:12px;margin-bottom:14px;background:#FAFAFA;">
+            <div style="font-size:11px;color:#6E6E73;margin-bottom:8px;font-weight:500;">＋ 添加内链</div>
+            <label style="font-size:11px;color:#6E6E73;display:block;margin-bottom:5px;">① 链接到哪个页面：</label>
+            <select id="newInternalUrl" style="width:100%;padding:7px 10px;border:1px solid #E5E5E7;border-radius:6px;font-size:12px;margin-bottom:8px;background:#FFFFFF;color:#1D1D1F;">
               <option value="">选择目标页面 ▾</option>
             </select>
 
-            <label style="font-size:11px;color:#666;display:block;margin-bottom:3px;">② 锚文本（链接显示的文字）：</label>
+            <label style="font-size:11px;color:#6E6E73;display:block;margin-bottom:5px;">② 锚文本（链接显示的文字）：</label>
             <div style="display:flex;gap:4px;margin-bottom:5px;">
-              <input id="newInternalAnchor" type="text" placeholder="例如：AC MCB 4P" style="flex:1;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;">
-              <button type="button" onclick="useSelectionAsAnchor('newInternalAnchor')" style="padding:5px 8px;font-size:11px;border:1px solid #ddd;background:white;border-radius:3px;cursor:pointer;white-space:nowrap;" title="把当前左侧选中的文字填进来">⬅ 用选中</button>
+              <input id="newInternalAnchor" type="text" placeholder="例如：AC MCB 4P" style="flex:1;padding:7px 10px;border:1px solid #E5E5E7;border-radius:6px;font-size:12px;background:#FFFFFF;color:#1D1D1F;">
+              <button type="button" onclick="useSelectionAsAnchor('newInternalAnchor')" style="padding:6px 10px;font-size:11px;border:1px solid #E5E5E7;background:#FFFFFF;color:#424245;border-radius:6px;cursor:pointer;white-space:nowrap;" title="把当前左侧选中的文字填进来">⬅ 用选中</button>
             </div>
 
-            <input id="newInternalReason" type="text" placeholder="③ 链接说明（可选，会显示在文末"相关文章"列表）" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;margin-bottom:8px;">
+            <input id="newInternalReason" type="text" placeholder="③ 链接说明（可选，会显示在文末"相关文章"列表）" style="width:100%;padding:7px 10px;border:1px solid #E5E5E7;border-radius:6px;font-size:12px;margin-bottom:10px;background:#FFFFFF;color:#1D1D1F;">
 
             <div style="display:flex;gap:5px;">
-              <button onclick="addInternalLink(true)" style="flex:2;padding:6px;font-size:11px;border:1px solid #333;background:#333;color:white;border-radius:3px;cursor:pointer;font-weight:500;">▶ 插入到正文（推荐）</button>
-              <button onclick="addInternalLink(false)" style="flex:1;padding:6px;font-size:11px;border:1px solid #ddd;background:white;border-radius:3px;cursor:pointer;">仅加到列表</button>
+              <button onclick="addInternalLink(true)" style="flex:2;padding:8px;font-size:11px;border:1px solid #007AFF;background:#007AFF;color:white;border-radius:6px;cursor:pointer;font-weight:500;">▶ 插入到正文（推荐）</button>
+              <button onclick="addInternalLink(false)" style="flex:1;padding:8px;font-size:11px;border:1px solid #E5E5E7;background:#FFFFFF;color:#1D1D1F;border-radius:6px;cursor:pointer;">仅加到列表</button>
             </div>
           </div>
 
           <!-- 外链 -->
-          <div style="font-size:12px;font-weight:600;color:#333;margin-bottom:6px;">外链（External Links）</div>
+          <div style="font-size:12.5px;font-weight:600;color:#1D1D1F;margin-bottom:8px;">外链（External Links）</div>
           <div id="externalLinksList" style="margin-bottom:8px;"></div>
-          <div style="border:1px solid #eee;border-radius:4px;padding:10px;background:#fafafa;">
-            <div style="font-size:11px;color:#666;margin-bottom:6px;">＋ 添加外链（IEC、IEEE 等权威来源）</div>
+          <div style="border:1px solid #E5E5E7;border-radius:10px;padding:12px;background:#FAFAFA;">
+            <div style="font-size:11px;color:#6E6E73;margin-bottom:8px;font-weight:500;">＋ 添加外链（IEC、IEEE 等权威来源）</div>
 
-            <label style="font-size:11px;color:#666;display:block;margin-bottom:3px;">① 完整 URL：</label>
-            <input id="newExternalUrl" type="text" placeholder="https://..." style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;margin-bottom:6px;">
+            <label style="font-size:11px;color:#6E6E73;display:block;margin-bottom:5px;">① 完整 URL：</label>
+            <input id="newExternalUrl" type="text" placeholder="https://..." style="width:100%;padding:7px 10px;border:1px solid #E5E5E7;border-radius:6px;font-size:12px;margin-bottom:8px;background:#FFFFFF;color:#1D1D1F;">
 
-            <label style="font-size:11px;color:#666;display:block;margin-bottom:3px;">② 锚文本（链接显示的文字）：</label>
+            <label style="font-size:11px;color:#6E6E73;display:block;margin-bottom:5px;">② 锚文本（链接显示的文字）：</label>
             <div style="display:flex;gap:4px;margin-bottom:5px;">
-              <input id="newExternalAnchor" type="text" placeholder="例如：IEC 60898 Standard" style="flex:1;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;">
-              <button type="button" onclick="useSelectionAsAnchor('newExternalAnchor')" style="padding:5px 8px;font-size:11px;border:1px solid #ddd;background:white;border-radius:3px;cursor:pointer;white-space:nowrap;" title="把当前左侧选中的文字填进来">⬅ 用选中</button>
+              <input id="newExternalAnchor" type="text" placeholder="例如：IEC 60898 Standard" style="flex:1;padding:7px 10px;border:1px solid #E5E5E7;border-radius:6px;font-size:12px;background:#FFFFFF;color:#1D1D1F;">
+              <button type="button" onclick="useSelectionAsAnchor('newExternalAnchor')" style="padding:6px 10px;font-size:11px;border:1px solid #E5E5E7;background:#FFFFFF;color:#424245;border-radius:6px;cursor:pointer;white-space:nowrap;" title="把当前左侧选中的文字填进来">⬅ 用选中</button>
             </div>
 
-            <input id="newExternalReason" type="text" placeholder="③ 链接说明（可选）" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:3px;font-size:12px;margin-bottom:8px;">
+            <input id="newExternalReason" type="text" placeholder="③ 链接说明（可选）" style="width:100%;padding:7px 10px;border:1px solid #E5E5E7;border-radius:6px;font-size:12px;margin-bottom:10px;background:#FFFFFF;color:#1D1D1F;">
 
             <div style="display:flex;gap:5px;">
-              <button onclick="addExternalLink(true)" style="flex:2;padding:6px;font-size:11px;border:1px solid #333;background:#333;color:white;border-radius:3px;cursor:pointer;font-weight:500;">▶ 插入到正文（推荐）</button>
-              <button onclick="addExternalLink(false)" style="flex:1;padding:6px;font-size:11px;border:1px solid #ddd;background:white;border-radius:3px;cursor:pointer;">仅加到列表</button>
+              <button onclick="addExternalLink(true)" style="flex:2;padding:8px;font-size:11px;border:1px solid #007AFF;background:#007AFF;color:white;border-radius:6px;cursor:pointer;font-weight:500;">▶ 插入到正文（推荐）</button>
+              <button onclick="addExternalLink(false)" style="flex:1;padding:8px;font-size:11px;border:1px solid #E5E5E7;background:#FFFFFF;color:#1D1D1F;border-radius:6px;cursor:pointer;">仅加到列表</button>
             </div>
           </div>
         </div>
@@ -881,9 +907,9 @@
       const tEl = document.getElementById('metaTitleLen');
       const dEl = document.getElementById('metaDescLen');
       tEl.textContent = `${t} 字符（建议 30-60）`;
-      tEl.style.color = (t >= 30 && t <= 60) ? '#2e7d32' : '#999';
+      tEl.style.color = (t >= 30 && t <= 60) ? '#34C759' : '#86868B';
       dEl.textContent = `${d} 字符（建议 120-160）`;
-      dEl.style.color = (d >= 120 && d <= 160) ? '#2e7d32' : '#999';
+      dEl.style.color = (d >= 120 && d <= 160) ? '#34C759' : '#86868B';
       dirty = true;
     }
 
@@ -1021,25 +1047,25 @@
 
     async function loadImageSuggestions() {
       const box = document.getElementById('sectionsBox');
-      box.innerHTML = '<div style="font-size:12px;color:#999;text-align:center;padding:14px;">扫描中...</div>';
+      box.innerHTML = '<div style="font-size:12px;color:#86868B;text-align:center;padding:14px;">扫描中...</div>';
       try {
         if (dirty) await saveAll();
         const r = await fetch('/api/blog/post/' + postId + '/suggest-images', { method: 'POST' });
         const d = await r.json();
         if (!d.success) {
-          box.innerHTML = '<div style="font-size:12px;color:#d32f2f;padding:14px;">' + (d.error || '失败') + '</div>';
+          box.innerHTML = '<div style="font-size:12px;color:#FF3B30;padding:14px;">' + (d.error || '失败') + '</div>';
           return;
         }
         renderSections(d.sections);
       } catch (e) {
-        box.innerHTML = '<div style="font-size:12px;color:#d32f2f;padding:14px;">错误：' + e.message + '</div>';
+        box.innerHTML = '<div style="font-size:12px;color:#FF3B30;padding:14px;">错误：' + e.message + '</div>';
       }
     }
 
     function renderSections(sections) {
       const box = document.getElementById('sectionsBox');
       if (!sections || sections.length === 0) {
-        box.innerHTML = '<div style="font-size:12px;color:#999;text-align:center;padding:14px;">未发现 H2 章节，先在文章里加 ## 标题</div>';
+        box.innerHTML = '<div style="font-size:12px;color:#86868B;text-align:center;padding:14px;">未发现 H2 章节，先在文章里加 ## 标题</div>';
         return;
       }
       const existing = (post.content_images || []).reduce((acc, img) => {
@@ -1103,18 +1129,18 @@
 
     async function runSeoCheck() {
       const box = document.getElementById('seoResult');
-      box.innerHTML = '<div style="padding:14px;text-align:center;color:#999;font-size:12px;">检查中...</div>';
+      box.innerHTML = '<div style="padding:14px;text-align:center;color:#86868B;font-size:12px;">检查中...</div>';
       if (dirty) await saveAll();
       try {
         const r = await fetch('/api/blog/seo-check/' + postId);
         const d = await r.json();
         if (!d.success) {
-          box.innerHTML = '<div style="padding:14px;color:#d32f2f;font-size:12px;">' + (d.error || '失败') + '</div>';
+          box.innerHTML = '<div style="padding:14px;color:#FF3B30;font-size:12px;">' + (d.error || '失败') + '</div>';
           return;
         }
         renderSeoResult(d);
       } catch (e) {
-        box.innerHTML = '<div style="padding:14px;color:#d32f2f;font-size:12px;">错误：' + e.message + '</div>';
+        box.innerHTML = '<div style="padding:14px;color:#FF3B30;font-size:12px;">错误：' + e.message + '</div>';
       }
     }
 
@@ -1343,16 +1369,16 @@
       const box = document.getElementById('internalLinksList');
       const links = post.internal_links || [];
       if (!links || links.length === 0) {
-        box.innerHTML = '<div style="font-size:11px;color:#bbb;padding:6px 0;">暂无内链</div>';
+        box.innerHTML = '<div style="font-size:11px;color:#86868B;padding:6px 0;">暂无内链</div>';
         return;
       }
       box.innerHTML = links.map((l, i) => `
-        <div style="border:1px solid #eee;border-radius:3px;padding:6px 8px;margin-bottom:4px;background:white;font-size:11px;display:flex;align-items:center;gap:6px;">
+        <div style="border:1px solid #E5E5E7;border-radius:8px;padding:8px 10px;margin-bottom:6px;background:#FFFFFF;font-size:11px;display:flex;align-items:center;gap:6px;">
           <div style="flex:1;min-width:0;">
-            <div style="font-weight:500;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(l.title || l.anchor || '(无锚文本)')}</div>
-            <div style="color:#999;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">→ ${escapeHtml(l.url || '')}</div>
+            <div style="font-weight:500;color:#1D1D1F;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(l.title || l.anchor || '(无锚文本)')}</div>
+            <div style="color:#86868B;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">→ ${escapeHtml(l.url || '')}</div>
           </div>
-          <button onclick="removeInternalLink(${i})" style="border:none;background:none;color:#d32f2f;cursor:pointer;font-size:14px;flex-shrink:0;">×</button>
+          <button onclick="removeInternalLink(${i})" style="border:none;background:none;color:#FF3B30;cursor:pointer;font-size:16px;flex-shrink:0;">×</button>
         </div>
       `).join('');
     }
@@ -1361,16 +1387,16 @@
       const box = document.getElementById('externalLinksList');
       const links = post.external_links || [];
       if (!links || links.length === 0) {
-        box.innerHTML = '<div style="font-size:11px;color:#bbb;padding:6px 0;">暂无外链</div>';
+        box.innerHTML = '<div style="font-size:11px;color:#86868B;padding:6px 0;">暂无外链</div>';
         return;
       }
       box.innerHTML = links.map((l, i) => `
-        <div style="border:1px solid #eee;border-radius:3px;padding:6px 8px;margin-bottom:4px;background:white;font-size:11px;display:flex;align-items:center;gap:6px;">
+        <div style="border:1px solid #E5E5E7;border-radius:8px;padding:8px 10px;margin-bottom:6px;background:#FFFFFF;font-size:11px;display:flex;align-items:center;gap:6px;">
           <div style="flex:1;min-width:0;">
-            <div style="font-weight:500;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(l.title || l.anchor || '(无锚文本)')}</div>
-            <div style="color:#999;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">→ ${escapeHtml(l.url || '')}</div>
+            <div style="font-weight:500;color:#1D1D1F;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(l.title || l.anchor || '(无锚文本)')}</div>
+            <div style="color:#86868B;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">→ ${escapeHtml(l.url || '')}</div>
           </div>
-          <button onclick="removeExternalLink(${i})" style="border:none;background:none;color:#d32f2f;cursor:pointer;font-size:14px;flex-shrink:0;">×</button>
+          <button onclick="removeExternalLink(${i})" style="border:none;background:none;color:#FF3B30;cursor:pointer;font-size:16px;flex-shrink:0;">×</button>
         </div>
       `).join('');
     }

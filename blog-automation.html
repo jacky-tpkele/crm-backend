@@ -9,10 +9,13 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; overflow: hidden; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Microsoft YaHei', sans-serif;
-      background: #ffffff;
-      color: #333;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Microsoft YaHei', sans-serif;
+      background: #FFFFFF;
+      color: #1D1D1F;
       font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      letter-spacing: -0.01em;
     }
 
     /* 主布局：左 sidebar + 右 main */
@@ -25,52 +28,53 @@
     }
 
     .blog-sidebar {
-      width: 220px;
-      background: #f5f5f5;
-      border-right: 1px solid #ddd;
+      width: 232px;
+      background: #F5F5F7;
+      border-right: 1px solid #E5E5E7;
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
     }
 
     .blog-sidebar-header {
-      padding: 20px;
-      background: #fff;
-      border-bottom: 1px solid #ddd;
+      padding: 22px 20px 18px;
+      background: transparent;
+      border-bottom: 1px solid #E5E5E7;
     }
 
     .blog-sidebar-header h2 {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
-      color: #333;
+      color: #1D1D1F;
       margin: 0;
+      letter-spacing: -0.01em;
     }
 
     .blog-sidebar-nav {
       flex: 1;
-      padding: 10px 0;
+      padding: 12px 8px;
       overflow-y: auto;
     }
 
     .blog-sidebar-footer {
-      padding: 15px 20px;
-      background: #fff;
-      border-top: 1px solid #ddd;
+      padding: 14px 16px 18px;
+      background: transparent;
+      border-top: 1px solid #E5E5E7;
     }
 
     .btn-back-crm {
       width: 100%;
-      padding: 10px;
-      background: #333;
-      color: white;
-      border: none;
-      border-radius: 4px;
+      padding: 9px 12px;
+      background: #FFFFFF;
+      color: #1D1D1F;
+      border: 1px solid #E5E5E7;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 13px;
       font-weight: 500;
-      transition: background 0.2s;
+      transition: all 0.15s ease;
     }
-    .btn-back-crm:hover { background: #555; }
+    .btn-back-crm:hover { background: #F5F5F7; border-color: #D2D2D7; }
 
     .blog-main {
       flex: 1;
@@ -82,7 +86,7 @@
     .blog-main-content {
       flex: 1;
       overflow-y: auto;
-      padding: 24px 30px;
+      padding: 28px 36px;
     }
 
     /* 改造原 tabs：变成左侧导航 */
@@ -95,29 +99,32 @@
     }
 
     .tab-btn {
-      padding: 12px 20px;
+      padding: 9px 14px;
       background: none;
       border: none;
       cursor: pointer;
-      font-size: 14px;
-      color: #666;
-      border-left: 3px solid transparent;
+      font-size: 13.5px;
+      color: #424245;
+      border-left: none;
       border-bottom: none;
-      transition: all 0.2s;
+      border-radius: 7px;
+      transition: all 0.15s ease;
       text-align: left;
       width: 100%;
+      margin-bottom: 2px;
+      font-weight: 400;
     }
 
     .tab-btn:hover {
-      background: #efefef;
-      color: #333;
+      background: rgba(0, 0, 0, 0.04);
+      color: #1D1D1F;
     }
 
     .tab-btn.active {
-      color: #333;
-      border-left-color: #333;
+      color: #1D1D1F;
+      border-left-color: transparent;
       border-bottom-color: transparent;
-      background: #e8e8e8;
+      background: rgba(0, 122, 255, 0.10);
       font-weight: 500;
     }
 
@@ -131,9 +138,9 @@
 
     /* 关键词库标签页 */
     .keywords-section {
-      background: #f9f9f9;
-      padding: 20px;
-      border-radius: 8px;
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
     }
 
     .keyword-input-group {
@@ -144,21 +151,32 @@
 
     .keyword-input-group input {
       flex: 1;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+      padding: 10px 12px;
+      border: 1px solid #E5E5E7;
+      border-radius: 8px;
       font-size: 14px;
+      background: #FFFFFF;
+      color: #1D1D1F;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .keyword-input-group input:focus {
+      outline: none;
+      border-color: #007AFF;
+      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
     }
 
     .keyword-input-group button {
-      padding: 10px 20px;
-      background: #333;
+      padding: 10px 18px;
+      background: #007AFF;
       color: white;
       border: none;
-      border-radius: 4px;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 14px;
+      font-weight: 500;
+      transition: background 0.15s ease;
     }
+    .keyword-input-group button:hover { background: #0066D6; }
 
     .keyword-list {
       display: grid;
@@ -167,10 +185,10 @@
     }
 
     .keyword-tag {
-      background: white;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+      background: #FFFFFF;
+      padding: 10px 12px;
+      border: 1px solid #E5E5E7;
+      border-radius: 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -179,16 +197,17 @@
 
     .keyword-tag .remove {
       cursor: pointer;
-      color: #ff4444;
-      font-weight: bold;
+      color: #FF3B30;
+      font-weight: 500;
     }
 
     /* 规划生成标签页 */
     .plan-form {
-      background: #f9f9f9;
-      padding: 20px;
-      border-radius: 8px;
-      max-width: 600px;
+      background: #FAFAFA;
+      padding: 24px;
+      border-radius: 12px;
+      border: 1px solid #E5E5E7;
+      max-width: 640px;
     }
 
     .form-group {
@@ -197,20 +216,31 @@
 
     .form-group label {
       display: block;
-      margin-bottom: 5px;
+      margin-bottom: 6px;
       font-weight: 500;
-      font-size: 14px;
+      font-size: 13px;
+      color: #424245;
     }
 
     .form-group input,
     .form-group select,
     .form-group textarea {
       width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+      padding: 10px 12px;
+      border: 1px solid #E5E5E7;
+      border-radius: 8px;
       font-size: 14px;
       font-family: inherit;
+      background: #FFFFFF;
+      color: #1D1D1F;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #007AFF;
+      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
     }
 
     .form-group textarea {
@@ -226,20 +256,25 @@
     .form-actions button {
       padding: 10px 20px;
       border: none;
-      border-radius: 4px;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 14px;
+      font-weight: 500;
+      transition: all 0.15s ease;
     }
 
     .btn-primary {
-      background: #333;
+      background: #007AFF;
       color: white;
     }
+    .btn-primary:hover { background: #0066D6; }
 
     .btn-secondary {
-      background: #f0f0f0;
-      color: #333;
+      background: #FFFFFF;
+      color: #1D1D1F;
+      border: 1px solid #E5E5E7 !important;
     }
+    .btn-secondary:hover { background: #F5F5F7; }
 
     /* 计划列表标签页 */
     .plan-list-header {
@@ -250,8 +285,8 @@
     }
 
     .plan-stats {
-      font-size: 14px;
-      color: #666;
+      font-size: 13px;
+      color: #6E6E73;
     }
 
     .plan-filters {
@@ -261,163 +296,176 @@
 
     .plan-filters select {
       padding: 8px 12px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
+      border: 1px solid #E5E5E7;
+      border-radius: 8px;
+      font-size: 13px;
+      background: #FFFFFF;
+      color: #1D1D1F;
     }
 
     .plan-table {
       width: 100%;
       border-collapse: collapse;
-      background: white;
-      border-radius: 8px;
+      background: #FFFFFF;
+      border: 1px solid #E5E5E7;
+      border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      box-shadow: none;
     }
 
     .plan-table th {
-      background: #f5f5f5;
-      padding: 12px;
+      background: #FAFAFA;
+      padding: 12px 14px;
       text-align: left;
       font-weight: 600;
-      font-size: 13px;
-      border-bottom: 1px solid #ddd;
+      font-size: 12px;
+      color: #6E6E73;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid #E5E5E7;
     }
 
     .plan-table td {
-      padding: 12px;
-      border-bottom: 1px solid #eee;
+      padding: 13px 14px;
+      border-bottom: 1px solid #F2F2F2;
       font-size: 13px;
+      color: #1D1D1F;
     }
 
+    .plan-table tr:last-child td { border-bottom: none; }
+
     .plan-table tr:hover {
-      background: #f9f9f9;
+      background: #FAFAFA;
     }
 
     .status-badge {
       display: inline-block;
-      padding: 4px 8px;
-      border-radius: 3px;
-      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11.5px;
       font-weight: 500;
+      letter-spacing: 0.01em;
     }
 
     .status-pending {
-      background: #fff3cd;
-      color: #856404;
+      background: #FFF8E1;
+      color: #8A6D00;
     }
 
     .status-draft {
-      background: #e2e3e5;
-      color: #383d41;
+      background: #F2F2F4;
+      color: #6E6E73;
     }
 
     .status-pending_review {
-      background: #cfe2ff;
-      color: #084298;
+      background: #E8F1FF;
+      color: #0066D6;
     }
 
     .status-approved {
-      background: #d1e7dd;
-      color: #0f5132;
+      background: #E6F6EB;
+      color: #0F7A3A;
     }
 
     .status-needs_revision {
-      background: #f8d7da;
-      color: #842029;
+      background: #FFEDEC;
+      color: #C7321F;
     }
 
     .status-generated {
-      background: #d1ecf1;
-      color: #0c5460;
+      background: #E6F4F7;
+      color: #0E6A82;
     }
 
     .status-published {
-      background: #d4edda;
-      color: #155724;
+      background: #E6F6EB;
+      color: #0F7A3A;
     }
 
     .status-generation_failed {
-      background: #f8d7da;
-      color: #842029;
+      background: #FFEDEC;
+      color: #C7321F;
     }
 
     .status-publish_failed {
-      background: #f8d7da;
-      color: #842029;
+      background: #FFEDEC;
+      color: #C7321F;
     }
 
     /* SEO 评分样式 */
     .seo-score {
       display: inline-block;
-      padding: 4px 8px;
-      border-radius: 3px;
+      padding: 3px 10px;
+      border-radius: 999px;
       font-size: 12px;
       font-weight: 600;
-      min-width: 30px;
+      min-width: 32px;
       text-align: center;
     }
 
     .seo-good {
-      background: #d4edda;
-      color: #155724;
+      background: #E6F6EB;
+      color: #0F7A3A;
     }
 
     .seo-fair {
-      background: #fff3cd;
-      color: #856404;
+      background: #FFF8E1;
+      color: #8A6D00;
     }
 
     .seo-poor {
-      background: #f8d7da;
-      color: #842029;
+      background: #FFEDEC;
+      color: #C7321F;
     }
 
     /* 同步状态样式 */
     .sync-badge {
       display: inline-block;
-      padding: 4px 8px;
-      border-radius: 3px;
-      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11.5px;
       font-weight: 500;
     }
 
     .sync-pending {
-      background: #e2e3e5;
-      color: #383d41;
+      background: #F2F2F4;
+      color: #6E6E73;
     }
 
     .sync-syncing {
-      background: #cfe2ff;
-      color: #084298;
+      background: #E8F1FF;
+      color: #0066D6;
     }
 
     .sync-success {
-      background: #d4edda;
-      color: #155724;
+      background: #E6F6EB;
+      color: #0F7A3A;
     }
 
     .sync-failed {
-      background: #f8d7da;
-      color: #842029;
+      background: #FFEDEC;
+      color: #C7321F;
     }
 
     .action-buttons {
       display: flex;
-      gap: 5px;
+      gap: 6px;
     }
 
     .action-buttons button {
-      padding: 4px 8px;
-      border: 1px solid #ddd;
-      background: white;
-      border-radius: 3px;
+      padding: 5px 10px;
+      border: 1px solid #E5E5E7;
+      background: #FFFFFF;
+      color: #1D1D1F;
+      border-radius: 6px;
       cursor: pointer;
       font-size: 12px;
+      transition: all 0.15s ease;
     }
 
     .action-buttons button:hover {
-      background: #f0f0f0;
+      background: #F5F5F7;
+      border-color: #D2D2D7;
     }
 
     /* 预览编辑弹窗 */
@@ -428,7 +476,9 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0, 0, 0, 0.32);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
       z-index: 1000;
       overflow-y: auto;
     }
@@ -440,27 +490,31 @@
     }
 
     .modal-content {
-      background: white;
-      border-radius: 8px;
-      max-width: 900px;
+      background: #FFFFFF;
+      border-radius: 16px;
+      max-width: 920px;
       width: 90%;
       max-height: 90vh;
       overflow-y: auto;
-      padding: 30px;
+      padding: 30px 32px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
     }
 
     .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 15px;
+      margin-bottom: 22px;
+      border-bottom: 1px solid #F2F2F2;
+      padding-bottom: 16px;
     }
 
     .modal-header h2 {
       margin: 0;
       font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: #1D1D1F;
     }
 
     .modal-close {
@@ -468,28 +522,41 @@
       border: none;
       font-size: 24px;
       cursor: pointer;
-      color: #999;
+      color: #86868B;
+      transition: color 0.15s ease;
     }
+    .modal-close:hover { color: #1D1D1F; }
 
     .edit-section {
       margin-bottom: 20px;
     }
 
     .edit-section h3 {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       margin-bottom: 10px;
-      color: #333;
+      color: #424245;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
 
     .edit-section input,
     .edit-section textarea {
       width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+      padding: 10px 12px;
+      border: 1px solid #E5E5E7;
+      border-radius: 8px;
       font-size: 14px;
       font-family: inherit;
+      background: #FFFFFF;
+      color: #1D1D1F;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .edit-section input:focus,
+    .edit-section textarea:focus {
+      outline: none;
+      border-color: #007AFF;
+      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
     }
 
     .edit-section textarea {
@@ -500,28 +567,32 @@
     .keywords-input {
       display: flex;
       flex-wrap: wrap;
-      gap: 5px;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      background: white;
+      gap: 6px;
+      padding: 8px 10px;
+      border: 1px solid #E5E5E7;
+      border-radius: 8px;
+      background: #FFFFFF;
     }
 
     .keyword-chip {
-      background: #e3f2fd;
-      padding: 4px 8px;
-      border-radius: 3px;
+      background: #E8F1FF;
+      color: #0066D6;
+      padding: 4px 10px;
+      border-radius: 999px;
       display: flex;
       align-items: center;
       gap: 5px;
-      font-size: 13px;
+      font-size: 12.5px;
     }
 
     .keyword-chip .remove {
       cursor: pointer;
-      color: #333;
-      font-weight: bold;
+      color: #0066D6;
+      font-weight: 600;
+      opacity: 0.7;
+      transition: opacity 0.15s ease;
     }
+    .keyword-chip .remove:hover { opacity: 1; }
 
     .keywords-input input {
       border: none;
@@ -529,20 +600,22 @@
       flex: 1;
       min-width: 100px;
       padding: 4px;
+      background: transparent;
     }
 
     .image-upload {
-      border: 2px dashed #ddd;
-      border-radius: 4px;
-      padding: 20px;
+      border: 2px dashed #D2D2D7;
+      border-radius: 12px;
+      padding: 28px 20px;
       text-align: center;
       cursor: pointer;
-      transition: all 0.3s;
+      transition: all 0.2s ease;
+      background: #FAFAFA;
     }
 
     .image-upload:hover {
-      border-color: #333;
-      background: #f5f5f5;
+      border-color: #007AFF;
+      background: rgba(0, 122, 255, 0.04);
     }
 
     .image-upload input {
@@ -557,12 +630,12 @@
     .image-preview img {
       max-width: 100%;
       max-height: 300px;
-      border-radius: 4px;
+      border-radius: 10px;
     }
 
     .image-info {
       font-size: 12px;
-      color: #666;
+      color: #6E6E73;
       margin-top: 10px;
     }
 
@@ -577,53 +650,60 @@
       font-size: 13px;
       font-weight: 600;
       margin-bottom: 10px;
+      color: #424245;
     }
 
     .preview-box {
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      padding: 15px;
-      background: #f9f9f9;
+      border: 1px solid #E5E5E7;
+      border-radius: 10px;
+      padding: 16px;
+      background: #FAFAFA;
     }
 
     .modal-actions {
       display: flex;
       gap: 10px;
       justify-content: flex-end;
-      margin-top: 20px;
+      margin-top: 22px;
       padding-top: 20px;
-      border-top: 1px solid #eee;
+      border-top: 1px solid #F2F2F2;
     }
 
     .modal-actions button {
       padding: 10px 20px;
       border: none;
-      border-radius: 4px;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 14px;
+      font-weight: 500;
+      transition: all 0.15s ease;
     }
 
     .btn-cancel {
-      background: #f0f0f0;
-      color: #333;
+      background: #FFFFFF;
+      color: #1D1D1F;
+      border: 1px solid #E5E5E7 !important;
     }
+    .btn-cancel:hover { background: #F5F5F7; }
 
     .btn-reset {
-      background: #fff3cd;
-      color: #856404;
+      background: #FFF8E1;
+      color: #8A6D00;
     }
+    .btn-reset:hover { background: #FFF0C2; }
 
     .btn-publish {
-      background: #28a745;
+      background: #34C759;
       color: white;
     }
+    .btn-publish:hover { background: #2BB14B; }
 
     .loading {
       display: inline-block;
       width: 16px;
       height: 16px;
-      border: 2px solid #f3f3f3;
-      border-top: 2px solid #333;
+      border: 2px solid #F2F2F4;
+      border-top: 2px solid #007AFF;
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
@@ -635,13 +715,17 @@
 
     .toast {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #333;
+      bottom: 24px;
+      right: 24px;
+      background: rgba(28, 28, 30, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       color: white;
-      padding: 15px 20px;
-      border-radius: 4px;
+      padding: 13px 20px;
+      border-radius: 12px;
       z-index: 2000;
+      font-size: 13.5px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
       animation: slideIn 0.3s ease-out;
     }
 
@@ -658,141 +742,150 @@
 
     /* 控制面板样式 */
     .control-panel {
-      background: #f5f5f5;
-      border: 1px solid #333;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 20px;
+      background: #FAFAFA;
+      border: 1px solid #E5E5E7;
+      border-radius: 14px;
+      padding: 22px 24px;
+      margin-bottom: 22px;
     }
 
     .control-panel h3 {
-      margin-bottom: 15px;
-      font-size: 16px;
-      color: #333;
+      margin-bottom: 16px;
+      font-size: 15px;
+      color: #1D1D1F;
+      font-weight: 600;
+      letter-spacing: -0.01em;
     }
 
     .control-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 15px;
-      padding: 12px;
-      background: white;
-      border-radius: 4px;
-      border: 1px solid #ddd;
+      margin-bottom: 12px;
+      padding: 14px 16px;
+      background: #FFFFFF;
+      border-radius: 10px;
+      border: 1px solid #E5E5E7;
     }
 
     .control-item-label {
       font-size: 14px;
-      color: #333;
+      color: #1D1D1F;
       font-weight: 500;
     }
 
     .control-item-value {
       font-size: 13px;
-      color: #666;
+      color: #6E6E73;
       margin-top: 4px;
     }
 
     .toggle-switch {
       display: inline-block;
       width: 50px;
-      height: 24px;
-      background: #ccc;
-      border-radius: 12px;
+      height: 30px;
+      background: #E5E5E7;
+      border-radius: 15px;
       cursor: pointer;
       position: relative;
-      transition: background 0.3s;
+      transition: background 0.25s ease;
     }
 
     .toggle-switch.on {
-      background: #28a745;
+      background: #34C759;
     }
 
     .toggle-switch::after {
       content: '';
       position: absolute;
-      width: 20px;
-      height: 20px;
+      width: 26px;
+      height: 26px;
       background: white;
       border-radius: 50%;
       top: 2px;
       left: 2px;
-      transition: left 0.3s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+      transition: left 0.25s ease;
     }
 
     .toggle-switch.on::after {
-      left: 28px;
+      left: 22px;
     }
 
     .control-buttons {
       display: flex;
       gap: 10px;
-      margin-top: 15px;
+      margin-top: 16px;
     }
 
     .control-buttons button {
       padding: 10px 20px;
       border: none;
-      border-radius: 4px;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 14px;
       font-weight: 500;
+      transition: all 0.15s ease;
     }
 
     .btn-generate-now {
-      background: #28a745;
+      background: #007AFF;
       color: white;
     }
 
     .btn-generate-now:hover {
-      background: #218838;
+      background: #0066D6;
     }
 
     .btn-generate-now:disabled {
-      background: #ccc;
+      background: #E5E5E7;
+      color: #86868B;
       cursor: not-allowed;
     }
 
     /* 卡片式统计样式 */
     .stats-cards {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
       gap: 12px;
       margin: 20px 0;
     }
 
     .stat-card {
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 15px;
+      background: #FFFFFF;
+      border: 1px solid #E5E5E7;
+      border-radius: 12px;
+      padding: 18px 16px;
       text-align: center;
-      transition: all 0.3s;
+      transition: all 0.2s ease;
     }
 
     .stat-card:hover {
-      border-color: #333;
-      box-shadow: 0 2px 8px rgba(0, 102, 204, 0.1);
+      border-color: #007AFF;
+      box-shadow: 0 4px 12px rgba(0, 122, 255, 0.08);
+      transform: translateY(-1px);
     }
 
     .stat-label {
       font-size: 12px;
-      color: #666;
+      color: #6E6E73;
       margin-bottom: 8px;
       font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
 
     .stat-value {
-      font-size: 28px;
-      font-weight: 700;
-      color: #333;
+      font-size: 30px;
+      font-weight: 600;
+      color: #1D1D1F;
       margin-bottom: 4px;
+      letter-spacing: -0.02em;
     }
 
     .stat-unit {
       font-size: 12px;
-      color: #999;
+      color: #86868B;
     }
 
     /* 快速操作按钮 */
@@ -804,38 +897,42 @@
     }
 
     .btn-retry {
-      background: #ffc107;
-      color: #333;
+      background: #FFF8E1;
+      color: #8A6D00;
       padding: 10px 20px;
       border: none;
-      border-radius: 4px;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 14px;
       font-weight: 500;
+      transition: background 0.15s ease;
     }
 
     .btn-retry:hover {
-      background: #ffb300;
+      background: #FFF0C2;
     }
 
     .btn-sync {
-      background: #17a2b8;
-      color: white;
+      background: #FFFFFF;
+      color: #007AFF;
+      border: 1px solid #007AFF;
       padding: 10px 20px;
-      border: none;
-      border-radius: 4px;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 14px;
       font-weight: 500;
+      transition: all 0.15s ease;
     }
 
     .btn-sync:hover {
-      background: #138496;
+      background: rgba(0, 122, 255, 0.06);
     }
 
     .btn-retry:disabled,
     .btn-sync:disabled {
-      background: #ccc;
+      background: #F5F5F7;
+      color: #86868B;
+      border-color: #E5E5E7;
       cursor: not-allowed;
     }
 
@@ -849,14 +946,14 @@
 
     .keywords-stats {
       font-size: 13px;
-      color: #666;
+      color: #6E6E73;
     }
 
     .keyword-add-form {
-      background: #f9f9f9;
-      border: 1px solid #eee;
-      border-radius: 8px;
-      padding: 15px;
+      background: #FAFAFA;
+      border: 1px solid #E5E5E7;
+      border-radius: 12px;
+      padding: 16px;
       margin-bottom: 20px;
     }
 
@@ -869,49 +966,62 @@
     .keyword-input-row input[type="text"] {
       flex: 1;
       min-width: 200px;
-      padding: 8px 12px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+      padding: 9px 12px;
+      border: 1px solid #E5E5E7;
+      border-radius: 8px;
       font-size: 14px;
+      background: #FFFFFF;
+      color: #1D1D1F;
+    }
+    .keyword-input-row input[type="text"]:focus {
+      outline: none;
+      border-color: #007AFF;
+      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
     }
 
     .keyword-input-row select {
-      padding: 8px 12px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+      padding: 9px 12px;
+      border: 1px solid #E5E5E7;
+      border-radius: 8px;
       font-size: 13px;
-      background: white;
+      background: #FFFFFF;
+      color: #1D1D1F;
     }
 
     .keyword-input-row button {
-      padding: 8px 20px;
-      background: #333;
+      padding: 9px 18px;
+      background: #007AFF;
       color: white;
       border: none;
-      border-radius: 4px;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 14px;
+      font-weight: 500;
       white-space: nowrap;
+      transition: background 0.15s ease;
     }
+    .keyword-input-row button:hover { background: #0066D6; }
 
     /* AI 推荐样式 */
     .ai-recommend-section {
-      background: #f5f5f5;
-      border: 1px solid #cce0ff;
-      border-radius: 8px;
-      padding: 15px;
+      background: #F5F8FF;
+      border: 1px solid #DCE7FF;
+      border-radius: 12px;
+      padding: 18px;
       margin-bottom: 20px;
     }
 
     .ai-recommend-header h3 {
-      margin: 0 0 5px 0;
-      font-size: 15px;
+      margin: 0 0 4px 0;
+      font-size: 14.5px;
+      font-weight: 600;
+      color: #1D1D1F;
     }
 
     .ai-recommend-header p {
       margin: 0 0 12px 0;
       font-size: 13px;
-      color: #666;
+      color: #6E6E73;
     }
 
     .ai-recommend-input {
@@ -921,22 +1031,32 @@
 
     .ai-recommend-input input {
       flex: 1;
-      padding: 8px 12px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+      padding: 9px 12px;
+      border: 1px solid #E5E5E7;
+      border-radius: 8px;
       font-size: 14px;
+      background: #FFFFFF;
+      color: #1D1D1F;
+    }
+    .ai-recommend-input input:focus {
+      outline: none;
+      border-color: #007AFF;
+      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
     }
 
     .ai-recommend-input button {
-      padding: 8px 20px;
-      background: #6f42c1;
+      padding: 9px 18px;
+      background: #5E5CE6;
       color: white;
       border: none;
-      border-radius: 4px;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 14px;
+      font-weight: 500;
       white-space: nowrap;
+      transition: background 0.15s ease;
     }
+    .ai-recommend-input button:hover { background: #4E4DC9; }
 
     .recommend-tabs {
       display: flex;
@@ -946,17 +1066,19 @@
 
     .recommend-tab {
       padding: 6px 14px;
-      border: 1px solid #ddd;
-      background: white;
-      border-radius: 4px;
+      border: 1px solid #E5E5E7;
+      background: #FFFFFF;
+      color: #424245;
+      border-radius: 999px;
       cursor: pointer;
       font-size: 13px;
+      transition: all 0.15s ease;
     }
 
     .recommend-tab.active {
-      background: #333;
+      background: #007AFF;
       color: white;
-      border-color: #333;
+      border-color: #007AFF;
     }
 
     .recommend-list {
@@ -970,22 +1092,24 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 8px 10px;
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+      padding: 9px 11px;
+      background: #FFFFFF;
+      border: 1px solid #E5E5E7;
+      border-radius: 8px;
       font-size: 13px;
+      transition: border-color 0.15s ease;
     }
+    .recommend-item:hover { border-color: #D2D2D7; }
 
     .recommend-item.exists {
-      background: #f8f9fa;
-      color: #999;
+      background: #FAFAFA;
+      color: #86868B;
     }
 
     .recommend-item.exists::after {
       content: '已添加';
       font-size: 11px;
-      color: #28a745;
+      color: #34C759;
       margin-left: auto;
     }
 
@@ -1004,9 +1128,11 @@
 
     .keywords-filter select {
       padding: 8px 12px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+      border: 1px solid #E5E5E7;
+      border-radius: 8px;
       font-size: 13px;
+      background: #FFFFFF;
+      color: #1D1D1F;
     }
 
     /* 关键词表格 */
@@ -1017,54 +1143,62 @@
     .keyword-table {
       width: 100%;
       border-collapse: collapse;
-      background: white;
-      border-radius: 8px;
+      background: #FFFFFF;
+      border: 1px solid #E5E5E7;
+      border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      box-shadow: none;
     }
 
     .keyword-table th {
-      background: #f5f5f5;
-      padding: 10px 12px;
+      background: #FAFAFA;
+      padding: 11px 12px;
       text-align: left;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
-      border-bottom: 1px solid #ddd;
+      color: #6E6E73;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid #E5E5E7;
     }
 
     .keyword-table td {
-      padding: 10px 12px;
-      border-bottom: 1px solid #eee;
+      padding: 12px;
+      border-bottom: 1px solid #F2F2F2;
       font-size: 13px;
+      color: #1D1D1F;
     }
+
+    .keyword-table tr:last-child td { border-bottom: none; }
 
     .category-badge {
       display: inline-block;
-      padding: 2px 8px;
-      border-radius: 3px;
+      padding: 3px 10px;
+      border-radius: 999px;
       font-size: 11px;
       font-weight: 500;
     }
 
-    .category-product { background: #cfe2ff; color: #084298; }
-    .category-comparison { background: #d1e7dd; color: #0f5132; }
-    .category-application { background: #fff3cd; color: #856404; }
-    .category-buying { background: #f8d7da; color: #842029; }
-    .category-faq { background: #e2e3e5; color: #383d41; }
+    .category-product { background: #E8F1FF; color: #0066D6; }
+    .category-comparison { background: #E6F6EB; color: #0F7A3A; }
+    .category-application { background: #FFF8E1; color: #8A6D00; }
+    .category-buying { background: #FFEDEC; color: #C7321F; }
+    .category-faq { background: #F2F2F4; color: #6E6E73; }
 
     .priority-badge {
       display: inline-block;
-      padding: 2px 8px;
-      border-radius: 3px;
+      padding: 3px 10px;
+      border-radius: 999px;
       font-size: 11px;
+      font-weight: 500;
     }
 
-    .priority-high { background: #f8d7da; color: #842029; }
-    .priority-medium { background: #fff3cd; color: #856404; }
-    .priority-low { background: #d1e7dd; color: #0f5132; }
+    .priority-high { background: #FFEDEC; color: #C7321F; }
+    .priority-medium { background: #FFF8E1; color: #8A6D00; }
+    .priority-low { background: #E6F6EB; color: #0F7A3A; }
 
     .difficulty-stars {
-      color: #ffc107;
+      color: #FFCC00;
       font-size: 12px;
     }
 
@@ -1078,18 +1212,19 @@
     .radio-option {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+      gap: 10px;
+      padding: 10px 14px;
+      border: 1px solid #E5E5E7;
+      border-radius: 10px;
       cursor: pointer;
       font-size: 14px;
-      background: white;
+      background: #FFFFFF;
+      transition: all 0.15s ease;
     }
 
     .radio-option:hover {
-      border-color: #333;
-      background: #f5f5f5;
+      border-color: #007AFF;
+      background: rgba(0, 122, 255, 0.04);
     }
 
     .type-ratio-grid {
@@ -1112,11 +1247,18 @@
 
     .type-ratio-item input {
       width: 70px;
-      padding: 6px 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+      padding: 7px 10px;
+      border: 1px solid #E5E5E7;
+      border-radius: 8px;
       font-size: 14px;
       text-align: center;
+      background: #FFFFFF;
+      color: #1D1D1F;
+    }
+    .type-ratio-item input:focus {
+      outline: none;
+      border-color: #007AFF;
+      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
     }
 
     .template-options {
@@ -1127,49 +1269,51 @@
     }
 
     .template-btn {
-      padding: 8px 14px;
-      border: 1px solid #ddd;
-      background: white;
-      border-radius: 4px;
+      padding: 8px 16px;
+      border: 1px solid #E5E5E7;
+      background: #FFFFFF;
+      color: #424245;
+      border-radius: 999px;
       cursor: pointer;
       font-size: 13px;
-      transition: all 0.2s;
+      transition: all 0.15s ease;
     }
 
     .template-btn:hover {
-      border-color: #333;
-      color: #333;
+      border-color: #007AFF;
+      color: #007AFF;
     }
 
     .template-btn.active {
-      background: #333;
+      background: #007AFF;
       color: white;
-      border-color: #333;
+      border-color: #007AFF;
     }
 
     .template-preview {
-      padding: 10px 12px;
-      background: #f9f9f9;
-      border: 1px solid #eee;
-      border-radius: 4px;
+      padding: 12px 14px;
+      background: #FAFAFA;
+      border: 1px solid #E5E5E7;
+      border-radius: 8px;
       font-size: 13px;
-      color: #666;
+      color: #6E6E73;
       font-style: italic;
     }
 
     /* SEO 检查结果样式 */
     .seo-check-result {
-      background: #f9f9f9;
-      border: 1px solid #eee;
-      border-radius: 4px;
-      padding: 15px;
+      background: #FAFAFA;
+      border: 1px solid #E5E5E7;
+      border-radius: 10px;
+      padding: 16px;
       margin-top: 10px;
     }
 
     .seo-check-result h4 {
-      margin: 0 0 15px 0;
+      margin: 0 0 14px 0;
       font-size: 14px;
-      color: #333;
+      color: #1D1D1F;
+      font-weight: 600;
     }
 
     .seo-checks {
@@ -1188,13 +1332,13 @@
     }
 
     .seo-check-item.passed {
-      background: #f0f8f0;
-      color: #155724;
+      background: #E6F6EB;
+      color: #0F7A3A;
     }
 
     .seo-check-item.failed {
-      background: #fef5f5;
-      color: #842029;
+      background: #FFEDEC;
+      color: #C7321F;
     }
 
     .check-icon {
@@ -1213,59 +1357,64 @@
 
     /* 审核按钮样式 */
     .btn-approve {
-      background: #28a745;
+      background: #34C759;
       color: white;
       padding: 10px 20px;
       border: none;
-      border-radius: 4px;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 14px;
       font-weight: 500;
+      transition: background 0.15s ease;
     }
 
     .btn-approve:hover {
-      background: #218838;
+      background: #2BB14B;
     }
 
     .btn-reject {
-      background: #dc3545;
+      background: #FF3B30;
       color: white;
       padding: 10px 20px;
       border: none;
-      border-radius: 4px;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 14px;
       font-weight: 500;
+      transition: background 0.15s ease;
     }
 
     .btn-reject:hover {
-      background: #c82333;
+      background: #E0271D;
     }
 
     /* Phase 3: SEO/链接/FAQ 标签页 */
     .modal-tabs {
       display: flex;
-      gap: 10px;
+      gap: 4px;
       margin-bottom: 20px;
-      border-bottom: 2px solid #e0e0e0;
+      border-bottom: 1px solid #E5E5E7;
       overflow-x: auto;
     }
 
     .modal-tab-btn {
-      padding: 10px 15px;
+      padding: 10px 16px;
       background: none;
       border: none;
       cursor: pointer;
       font-size: 13px;
-      color: #666;
-      border-bottom: 3px solid transparent;
-      transition: all 0.3s;
+      color: #6E6E73;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s ease;
       white-space: nowrap;
+      font-weight: 500;
     }
 
+    .modal-tab-btn:hover { color: #1D1D1F; }
+
     .modal-tab-btn.active {
-      color: #333;
-      border-bottom-color: #333;
+      color: #007AFF;
+      border-bottom-color: #007AFF;
     }
 
     .modal-tab-content {
@@ -1292,16 +1441,25 @@
     .seo-field label {
       font-weight: 500;
       font-size: 13px;
-      color: #333;
+      color: #424245;
     }
 
     .seo-field input,
     .seo-field textarea {
-      padding: 8px 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+      padding: 9px 12px;
+      border: 1px solid #E5E5E7;
+      border-radius: 8px;
       font-size: 13px;
       font-family: inherit;
+      background: #FFFFFF;
+      color: #1D1D1F;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .seo-field input:focus,
+    .seo-field textarea:focus {
+      outline: none;
+      border-color: #007AFF;
+      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
     }
 
     .seo-field textarea {
@@ -1312,17 +1470,18 @@
     .seo-keywords-input {
       display: flex;
       flex-wrap: wrap;
-      gap: 5px;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      background: white;
+      gap: 6px;
+      padding: 8px 10px;
+      border: 1px solid #E5E5E7;
+      border-radius: 8px;
+      background: #FFFFFF;
     }
 
     .seo-keyword-chip {
-      background: #e3f2fd;
-      padding: 4px 8px;
-      border-radius: 3px;
+      background: #E8F1FF;
+      color: #0066D6;
+      padding: 4px 10px;
+      border-radius: 999px;
       display: flex;
       align-items: center;
       gap: 5px;
@@ -1331,9 +1490,11 @@
 
     .seo-keyword-chip .remove {
       cursor: pointer;
-      color: #333;
-      font-weight: bold;
+      color: #0066D6;
+      font-weight: 600;
+      opacity: 0.7;
     }
+    .seo-keyword-chip .remove:hover { opacity: 1; }
 
     .seo-keywords-input input {
       border: none;
@@ -1342,6 +1503,7 @@
       min-width: 100px;
       padding: 4px;
       font-size: 13px;
+      background: transparent;
     }
 
     .seo-actions {
@@ -1353,19 +1515,20 @@
     .seo-actions button {
       padding: 8px 16px;
       border: none;
-      border-radius: 4px;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 13px;
       font-weight: 500;
+      transition: background 0.15s ease;
     }
 
     .btn-generate-seo {
-      background: #333;
+      background: #007AFF;
       color: white;
     }
 
     .btn-generate-seo:hover {
-      background: #000;
+      background: #0066D6;
     }
 
     /* 链接管理样式 */
@@ -1384,15 +1547,17 @@
     .links-group h4 {
       font-size: 13px;
       font-weight: 600;
-      color: #333;
+      color: #424245;
       margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
 
     .link-item {
-      background: #f9f9f9;
-      padding: 10px;
-      border-radius: 4px;
-      border: 1px solid #eee;
+      background: #FAFAFA;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid #E5E5E7;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -1405,27 +1570,28 @@
 
     .link-title {
       font-weight: 500;
-      color: #333;
+      color: #1D1D1F;
       margin-bottom: 3px;
     }
 
     .link-url {
-      color: #333;
+      color: #007AFF;
       text-decoration: none;
       font-size: 12px;
       word-break: break-all;
     }
+    .link-url:hover { text-decoration: underline; }
 
     .link-reason {
-      color: #666;
+      color: #6E6E73;
       font-size: 12px;
       margin-top: 3px;
     }
 
     .link-remove {
       cursor: pointer;
-      color: #ff4444;
-      font-weight: bold;
+      color: #FF3B30;
+      font-weight: 500;
       padding: 0 10px;
     }
 
@@ -1436,18 +1602,19 @@
     }
 
     .btn-generate-links {
-      background: #333;
+      background: #007AFF;
       color: white;
       padding: 8px 16px;
       border: none;
-      border-radius: 4px;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 13px;
       font-weight: 500;
+      transition: background 0.15s ease;
     }
 
     .btn-generate-links:hover {
-      background: #000;
+      background: #0066D6;
     }
 
     /* FAQ 编辑样式 */
@@ -1458,10 +1625,10 @@
     }
 
     .faq-item {
-      background: #f9f9f9;
-      padding: 12px;
-      border-radius: 4px;
-      border: 1px solid #eee;
+      background: #FAFAFA;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid #E5E5E7;
     }
 
     .faq-item-header {
@@ -1474,21 +1641,21 @@
 
     .faq-question {
       font-weight: 500;
-      color: #333;
+      color: #1D1D1F;
       font-size: 13px;
       flex: 1;
     }
 
     .faq-remove {
       cursor: pointer;
-      color: #ff4444;
-      font-weight: bold;
+      color: #FF3B30;
+      font-weight: 500;
     }
 
     .faq-answer {
-      color: #666;
+      color: #6E6E73;
       font-size: 13px;
-      line-height: 1.5;
+      line-height: 1.55;
     }
 
     .faq-actions {
@@ -1498,37 +1665,39 @@
     }
 
     .btn-generate-faq {
-      background: #333;
+      background: #007AFF;
       color: white;
       padding: 8px 16px;
       border: none;
-      border-radius: 4px;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 13px;
       font-weight: 500;
+      transition: background 0.15s ease;
     }
 
     .btn-generate-faq:hover {
-      background: #000;
+      background: #0066D6;
     }
     .pubtab-btn {
-      padding: 6px 12px;
-      border: 1px solid #ddd;
-      background: white;
-      color: #555;
-      border-radius: 4px;
+      padding: 7px 14px;
+      border: 1px solid #E5E5E7;
+      background: #FFFFFF;
+      color: #424245;
+      border-radius: 999px;
       cursor: pointer;
       font-size: 13px;
+      transition: all 0.15s ease;
     }
-    .pubtab-btn:hover { background: #f5f5f5; }
+    .pubtab-btn:hover { background: #F5F5F7; border-color: #D2D2D7; }
     .pubtab-btn.pubtab-active {
-      background: #333;
+      background: #007AFF;
       color: white;
-      border-color: #333;
+      border-color: #007AFF;
     }
     .pubtab-btn span {
       margin-left: 4px;
-      opacity: 0.75;
+      opacity: 0.78;
       font-size: 11px;
     }
   </style>
@@ -1548,8 +1717,8 @@
           <button class="tab-btn" data-tab="keywords">🔑 关键词库</button>
           <button class="tab-btn" data-tab="plan">📅 生成规划</button>
           <button class="tab-btn" data-tab="list">📝 计划列表</button>
-          <button class="tab-btn" data-tab="review">🔍 待审核 <span id="tabPendingBadge" style="display:none;background:#ff6b35;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">0</span></button>
-          <button class="tab-btn" data-tab="published">📚 已发布 <span id="tabPublishedBadge" style="display:none;background:#10B981;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">0</span></button>
+          <button class="tab-btn" data-tab="review">🔍 待审核 <span id="tabPendingBadge" style="display:none;background:#FF9500;color:#fff;border-radius:999px;padding:1px 8px;font-size:11px;margin-left:4px;font-weight:500;">0</span></button>
+          <button class="tab-btn" data-tab="published">📚 已发布 <span id="tabPublishedBadge" style="display:none;background:#34C759;color:#fff;border-radius:999px;padding:1px 8px;font-size:11px;margin-left:4px;font-weight:500;">0</span></button>
         </div>
       </div>
 
@@ -1731,7 +1900,7 @@
               </tr>
             </thead>
             <tbody id="keywordTableBody">
-              <tr><td colspan="6" style="text-align:center;color:#999;">加载中...</td></tr>
+              <tr><td colspan="6" style="text-align:center;color:#86868B;">加载中...</td></tr>
             </tbody>
           </table>
         </div>
@@ -1799,7 +1968,7 @@
               <span>%</span>
             </div>
           </div>
-          <div id="ratioTotal" style="margin-top:8px;font-size:13px;color:#666;">总计：100%</div>
+          <div id="ratioTotal" style="margin-top:8px;font-size:13px;color:#6E6E73;">总计：100%</div>
         </div>
 
         <!-- 第 4 步：标题模板 -->
@@ -1864,7 +2033,7 @@
         </thead>
         <tbody id="planTableBody">
           <tr>
-            <td colspan="5" style="text-align: center; color: #999;">暂无数据</td>
+            <td colspan="5" style="text-align: center; color: #86868B;">暂无数据</td>
           </tr>
         </tbody>
       </table>
@@ -1875,13 +2044,13 @@
       <div class="plan-list-header">
         <div class="plan-stats">
           待审核 <strong id="reviewTotalCount">0</strong> 篇文章
-          <span style="color:#666;font-size:12px;margin-left:8px;">点"审核"进入工作台：补图片、SEO 质检、批准发布</span>
+          <span style="color:#6E6E73;font-size:12px;margin-left:8px;">点"审核"进入工作台：补图片、SEO 质检、批准发布</span>
         </div>
-        <button onclick="loadReviewList()" style="padding:8px 14px;border:1px solid #ddd;background:white;border-radius:4px;cursor:pointer;">🔄 刷新</button>
+        <button onclick="loadReviewList()" style="padding:8px 14px;border:1px solid #E5E5E7;background:#FFFFFF;color:#1D1D1F;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">🔄 刷新</button>
       </div>
 
       <div id="reviewListContainer">
-        <div style="text-align:center;color:#999;padding:40px;">加载中...</div>
+        <div style="text-align:center;color:#86868B;padding:40px;">加载中...</div>
       </div>
     </div>
 
@@ -1894,11 +2063,11 @@
             <button class="pubtab-btn" data-pub-status="archived" onclick="switchPublishedStatus('archived')">📦 已下线 <span id="pubCountArchived">0</span></button>
           </span>
         </div>
-        <button onclick="loadPublishedList()" style="padding:8px 14px;border:1px solid #ddd;background:white;border-radius:4px;cursor:pointer;">🔄 刷新</button>
+        <button onclick="loadPublishedList()" style="padding:8px 14px;border:1px solid #E5E5E7;background:#FFFFFF;color:#1D1D1F;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">🔄 刷新</button>
       </div>
 
       <div style="display:flex;gap:10px;margin-bottom:14px;align-items:center;flex-wrap:wrap;">
-        <select id="publishedFilterType" onchange="loadPublishedList()" style="padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;">
+        <select id="publishedFilterType" onchange="loadPublishedList()" style="padding:7px 9px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;">
           <option value="all">全部类型</option>
           <option value="product">产品知识</option>
           <option value="buying">选型指南</option>
@@ -1906,14 +2075,14 @@
           <option value="application">应用场景</option>
           <option value="faq">FAQ</option>
         </select>
-        <input type="month" id="publishedFilterMonth" onchange="loadPublishedList()" style="padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;">
-        <input type="text" id="publishedFilterSearch" placeholder="🔍 搜标题..." style="padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;flex:1;min-width:180px;">
-        <button onclick="loadPublishedList()" style="padding:7px 14px;border:1px solid #333;background:#333;color:white;border-radius:3px;cursor:pointer;font-size:12px;">应用</button>
-        <button onclick="resetPublishedFilters()" style="padding:7px 14px;border:1px solid #ddd;background:white;color:#555;border-radius:3px;cursor:pointer;font-size:12px;">重置</button>
+        <input type="month" id="publishedFilterMonth" onchange="loadPublishedList()" style="padding:7px 9px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;">
+        <input type="text" id="publishedFilterSearch" placeholder="🔍 搜标题..." style="padding:7px 9px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;flex:1;min-width:180px;">
+        <button onclick="loadPublishedList()" style="padding:7px 14px;border:1px solid #007AFF;background:#007AFF;color:white;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;">应用</button>
+        <button onclick="resetPublishedFilters()" style="padding:7px 14px;border:1px solid #E5E5E7;background:#FFFFFF;color:#424245;border-radius:8px;cursor:pointer;font-size:12px;">重置</button>
       </div>
 
       <div id="publishedListContainer">
-        <div style="text-align:center;color:#999;padding:40px;">加载中...</div>
+        <div style="text-align:center;color:#86868B;padding:40px;">加载中...</div>
       </div>
     </div>
       </div><!-- /.blog-main-content -->
@@ -1921,26 +2090,26 @@
   </div><!-- /.blog-container -->
 
   <!-- 手动生成文章弹窗 -->
-  <div id="manualGenModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9000;align-items:center;justify-content:center;">
-    <div style="background:white;padding:24px 28px;border-radius:8px;width:480px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
-      <h3 style="margin:0 0 4px 0;font-size:16px;color:#333;">立即生成文章</h3>
-      <p style="font-size:12px;color:#999;margin:0 0 18px 0;">手动模式：选关键词、文章类型和 AI 模型，立即生成一篇</p>
+  <div id="manualGenModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.32);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9000;align-items:center;justify-content:center;">
+    <div style="background:white;padding:26px 30px;border-radius:16px;width:480px;max-width:90vw;box-shadow:0 20px 50px rgba(0,0,0,0.18);">
+      <h3 style="margin:0 0 4px 0;font-size:17px;font-weight:600;letter-spacing:-0.01em;color:#1D1D1F;">立即生成文章</h3>
+      <p style="font-size:12.5px;color:#6E6E73;margin:0 0 18px 0;">手动模式：选关键词、文章类型和 AI 模型，立即生成一篇</p>
 
       <div style="margin-bottom:14px;">
-        <label style="display:block;font-size:12px;color:#666;margin-bottom:4px;">关键词来源</label>
+        <label style="display:block;font-size:12px;color:#6E6E73;margin-bottom:6px;font-weight:500;">关键词来源</label>
         <div style="display:flex;gap:14px;font-size:13px;margin-bottom:6px;">
           <label><input type="radio" name="kwSource" value="lib" checked onchange="onKwSourceChange()"> 从关键词库选</label>
           <label><input type="radio" name="kwSource" value="manual" onchange="onKwSourceChange()"> 手动输入</label>
         </div>
-        <select id="manualKwSelect" style="width:100%;padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;">
+        <select id="manualKwSelect" style="width:100%;padding:7px 9px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;">
           <option value="">加载中...</option>
         </select>
-        <input id="manualKwInput" type="text" placeholder="例如：solar inverter MCB" style="display:none;width:100%;padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;">
+        <input id="manualKwInput" type="text" placeholder="例如：solar inverter MCB" style="display:none;width:100%;padding:7px 9px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;">
       </div>
 
       <div style="margin-bottom:14px;">
-        <label style="display:block;font-size:12px;color:#666;margin-bottom:4px;">文章类型</label>
-        <select id="manualArticleType" style="width:100%;padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;">
+        <label style="display:block;font-size:12px;color:#6E6E73;margin-bottom:6px;font-weight:500;">文章类型</label>
+        <select id="manualArticleType" style="width:100%;padding:7px 9px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;">
           <option value="product">产品知识 (Product Knowledge)</option>
           <option value="buying">选型指南 (Selection Guide)</option>
           <option value="comparison">对比文章 (Comparison)</option>
@@ -1950,13 +2119,13 @@
       </div>
 
       <div style="margin-bottom:14px;">
-        <label style="display:block;font-size:12px;color:#666;margin-bottom:4px;">自定义标题（可选，留空自动生成）</label>
-        <input id="manualTitle" type="text" placeholder="留空 → 按关键词+类型自动生成" style="width:100%;padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;">
+        <label style="display:block;font-size:12px;color:#6E6E73;margin-bottom:6px;font-weight:500;">自定义标题（可选，留空自动生成）</label>
+        <input id="manualTitle" type="text" placeholder="留空 → 按关键词+类型自动生成" style="width:100%;padding:7px 9px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;">
       </div>
 
       <div style="margin-bottom:18px;">
-        <label style="display:block;font-size:12px;color:#666;margin-bottom:4px;">AI 模型</label>
-        <select id="manualModel" style="width:100%;padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;">
+        <label style="display:block;font-size:12px;color:#6E6E73;margin-bottom:6px;font-weight:500;">AI 模型</label>
+        <select id="manualModel" style="width:100%;padding:7px 9px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;">
           <option value="deepseek">DeepSeek（便宜、推荐）</option>
           <option value="claude">Claude 3.5 Sonnet</option>
           <option value="gpt">GPT-4 Turbo</option>
@@ -1965,28 +2134,28 @@
       </div>
 
       <div style="display:flex;gap:8px;justify-content:flex-end;">
-        <button onclick="closeManualGen()" style="padding:7px 16px;border:1px solid #ddd;background:white;color:#333;border-radius:4px;cursor:pointer;font-size:13px;">取消</button>
-        <button id="manualGenBtn" onclick="submitManualGen()" style="padding:7px 16px;border:1px solid #333;background:#333;color:white;border-radius:4px;cursor:pointer;font-size:13px;">▶ 开始生成</button>
+        <button onclick="closeManualGen()" style="padding:7px 16px;border:1px solid #E5E5E7;background:#FFFFFF;color:#1D1D1F;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">取消</button>
+        <button id="manualGenBtn" onclick="submitManualGen()" style="padding:7px 16px;border:1px solid #007AFF;background:#007AFF;color:white;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">▶ 开始生成</button>
       </div>
     </div>
   </div>
 
   <!-- plan 编辑弹窗 -->
-  <div id="planEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9000;align-items:center;justify-content:center;">
-    <div style="background:white;padding:24px 28px;border-radius:8px;width:460px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
-      <h3 style="margin:0 0 18px 0;font-size:16px;color:#333;">编辑计划</h3>
+  <div id="planEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.32);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9000;align-items:center;justify-content:center;">
+    <div style="background:white;padding:26px 30px;border-radius:16px;width:460px;max-width:90vw;box-shadow:0 20px 50px rgba(0,0,0,0.18);">
+      <h3 style="margin:0 0 18px 0;font-size:17px;font-weight:600;letter-spacing:-0.01em;color:#1D1D1F;">编辑计划</h3>
       <input type="hidden" id="editPlanId">
       <div style="margin-bottom:12px;">
-        <label style="display:block;font-size:12px;color:#666;margin-bottom:4px;">关键词</label>
-        <input id="editPlanKw" type="text" style="width:100%;padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;">
+        <label style="display:block;font-size:12px;color:#6E6E73;margin-bottom:6px;font-weight:500;">关键词</label>
+        <input id="editPlanKw" type="text" style="width:100%;padding:7px 9px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;">
       </div>
       <div style="margin-bottom:12px;">
-        <label style="display:block;font-size:12px;color:#666;margin-bottom:4px;">标题</label>
-        <input id="editPlanTitle" type="text" style="width:100%;padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;">
+        <label style="display:block;font-size:12px;color:#6E6E73;margin-bottom:6px;font-weight:500;">标题</label>
+        <input id="editPlanTitle" type="text" style="width:100%;padding:7px 9px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;">
       </div>
       <div style="margin-bottom:18px;">
-        <label style="display:block;font-size:12px;color:#666;margin-bottom:4px;">类型</label>
-        <select id="editPlanType" style="width:100%;padding:7px 9px;border:1px solid #ddd;border-radius:3px;font-size:13px;">
+        <label style="display:block;font-size:12px;color:#6E6E73;margin-bottom:6px;font-weight:500;">类型</label>
+        <select id="editPlanType" style="width:100%;padding:7px 9px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;">
           <option value="product">产品知识</option>
           <option value="buying">选型指南</option>
           <option value="comparison">对比文章</option>
@@ -1995,8 +2164,8 @@
         </select>
       </div>
       <div style="display:flex;gap:8px;justify-content:flex-end;">
-        <button onclick="closePlanEdit()" style="padding:7px 16px;border:1px solid #ddd;background:white;color:#333;border-radius:4px;cursor:pointer;font-size:13px;">取消</button>
-        <button onclick="submitPlanEdit()" style="padding:7px 16px;border:1px solid #333;background:#333;color:white;border-radius:4px;cursor:pointer;font-size:13px;">保存</button>
+        <button onclick="closePlanEdit()" style="padding:7px 16px;border:1px solid #E5E5E7;background:#FFFFFF;color:#1D1D1F;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">取消</button>
+        <button onclick="submitPlanEdit()" style="padding:7px 16px;border:1px solid #007AFF;background:#007AFF;color:white;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">保存</button>
       </div>
     </div>
   </div>
@@ -2042,7 +2211,7 @@
             <p>推荐尺寸：1200 × 540 px (16:9)</p>
             <p>推荐格式：WebP / JPEG</p>
             <p>最大文件：200KB</p>
-            <p style="margin-top: 10px; color: #333;">拖拽上传或点击选择文件</p>
+            <p style="margin-top: 10px; color: #1D1D1F;">拖拽上传或点击选择文件</p>
             <input type="file" id="imageInput" accept="image/*" onchange="handleImageUpload(event)">
           </div>
           <div class="image-preview" id="imagePreview"></div>
@@ -2052,13 +2221,13 @@
           <div class="preview-item">
             <h4>详情页预览（1200×540）</h4>
             <div class="preview-box" id="detailPreview">
-              <p style="color: #999;">上传图片后显示</p>
+              <p style="color: #86868B;">上传图片后显示</p>
             </div>
           </div>
           <div class="preview-item">
             <h4>前台卡片预览（470×210）</h4>
             <div class="preview-box" id="cardPreview">
-              <p style="color: #999;">上传图片后显示</p>
+              <p style="color: #86868B;">上传图片后显示</p>
             </div>
           </div>
         </div>
@@ -2076,13 +2245,13 @@
           <div class="seo-field">
             <label>Meta Title (SEO 标题)</label>
             <input type="text" id="seoMetaTitle" placeholder="50-60 字符" maxlength="60">
-            <small style="color: #999;">用于搜索引擎结果页面</small>
+            <small style="color: #86868B;">用于搜索引擎结果页面</small>
           </div>
 
           <div class="seo-field">
             <label>Meta Description (SEO 描述)</label>
             <textarea id="seoMetaDescription" placeholder="150-160 字符" maxlength="160"></textarea>
-            <small style="color: #999;">用于搜索引擎结果页面摘要</small>
+            <small style="color: #86868B;">用于搜索引擎结果页面摘要</small>
           </div>
 
           <div class="seo-field">
@@ -2097,15 +2266,15 @@
             </div>
           </div>
 
-          <div style="background: #f5f5f5; padding: 12px; border-radius: 4px; font-size: 13px; color: #333;">
-            <strong>💡 提示：</strong>点击下方按钮让 AI 自动生成 SEO 元数据
+          <div style="background: #F5F8FF; border: 1px solid #DCE7FF; padding: 12px 14px; border-radius: 10px; font-size: 13px; color: #1D1D1F;">
+            <strong style="color: #0066D6;">💡 提示：</strong>点击下方按钮让 AI 自动生成 SEO 元数据
           </div>
 
           <div class="seo-actions">
             <button class="btn-generate-seo" onclick="generateSEO()">🤖 AI 生成 SEO 元数据</button>
           </div>
 
-          <div id="seoGeneratingStatus" style="display: none; color: #333; font-size: 13px;">
+          <div id="seoGeneratingStatus" style="display: none; color: #1D1D1F; font-size: 13px;">
             <span class="loading"></span> 正在生成 SEO 元数据...
           </div>
         </div>
@@ -2117,26 +2286,26 @@
           <div class="links-group">
             <h4>🔗 内部链接（指向其他 BLOG）</h4>
             <div id="internalLinksList" style="display: flex; flex-direction: column; gap: 8px;">
-              <p style="color: #999; font-size: 13px;">暂无内部链接</p>
+              <p style="color: #86868B; font-size: 13px;">暂无内部链接</p>
             </div>
           </div>
 
           <div class="links-group">
             <h4>🌐 外部链接（参考资源）</h4>
             <div id="externalLinksList" style="display: flex; flex-direction: column; gap: 8px;">
-              <p style="color: #999; font-size: 13px;">暂无外部链接</p>
+              <p style="color: #86868B; font-size: 13px;">暂无外部链接</p>
             </div>
           </div>
 
-          <div style="background: #f5f5f5; padding: 12px; border-radius: 4px; font-size: 13px; color: #333;">
-            <strong>💡 提示：</strong>点击下方按钮让 AI 推荐相关链接
+          <div style="background: #F5F8FF; border: 1px solid #DCE7FF; padding: 12px 14px; border-radius: 10px; font-size: 13px; color: #1D1D1F;">
+            <strong style="color: #0066D6;">💡 提示：</strong>点击下方按钮让 AI 推荐相关链接
           </div>
 
           <div class="links-actions">
             <button class="btn-generate-links" onclick="generateLinks()">🤖 AI 推荐链接</button>
           </div>
 
-          <div id="linksGeneratingStatus" style="display: none; color: #333; font-size: 13px;">
+          <div id="linksGeneratingStatus" style="display: none; color: #1D1D1F; font-size: 13px;">
             <span class="loading"></span> 正在推荐链接...
           </div>
         </div>
@@ -2146,18 +2315,18 @@
       <div class="modal-tab-content" id="faq-tab">
         <div class="faq-section">
           <div id="faqList" style="display: flex; flex-direction: column; gap: 10px;">
-            <p style="color: #999; font-size: 13px;">暂无 FAQ</p>
+            <p style="color: #86868B; font-size: 13px;">暂无 FAQ</p>
           </div>
 
-          <div style="background: #f5f5f5; padding: 12px; border-radius: 4px; font-size: 13px; color: #333; margin-top: 15px;">
-            <strong>💡 提示：</strong>点击下方按钮让 AI 从文章内容生成常见问题
+          <div style="background: #F5F8FF; border: 1px solid #DCE7FF; padding: 12px 14px; border-radius: 10px; font-size: 13px; color: #1D1D1F; margin-top: 15px;">
+            <strong style="color: #0066D6;">💡 提示：</strong>点击下方按钮让 AI 从文章内容生成常见问题
           </div>
 
           <div class="faq-actions">
             <button class="btn-generate-faq" onclick="generateFAQ()">🤖 AI 生成 FAQ</button>
           </div>
 
-          <div id="faqGeneratingStatus" style="display: none; color: #333; font-size: 13px;">
+          <div id="faqGeneratingStatus" style="display: none; color: #1D1D1F; font-size: 13px;">
             <span class="loading"></span> 正在生成 FAQ...
           </div>
         </div>
@@ -2249,12 +2418,12 @@
     // 加载待审核列表
     async function loadReviewList() {
       const container = document.getElementById('reviewListContainer');
-      container.innerHTML = '<div style="text-align:center;color:#999;padding:40px;">加载中...</div>';
+      container.innerHTML = '<div style="text-align:center;color:#86868B;padding:40px;">加载中...</div>';
       try {
         const response = await fetch('/api/blog/pending-review');
         const data = await response.json();
         if (!data.success) {
-          container.innerHTML = `<div style="text-align:center;color:#d32f2f;padding:40px;">加载失败：${data.error || ''}</div>`;
+          container.innerHTML = `<div style="text-align:center;color:#FF3B30;padding:40px;">加载失败：${data.error || ''}</div>`;
           return;
         }
 
@@ -2268,7 +2437,7 @@
 
         if (posts.length === 0) {
           container.innerHTML = `
-            <div style="text-align:center;color:#999;padding:60px;border:1px dashed #ddd;border-radius:8px;">
+            <div style="text-align:center;color:#86868B;padding:60px;border:1px dashed #E5E5E7;border-radius:12px;background:#FAFAFA;">
               <div style="font-size:42px;margin-bottom:8px;">✅</div>
               <div>暂无待审核文章</div>
               <div style="margin-top:8px;font-size:12px;">到「控制面板」点"立即生成今日文章"，或等定时任务运行</div>
@@ -2281,36 +2450,36 @@
             ${posts.map(p => renderReviewCard(p)).join('')}
           </div>`;
       } catch (error) {
-        container.innerHTML = `<div style="text-align:center;color:#d32f2f;padding:40px;">错误：${error.message}</div>`;
+        container.innerHTML = `<div style="text-align:center;color:#FF3B30;padding:40px;">错误：${error.message}</div>`;
       }
     }
 
     function renderReviewCard(p) {
       const cover = p.cover_image_url
-        ? `<img src="${p.cover_image_url}" style="width:160px;height:90px;object-fit:cover;border-radius:6px;flex-shrink:0;" alt="">`
-        : `<div style="width:160px;height:90px;background:#f0f0f0;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:12px;flex-shrink:0;">⚠ 缺封面图</div>`;
+        ? `<img src="${p.cover_image_url}" style="width:160px;height:90px;object-fit:cover;border-radius:8px;flex-shrink:0;" alt="">`
+        : `<div style="width:160px;height:90px;background:#FAFAFA;border:1px solid #E5E5E7;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#86868B;font-size:12px;flex-shrink:0;">⚠ 缺封面图</div>`;
       const time = p.created_at ? new Date(p.created_at).toLocaleString('zh-CN') : '';
       const kw = p.main_keyword || (p.keywords && p.keywords[0]) || '—';
       const wc = p.word_count || 0;
       const rt = p.reading_time || 0;
       return `
-        <div style="display:flex;gap:14px;padding:14px;border:1px solid #e5e5e5;border-radius:8px;background:white;">
+        <div style="display:flex;gap:14px;padding:16px;border:1px solid #E5E5E7;border-radius:12px;background:#FFFFFF;transition:all 0.15s ease;" onmouseover="this.style.borderColor='#D2D2D7';this.style.boxShadow='0 4px 14px rgba(0,0,0,0.04)'" onmouseout="this.style.borderColor='#E5E5E7';this.style.boxShadow='none'">
           ${cover}
           <div style="flex:1;min-width:0;">
-            <div style="font-weight:600;font-size:15px;margin-bottom:6px;color:#222;">${escapeHtml(p.title || '(无标题)')}</div>
-            <div style="font-size:12px;color:#666;margin-bottom:4px;">
-              <span style="background:#e6f4ef;color:#10B981;padding:2px 8px;border-radius:10px;margin-right:6px;">${escapeHtml(kw)}</span>
+            <div style="font-weight:600;font-size:15px;margin-bottom:6px;color:#1D1D1F;letter-spacing:-0.01em;">${escapeHtml(p.title || '(无标题)')}</div>
+            <div style="font-size:12px;color:#6E6E73;margin-bottom:4px;">
+              <span style="background:#E8F1FF;color:#0066D6;padding:3px 10px;border-radius:999px;margin-right:6px;font-weight:500;">${escapeHtml(kw)}</span>
               <span style="margin-right:10px;">📝 ${wc} 字</span>
               <span style="margin-right:10px;">⏱ ${rt} 分钟</span>
               <span>🕐 ${time}</span>
             </div>
-            <div style="font-size:12px;color:${p.cover_image_url ? '#10B981' : '#ff6b35'};">
+            <div style="font-size:12px;color:${p.cover_image_url ? '#34C759' : '#FF9500'};font-weight:500;">
               ${p.cover_image_url ? '✓ 已配封面' : '⚠ 未配封面'}
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
-            <button onclick="openReviewWorkspace('${p.id}')" style="padding:8px 16px;background:#10B981;color:white;border:none;border-radius:4px;cursor:pointer;font-size:13px;">📝 进入审核</button>
-            <button onclick="quickReject('${p.id}')" style="padding:6px 16px;background:white;color:#999;border:1px solid #ddd;border-radius:4px;cursor:pointer;font-size:12px;">拒绝</button>
+            <button onclick="openReviewWorkspace('${p.id}')" style="padding:8px 18px;background:#007AFF;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">📝 进入审核</button>
+            <button onclick="quickReject('${p.id}')" style="padding:6px 18px;background:#FFFFFF;color:#6E6E73;border:1px solid #E5E5E7;border-radius:8px;cursor:pointer;font-size:12px;">拒绝</button>
           </div>
         </div>`;
     }
@@ -2366,7 +2535,7 @@
 
     async function loadPublishedList() {
       const container = document.getElementById('publishedListContainer');
-      container.innerHTML = '<div style="text-align:center;color:#999;padding:40px;">加载中...</div>';
+      container.innerHTML = '<div style="text-align:center;color:#86868B;padding:40px;">加载中...</div>';
 
       const articleType = document.getElementById('publishedFilterType').value;
       const month = document.getElementById('publishedFilterMonth').value;
@@ -2381,7 +2550,7 @@
         const r = await fetch('/api/blog/published?' + params.toString());
         const d = await r.json();
         if (!d.success) {
-          container.innerHTML = `<div style="text-align:center;color:#d32f2f;padding:40px;">加载失败：${d.error || ''}</div>`;
+          container.innerHTML = `<div style="text-align:center;color:#FF3B30;padding:40px;">加载失败：${d.error || ''}</div>`;
           return;
         }
 
@@ -2399,7 +2568,7 @@
             ? '没有符合条件的已发布文章'
             : '没有已下线的文章';
           container.innerHTML = `
-            <div style="text-align:center;color:#999;padding:60px;border:1px dashed #ddd;border-radius:8px;">
+            <div style="text-align:center;color:#86868B;padding:60px;border:1px dashed #E5E5E7;border-radius:12px;background:#FAFAFA;">
               <div style="font-size:42px;margin-bottom:8px;">${currentPubStatus === 'published' ? '📭' : '📦'}</div>
               <div>${emptyMsg}</div>
             </div>`;
@@ -2411,7 +2580,7 @@
             ${posts.map(p => renderPublishedCard(p)).join('')}
           </div>`;
       } catch (e) {
-        container.innerHTML = `<div style="text-align:center;color:#d32f2f;padding:40px;">错误：${e.message}</div>`;
+        container.innerHTML = `<div style="text-align:center;color:#FF3B30;padding:40px;">错误：${e.message}</div>`;
       }
     }
 
@@ -2419,8 +2588,8 @@
       const typeLabels = { product:'产品知识', buying:'选型指南', comparison:'对比文章', application:'应用场景', faq:'FAQ' };
       const typeLabel = typeLabels[p.article_type] || p.article_type || '未分类';
       const cover = p.cover_image_url
-        ? `<img src="${p.cover_image_url}" style="width:160px;height:90px;object-fit:cover;border-radius:6px;flex-shrink:0;" alt="">`
-        : `<div style="width:160px;height:90px;background:#f0f0f0;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:12px;flex-shrink:0;">无封面</div>`;
+        ? `<img src="${p.cover_image_url}" style="width:160px;height:90px;object-fit:cover;border-radius:8px;flex-shrink:0;" alt="">`
+        : `<div style="width:160px;height:90px;background:#FAFAFA;border:1px solid #E5E5E7;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#86868B;font-size:12px;flex-shrink:0;">无封面</div>`;
 
       const dateStr = currentPubStatus === 'published'
         ? (p.published_at ? new Date(p.published_at).toLocaleString('zh-CN') : '—')
@@ -2433,30 +2602,30 @@
       const isPublished = currentPubStatus === 'published';
 
       return `
-        <div style="display:flex;gap:14px;padding:14px;border:1px solid #e5e5e5;border-radius:8px;background:white;${!isPublished ? 'opacity:0.78;' : ''}">
+        <div style="display:flex;gap:14px;padding:16px;border:1px solid #E5E5E7;border-radius:12px;background:#FFFFFF;transition:all 0.15s ease;${!isPublished ? 'opacity:0.78;' : ''}" onmouseover="this.style.borderColor='#D2D2D7';this.style.boxShadow='0 4px 14px rgba(0,0,0,0.04)'" onmouseout="this.style.borderColor='#E5E5E7';this.style.boxShadow='none'">
           ${cover}
           <div style="flex:1;min-width:0;">
-            <div style="font-weight:600;font-size:15px;margin-bottom:6px;color:#222;">${escapeHtml(p.title || '(无标题)')}</div>
-            <div style="font-size:12px;color:#666;margin-bottom:4px;">
-              <span style="background:#e6f4ef;color:#10B981;padding:2px 8px;border-radius:10px;margin-right:6px;">${escapeHtml(typeLabel)}</span>
-              ${p.main_keyword ? `<span style="margin-right:8px;color:#888;">🔑 ${escapeHtml(p.main_keyword)}</span>` : ''}
+            <div style="font-weight:600;font-size:15px;margin-bottom:6px;color:#1D1D1F;letter-spacing:-0.01em;">${escapeHtml(p.title || '(无标题)')}</div>
+            <div style="font-size:12px;color:#6E6E73;margin-bottom:4px;">
+              <span style="background:#E6F6EB;color:#0F7A3A;padding:3px 10px;border-radius:999px;margin-right:6px;font-weight:500;">${escapeHtml(typeLabel)}</span>
+              ${p.main_keyword ? `<span style="margin-right:8px;color:#86868B;">🔑 ${escapeHtml(p.main_keyword)}</span>` : ''}
             </div>
-            <div style="font-size:11px;color:#999;margin-bottom:4px;">
+            <div style="font-size:11px;color:#86868B;margin-bottom:4px;">
               <span style="margin-right:10px;">${dateLabel} ${dateStr}</span>
               <span style="margin-right:10px;">📝 ${p.word_count || 0} 字</span>
               <span>⏱ ${p.reading_time || 0} 分钟</span>
             </div>
-            ${slug ? `<div style="font-size:11px;color:#1a73e8;font-family:Consolas,Menlo,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">/blog/${escapeHtml(slug)}</div>` : ''}
+            ${slug ? `<div style="font-size:11px;color:#007AFF;font-family:Consolas,Menlo,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">/blog/${escapeHtml(slug)}</div>` : ''}
           </div>
           <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">
-            ${isPublished ? `<a href="${websiteUrl}" target="_blank" rel="noopener" style="text-align:center;padding:6px 14px;background:#10B981;color:white;border:none;border-radius:4px;text-decoration:none;font-size:12px;">🌐 网站查看</a>` : ''}
-            <button onclick="openReviewWorkspace('${p.id}')" style="padding:6px 14px;border:1px solid #ddd;background:white;color:#333;border-radius:4px;cursor:pointer;font-size:12px;">✏ 重新编辑</button>
-            <button onclick="viewAuditLog('${p.id}', '${escapeHtml(p.title || '').replace(/'/g, "\\'")}')" style="padding:6px 14px;border:1px solid #ddd;background:white;color:#555;border-radius:4px;cursor:pointer;font-size:12px;">📜 历史</button>
+            ${isPublished ? `<a href="${websiteUrl}" target="_blank" rel="noopener" style="text-align:center;padding:6px 14px;background:#007AFF;color:white;border:none;border-radius:8px;text-decoration:none;font-size:12px;font-weight:500;">🌐 网站查看</a>` : ''}
+            <button onclick="openReviewWorkspace('${p.id}')" style="padding:6px 14px;border:1px solid #E5E5E7;background:#FFFFFF;color:#1D1D1F;border-radius:8px;cursor:pointer;font-size:12px;">✏ 重新编辑</button>
+            <button onclick="viewAuditLog('${p.id}', '${escapeHtml(p.title || '').replace(/'/g, "\\'")}')" style="padding:6px 14px;border:1px solid #E5E5E7;background:#FFFFFF;color:#424245;border-radius:8px;cursor:pointer;font-size:12px;">📜 历史</button>
             ${isPublished
-              ? `<button onclick="unpublishPost('${p.id}')" style="padding:6px 14px;border:1px solid #ddd;background:white;color:#ef6c00;border-radius:4px;cursor:pointer;font-size:12px;">📥 下线</button>`
-              : `<button onclick="republishPost('${p.id}')" style="padding:6px 14px;border:1px solid #10B981;background:white;color:#10B981;border-radius:4px;cursor:pointer;font-size:12px;">🚀 重新上线</button>`
+              ? `<button onclick="unpublishPost('${p.id}')" style="padding:6px 14px;border:1px solid #E5E5E7;background:#FFFFFF;color:#FF9500;border-radius:8px;cursor:pointer;font-size:12px;">📥 下线</button>`
+              : `<button onclick="republishPost('${p.id}')" style="padding:6px 14px;border:1px solid #34C759;background:#FFFFFF;color:#34C759;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;">🚀 重新上线</button>`
             }
-            <button onclick="deletePostPermanent('${p.id}', '${escapeHtml(p.title || '').replace(/'/g, "\\'")}')" style="padding:6px 14px;border:1px solid #fcc;background:white;color:#d32f2f;border-radius:4px;cursor:pointer;font-size:12px;">🗑 永久删除</button>
+            <button onclick="deletePostPermanent('${p.id}', '${escapeHtml(p.title || '').replace(/'/g, "\\'")}')" style="padding:6px 14px;border:1px solid #FFD7D5;background:#FFFFFF;color:#FF3B30;border-radius:8px;cursor:pointer;font-size:12px;">🗑 永久删除</button>
           </div>
         </div>`;
     }
@@ -2535,24 +2704,24 @@
           image_uploaded: '🖼 上传图片',
         };
         const html = logs.length === 0
-          ? '<div style="text-align:center;color:#999;padding:30px;">暂无历史记录</div>'
+          ? '<div style="text-align:center;color:#86868B;padding:30px;">暂无历史记录</div>'
           : logs.map(l => `
-              <div style="border-left:3px solid #10B981;padding:8px 12px;margin-bottom:6px;background:#fafafa;border-radius:0 4px 4px 0;">
-                <div style="font-weight:600;color:#333;font-size:13px;">${actionLabels[l.action] || l.action}</div>
-                <div style="font-size:11px;color:#888;">${new Date(l.created_at).toLocaleString('zh-CN')}</div>
-                ${l.detail ? `<div style="font-size:12px;color:#555;margin-top:3px;">${escapeHtml(l.detail)}</div>` : ''}
+              <div style="border-left:3px solid #007AFF;padding:10px 14px;margin-bottom:6px;background:#FAFAFA;border-radius:0 8px 8px 0;">
+                <div style="font-weight:600;color:#1D1D1F;font-size:13px;">${actionLabels[l.action] || l.action}</div>
+                <div style="font-size:11px;color:#86868B;margin-top:1px;">${new Date(l.created_at).toLocaleString('zh-CN')}</div>
+                ${l.detail ? `<div style="font-size:12px;color:#424245;margin-top:3px;">${escapeHtml(l.detail)}</div>` : ''}
               </div>`).join('');
 
         const modal = document.createElement('div');
-        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9500;display:flex;align-items:center;justify-content:center;';
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.32);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9500;display:flex;align-items:center;justify-content:center;';
         modal.innerHTML = `
-          <div style="background:white;padding:20px 24px;border-radius:8px;width:520px;max-width:90vw;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div style="background:white;padding:24px 28px;border-radius:16px;width:540px;max-width:90vw;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,0.18);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
               <div>
-                <div style="font-weight:600;font-size:14px;color:#333;">📜 文章历史</div>
-                <div style="font-size:12px;color:#888;margin-top:2px;">${escapeHtml(title)}</div>
+                <div style="font-weight:600;font-size:15px;color:#1D1D1F;letter-spacing:-0.01em;">📜 文章历史</div>
+                <div style="font-size:12px;color:#86868B;margin-top:2px;">${escapeHtml(title)}</div>
               </div>
-              <button onclick="this.closest('[data-audit-modal]').remove()" style="border:none;background:transparent;font-size:20px;cursor:pointer;color:#999;">×</button>
+              <button onclick="this.closest('[data-audit-modal]').remove()" style="border:none;background:transparent;font-size:22px;cursor:pointer;color:#86868B;">×</button>
             </div>
             <div style="overflow-y:auto;flex:1;">${html}</div>
           </div>`;
@@ -2599,7 +2768,7 @@
             const logTime = new Date(log.generationTime).toLocaleString('zh-CN');
             let errorHtml = '';
             if (log.failureCount > 0 && log.errorMessage) {
-              errorHtml = `<div style="color: #d32f2f; margin-top: 8px;">❌ ${log.errorMessage}</div>`;
+              errorHtml = `<div style="color: #FF3B30; margin-top: 8px;">❌ ${log.errorMessage}</div>`;
             }
             document.getElementById('lastRunRecord').innerHTML = `
               <div>最后生成时间：${logTime}</div>
@@ -2609,7 +2778,7 @@
               ${errorHtml}
             `;
           } else {
-            document.getElementById('lastRunRecord').innerHTML = '<div style="color: #999;">暂无生成记录</div>';
+            document.getElementById('lastRunRecord').innerHTML = '<div style="color: #86868B;">暂无生成记录</div>';
           }
 
           // 更新快速操作按钮状态
@@ -2929,7 +3098,7 @@
       const tbody = document.getElementById('planTableBody');
 
       if (plans.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #999;">暂无数据</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #86868B;">暂无数据</td></tr>';
         return;
       }
 
@@ -2965,9 +3134,9 @@
             </td>
             <td>
               <div class="action-buttons" style="display:flex;gap:4px;flex-wrap:wrap;">
-                ${isPending ? `<button onclick="generateOnePlan('${plan.id}')" style="background:#333;color:white;border-color:#333;">▶ 立即生成</button>` : ''}
+                ${isPending ? `<button onclick="generateOnePlan('${plan.id}')" style="background:#007AFF;color:white;border-color:#007AFF;">▶ 立即生成</button>` : ''}
                 ${isPending ? `<button onclick="editPlan('${plan.id}','${safeKw}','${safeTitle}','${plan.article_type||'product'}')">编辑</button>` : ''}
-                ${isPending ? `<button onclick="deletePlan('${plan.id}')" style="color:#d32f2f;">删除</button>` : ''}
+                ${isPending ? `<button onclick="deletePlan('${plan.id}')" style="color:#FF3B30;">删除</button>` : ''}
                 ${!isPending ? `<button onclick="openPreview('${plan.id}')">预览</button>` : ''}
               </div>
             </td>
@@ -3285,8 +3454,8 @@
       document.getElementById('editContent').value = '';
       document.getElementById('editKeywords').innerHTML = '<input type="text" placeholder="输入关键词，按 Enter 添加">';
       document.getElementById('imagePreview').innerHTML = '';
-      document.getElementById('detailPreview').innerHTML = '<p style="color: #999;">上传图片后显示</p>';
-      document.getElementById('cardPreview').innerHTML = '<p style="color: #999;">上传图片后显示</p>';
+      document.getElementById('detailPreview').innerHTML = '<p style="color: #86868B;">上传图片后显示</p>';
+      document.getElementById('cardPreview').innerHTML = '<p style="color: #86868B;">上传图片后显示</p>';
     }
 
     // 重置规划表单
@@ -3419,7 +3588,7 @@
       if (!keywords || keywords.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="6" style="text-align:center;padding:30px;color:#999;">
+            <td colspan="6" style="text-align:center;padding:30px;color:#86868B;">
               <div>暂无关键词</div>
               <div style="margin-top:8px;font-size:12px;">请添加关键词或使用 AI 推荐功能</div>
             </td>
@@ -3438,7 +3607,7 @@
           <td><span class="priority-badge priority-${kw.priority}">${priorityLabels[kw.priority] || kw.priority}</span></td>
           <td>${kw.used_count || 0} 次</td>
           <td>
-            <button onclick="deleteKeyword('${kw.id}')" style="padding:3px 8px;border:1px solid #ddd;background:white;border-radius:3px;cursor:pointer;font-size:12px;color:#dc3545;">删除</button>
+            <button onclick="deleteKeyword('${kw.id}')" style="padding:3px 10px;border:1px solid #E5E5E7;background:#FFFFFF;border-radius:6px;cursor:pointer;font-size:12px;color:#FF3B30;">删除</button>
           </td>
         </tr>
       `).join('');
@@ -3539,7 +3708,7 @@
     function renderRecommendations() {
       const list = document.getElementById('recommendList');
       if (!list || !recommendData || recommendData.length === 0) {
-        if (list) list.innerHTML = '<p style="color: #999;">暂无推荐</p>';
+        if (list) list.innerHTML = '<p style="color: #86868B;">暂无推荐</p>';
         return;
       }
 
@@ -3630,7 +3799,7 @@
       }, 0);
       const el = document.getElementById('ratioTotal');
       el.textContent = `总计：${total}%`;
-      el.style.color = total === 100 ? '#28a745' : '#dc3545';
+      el.style.color = total === 100 ? '#34C759' : '#FF3B30';
     }
 
     // 选择标题模板
@@ -3827,7 +3996,7 @@
               internalList.appendChild(item);
             });
           } else {
-            internalList.innerHTML = '<p style="color: #999; font-size: 13px;">暂无内部链接推荐</p>';
+            internalList.innerHTML = '<p style="color: #86868B; font-size: 13px;">暂无内部链接推荐</p>';
           }
 
           // 显示外部链接
@@ -3848,7 +4017,7 @@
               externalList.appendChild(item);
             });
           } else {
-            externalList.innerHTML = '<p style="color: #999; font-size: 13px;">暂无外部链接推荐</p>';
+            externalList.innerHTML = '<p style="color: #86868B; font-size: 13px;">暂无外部链接推荐</p>';
           }
 
           showToast(`✅ 链接推荐已生成！内部: ${data.linksData.internal_links?.length || 0}, 外部: ${data.linksData.external_links?.length || 0}`);
@@ -3899,7 +4068,7 @@
               faqList.appendChild(faqItem);
             });
           } else {
-            faqList.innerHTML = '<p style="color: #999; font-size: 13px;">暂无 FAQ</p>';
+            faqList.innerHTML = '<p style="color: #86868B; font-size: 13px;">暂无 FAQ</p>';
           }
 
           showToast(`✅ FAQ 已生成！共 ${data.faqData.faq?.length || 0} 个问题`);
