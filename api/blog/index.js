@@ -1533,22 +1533,57 @@ router.post('/approve', async (req, res) => {
       return res.status(400).json({ error: 'Missing postId' });
     }
 
+    // 取出文章看是否已经手填 slug_url，否则从 title 自动生成
+    const posts = await sb(`blog_posts?id=eq.${postId}`);
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    const post = posts[0];
+
+    let slug = (post.slug_url || '').trim();
+    if (!slug) {
+      slug = post.title
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .slice(0, 80);
+    }
+
+    const now = new Date().toISOString();
+    const updates = {
+      status: 'published',
+      slug,
+      slug_url: slug,
+      approved_at: now,
+      published_at: now,
+      updated_at: now,
+    };
+
     await sb(`blog_posts?id=eq.${postId}`, {
       method: 'PATCH',
-      body: JSON.stringify({
-        status: 'approved',
-        approved_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }),
+      body: JSON.stringify(updates),
     });
+
+    // 同步 plan 状态
+    if (post.plan_id) {
+      try {
+        await sb(`blog_plans?id=eq.${post.plan_id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: 'published' }),
+        });
+      } catch {}
+    }
 
     res.json({
       success: true,
       postId,
-      status: 'approved',
+      slug,
+      status: 'published',
+      url: `https://www.tpkele.com/blog/${slug}`,
     });
   } catch (error) {
-    console.error('Error approving post:', error);
+    console.error('Error approving+publishing post:', error);
     res.status(500).json({ error: error.message });
   }
 });
