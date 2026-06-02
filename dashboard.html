@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0c1c45">
+<meta name="theme-color" content="#0b9b3f">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png?v=2026-05-24b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -19,7 +19,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0c1c45;--panel:#1f3463;--panel2:#284276;
+  --bg:#0b9b3f;--panel:#1f3463;--panel2:#284276;
   --border:rgba(187,207,255,0.2);--border-h:rgba(220,232,255,0.4);
   --text:#e8efff;--muted:#93a8d8;--muted2:#c9d7f6;
   --primary:#ffffff;--primary-dim:rgba(255,255,255,0.12);
@@ -201,7 +201,7 @@ button,input,select,textarea{font:inherit}
 .kpi-value.cyan{color:var(--cyan)}
 .kpi-value.purple{color:var(--purple)}
 .kpi{transition:.18s}
-.kpi:hover{border-color:var(--p1);transform:translateY(-1px);box-shadow:0 4px 14px rgba(16,185,129,.2)}
+.kpi:hover{border-color:var(--p1);transform:translateY(-1px);box-shadow:0 4px 14px rgba(11,155,63,.2)}
 
 /* 日期/月份输入框主题色 */
 input[type="date"],input[type="month"]{color-scheme:dark}
@@ -378,19 +378,19 @@ tr.iq-unread td{font-weight:600}
 .empty-state{text-align:center;padding:44px 20px;color:var(--muted)}
 /* 订单全流程迷你进度条 */
 .flow-row{display:inline-flex;align-items:center;min-width:90px}
-.flow-dot{width:9px;height:9px;border-radius:50%;background:#244841;border:2px solid #162623;display:inline-block;flex-shrink:0;transition:.2s}
-.flow-dot.ok{background:#10B981;box-shadow:0 0 6px rgba(16,185,129,.5)}
-.flow-line{flex:1;height:2px;background:rgba(36,72,65,.6);min-width:14px}
-.flow-line.ok{background:#10B981}
-.pm-img-drop{display:flex;align-items:center;justify-content:center;min-height:140px;padding:16px;border:2px dashed rgba(16,185,129,.3);border-radius:10px;background:rgba(16,185,129,.04);cursor:pointer;transition:.2s;outline:none}
-.pm-img-drop:hover,.pm-img-drop:focus{border-color:#34D399;background:rgba(16,185,129,.08)}
-.pm-img-drop.drag{border-color:#10B981;background:rgba(16,185,129,.14)}
+.flow-dot{width:9px;height:9px;border-radius:50%;background:#e7ece9;border:2px solid #ffffff;display:inline-block;flex-shrink:0;transition:.2s}
+.flow-dot.ok{background:#0b9b3f;box-shadow:0 0 6px rgba(11,155,63,.5)}
+.flow-line{flex:1;height:2px;background:rgba(231,236,233,.6);min-width:14px}
+.flow-line.ok{background:#0b9b3f}
+.pm-img-drop{display:flex;align-items:center;justify-content:center;min-height:140px;padding:16px;border:2px dashed rgba(11,155,63,.3);border-radius:10px;background:rgba(11,155,63,.04);cursor:pointer;transition:.2s;outline:none}
+.pm-img-drop:hover,.pm-img-drop:focus{border-color:#14b85a;background:rgba(11,155,63,.08)}
+.pm-img-drop.drag{border-color:#0b9b3f;background:rgba(11,155,63,.14)}
 .pr-thumb{width:42px;height:42px;border-radius:8px;object-fit:cover;cursor:pointer;display:block;border:1px solid var(--border);background:rgba(255,255,255,.04)}
 .pr-thumb-empty{display:grid;place-items:center;font-size:18px;color:var(--muted)}
 .spec-cell{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;white-space:pre-wrap;max-width:240px;line-height:1.4;font-size:12.5px}
 .spec-hover-trigger{cursor:help}
-.spec-popover{position:fixed;z-index:9999;max-width:420px;background:#0f1f1c;border:1px solid rgba(16,185,129,.4);border-radius:8px;padding:10px 14px;color:#e6f4ef;font-size:12.5px;line-height:1.6;white-space:pre-wrap;box-shadow:0 12px 32px rgba(0,0,0,.6);pointer-events:none}
-.thumb-popover{position:fixed;z-index:9999;background:#0f1f1c;border:1px solid rgba(16,185,129,.4);border-radius:10px;padding:6px;box-shadow:0 12px 32px rgba(0,0,0,.7);pointer-events:none}
+.spec-popover{position:fixed;z-index:9999;max-width:420px;background:#fff;border:1px solid rgba(11,155,63,.4);border-radius:8px;padding:10px 14px;color:#111718;font-size:12.5px;line-height:1.6;white-space:pre-wrap;box-shadow:0 12px 32px rgba(0,0,0,.6);pointer-events:none}
+.thumb-popover{position:fixed;z-index:9999;background:#fff;border:1px solid rgba(11,155,63,.4);border-radius:10px;padding:6px;box-shadow:0 12px 32px rgba(0,0,0,.7);pointer-events:none}
 .thumb-popover img{display:block;max-width:240px;max-height:240px;border-radius:6px}
 .empty-state .icon{font-size:36px;margin-bottom:10px;opacity:.4}
 .empty-state p{font-size:14px}
@@ -453,8 +453,8 @@ tr.iq-unread td{font-weight:600}
 .chat-sidebar-head{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--text)}
 .chat-session-list{flex:1;overflow-y:auto;padding:6px}
 .chat-session{padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:4px;transition:.15s;position:relative;border:1px solid transparent}
-.chat-session:hover{background:rgba(16,185,129,.06)}
-.chat-session.active{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.35)}
+.chat-session:hover{background:rgba(11,155,63,.06)}
+.chat-session.active{background:rgba(11,155,63,.12);border-color:rgba(11,155,63,.35)}
 .chat-session .cs-name{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px}
 .chat-session .cs-preview{font-size:11px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chat-session .cs-time{font-size:10px;color:var(--muted);position:absolute;top:10px;right:12px}
@@ -467,13 +467,13 @@ tr.iq-unread td{font-weight:600}
 .chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;background:rgba(0,0,0,.12)}
 .chat-msg{max-width:72%;padding:8px 12px;border-radius:12px;font-size:13px;line-height:1.5;word-break:break-word;white-space:pre-wrap}
 .chat-msg.visitor{align-self:flex-start;background:rgba(255,255,255,.08);color:var(--text);border-bottom-left-radius:3px}
-.chat-msg.agent{align-self:flex-end;background:linear-gradient(135deg,#10B981,#34D399);color:#0F1F1C;border-bottom-right-radius:3px;font-weight:500}
+.chat-msg.agent{align-self:flex-end;background:linear-gradient(135deg,#0b9b3f,#14b85a);color:#fff;border-bottom-right-radius:3px;font-weight:500}
 .chat-msg.system{align-self:center;background:transparent;color:var(--muted);font-size:11px;padding:4px 8px;text-align:center}
 .chat-msg .msg-time{font-size:10px;opacity:.6;margin-top:3px;display:block}
 
 .chat-composer{display:flex;gap:8px;padding:10px;border-top:1px solid var(--border);background:var(--panel)}
 .chat-composer textarea{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;resize:none;font-family:inherit;outline:none}
-.chat-composer textarea:focus{border-color:rgba(16,185,129,.5)}
+.chat-composer textarea:focus{border-color:rgba(11,155,63,.5)}
 
 @media (max-width:768px){
   .chat-layout{grid-template-columns:1fr;height:auto}
@@ -493,8 +493,8 @@ tr.iq-unread td{font-weight:600}
   <div class="sb-logo">
     <div class="logo-icon">
       <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-        <polygon points="18,2 34,10 34,26 18,34 2,26 2,10" stroke="rgba(0,220,255,0.55)" stroke-width="1.1" fill="rgba(0,200,255,0.05)"/>
-        <polygon points="18,7 29,13 29,23 18,29 7,23 7,13" stroke="rgba(0,220,255,0.22)" stroke-width="0.7" fill="none"/>
+        <polygon points="18,2 34,10 34,26 18,34 2,26 2,10" stroke="rgba(11,155,63,0.55)" stroke-width="1.1" fill="rgba(0,200,255,0.05)"/>
+        <polygon points="18,7 29,13 29,23 18,29 7,23 7,13" stroke="rgba(11,155,63,0.22)" stroke-width="0.7" fill="none"/>
         <line x1="10" y1="13" x2="26" y2="13" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="round"/>
         <line x1="18" y1="13" x2="18" y2="26" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="round"/>
       </svg>
@@ -589,7 +589,7 @@ tr.iq-unread td{font-weight:600}
     <div class="search-wrap">
       <span class="si">🔍</span>
       <input type="text" id="globalSearch" data-i18n-ph="phGlobalSearch" placeholder="搜索订单/客户/产品/供应商/询盘/物流  ⌘ K  /  Ctrl+K" autocomplete="off">
-      <kbd id="searchKbd" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.32);color:#34D399;padding:2px 7px;border-radius:5px;font-size:11px;font-family:inherit;pointer-events:none;letter-spacing:.5px">Ctrl K</kbd>
+      <kbd id="searchKbd" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(11,155,63,.12);border:1px solid rgba(11,155,63,.32);color:#14b85a;padding:2px 7px;border-radius:5px;font-size:11px;font-family:inherit;pointer-events:none;letter-spacing:.5px">Ctrl K</kbd>
       <div class="search-dropdown" id="searchDropdown"></div>
     </div>
     <a href="logistics.html" target="_blank" data-i18n="btnLogistics" style="padding:7px 14px;border:1px solid rgba(74,222,128,0.3);border-radius:8px;background:rgba(74,222,128,0.05);color:rgba(74,222,128,0.9);font-size:13px;text-decoration:none;white-space:nowrap;transition:.2s" onmouseover="this.style.background='rgba(74,222,128,0.14)'" onmouseout="this.style.background='rgba(74,222,128,0.05)'">📦 物流管理</a>
@@ -601,7 +601,7 @@ tr.iq-unread td{font-weight:600}
         <button class="user-btn" id="userBtn" onclick="toggleUserMenu()">
           <div class="user-avatar" id="userAvatar">T</div>
           <span id="userNameDisplay">TPKELE</span>
-          <span class="role-badge" id="userRoleBadge" style="display:none;font-size:10px;padding:1px 6px;border-radius:999px;margin-left:6px;background:rgba(16,185,129,.18);color:#34D399;border:1px solid rgba(16,185,129,.35);font-weight:600;letter-spacing:.5px">ADMIN</span>
+          <span class="role-badge" id="userRoleBadge" style="display:none;font-size:10px;padding:1px 6px;border-radius:999px;margin-left:6px;background:rgba(11,155,63,.18);color:#14b85a;border:1px solid rgba(11,155,63,.35);font-weight:600;letter-spacing:.5px">ADMIN</span>
           <span style="color:var(--muted)">▾</span>
         </button>
         <div class="user-dropdown" id="userDropdown">
@@ -991,7 +991,7 @@ tr.iq-unread td{font-weight:600}
         <div class="field" style="position:relative">
           <label data-i18n="lblCustCountry">Country</label>
           <input type="text" id="cm-country" autocomplete="off" placeholder="" oninput="filterCountryList()" onfocus="openCountryList()">
-          <div id="cm-country-list" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:240px;overflow-y:auto;background:var(--panel,#0a1628);border:1px solid var(--border);border-radius:8px;margin-top:4px;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.5)"></div>
+          <div id="cm-country-list" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:240px;overflow-y:auto;background:var(--panel,#f9fbfa);border:1px solid var(--border);border-radius:8px;margin-top:4px;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.5)"></div>
         </div>
         <div class="field"><label data-i18n="lblCustEmail">Email</label><input type="email" id="cm-email"></div>
         <div class="field"><label data-i18n="lblCustWhatsApp">WhatsApp / Tel</label><input type="text" id="cm-whatsapp"></div>
@@ -1542,7 +1542,7 @@ async function loadRecycleBin() {
     }
     body.innerHTML = sections.map(([tableName, s]) => `
       <details ${s.items.length<=10?'open':''} style="margin-bottom:8px;border:1px solid var(--border);border-radius:8px;background:var(--panel-2)">
-        <summary style="padding:10px 14px;cursor:pointer;font-weight:600;color:#34D399">${esc(s.label)} <span style="color:var(--muted);font-weight:300;font-size:12px">(${s.items.length})</span></summary>
+        <summary style="padding:10px 14px;cursor:pointer;font-weight:600;color:#14b85a">${esc(s.label)} <span style="color:var(--muted);font-weight:300;font-size:12px">(${s.items.length})</span></summary>
         <div style="padding:0 14px 10px">
           <table style="width:100%;font-size:12px">
             <thead><tr style="color:var(--muted);text-align:left">
@@ -1723,7 +1723,7 @@ function showImportPreview(type, meta, rows) {
 
   const previewHtml = `
     <div style="font-size:13px;color:var(--text);margin-bottom:10px">
-      📋 共解析 <strong style="color:#34D399">${normalized.length}</strong> 行${errors.length?` · <span style="color:#fca5a5">${errors.length} 处错误</span>`:''}
+      📋 共解析 <strong style="color:#14b85a">${normalized.length}</strong> 行${errors.length?` · <span style="color:#fca5a5">${errors.length} 处错误</span>`:''}
     </div>
     ${errors.length ? `<div style="max-height:120px;overflow-y:auto;padding:8px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:6px;font-size:11.5px;color:#fca5a5;margin-bottom:10px">${errors.slice(0,20).map(esc).join('<br>')}${errors.length>20?'<br>...（剩余 '+(errors.length-20)+' 条）':''}</div>`:''}
     <div style="max-height:50vh;overflow:auto;border:1px solid var(--border);border-radius:8px">
@@ -1908,8 +1908,8 @@ function loadSettings() {
     roleBadge.style.display = '';
     roleBadge.textContent = user.role.toUpperCase();
     const colors = {
-      admin:    { bg:'rgba(16,185,129,.18)',  fg:'#34D399', bd:'rgba(16,185,129,.35)' },
-      sales:    { bg:'rgba(110,231,183,.16)', fg:'#6EE7B7', bd:'rgba(110,231,183,.3)' },
+      admin:    { bg:'rgba(11,155,63,.18)',  fg:'#14b85a', bd:'rgba(11,155,63,.35)' },
+      sales:    { bg:'rgba(11,155,63,.12)', fg:'#0b9b3f', bd:'rgba(11,155,63,.35)' },
       purchase: { bg:'rgba(251,191,36,.14)',  fg:'#fde68a', bd:'rgba(251,191,36,.3)' },
       viewer:   { bg:'rgba(148,163,184,.18)', fg:'#cbd5e1', bd:'rgba(148,163,184,.3)' },
     };
@@ -1941,8 +1941,8 @@ async function loadDashboard() {
 }
 
 function chartDefaults() {
-  Chart.defaults.color = '#9DB5AC';
-  Chart.defaults.borderColor = 'rgba(36,72,65,.6)';
+  Chart.defaults.color = '#5f6d68';
+  Chart.defaults.borderColor = 'rgba(231,236,233,.6)';
   Chart.defaults.font.family = 'Microsoft YaHei Light, 微软雅黑 Light, Microsoft YaHei, Segoe UI Light, sans-serif';
 }
 
@@ -1957,7 +1957,7 @@ function initDashCharts(trends, topP, topC) {
     type: 'line',
     data: {
       labels,
-      datasets: [{ label:'Orders', data: trends.orders||[], borderColor:'#10B981', backgroundColor:'rgba(16,185,129,.18)', tension:.4, fill:true, pointRadius:3 }]
+      datasets: [{ label:'Orders', data: trends.orders||[], borderColor:'#0b9b3f', backgroundColor:'rgba(11,155,63,.18)', tension:.4, fill:true, pointRadius:3 }]
     },
     options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,grid:{color:'rgba(255,255,255,.04)'}},x:{grid:{color:'rgba(255,255,255,.04)'}}} }
   });
@@ -1966,7 +1966,7 @@ function initDashCharts(trends, topP, topC) {
     type: 'line',
     data: {
       labels,
-      datasets: [{ label:'Profit', data: trends.profit||[], borderColor:'#6EE7B7', backgroundColor:'rgba(110,231,183,.18)', tension:.4, fill:true, pointRadius:3 }]
+      datasets: [{ label:'Profit', data: trends.profit||[], borderColor:'#0b9b3f', backgroundColor:'rgba(11,155,63,.14)', tension:.4, fill:true, pointRadius:3 }]
     },
     options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,grid:{color:'rgba(255,255,255,.04)'}},x:{grid:{color:'rgba(255,255,255,.04)'}}} }
   });
@@ -1976,7 +1976,7 @@ function initDashCharts(trends, topP, topC) {
       type: 'bar',
       data: {
         labels: topP.slice(0,6).map(p=>p.name.slice(0,8)),
-        datasets: [{ label:'Sales', data: topP.slice(0,6).map(p=>p.sales), backgroundColor:'rgba(16,185,129,.65)', borderRadius:6 }]
+        datasets: [{ label:'Sales', data: topP.slice(0,6).map(p=>p.sales), backgroundColor:'rgba(11,155,63,.65)', borderRadius:6 }]
       },
       options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,grid:{color:'rgba(255,255,255,.04)'}},x:{grid:{display:false}}} }
     });
@@ -2009,8 +2009,8 @@ async function initAnalyticsCharts() {
     S.charts.a1 = new Chart(document.getElementById('chartAnalytics1'), {
       type:'bar',
       data:{ labels, datasets:[
-        {label:'Sales', data:trends.sales||[], backgroundColor:'rgba(16,185,129,.6)', borderRadius:4},
-        {label:'Profit', data:trends.profit||[], backgroundColor:'rgba(110,231,183,.6)', borderRadius:4}
+        {label:'Sales', data:trends.sales||[], backgroundColor:'rgba(11,155,63,.6)', borderRadius:4},
+        {label:'Profit', data:trends.profit||[], backgroundColor:'rgba(11,155,63,.55)', borderRadius:4}
       ]},
       options:{responsive:true,scales:{y:{beginAtZero:true,grid:{color:'rgba(255,255,255,.04)'}},x:{grid:{display:false}}}}
     });
@@ -2023,7 +2023,7 @@ async function initAnalyticsCharts() {
     }
     if (topP?.length) {
       S.charts.a3 = new Chart(document.getElementById('chartAnalytics3'), {
-        type:'bar', data:{ labels:topP.map(p=>p.name.slice(0,12)), datasets:[{label:'Sales',data:topP.map(p=>p.sales),backgroundColor:'rgba(110,231,183,.6)',borderRadius:4}] },
+        type:'bar', data:{ labels:topP.map(p=>p.name.slice(0,12)), datasets:[{label:'Sales',data:topP.map(p=>p.sales),backgroundColor:'rgba(11,155,63,.55)',borderRadius:4}] },
         options:{responsive:true,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{color:'rgba(255,255,255,.04)'}},y:{grid:{display:false}}}}
       });
     }
@@ -2120,7 +2120,7 @@ function renderCountryList(keyword = '') {
   box.innerHTML = list.slice(0, 80).map(c => `
     <div onclick="pickCountry('${c.en.replace(/'/g,"\\'")}','${c.zh}')"
          style="padding:8px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid rgba(255,255,255,.04);display:flex;justify-content:space-between;gap:10px"
-         onmouseover="this.style.background='rgba(16,185,129,.12)'" onmouseout="this.style.background=''">
+         onmouseover="this.style.background='rgba(11,155,63,.12)'" onmouseout="this.style.background=''">
       <span>${esc(getCountryDisplay(c))}</span>
       <span style="color:var(--muted);font-size:12px">${esc(S.lang==='zh'?c.en:c.zh)}</span>
     </div>`).join('');
@@ -2938,7 +2938,7 @@ function renderOrders() {
     const settleBadge = isRmb
       ? '<span style="font-size:10px;color:var(--muted)">RMB</span>'
       : settled
-        ? `<span class="badge" style="background:rgba(16,185,129,.15);color:#34D399;border:1px solid rgba(16,185,129,.35);font-size:10px;padding:1px 6px" title="结算汇率 ${Number(o.settlement_rate).toFixed(4)} @ ${o.settlement_date||''}">✓ 已结算</span>`
+        ? `<span class="badge" style="background:rgba(11,155,63,.15);color:#14b85a;border:1px solid rgba(11,155,63,.35);font-size:10px;padding:1px 6px" title="结算汇率 ${Number(o.settlement_rate).toFixed(4)} @ ${o.settlement_date||''}">✓ 已结算</span>`
         : '<span class="badge" style="background:rgba(251,191,36,.12);color:#fde68a;border:1px solid rgba(251,191,36,.3);font-size:10px;padding:1px 6px" title="按录入汇率显示，可点 💱 按今日汇率重算">⏳ 待结算</span>';
     return `<tr>
       <td data-label="Date">${esc((o.order_date||'').slice(0,10))}</td>
@@ -3255,8 +3255,8 @@ async function openSettleModal(orderId) {
         </div>
       </div>
 
-      <div style="padding:10px 12px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.3);border-radius:8px">
-        <div style="font-size:12px;color:#34D399;margin-bottom:8px">💱 按当日汇率结算</div>
+      <div style="padding:10px 12px;background:rgba(11,155,63,.06);border:1px solid rgba(11,155,63,.3);border-radius:8px">
+        <div style="font-size:12px;color:#14b85a;margin-bottom:8px">💱 按当日汇率结算</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
           <div class="field"><label>结算汇率 (USD→CNY)</label><input type="number" id="st-rate" step="0.0001" oninput="updateSettlePreview()"></div>
           <div class="field"><label>结算日期</label><input type="date" id="st-date" value="${new Date().toISOString().slice(0,10)}"></div>
@@ -3318,7 +3318,7 @@ async function openBatchSettleModal() {
   const body = document.getElementById('batchSettleBody');
   body.innerHTML = `
     <div style="padding:0 4px">
-      <div style="padding:10px 12px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.3);border-radius:8px;margin-bottom:14px">
+      <div style="padding:10px 12px;background:rgba(11,155,63,.06);border:1px solid rgba(11,155,63,.3);border-radius:8px;margin-bottom:14px">
         <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end">
           <div class="field"><label>结算汇率 (USD→CNY)</label><input type="number" id="bst-rate" step="0.0001" oninput="updateBatchPreview()"></div>
           <div class="field"><label>结算日期</label><input type="date" id="bst-date" value="${new Date().toISOString().slice(0,10)}"></div>
@@ -3356,7 +3356,7 @@ function renderBatchRows(orders) {
   tbody.innerHTML = orders.map(o => {
     const settled = o.settlement_rate != null;
     const tag = settled
-      ? `<span style="font-size:10px;color:#34D399">✓ 已结算@${Number(o.settlement_rate).toFixed(4)}</span>`
+      ? `<span style="font-size:10px;color:#14b85a">✓ 已结算@${Number(o.settlement_rate).toFixed(4)}</span>`
       : '<span style="font-size:10px;color:#fde68a">⏳ 待结算</span>';
     return `<tr data-oid="${o.id}">
       <td><input type="checkbox" class="bst-cb" value="${o.id}" onchange="updateBatchPreview()"></td>
@@ -3447,13 +3447,13 @@ async function viewOrderDetail(id) {
     });
     const overallPct = totalOrdered > 0 ? Math.min(100, Math.round(totalShipped/totalOrdered*100)) : 0;
     const subEl = document.getElementById('detailSub');
-    subEl.innerHTML = `${esc(order.order_number||'')} · ${esc(order.customer_name||'')} · ${esc(order.order_date||'')} <span style="margin-left:10px;padding:2px 10px;border-radius:999px;font-size:11px;background:${overallPct>=100?'rgba(16,185,129,.16)':'rgba(110,231,183,.1)'};color:${overallPct>=100?'#10B981':'#6EE7B7'};border:1px solid ${overallPct>=100?'rgba(16,185,129,.4)':'rgba(110,231,183,.3)'}">${overallPct>=100?t('badgeFullyShipped'):t('badgeProgress')+' '+overallPct+'%'}</span>`;
+    subEl.innerHTML = `${esc(order.order_number||'')} · ${esc(order.customer_name||'')} · ${esc(order.order_date||'')} <span style="margin-left:10px;padding:2px 10px;border-radius:999px;font-size:11px;background:${overallPct>=100?'rgba(11,155,63,.16)':'rgba(11,155,63,.08)'};color:${overallPct>=100?'#0b9b3f':'#0b9b3f'};border:1px solid ${overallPct>=100?'rgba(11,155,63,.4)':'rgba(11,155,63,.3)'}">${overallPct>=100?t('badgeFullyShipped'):t('badgeProgress')+' '+overallPct+'%'}</span>`;
     const body = document.getElementById('detailBody');
     body.innerHTML = (items||[]).map(i=>{
       const ordered = Number(i.quantity)||0;
       const sh = Number(shipped[i.product_id]?.shipped_qty)||0;
       const pct = ordered>0 ? Math.min(100, Math.round(sh/ordered*100)) : 0;
-      const color = pct>=100 ? '#10B981' : (pct>0 ? '#6EE7B7' : '#9DB5AC');
+      const color = pct>=100 ? '#0b9b3f' : (pct>0 ? '#0b9b3f' : '#5f6d68');
       const label = pct>=100 ? `✅ ${sh}/${ordered}` : `${sh} / ${ordered}`;
       return `
       <tr>
@@ -3467,7 +3467,7 @@ async function viewOrderDetail(id) {
         <td>${fmtN(i.sales_total)}</td>
         <td style="min-width:130px">
           <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:${color}">${label}</div>
-          <div style="height:4px;background:rgba(36,72,65,.5);border-radius:2px;overflow:hidden;margin-top:3px"><div style="height:100%;width:${pct}%;background:${color};transition:.3s"></div></div>
+          <div style="height:4px;background:rgba(231,236,233,.5);border-radius:2px;overflow:hidden;margin-top:3px"><div style="height:100%;width:${pct}%;background:${color};transition:.3s"></div></div>
         </td>
       </tr>`;
     }).join('');
@@ -3626,22 +3626,22 @@ async function renderAndDownloadPoPdf(po) {
             <td style="padding:6px 0;color:#888">状态</td><td>${esc(po.status||'—')}</td></tr>
       </table>
       <table style="width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px">
-        <thead><tr style="background:#10B981;color:#fff">
-          <th style="padding:10px;border:1px solid #10B981;width:40px">#</th>
-          <th style="padding:10px;border:1px solid #10B981">产品名称</th>
-          <th style="padding:10px;border:1px solid #10B981">规格</th>
-          <th style="padding:10px;border:1px solid #10B981;width:70px">数量</th>
-          <th style="padding:10px;border:1px solid #10B981;width:60px">单位</th>
-          <th style="padding:10px;border:1px solid #10B981;width:90px">单价</th>
-          <th style="padding:10px;border:1px solid #10B981;width:110px">小计</th>
+        <thead><tr style="background:#0b9b3f;color:#fff">
+          <th style="padding:10px;border:1px solid #0b9b3f;width:40px">#</th>
+          <th style="padding:10px;border:1px solid #0b9b3f">产品名称</th>
+          <th style="padding:10px;border:1px solid #0b9b3f">规格</th>
+          <th style="padding:10px;border:1px solid #0b9b3f;width:70px">数量</th>
+          <th style="padding:10px;border:1px solid #0b9b3f;width:60px">单位</th>
+          <th style="padding:10px;border:1px solid #0b9b3f;width:90px">单价</th>
+          <th style="padding:10px;border:1px solid #0b9b3f;width:110px">小计</th>
         </tr></thead>
         <tbody>${itemRows}</tbody>
         <tfoot><tr>
           <td colspan="6" style="padding:10px;border:1px solid #ccc;text-align:right;font-weight:bold">合计 Total:</td>
-          <td style="padding:10px;border:1px solid #ccc;text-align:right;font-weight:bold;color:#10B981">¥${fmtN(po.total_amount||0)}</td>
+          <td style="padding:10px;border:1px solid #ccc;text-align:right;font-weight:bold;color:#0b9b3f">¥${fmtN(po.total_amount||0)}</td>
         </tr></tfoot>
       </table>
-      ${po.remarks?`<div style="margin-top:18px;padding:12px;background:#f9f9f9;border-left:3px solid #10B981;font-size:12.5px"><strong>备注：</strong>${esc(po.remarks)}</div>`:''}
+      ${po.remarks?`<div style="margin-top:18px;padding:12px;background:#f9f9f9;border-left:3px solid #0b9b3f;font-size:12.5px"><strong>备注：</strong>${esc(po.remarks)}</div>`:''}
       <div style="margin-top:32px;display:flex;justify-content:space-between;font-size:12px;color:#666">
         <div>采购方签字 / Buyer:_________________________</div>
         <div>供方确认 / Supplier:_________________________</div>
@@ -4197,7 +4197,7 @@ async function updateChatPushStatus(){
     const sub = await reg.pushManager.getSubscription();
     if (sub && Notification.permission === 'granted') {
       el.textContent = '✓ 已订阅推送';
-      el.style.color = '#34D399';
+      el.style.color = '#14b85a';
     } else {
       el.textContent = '未订阅推送';
       el.style.color = 'var(--muted)';

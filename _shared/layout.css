@@ -8,31 +8,32 @@
 *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0 }
 
 :root {
-  --bg: #000509; --panel: #060f20; --panel2: #0a1628;
-  --border: rgba(0,190,255,0.12); --border-h: rgba(0,220,255,0.38);
-  --text: #ddf0ff; --muted: #4d7390; --muted2: #7aa4c0;
-  --primary: #00c8f0; --p1: #10B981;
-  --danger: #fb7185; --success: #4ade80; --warning: #fbbf24;
-  --shadow: 0 20px 60px rgba(0,0,0,.7); --radius: 14px; --sb: 180px;
+  --bg: #f5f7f6; --panel: #ffffff; --panel2: #f9fbfa;
+  --border: #e7ece9; --border-h: #cfe0d6;
+  --text: #111718; --muted: #5f6d68; --muted2: #41514b;
+  --primary: #0b9b3f; --p1: #0b9b3f; --primary-d: #066128;
+  --danger: #d92d20; --success: #0b9b3f; --warning: #b45309;
+  --shadow: 0 18px 45px rgba(13,34,28,.10); --radius: 14px; --sb: 180px;
 }
-html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); overflow: hidden }
+html, body { height: 100%; font-family: 'Inter', "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); overflow: hidden }
 button, input, select, textarea { font: inherit }
-::-webkit-scrollbar { width: 6px; height: 6px }
-::-webkit-scrollbar-thumb { background: rgba(16,185,129,0.18); border-radius: 4px }
+::-webkit-scrollbar { width: 8px; height: 8px }
+::-webkit-scrollbar-thumb { background: #cdd8d2; border-radius: 4px }
+::-webkit-scrollbar-thumb:hover { background: var(--primary) }
 
 /* App shell */
 .app { display: flex; height: 100vh; overflow: hidden }
 
 /* Sidebar */
-.sidebar { width: var(--sb); flex-shrink: 0; height: 100%; background: linear-gradient(180deg,rgba(3,8,20,.99),rgba(2,5,13,.99)); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden }
+.sidebar { width: var(--sb); flex-shrink: 0; height: 100%; background: #ffffff; border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden }
 .sb-logo { display: flex; align-items: center; gap: 12px; padding: 18px 16px; border-bottom: 1px solid var(--border) }
 .logo-text { font-size: 15px; font-weight: 700; letter-spacing: 1px }
 .logo-text span { color: var(--primary) }
 .sb-nav { flex: 1; overflow-y: auto; padding: 10px 0 }
-.nav-group { padding: 8px 16px 4px; font-size: 10px; font-weight: 600; color: rgba(16,185,129,.22); text-transform: uppercase; letter-spacing: .8px }
-.nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; cursor: pointer; transition: .15s; white-space: nowrap; color: var(--muted2); font-size: 13.5px; font-weight: 500; border-left: 3px solid transparent; text-decoration: none }
-.nav-item:hover { background: rgba(16,185,129,0.05); color: var(--text) }
-.nav-item.active { background: rgba(16,185,129,0.08); color: var(--primary); border-left-color: var(--primary) }
+.nav-group { padding: 8px 16px 4px; font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .8px }
+.nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; cursor: pointer; transition: .18s; white-space: nowrap; color: var(--muted2); font-size: 13.5px; font-weight: 500; border-left: 3px solid transparent; text-decoration: none }
+.nav-item:hover { background: #eef4f0; color: var(--text) }
+.nav-item.active { background: #eaf8ef; color: var(--primary-d); border-left-color: var(--primary); font-weight: 600 }
 .nav-icon { font-size: 17px; flex-shrink: 0; width: 22px; text-align: center }
 
 /* Main */
@@ -42,10 +43,10 @@ button, input, select, textarea { font: inherit }
 .workspace { flex: 1; overflow-y: auto; padding: 20px 24px }
 
 /* Buttons */
-.btn { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--muted2); font-size: 13px; cursor: pointer; transition: .15s; white-space: nowrap }
-.btn:hover { border-color: var(--p1); color: var(--p1) }
-.btn-primary { background: var(--p1); color: #000; border-color: var(--p1); font-weight: 600 }
-.btn-primary:hover { background: #34D399 }
+.btn { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--muted2); font-size: 13px; cursor: pointer; transition: .18s; white-space: nowrap }
+.btn:hover { border-color: var(--p1); color: var(--p1); background: #eef4f0 }
+.btn-primary { background: var(--p1); color: #fff; border-color: var(--p1); font-weight: 600 }
+.btn-primary:hover { background: var(--primary-d); border-color: var(--primary-d); color: #fff }
 .btn-sm { padding: 5px 10px; font-size: 12px; border-radius: 6px }
 .btn-danger { border-color: rgba(251,113,133,.4); color: var(--danger) }
 .btn-danger:hover { background: rgba(251,113,133,.1) }
@@ -55,7 +56,8 @@ button, input, select, textarea { font: inherit }
 .lang-btn:hover { border-color: var(--p1); color: var(--p1) }
 
 /* Cards */
-.card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 18px }
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 18px; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease }
+.card:hover { box-shadow: var(--shadow); border-color: var(--border-h) }
 .card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap }
 .card-title { font-size: 14px; font-weight: 600; flex: 1 }
 
@@ -63,17 +65,17 @@ button, input, select, textarea { font: inherit }
 .tbl-wrap { overflow-x: auto }
 table { width: 100%; border-collapse: collapse; font-size: 13px }
 th { text-align: left; padding: 10px 12px; color: var(--muted); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--border) }
-td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,.04) }
+td { padding: 10px 12px; border-bottom: 1px solid var(--border) }
 
 /* Forms */
 .form-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 12px }
 .field { display: flex; flex-direction: column; gap: 4px }
 .field label { font-size: 11.5px; color: var(--muted2); font-weight: 500 }
-.field input, .field select, .field textarea { background: var(--panel2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text); font-size: 13px; outline: none; transition: .15s }
-.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--p1) }
+.field input, .field select, .field textarea { background: #ffffff; border: 1px solid #d8e0db; border-radius: 8px; padding: 8px 12px; color: var(--text); font-size: 13px; outline: none; transition: .15s }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--p1); box-shadow: 0 0 0 3px rgba(11,155,63,.14) }
 
 /* Modal */
-.modal-backdrop { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.6); backdrop-filter: blur(3px); display: none; place-items: center }
+.modal-backdrop { position: fixed; inset: 0; z-index: 100; background: rgba(15,31,28,.42); backdrop-filter: blur(3px); display: none; place-items: center }
 .modal-backdrop.open { display: grid }
 .modal { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; width: 640px; max-width: 95vw; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow) }
 .modal-head { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between }

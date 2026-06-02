@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0c1c45">
+<meta name="theme-color" content="#0b9b3f">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png?v=2026-05-24b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,10 +17,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#000509;--panel:#060f20;--panel2:#0a1628;
-  --border:rgba(0,190,255,0.12);--border-h:rgba(0,220,255,0.38);
-  --text:#ddf0ff;--muted:#4d7390;--muted2:#7aa4c0;
-  --primary:#00c8f0;--primary-dim:rgba(16,185,129,0.08);
+  --bg:#f5f7f6;--panel:#ffffff;--panel2:#f9fbfa;
+  --border:rgba(11,155,63,0.12);--border-h:rgba(11,155,63,0.38);
+  --text:#111718;--muted:#5f6d68;--muted2:#41514b;
+  --primary:#0b9b3f;--primary-dim:rgba(11,155,63,0.08);
   --danger:#fb7185;--success:#4ade80;
   --shadow:0 20px 60px rgba(0,0,0,.7);--radius:14px;--sb:220px;
 }
@@ -29,7 +29,7 @@ a{color:inherit;text-decoration:none}
 button,input,select,textarea{font:inherit}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:rgba(16,185,129,0.15);border-radius:4px}
+::-webkit-scrollbar-thumb{background:rgba(11,155,63,0.15);border-radius:4px}
 
 .app{display:flex;height:100vh;overflow:hidden}
 
@@ -41,10 +41,10 @@ button,input,select,textarea{font:inherit}
 .logo-text span{color:var(--primary)}
 .sb-nav{flex:1;overflow-y:auto;padding:10px 0}
 .nav-item{display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;transition:.15s;white-space:nowrap;color:var(--muted2);font-size:13.5px;font-weight:500;border-left:3px solid transparent}
-.nav-item:hover{background:rgba(16,185,129,0.05);color:var(--text)}
-.nav-item.active{background:rgba(16,185,129,0.08);color:var(--primary);border-left-color:var(--primary)}
+.nav-item:hover{background:rgba(11,155,63,0.05);color:var(--text)}
+.nav-item.active{background:rgba(11,155,63,0.08);color:var(--primary);border-left-color:var(--primary)}
 .nav-icon{font-size:17px;flex-shrink:0;width:22px;text-align:center}
-.nav-group{padding:8px 16px 4px;font-size:10px;font-weight:600;color:rgba(16,185,129,.22);text-transform:uppercase;letter-spacing:.8px}
+.nav-group{padding:8px 16px 4px;font-size:10px;font-weight:600;color:rgba(11,155,63,.22);text-transform:uppercase;letter-spacing:.8px}
 
 /* ── Email layout ── */
 .email-shell{flex:1;display:flex;overflow:hidden}
@@ -57,8 +57,8 @@ button,input,select,textarea{font:inherit}
 
 .folder-list{padding:8px 0;border-bottom:1px solid var(--border);flex-shrink:0}
 .folder-item{display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:pointer;font-size:13px;color:var(--muted2);transition:.15s;border-radius:6px;margin:1px 6px;border-left:3px solid transparent}
-.folder-item:hover{background:rgba(16,185,129,.06);color:var(--text)}
-.folder-item.active{background:rgba(16,185,129,.1);color:var(--primary);border-left-color:var(--primary)}
+.folder-item:hover{background:rgba(11,155,63,.06);color:var(--text)}
+.folder-item.active{background:rgba(11,155,63,.1);color:var(--primary);border-left-color:var(--primary)}
 .folder-item .badge{margin-left:auto;background:var(--primary);color:#000;font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;min-width:18px;text-align:center}
 
 /* ── Accounts section ── */
@@ -68,8 +68,8 @@ button,input,select,textarea{font:inherit}
 .btn-add-acct:hover{border-color:var(--primary);color:var(--primary)}
 .acct-list{flex:1;overflow-y:auto;padding:2px 0}
 .acct-item{display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer;font-size:12.5px;color:var(--muted2);transition:.15s;border-left:3px solid transparent}
-.acct-item:hover{background:rgba(16,185,129,.04);color:var(--text)}
-.acct-item.active{background:rgba(16,185,129,.08);color:var(--primary);border-left-color:var(--primary)}
+.acct-item:hover{background:rgba(11,155,63,.04);color:var(--text)}
+.acct-item.active{background:rgba(11,155,63,.08);color:var(--primary);border-left-color:var(--primary)}
 .acct-dot{width:6px;height:6px;border-radius:50%;background:var(--muted);flex-shrink:0}
 .acct-item.active .acct-dot{background:var(--primary)}
 .acct-email{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
@@ -89,9 +89,9 @@ button,input,select,textarea{font:inherit}
 .list-title{font-size:14px;font-weight:600}
 .list-count{font-size:11px;color:var(--muted)}
 .list-body{flex:1;overflow-y:auto}
-.email-item{padding:12px 16px;border-bottom:1px solid rgba(0,190,255,.06);cursor:pointer;transition:.15s}
-.email-item:hover{background:rgba(16,185,129,.04)}
-.email-item.active{background:rgba(16,185,129,.08);border-left:3px solid var(--primary)}
+.email-item{padding:12px 16px;border-bottom:1px solid rgba(11,155,63,.06);cursor:pointer;transition:.15s}
+.email-item:hover{background:rgba(11,155,63,.04)}
+.email-item.active{background:rgba(11,155,63,.08);border-left:3px solid var(--primary)}
 .email-item.unread .ei-subject{font-weight:600;color:var(--text)}
 .email-item.unread .ei-from{color:var(--primary)}
 .ei-from{font-size:12.5px;font-weight:500;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -145,8 +145,8 @@ button,input,select,textarea{font:inherit}
 .attach-btn{display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-size:12px;transition:.2s;flex-shrink:0}
 .attach-btn:hover{border-color:var(--primary);color:var(--primary)}
 .table-tools{display:flex;flex-wrap:wrap;gap:8px;padding:4px 0;flex-shrink:0}
-.table-tool-btn{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:rgba(16,185,129,.04);color:var(--muted2);cursor:pointer;font-size:12px;transition:.2s}
-.table-tool-btn:hover{border-color:var(--primary);color:var(--primary);background:rgba(16,185,129,.1)}
+.table-tool-btn{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:rgba(11,155,63,.04);color:var(--muted2);cursor:pointer;font-size:12px;transition:.2s}
+.table-tool-btn:hover{border-color:var(--primary);color:var(--primary);background:rgba(11,155,63,.1)}
 .attach-chip{display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11.5px;color:var(--muted2)}
 .attach-chip .rm{cursor:pointer;color:var(--muted);font-size:14px;line-height:1;transition:.15s}
 .attach-chip .rm:hover{color:var(--danger)}
@@ -195,7 +195,7 @@ button,input,select,textarea{font:inherit}
 .modal-status.ok{color:var(--success)}
 
 /* ── Multi-select ── */
-.bulk-bar{display:none;align-items:center;gap:10px;padding:8px 16px;background:rgba(16,185,129,.07);border-bottom:1px solid var(--border);flex-shrink:0}
+.bulk-bar{display:none;align-items:center;gap:10px;padding:8px 16px;background:rgba(11,155,63,.07);border-bottom:1px solid var(--border);flex-shrink:0}
 .bulk-bar.show{display:flex}
 .bulk-count{font-size:12px;color:var(--primary);font-weight:600}
 .btn-bulk-del{padding:4px 12px;border-radius:6px;border:1px solid rgba(251,113,133,.4);background:rgba(251,113,133,.08);color:var(--danger);font-size:12px;cursor:pointer;transition:.2s}
@@ -206,12 +206,12 @@ button,input,select,textarea{font:inherit}
 .sel-all-check{width:14px;height:14px;cursor:pointer;accent-color:var(--primary);flex-shrink:0}
 .ei-check{width:14px;height:14px;flex-shrink:0;cursor:pointer;accent-color:var(--primary);opacity:0;transition:opacity .15s;margin-right:2px}
 .email-item:hover .ei-check,.email-item.selected .ei-check{opacity:1}
-.email-item.selected{background:rgba(16,185,129,.06)}
+.email-item.selected{background:rgba(11,155,63,.06)}
 
 /* ── Fullscreen compose ── */
 .detail-panel.fullscreen{position:fixed;inset:0;z-index:200}
 .btn-fs{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-size:15px;display:grid;place-items:center;transition:.15s;flex-shrink:0}
-.btn-fs:hover{border-color:rgba(16,185,129,.4);color:var(--primary)}
+.btn-fs:hover{border-color:rgba(11,155,63,.4);color:var(--primary)}
 
 /* ── Table insert dialog ── */
 .tbl-dlg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:500;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow);display:none;flex-direction:column;gap:14px;min-width:220px}
@@ -235,7 +235,7 @@ button,input,select,textarea{font:inherit}
 .reader-html th,.ql-editor th{background:#f1f3f5;font-weight:700;color:#111}
 .ql-editor td p,.ql-editor th p{margin:0}
 .ql-editor table.is-striped tbody tr:nth-child(even) td{background:#f7f7f7}
-.ql-editor table.active-table{outline:2px solid rgba(16,185,129,.35);outline-offset:2px}
+.ql-editor table.active-table{outline:2px solid rgba(11,155,63,.35);outline-offset:2px}
 
 /* ── Toast ── */
 .toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:13px;color:var(--text);display:none;align-items:center;gap:10px;box-shadow:var(--shadow)}
@@ -510,9 +510,9 @@ html body .tox .tox-edit-area iframe{background:#ffffff !important}
     <div class="sb-logo">
       <div class="logo-icon">
         <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
-          <rect width="36" height="36" rx="9" fill="rgba(16,185,129,0.12)"/>
-          <path d="M8 18h20M18 8v20" stroke="#00c8f0" stroke-width="2.5" stroke-linecap="round"/>
-          <circle cx="18" cy="18" r="4" fill="#00c8f0"/>
+          <rect width="36" height="36" rx="9" fill="rgba(11,155,63,0.12)"/>
+          <path d="M8 18h20M18 8v20" stroke="#0b9b3f" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="18" cy="18" r="4" fill="#0b9b3f"/>
         </svg>
       </div>
       <div class="logo-text">TP<span>KELE</span></div>
@@ -912,7 +912,7 @@ function renderList(emails) {
         <input type="checkbox" class="ei-check" data-id="${e.id}"
                ${selectedIds.has(e.id)?'checked':''} onchange="toggleEmailSelect('${e.id}',this)" onclick="event.stopPropagation()">
         ${!e.is_read?'<span class="unread-dot"></span>':''}
-        <div class="ei-from" style="flex:1">${esc(e.from_name||e.from_address)}${e.customer_id?'<span style="margin-left:6px;padding:1px 6px;background:rgba(16,185,129,.12);color:#10B981;border:1px solid rgba(16,185,129,.3);border-radius:8px;font-size:10.5px">客户</span>':''}</div>
+        <div class="ei-from" style="flex:1">${esc(e.from_name||e.from_address)}${e.customer_id?'<span style="margin-left:6px;padding:1px 6px;background:rgba(11,155,63,.12);color:#0b9b3f;border:1px solid rgba(11,155,63,.3);border-radius:8px;font-size:10.5px">客户</span>':''}</div>
       </div>
       <div class="ei-subject">${esc(e.subject)}</div>
       <div class="ei-date">${fmtDate(e.received_at)}</div>
