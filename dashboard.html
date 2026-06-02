@@ -4086,6 +4086,7 @@ window.openChatSession = async function(id){
     const data = await r.json();
     const cont = document.getElementById('chatMessages');
     cont.innerHTML = '';
+    _renderedMsgIds.clear();
     (data.messages||[]).forEach(m => appendMessage(m));
     scrollChatToBottom();
     // 清未读 → 刷新列表
@@ -4095,7 +4096,10 @@ window.openChatSession = async function(id){
   }
 };
 
+const _renderedMsgIds = new Set();
 function appendMessage(m){
+  if (m.id && _renderedMsgIds.has(m.id)) return; // 防实时推送+API双重渲染
+  if (m.id) _renderedMsgIds.add(m.id);
   const cont = document.getElementById('chatMessages');
   const div = document.createElement('div');
   div.className = 'chat-msg ' + (m.sender || 'system');
