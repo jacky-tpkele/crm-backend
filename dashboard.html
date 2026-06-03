@@ -659,7 +659,7 @@ tr.iq-unread td{font-weight:600}
               <option value="closed" data-i18n="stClosed">已关闭</option>
             </select>
           </div>
-          <button class="btn" onclick="loadInquiries()">🔄 刷新</button>
+          <button class="btn" onclick="loadInquiries()">刷新</button>
         </div>
         <div class="tbl-wrap">
           <table>
@@ -684,9 +684,9 @@ tr.iq-unread td{font-weight:600}
       <div class="section-title" data-i18n="navChat">💬 在线客服</div>
       <div class="section-sub">网站访客发起的实时对话 — 离线时 iPhone 主屏 PWA 会收到通知</div>
       <div style="margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <button class="btn" id="chatEnablePushBtn" onclick="enableChatPush()">🔔 启用通知</button>
-        <button class="btn" onclick="loadChatSessions()">🔄 刷新</button>
-        <button class="btn" onclick="testChatPush()" title="向所有已订阅设备发一条测试通知">🧪 测试推送</button>
+        <button class="btn" id="chatEnablePushBtn" onclick="enableChatPush()">启用通知</button>
+        <button class="btn" onclick="loadChatSessions()">刷新</button>
+        <button class="btn" onclick="testChatPush()" title="向所有已订阅设备发一条测试通知">测试推送</button>
         <span id="chatPushStatus" style="font-size:12px;color:var(--muted)"></span>
       </div>
       <div class="chat-layout">
@@ -793,7 +793,7 @@ tr.iq-unread td{font-weight:600}
             <input type="month" id="or-month" onchange="renderOrders()">
           </div>
           <button class="btn" data-i18n="btnExportExcel" onclick="exportExcel('orders')" title="导出当前订单到 Excel">📥 导出</button>
-          <button class="btn" onclick="openBatchSettleModal()" title="按今日汇率批量重算 USD 订单的实际利润">💱 批量结算</button>
+          <button class="btn" onclick="openBatchSettleModal()" title="按今日汇率批量重算 USD 订单的实际利润">批量结算</button>
           <button class="btn btn-primary" data-i18n="btnNewOrderCard" onclick="openOrderModal()">＋ New Order</button>
         </div>
         <div class="tbl-wrap">
@@ -943,7 +943,7 @@ tr.iq-unread td{font-weight:600}
 <div class="modal-backdrop" id="settleModal" style="display:none" onclick="closeOnBackdrop(event,'settleModal')">
   <div class="modal">
     <div class="modal-head">
-      <h2>💱 按当日汇率结算订单</h2>
+      <h2>按当日汇率结算订单</h2>
       <button class="modal-close" onclick="closeModal('settleModal')">×</button>
     </div>
     <div id="settleBody" style="padding:0 0 14px"></div>
@@ -958,7 +958,7 @@ tr.iq-unread td{font-weight:600}
 <div class="modal-backdrop" id="batchSettleModal" style="display:none" onclick="closeOnBackdrop(event,'batchSettleModal')">
   <div class="modal modal-lg">
     <div class="modal-head">
-      <h2>💱 批量结算 USD 订单</h2>
+      <h2>批量结算 USD 订单</h2>
       <button class="modal-close" onclick="closeModal('batchSettleModal')">×</button>
     </div>
     <div id="batchSettleBody" style="padding:0 0 14px"></div>
@@ -2057,7 +2057,7 @@ function renderCustomers() {
       <td data-label="Level"><span class="badge badge-${c.customer_level||'standard'}">${esc(c.customer_level||'standard')}</span></td>
       <td data-label=""><div class="actions-cell">
         <button class="btn btn-sm" onclick="editCustomer('${c.id}')">编辑</button>
-        <button class="btn btn-sm" title="查看相关邮件" onclick="viewCustomerEmails('${c.id}','${esc(c.customer_name||'')}')">📧</button>
+        <button class="btn btn-sm" title="查看相关邮件" onclick="viewCustomerEmails('${c.id}','${esc(c.customer_name||'')}')">邮件</button>
         <button class="btn btn-sm btn-danger" onclick="deleteCustomer('${c.id}')">删除</button>
       </div></td>
     </tr>`).join('') +
@@ -2939,7 +2939,7 @@ function renderOrders() {
       ? '<span style="font-size:10px;color:var(--muted)">RMB</span>'
       : settled
         ? `<span class="badge" style="background:rgba(11,155,63,.15);color:#14b85a;border:1px solid rgba(11,155,63,.35);font-size:10px;padding:1px 6px" title="结算汇率 ${Number(o.settlement_rate).toFixed(4)} @ ${o.settlement_date||''}">✓ 已结算</span>`
-        : '<span class="badge" style="background:rgba(251,191,36,.12);color:#fde68a;border:1px solid rgba(251,191,36,.3);font-size:10px;padding:1px 6px" title="按录入汇率显示，可点 💱 按今日汇率重算">⏳ 待结算</span>';
+        : '<span class="badge" style="background:rgba(251,191,36,.12);color:#fde68a;border:1px solid rgba(251,191,36,.3);font-size:10px;padding:1px 6px" title="按录入汇率显示，可点结算按钮按今日汇率重算">⏳ 待结算</span>';
     return `<tr>
       <td data-label="Date">${esc((o.order_date||'').slice(0,10))}</td>
       <td data-label="Order#" style="font-size:12px">${esc(o.order_number||'—')}</td>
