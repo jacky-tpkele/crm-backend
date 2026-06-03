@@ -589,16 +589,16 @@ tr.iq-unread td{font-weight:600}
   <header class="header">
     <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileSidebar()">☰</button>
     <div class="search-wrap">
-      <span class="si">🔍</span>
+      <span class="si"><i data-lucide="search" style="width:14px;height:14px;stroke-width:2"></i></span>
       <input type="text" id="globalSearch" data-i18n-ph="phGlobalSearch" placeholder="搜索订单/客户/产品/供应商/询盘/物流  ⌘ K  /  Ctrl+K" autocomplete="off">
       <kbd id="searchKbd" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(11,155,63,.12);border:1px solid rgba(11,155,63,.32);color:#14b85a;padding:2px 7px;border-radius:5px;font-size:11px;font-family:inherit;pointer-events:none;letter-spacing:.5px">Ctrl K</kbd>
       <div class="search-dropdown" id="searchDropdown"></div>
     </div>
-    <a href="logistics.html" target="_blank" data-i18n="btnLogistics" style="padding:7px 14px;border:1px solid rgba(74,222,128,0.3);border-radius:8px;background:rgba(74,222,128,0.05);color:rgba(74,222,128,0.9);font-size:13px;text-decoration:none;white-space:nowrap;transition:.2s" onmouseover="this.style.background='rgba(74,222,128,0.14)'" onmouseout="this.style.background='rgba(74,222,128,0.05)'">📦 物流管理</a>
+    <a href="logistics.html" target="_blank" data-i18n="btnLogistics" style="padding:7px 14px;border:1px solid rgba(74,222,128,0.3);border-radius:8px;background:rgba(74,222,128,0.05);color:rgba(74,222,128,0.9);font-size:13px;text-decoration:none;white-space:nowrap;transition:.2s;display:inline-flex;align-items:center;gap:6px" onmouseover="this.style.background='rgba(74,222,128,0.14)'" onmouseout="this.style.background='rgba(74,222,128,0.05)'"><i data-lucide="truck" style="width:14px;height:14px;stroke-width:2"></i> 物流管理</a>
     <a id="vaultLink" href="password-vault.html" target="_blank" data-i18n="btnVault" style="padding:7px 14px;border:1px solid rgba(251,191,36,0.35);border-radius:8px;background:rgba(251,191,36,0.07);color:rgba(253,224,71,0.95);font-size:13px;text-decoration:none;white-space:nowrap;transition:.2s" onmouseover="this.style.background='rgba(251,191,36,0.16)'" onmouseout="this.style.background='rgba(251,191,36,0.07)'">Password Vault</a>
     <div class="header-right">
       <button class="lang-btn" id="langBtn" onclick="toggleLang()">中/EN</button>
-      <button class="icon-btn" title="Notifications">🔔</button>
+      <button class="icon-btn" title="Notifications"><i data-lucide="bell" style="width:16px;height:16px;stroke-width:2"></i></button>
       <div style="position:relative">
         <button class="user-btn" id="userBtn" onclick="toggleUserMenu()">
           <div class="user-avatar" id="userAvatar">T</div>
@@ -607,8 +607,8 @@ tr.iq-unread td{font-weight:600}
           <span style="color:var(--muted)">▾</span>
         </button>
         <div class="user-dropdown" id="userDropdown">
-          <div class="dd-item" onclick="navigate('settings')" data-i18n="ddSettings">⚙️ Settings</div>
-          <div class="dd-item danger" onclick="logout()" data-i18n="ddLogout">🚪 Logout</div>
+          <div class="dd-item" onclick="navigate('settings')" data-i18n="ddSettings"><i data-lucide="settings" style="width:14px;height:14px;stroke-width:2"></i> Settings</div>
+          <div class="dd-item danger" onclick="logout()" data-i18n="ddLogout"><i data-lucide="log-out" style="width:14px;height:14px;stroke-width:2"></i> Logout</div>
         </div>
       </div>
     </div>
@@ -919,7 +919,7 @@ tr.iq-unread td{font-weight:600}
       <button class="modal-close" onclick="closeModal('productPickerModal')">×</button>
     </div>
     <div style="padding:0 0 14px">
-      <input type="text" id="ppSearch" placeholder="🔍 搜索：编号 / 中英文名 / 规格..." oninput="renderProductPicker()" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:9px 14px;color:var(--text);font-size:13px;outline:none;margin-bottom:10px">
+      <input type="text" id="ppSearch" placeholder="搜索：编号 / 中英文名 / 规格..." oninput="renderProductPicker()" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:9px 14px 9px 38px;color:var(--text);font-size:13px;outline:none;margin-bottom:10px">
       <div id="ppList" style="max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:6px"></div>
     </div>
   </div>
@@ -936,7 +936,7 @@ tr.iq-unread td{font-weight:600}
     <div class="modal-footer">
       <button class="btn" onclick="closeModal('poDetailModal')">关闭</button>
       <button class="btn btn-primary" id="poSaveBtn" onclick="savePoStatus()">💾 保存状态</button>
-      <button class="btn" onclick="downloadPoPdf()">📄 下载 PDF</button>
+      <button class="btn" onclick="downloadPoPdf()"><i data-lucide="file-text" style="width:14px;height:14px;stroke-width:2;display:inline-block;vertical-align:middle;margin-right:4px"></i> 下载 PDF</button>
     </div>
   </div>
 </div>

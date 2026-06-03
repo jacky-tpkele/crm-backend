@@ -34,7 +34,7 @@ button, input, select, textarea { font: inherit }
 .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; cursor: pointer; transition: .18s; white-space: nowrap; color: var(--muted2); font-size: 13.5px; font-weight: 500; border-left: 3px solid transparent; text-decoration: none }
 .nav-item:hover { background: #eef4f0; color: var(--text) }
 .nav-item.active { background: #eaf8ef; color: var(--primary-d); border-left-color: var(--primary); font-weight: 600 }
-.nav-icon { font-size: 17px; flex-shrink: 0; width: 22px; text-align: center }
+.nav-icon { flex-shrink: 0; width: 20px; height: 20px; stroke-width: 2 }
 
 /* Main */
 .main { flex: 1; display: flex; flex-direction: column; overflow: hidden }

@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../TPKELE"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"http.proxy": "http://127.0.0.1:8001",
+		"https.proxy": "http://127.0.0.1:8001",
+		"http.proxyStrictSSL": false
+	}

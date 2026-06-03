@@ -60,23 +60,27 @@
   // 按访问顺序排列：核心 → 亚马逊运营 → 工具
   const NAV = [
     { group: '主菜单' },
-    { id: 'dashboard',         icon: '📊', label: '仪表盘',     href: 'dashboard.html' },
-    { id: 'orders',            icon: '◍',  label: '订单管理',    href: 'dashboard.html#orders' },
-    { id: 'customers',         icon: '👥', label: '客户管理',    href: 'dashboard.html#customers' },
-    { id: 'products',          icon: '📦', label: '产品管理',    href: 'dashboard.html#products' },
-    { id: 'logistics',         icon: '🚚', label: '物流管理',    href: 'logistics.html' },
+    { id: 'dashboard',         icon: 'layout-dashboard', label: '仪表盘',     href: 'dashboard.html' },
+    { id: 'orders',            icon: 'mail',  label: '网站询盘',    href: 'dashboard.html#orders' },
+    { id: 'chat',              icon: 'message-circle',  label: '在线客服',    href: 'dashboard.html#chat' },
+    { id: 'customers',         icon: 'users', label: '客户',    href: 'dashboard.html#customers' },
+    { id: 'products',          icon: 'package', label: '产品',    href: 'dashboard.html#products' },
+    { id: 'logistics',         icon: 'truck', label: '供应商',    href: 'logistics.html' },
+    { id: 'purchase-orders',   icon: 'shopping-cart', label: '订单',    href: 'dashboard.html#purchase-orders' },
+    { id: 'po',                icon: 'clipboard-list', label: '采购单',    href: 'dashboard.html#po' },
+    { id: 'analytics',         icon: 'bar-chart-2', label: '数据分析',    href: 'dashboard.html#analytics' },
 
     { group: '亚马逊运营' },
-    { id: 'amazon-margin',     icon: '💰', label: '产品毛利',    href: 'amazon-margin.html' },
-    { id: 'amazon-inventory',  icon: '📦', label: '库存补货',    href: 'amazon-inventory.html' },
-    { id: 'amazon-research',   icon: '🔍', label: '竞品调研',    href: 'amazon-research.html' },
-    { id: 'amazon-ads',        icon: '📢', label: '广告管理',    href: 'amazon-ads.html' },
+    { id: 'amazon-margin',     icon: 'dollar-sign', label: '产品毛利',    href: 'amazon-margin.html' },
+    { id: 'amazon-inventory',  icon: 'package-check', label: '库存补货',    href: 'amazon-inventory.html' },
+    { id: 'amazon-research',   icon: 'search', label: '竞品调研',    href: 'amazon-research.html' },
+    { id: 'amazon-ads',        icon: 'megaphone', label: '广告管理',    href: 'amazon-ads.html' },
 
     { group: '工具' },
-    { id: 'documents',         icon: '📄', label: '文档制作',    href: 'documents.html' },
-    { id: 'email',             icon: '✉',  label: '邮件',        href: 'email.html' },
-    { id: 'password-vault',    icon: '🔐', label: '密码保险柜',  href: 'password-vault.html' },
-    { id: 'ai',                icon: '🤖', label: 'AI 助手',     href: 'ai.html', target: '_blank' },
+    { id: 'documents',         icon: 'file-text', label: '文档制作',    href: 'documents.html' },
+    { id: 'email',             icon: 'mail',  label: '邮件',        href: 'email.html' },
+    { id: 'password-vault',    icon: 'lock', label: '密码保险柜',  href: 'password-vault.html' },
+    { id: 'ai',                icon: 'sparkles', label: 'AI 助手',     href: 'ai.html', target: '_blank' },
   ];
 
   function escAttr(s) { return String(s == null ? '' : s).replace(/"/g, '&quot;'); }
@@ -96,11 +100,16 @@
       const active = item.id === currentId ? ' active' : '';
       const target = item.target ? ' target="' + escAttr(item.target) + '"' : '';
       html += '<a class="nav-item' + active + '" href="' + escAttr(item.href) + '"' + target + '>'
-            + '<span class="nav-icon">' + item.icon + '</span>'
+            + '<i class="nav-icon" data-lucide="' + escAttr(item.icon) + '"></i>'
             + '<span>' + escAttr(item.label) + '</span></a>';
     }
     html += '</div></div>';
     root.outerHTML = html;
+
+    // 初始化 lucide 图标
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
   }
 
   // 暴露
