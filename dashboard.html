@@ -15,6 +15,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -68,12 +69,13 @@ button,input,select,textarea{font:inherit}
   border-left-color:#6db2ff;
   font-size:17px;font-weight:700;letter-spacing:.2px;
 }
-.nav-item.active .nav-icon{font-size:20px}
 .nav-icon{
-  font-size:17px;flex-shrink:0;width:24px;text-align:center;transition:.2s;
-  color:#9eb6e7;opacity:.95;
+  flex-shrink:0;width:18px;height:18px;transition:.2s;
+  color:#9eb6e7;opacity:.95;display:flex;align-items:center;justify-content:center;
 }
+.nav-icon svg{width:18px;height:18px;stroke:currentColor;stroke-width:1.75;fill:none;stroke-linecap:round;stroke-linejoin:round}
 .nav-item.active .nav-icon{color:#ffffff}
+.nav-item.active .nav-icon svg{width:20px;height:20px}
 .nav-label{overflow:hidden;transition:font-size .2s,font-weight .2s}
 .nav-group{padding:8px 16px 4px;font-size:10px;font-weight:600;color:rgba(0,200,255,0.22);text-transform:uppercase;letter-spacing:.8px;white-space:nowrap;overflow:hidden}
 
@@ -503,37 +505,37 @@ tr.iq-unread td{font-weight:600}
   </div>
   <nav class="sb-nav" id="sbNav">
     <div class="nav-item active" data-sec="dashboard">
-      <span class="nav-icon">⌂</span><span class="nav-label" data-i18n="navDashboard">仪表盘</span>
+      <i class="nav-icon" data-lucide="layout-dashboard"></i><span class="nav-label" data-i18n="navDashboard">仪表盘</span>
     </div>
     <div class="nav-item" data-sec="inquiries">
-      <span class="nav-icon">◎</span><span class="nav-label" data-i18n="navInquiries">询盘管理</span>
+      <i class="nav-icon" data-lucide="mail-open"></i><span class="nav-label" data-i18n="navInquiries">询盘管理</span>
     </div>
     <div class="nav-item" data-sec="chat">
-      <span class="nav-icon">💬</span><span class="nav-label" data-i18n="navChat">在线客服</span>
+      <i class="nav-icon" data-lucide="message-square"></i><span class="nav-label" data-i18n="navChat">在线客服</span>
       <span id="chatNavBadge" style="display:none;margin-left:auto;background:#ef4444;color:#fff;font-size:10px;padding:1px 6px;border-radius:999px;font-weight:700">0</span>
     </div>
     <div class="nav-item" data-sec="customers">
-      <span class="nav-icon">◉</span><span class="nav-label" data-i18n="navCustomers">客户管理</span>
+      <i class="nav-icon" data-lucide="users"></i><span class="nav-label" data-i18n="navCustomers">客户管理</span>
     </div>
     <div class="nav-item" data-sec="products">
-      <span class="nav-icon">▣</span><span class="nav-label" data-i18n="navProducts">产品管理</span>
+      <i class="nav-icon" data-lucide="package"></i><span class="nav-label" data-i18n="navProducts">产品管理</span>
     </div>
     <div class="nav-item" data-sec="suppliers">
-      <span class="nav-icon">◫</span><span class="nav-label" data-i18n="navSuppliers">供应商管理</span>
+      <i class="nav-icon" data-lucide="truck"></i><span class="nav-label" data-i18n="navSuppliers">供应商管理</span>
     </div>
     <div class="nav-item" data-sec="orders">
-      <span class="nav-icon">◍</span><span class="nav-label" data-i18n="navOrders">订单管理</span>
+      <i class="nav-icon" data-lucide="shopping-cart"></i><span class="nav-label" data-i18n="navOrders">订单管理</span>
     </div>
     <div class="nav-item" data-sec="purchase-orders">
-      <span class="nav-icon">⊞</span><span class="nav-label">采购单</span>
+      <i class="nav-icon" data-lucide="clipboard-list"></i><span class="nav-label">采购单</span>
     </div>
     <div class="nav-item" data-sec="analytics">
-      <span class="nav-icon">◔</span><span class="nav-label" data-i18n="navAnalytics">数据分析</span>
+      <i class="nav-icon" data-lucide="bar-chart-3"></i><span class="nav-label" data-i18n="navAnalytics">数据分析</span>
     </div>
 
     <!-- 文件 -->
     <div class="nav-item" onclick="location.href='documents.html'">
-      <span class="nav-icon">▤</span><span class="nav-label" data-i18n="navDocuments">文件</span>
+      <i class="nav-icon" data-lucide="folder"></i><span class="nav-label" data-i18n="navDocuments">文件</span>
     </div>
 
     <!-- 工具 折叠分组 -->
@@ -543,38 +545,38 @@ tr.iq-unread td{font-weight:600}
     </div>
     <div class="nav-collapse-body closed" id="toolGroup">
       <div class="nav-item" onclick="window.open('ai.html','_blank')">
-        <span class="nav-icon">◇</span><span class="nav-label" data-i18n="navAI">AI 助手</span>
+        <i class="nav-icon" data-lucide="sparkles"></i><span class="nav-label" data-i18n="navAI">AI 助手</span>
       </div>
       <div class="nav-item" onclick="location.href='blog-automation.html'">
-        <span class="nav-icon">📝</span><span class="nav-label">BLOG 自动化</span>
+        <i class="nav-icon" data-lucide="pencil-line"></i><span class="nav-label">BLOG 自动化</span>
       </div>
       <div class="nav-item" onclick="location.href='email.html'">
-        <span class="nav-icon">✉</span><span class="nav-label" data-i18n="navEmail">邮件</span>
+        <i class="nav-icon" data-lucide="mail"></i><span class="nav-label" data-i18n="navEmail">邮件</span>
       </div>
       <div class="nav-item" onclick="location.href='amazon-margin.html'">
-        <span class="nav-icon">💰</span><span class="nav-label">Amazon 毛利</span>
+        <i class="nav-icon" data-lucide="trending-up"></i><span class="nav-label">Amazon 毛利</span>
       </div>
       <div class="nav-item" onclick="location.href='amazon-inventory.html'">
-        <span class="nav-icon">📦</span><span class="nav-label">Amazon 库存</span>
+        <i class="nav-icon" data-lucide="boxes"></i><span class="nav-label">Amazon 库存</span>
       </div>
       <div class="nav-item" onclick="location.href='amazon-research.html'">
-        <span class="nav-icon">🔍</span><span class="nav-label">Amazon 竞品</span>
+        <i class="nav-icon" data-lucide="search"></i><span class="nav-label">Amazon 竞品</span>
       </div>
       <div class="nav-item" onclick="location.href='amazon-ads.html'">
-        <span class="nav-icon">📢</span><span class="nav-label">Amazon 广告</span>
+        <i class="nav-icon" data-lucide="megaphone"></i><span class="nav-label">Amazon 广告</span>
       </div>
       <div class="nav-item" onclick="openRecycleBin()">
-        <span class="nav-icon">♻</span><span class="nav-label" data-i18n="navRecycleBin">回收站</span>
+        <i class="nav-icon" data-lucide="trash-2"></i><span class="nav-label" data-i18n="navRecycleBin">回收站</span>
       </div>
     </div>
 
     <div class="nav-item" data-sec="settings">
-      <span class="nav-icon">⚙</span><span class="nav-label" data-i18n="navSettings">系统设置</span>
+      <i class="nav-icon" data-lucide="settings"></i><span class="nav-label" data-i18n="navSettings">系统设置</span>
     </div>
   </nav>
   <div class="sb-bottom">
     <button class="sb-toggle" id="sbToggle">
-      <span id="sbToggleIcon">◀</span>
+      <i id="sbToggleIcon" data-lucide="chevron-left" style="width:16px;height:16px"></i>
       <span class="nav-label" style="font-size:12px" data-i18n="navCollapse">Collapse</span>
     </button>
   </div>
@@ -1844,7 +1846,9 @@ document.querySelectorAll('[data-sec]').forEach(item => {
 document.getElementById('sbToggle').addEventListener('click', () => {
   const sb = document.getElementById('sidebar');
   sb.classList.toggle('collapsed');
-  document.getElementById('sbToggleIcon').textContent = sb.classList.contains('collapsed') ? '▶' : '◀';
+  const ico = document.getElementById('sbToggleIcon');
+  ico.setAttribute('data-lucide', sb.classList.contains('collapsed') ? 'chevron-right' : 'chevron-left');
+  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
 });
 
 // ── Quick Export toggle ──
@@ -4251,6 +4255,15 @@ window.navigate = function(sec){
 
 // 全局每 30s 拉一次会话列表（兜底，万一 Realtime 掉线）
 setInterval(() => { if (TOKEN()) loadChatSessions(true); }, 30000);
+
+// 等待 Lucide 加载完成后初始化图标
+(function initLucide() {
+  if (typeof lucide !== 'undefined' && lucide.createIcons) {
+    lucide.createIcons();
+  } else {
+    setTimeout(initLucide, 50);
+  }
+})();
 </script>
 </body>
 </html>
