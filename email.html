@@ -117,6 +117,10 @@ button,input,select,textarea{font:inherit}
 .btn-action:hover{border-color:var(--primary);color:var(--primary)}
 .btn-action.danger:hover{border-color:var(--danger);color:var(--danger)}
 .reader-body{flex:1;overflow-y:auto;padding:20px 24px}
+.reader-body.collapsed{max-height:400px;overflow:hidden;position:relative}
+.reader-body.collapsed::after{content:'';position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(to bottom,transparent,var(--bg));pointer-events:none}
+.reader-expand-btn{width:100%;padding:10px;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--primary);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:.2s;margin-top:12px}
+.reader-expand-btn:hover{background:rgba(11,155,63,.08);border-color:var(--primary)}
 .reader-html{color:var(--text);font-size:14px;line-height:1.7;max-width:720px}
 .reader-html a{color:var(--primary)}
 .reader-html img{max-width:100%}
@@ -1021,13 +1025,20 @@ async function openEmail(id, el) {
             <button class="btn-action danger" onclick="deleteCurrent()">🗑 删除</button>
           </div>
         </div>
-        <div class="reader-body">
+        <div class="reader-body collapsed" id="readerBody">
           ${email.body_html
             ? `<iframe class="reader-frame" id="readerFrame" sandbox="allow-same-origin allow-popups"></iframe>`
             : `<div class="reader-text" style="padding:24px 28px">${esc(email.body_text||'（无内容）')}</div>`}
         </div>
+        <div style="padding:0 24px 20px">
+          <button class="reader-expand-btn" id="expandBtn" onclick="toggleEmailExpand()">
+            <i data-lucide="chevron-down" style="width:16px;height:16px;stroke-width:2"></i>
+            <span>展开全文</span>
+          </button>
+        </div>
       </div>`;
     if (email.body_html) renderHtmlBodyInIframe(email.body_html);
+    if (window.lucide) window.lucide.createIcons();
   } catch (e) {
     panel.innerHTML = `<div style="padding:24px;color:var(--danger)">加载失败：${e.message}</div>`;
   }
@@ -1064,6 +1075,23 @@ function renderHtmlBodyInIframe(html) {
       inner.querySelectorAll('img').forEach(img => { img.addEventListener('load', resize); img.addEventListener('error', resize); });
     } catch(_) {}
   };
+}
+
+// ── Toggle email expand ──
+window.toggleEmailExpand = function() {
+  const body = document.getElementById('readerBody');
+  const btn = document.getElementById('expandBtn');
+  if (!body || !btn) return;
+
+  const isCollapsed = body.classList.contains('collapsed');
+  if (isCollapsed) {
+    body.classList.remove('collapsed');
+    btn.innerHTML = '<i data-lucide="chevron-up" style="width:16px;height:16px;stroke-width:2"></i><span>收起</span>';
+  } else {
+    body.classList.add('collapsed');
+    btn.innerHTML = '<i data-lucide="chevron-down" style="width:16px;height:16px;stroke-width:2"></i><span>展开全文</span>';
+  }
+  if (window.lucide) window.lucide.createIcons();
 }
 
 // ── Folder switch ──
