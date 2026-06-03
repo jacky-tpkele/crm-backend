@@ -3056,6 +3056,20 @@ app.post('/api/chat/sessions/:id/close', auth, async (req, res) => {
   }
 });
 
+// ── 客服侧：删除会话 ───────────────────────────────────────
+app.delete('/api/chat/sessions/:id', auth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    // 先删除该会话的所有消息
+    await sb(`chat_messages?session_id=eq.${id}`, { method: 'DELETE' });
+    // 再删除会话记录
+    await sb(`chat_sessions?id=eq.${id}`, { method: 'DELETE' });
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+
 // ── Web Push：订阅 / 退订 ─────────────────────────────────
 app.post('/api/chat/push/subscribe', auth, async (req, res) => {
   try {
