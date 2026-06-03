@@ -459,8 +459,11 @@ tr.iq-unread td{font-weight:600}
 .chat-session.active{background:rgba(11,155,63,.12);border-color:rgba(11,155,63,.35)}
 .chat-session .cs-name{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px}
 .chat-session .cs-preview{font-size:11px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.chat-session .cs-time{font-size:10px;color:var(--muted);position:absolute;top:10px;right:12px}
+.chat-session .cs-time{font-size:10px;color:var(--muted);position:absolute;top:10px;right:32px}
 .chat-session .cs-badge{background:#ef4444;color:#fff;font-size:10px;padding:0 6px;border-radius:999px;font-weight:700;min-width:18px;text-align:center}
+.chat-session .cs-delete{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:4px;border:1px solid transparent;background:transparent;color:var(--muted);display:none;align-items:center;justify-content:center;cursor:pointer;transition:.15s;padding:0}
+.chat-session:hover .cs-delete{display:flex}
+.chat-session .cs-delete:hover{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.3);color:#ef4444}
 .chat-session.closed{opacity:.5}
 
 .chat-main{background:var(--panel);border:1px solid var(--border);border-radius:12px;display:flex;flex-direction:column;overflow:hidden}
@@ -4062,10 +4065,12 @@ function renderChatSessionList(){
     const active = currentSession && currentSession.id === s.id;
     return `<div class="chat-session ${active?'active':''} ${s.status==='closed'?'closed':''}" onclick="openChatSession('${s.id}')">
       <div class="cs-time">${t}</div>
+      <button class="cs-delete" onclick="event.stopPropagation();deleteChatSession('${s.id}')" title="删除会话"><i data-lucide="x" style="width:12px;height:12px;stroke-width:2.5"></i></button>
       <div class="cs-name">${escapeChatHtml(name)} ${unread?`<span class="cs-badge">${s.unread_for_agent}</span>`:''}</div>
       <div class="cs-preview">${escapeChatHtml(s.page_url || '')}</div>
     </div>`;
   }).join('');
+  if (window.lucide) window.lucide.createIcons();
 }
 
 function updateChatNavBadge(){
@@ -4153,6 +4158,28 @@ window.closeCurrentChatSession = async function(){
   currentSession = null;
   document.getElementById('chatMessages').innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:40px 0">会话已关闭</div>';
   document.getElementById('chatComposer').hidden = true;
+};
+
+window.deleteChatSession = async function(sessionId){
+  if (!confirm('确定删除这个会话？删除后无法恢复。')) return;
+  try {
+    const r = await fetch('/api/chat/sessions/' + sessionId, {
+      method: 'DELETE',
+      headers: authHdr()
+    });
+    if (!r.ok) throw new Error('删除失败');
+    // 如果删除的是当前会话，清空右侧
+    if (currentSession && currentSession.id === sessionId) {
+      currentSession = null;
+      document.getElementById('chatMessages').innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:40px 0">← 在左侧选择会话</div>';
+      document.getElementById('chatComposer').hidden = true;
+      document.getElementById('chatHeadActions').hidden = true;
+    }
+    // 刷新列表
+    await loadChatSessions(true);
+  } catch(e) {
+    alert('删除失败：' + e.message);
+  }
 };
 
 // ── Web Push 订阅 ──
