@@ -15,33 +15,34 @@
     html, body { height: 100%; overflow: hidden; }
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Microsoft YaHei', sans-serif;
-      background: #0b9b3f;
-      color: #e8efff;
+      background: #f0f4f8;
+      color: #2c3e50;
       font-size: 14px;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      letter-spacing: -0.01em;
     }
 
-    /* CSS 变量 - 统一深蓝主题 */
+    /* CSS 变量 - 浅色绿色主题 */
     :root {
-      --bg: #0b9b3f;
-      --panel: #1f3463;
-      --panel2: #284276;
-      --border: rgba(187,207,255,0.2);
-      --border-h: rgba(220,232,255,0.4);
-      --text: #e8efff;
-      --muted: #93a8d8;
-      --muted2: #c9d7f6;
-      --primary: #ffffff;
-      --primary-dim: rgba(255,255,255,0.12);
-      --cyan: #8fc8ff;
-      --purple: #6d88ff;
-      --danger: #fb7185;
-      --warn: #fbbf24;
-      --success: #4ade80;
-      --shadow: 0 20px 60px rgba(0,0,0,.7);
-      --radius: 14px;
+      --bg: #f0f4f8;
+      --sidebar-bg: #e8f5f0;
+      --panel: #ffffff;
+      --panel-alt: #f8fcfa;
+      --border: #d5e5df;
+      --border-h: #0b9b3f;
+      --text: #2c3e50;
+      --text-light: #5a6c7d;
+      --text-muted: #8b95a0;
+      --primary: #0b9b3f;
+      --primary-light: #e8f5ed;
+      --primary-lighter: #f4faf6;
+      --cyan: #00a6a6;
+      --danger: #e74c3c;
+      --warn: #f39c12;
+      --success: #27ae60;
+      --shadow: 0 2px 8px rgba(0,0,0,0.08);
+      --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
+      --radius: 12px;
     }
 
     /* 主布局：左 sidebar + 右 main */
@@ -55,7 +56,7 @@
 
     .blog-sidebar {
       width: 232px;
-      background: linear-gradient(180deg, #1f3463, #203b6f);
+      background: var(--sidebar-bg);
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
@@ -91,8 +92,8 @@
     .btn-back-crm {
       width: 100%;
       padding: 9px 12px;
-      background: rgba(0,180,255,0.04);
-      color: var(--muted2);
+      background: var(--panel);
+      color: var(--text);
       border: 1px solid var(--border);
       border-radius: 8px;
       cursor: pointer;
@@ -105,8 +106,8 @@
       justify-content: center;
     }
     .btn-back-crm:hover {
-      background: rgba(0,200,255,0.06);
-      border-color: var(--border-h);
+      background: var(--primary-lighter);
+      border-color: var(--primary);
       color: var(--primary);
     }
 
@@ -147,7 +148,7 @@
       border: none;
       cursor: pointer;
       font-size: 13.5px;
-      color: var(--muted2);
+      color: var(--text-light);
       border-left: 3px solid transparent;
       border-bottom: none;
       border-radius: 7px;
@@ -162,22 +163,22 @@
     }
 
     .tab-btn:hover {
-      background: rgba(255, 255, 255, 0.08);
+      background: var(--primary-lighter);
       color: var(--primary);
     }
 
     .tab-btn.active {
       color: var(--primary);
-      border-left-color: #6db2ff;
-      background: rgba(255, 255, 255, 0.12);
+      border-left-color: var(--primary);
+      background: var(--primary-light);
       font-weight: 600;
     }
 
     .tab-btn .lucide {
-      color: #9eb6e7;
-      opacity: 0.95;
+      color: var(--text-muted);
     }
 
+    .tab-btn:hover .lucide,
     .tab-btn.active .lucide {
       color: var(--primary);
     }
@@ -796,12 +797,12 @@
 
     /* 控制面板样式 */
     .control-panel {
-      background: linear-gradient(180deg, rgba(0,180,255,0.06), rgba(0,100,180,0.02));
+      background: var(--panel);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 22px 24px;
       margin-bottom: 22px;
-      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
     }
 
     .control-panel h3 {
@@ -821,15 +822,16 @@
       justify-content: space-between;
       margin-bottom: 12px;
       padding: 14px 16px;
-      background: rgba(0,180,255,0.04);
+      background: var(--panel-alt);
       border-radius: 10px;
       border: 1px solid var(--border);
       transition: all 0.2s ease;
     }
 
     .control-item:hover {
-      border-color: var(--border-h);
-      background: rgba(0,180,255,0.06);
+      border-color: var(--primary);
+      background: var(--primary-lighter);
+      box-shadow: 0 2px 8px rgba(11,155,63,0.08);
     }
 
     .control-item-label {
@@ -840,7 +842,7 @@
 
     .control-item-value {
       font-size: 13px;
-      color: var(--muted);
+      color: var(--text-light);
       margin-top: 4px;
     }
 
@@ -848,7 +850,7 @@
       display: inline-block;
       width: 50px;
       height: 30px;
-      background: rgba(255,255,255,0.15);
+      background: #e0e7e9;
       border-radius: 15px;
       cursor: pointer;
       position: relative;
@@ -857,8 +859,8 @@
     }
 
     .toggle-switch.on {
-      background: var(--cyan);
-      border-color: var(--cyan);
+      background: var(--primary);
+      border-color: var(--primary);
     }
 
     .toggle-switch::after {
@@ -870,7 +872,7 @@
       border-radius: 50%;
       top: 1px;
       left: 1px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
       transition: left 0.25s ease;
     }
 
@@ -898,23 +900,25 @@
     }
 
     .btn-generate-now {
-      background: linear-gradient(135deg, #005f90, #008fba);
-      border: 1px solid rgba(0,200,255,0.4);
-      color: var(--primary);
+      background: var(--primary);
+      border: 1px solid var(--primary);
+      color: white;
       font-weight: 600;
     }
 
     .btn-generate-now:hover {
-      background: linear-gradient(135deg, #007ab8, #00a8d8);
-      box-shadow: 0 6px 20px rgba(0,180,220,0.3);
+      background: #099235;
+      box-shadow: 0 4px 12px rgba(11,155,63,0.25);
+      transform: translateY(-1px);
     }
 
     .btn-generate-now:disabled {
-      background: rgba(255,255,255,0.07);
-      color: var(--muted);
+      background: #e0e7e9;
+      color: var(--text-muted);
       border: 1px solid var(--border);
       cursor: not-allowed;
       box-shadow: none;
+      transform: none;
     }
 
     /* 卡片式统计样式 */
@@ -926,40 +930,25 @@
     }
 
     .stat-card {
-      background: linear-gradient(180deg, rgba(0,180,255,0.06), rgba(0,100,180,0.02));
+      background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 18px 16px;
       text-align: center;
       transition: all 0.2s ease;
       cursor: default;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .stat-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: 12px;
-      opacity: 0;
-      transition: 0.2s;
-      background: linear-gradient(135deg, rgba(0,200,240,0.07), transparent);
+      box-shadow: var(--shadow);
     }
 
     .stat-card:hover {
-      border-color: var(--border-h);
+      border-color: var(--primary);
       transform: translateY(-2px);
-      box-shadow: 0 4px 14px rgba(0,170,220,0.2);
-    }
-
-    .stat-card:hover::before {
-      opacity: 1;
+      box-shadow: var(--shadow-lg);
     }
 
     .stat-label {
       font-size: 12px;
-      color: var(--muted);
+      color: var(--text-muted);
       margin-bottom: 8px;
       font-weight: 600;
       text-transform: uppercase;
@@ -969,14 +958,14 @@
     .stat-value {
       font-size: 30px;
       font-weight: 700;
-      color: var(--primary);
+      color: var(--text);
       margin-bottom: 4px;
       letter-spacing: -0.02em;
     }
 
     .stat-unit {
       font-size: 12px;
-      color: var(--muted);
+      color: var(--text-muted);
     }
 
     /* 快速操作按钮 */
@@ -988,10 +977,10 @@
     }
 
     .btn-retry {
-      background: rgba(251,191,36,0.08);
-      color: var(--warn);
+      background: white;
+      color: var(--primary);
       padding: 10px 20px;
-      border: 1px solid rgba(251,191,36,0.3);
+      border: 1px solid var(--primary);
       border-radius: 8px;
       cursor: pointer;
       font-size: 14px;
@@ -1003,14 +992,15 @@
     }
 
     .btn-retry:hover {
-      background: rgba(251,191,36,0.15);
-      border-color: rgba(251,191,36,0.5);
+      background: var(--primary-lighter);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(11,155,63,0.15);
     }
 
     .btn-sync {
-      background: rgba(0,180,255,0.04);
-      color: var(--cyan);
-      border: 1px solid var(--border);
+      background: white;
+      color: var(--primary);
+      border: 1px solid var(--primary);
       padding: 10px 20px;
       border-radius: 8px;
       cursor: pointer;
@@ -1023,16 +1013,18 @@
     }
 
     .btn-sync:hover {
-      background: rgba(0,200,240,0.08);
-      border-color: var(--border-h);
+      background: var(--primary-lighter);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(11,155,63,0.15);
     }
 
     .btn-retry:disabled,
     .btn-sync:disabled {
-      background: rgba(255,255,255,0.05);
-      color: var(--muted);
+      background: #f5f5f5;
+      color: var(--text-muted);
       border-color: var(--border);
       cursor: not-allowed;
+      transform: none;
     }
 
     /* ── 第 2 阶段：关键词库样式 ── */
@@ -1045,15 +1037,16 @@
 
     .keywords-stats {
       font-size: 13px;
-      color: var(--muted);
+      color: var(--text-light);
     }
 
     .keyword-add-form {
-      background: rgba(0,180,255,0.04);
+      background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 16px;
       margin-bottom: 20px;
+      box-shadow: var(--shadow);
     }
 
     .keyword-input-row {
@@ -1069,15 +1062,14 @@
       border: 1px solid var(--border);
       border-radius: 8px;
       font-size: 14px;
-      background: rgba(255,255,255,0.07);
+      background: white;
       color: var(--text);
       outline: none;
       transition: all 0.2s ease;
     }
     .keyword-input-row input[type="text"]:focus {
-      border-color: var(--border-h);
-      box-shadow: 0 0 0 3px rgba(0,200,255,0.15);
-      background: rgba(255,255,255,0.12);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-light);
     }
 
     .keyword-input-row select {
@@ -1085,27 +1077,26 @@
       border: 1px solid var(--border);
       border-radius: 8px;
       font-size: 13px;
-      background: rgba(255,255,255,0.07);
+      background: white;
       color: var(--text);
       outline: none;
       transition: all 0.2s ease;
     }
 
     .keyword-input-row select:focus {
-      border-color: var(--border-h);
-      background: rgba(255,255,255,0.12);
+      border-color: var(--primary);
     }
 
     .keyword-input-row select option {
-      background: var(--panel);
+      background: white;
       color: var(--text);
     }
 
     .keyword-input-row button {
       padding: 9px 18px;
-      background: linear-gradient(135deg, #005f90, #008fba);
+      background: var(--primary);
       color: white;
-      border: 1px solid rgba(0,200,255,0.4);
+      border: 1px solid var(--primary);
       border-radius: 8px;
       cursor: pointer;
       font-size: 14px;
@@ -1114,8 +1105,9 @@
       transition: all 0.15s ease;
     }
     .keyword-input-row button:hover {
-      background: linear-gradient(135deg, #007ab8, #00a8d8);
-      box-shadow: 0 4px 14px rgba(0,170,220,0.3);
+      background: #099235;
+      box-shadow: 0 4px 12px rgba(11,155,63,0.25);
+      transform: translateY(-1px);
     }
 
     /* AI 推荐样式 */
@@ -1247,18 +1239,18 @@
       border: 1px solid var(--border);
       border-radius: 8px;
       font-size: 13px;
-      background: rgba(255,255,255,0.07);
+      background: white;
       color: var(--text);
       outline: none;
       transition: all 0.2s ease;
     }
 
     .keywords-filter select:focus {
-      border-color: var(--border-h);
+      border-color: var(--primary);
     }
 
     .keywords-filter select option {
-      background: var(--panel);
+      background: white;
       color: var(--text);
     }
 
@@ -1270,20 +1262,20 @@
     .keyword-table {
       width: 100%;
       border-collapse: collapse;
-      background: linear-gradient(180deg, rgba(0,180,255,0.04), rgba(0,100,180,0.02));
+      background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: none;
+      box-shadow: var(--shadow);
     }
 
     .keyword-table th {
-      background: rgba(0,150,200,0.06);
+      background: var(--panel-alt);
       padding: 11px 12px;
       text-align: left;
       font-size: 12px;
       font-weight: 600;
-      color: var(--muted);
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
       border-bottom: 1px solid var(--border);
@@ -1291,13 +1283,13 @@
 
     .keyword-table td {
       padding: 12px;
-      border-bottom: 1px solid rgba(0,180,255,0.06);
+      border-bottom: 1px solid var(--border);
       font-size: 13px;
       color: var(--text);
     }
 
     .keyword-table tr:hover td {
-      background: rgba(0,180,255,0.04);
+      background: var(--primary-lighter);
     }
 
     .keyword-table tr:last-child td { border-bottom: none; }
