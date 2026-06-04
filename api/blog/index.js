@@ -1524,7 +1524,6 @@ router.post('/toggle-auto-generation', async (req, res) => {
         method: 'PATCH',
         body: JSON.stringify({
           config_value: configValue,
-          updated_at: new Date().toISOString(),
         }),
       });
     } else {
@@ -1534,8 +1533,6 @@ router.post('/toggle-auto-generation', async (req, res) => {
         body: JSON.stringify({
           config_key: configKey,
           config_value: configValue,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
         }),
       });
     }
