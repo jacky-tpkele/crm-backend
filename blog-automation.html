@@ -3037,6 +3037,12 @@
 
         const data = await response.json();
         if (data.success) {
+          // 立即更新UI状态
+          if (data.autoGenerationEnabled) {
+            toggle.classList.add('on');
+          } else {
+            toggle.classList.remove('on');
+          }
           showToast(data.autoGenerationEnabled ? '✅ 已启用自动生成' : '✅ 已禁用自动生成');
           loadDashboard();
         } else {
