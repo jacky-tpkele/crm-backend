@@ -2740,6 +2740,14 @@
         const data = await response.json();
 
         if (data.success) {
+          // 更新自动生成开关状态
+          const toggle = document.getElementById('autoToggle');
+          if (data.autoGenerationEnabled) {
+            toggle.classList.add('on');
+          } else {
+            toggle.classList.remove('on');
+          }
+
           // 更新下次执行时间
           const nextExecTime = new Date(data.nextExecutionTime);
           const hoursUntil = parseFloat(data.hoursUntilNextExecution);

@@ -832,6 +832,20 @@ router.get('/cron', async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    // 检查自动生成开关是否打开
+    const config = await sb('blog_config?config_key=eq.auto_generation_enabled');
+    const autoEnabled = config && config.length > 0 && config[0].config_value === 'true';
+
+    if (!autoEnabled) {
+      return res.json({
+        success: true,
+        message: '自动生成已关闭，跳过本次执行',
+        timestamp: new Date().toISOString(),
+        generatedCount: 0,
+        results: [],
+      });
+    }
+
     // 查询当天 4 篇 pending 的计划
     const today = new Date().toISOString().split('T')[0];
     const plans = await sb(
@@ -1254,11 +1268,16 @@ router.get('/dashboard', async (req, res) => {
     next.setHours(8, 0, 0, 0);
     const hoursUntil = ((next.getTime() - Date.now()) / (1000 * 60 * 60)).toFixed(1);
 
+    // 获取自动生成开关状态
+    const config = await sb('blog_config?config_key=eq.auto_generation_enabled');
+    const autoEnabled = config && config.length > 0 && config[0].config_value === 'true';
+
     res.json({
       success: true,
       todayStats,
       nextExecutionTime: next.toISOString(),
       hoursUntilNextExecution: hoursUntil,
+      autoGenerationEnabled: autoEnabled,
     });
   } catch (error) {
     console.error('Error fetching dashboard:', error);
@@ -1492,8 +1511,35 @@ router.post('/toggle-auto-generation', async (req, res) => {
       return res.status(400).json({ error: 'Missing enabled flag' });
     }
 
-    // 简单实现：直接返回成功
-    // 实际的配置存储可以在后续扩展
+    // 存储到 blog_config 表
+    const configKey = 'auto_generation_enabled';
+    const configValue = enabled ? 'true' : 'false';
+
+    // 先尝试更新
+    const existing = await sb(`blog_config?config_key=eq.${configKey}`);
+
+    if (existing && existing.length > 0) {
+      // 已存在，更新
+      await sb(`blog_config?config_key=eq.${configKey}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          config_value: configValue,
+          updated_at: new Date().toISOString(),
+        }),
+      });
+    } else {
+      // 不存在，插入
+      await sb('blog_config', {
+        method: 'POST',
+        body: JSON.stringify({
+          config_key: configKey,
+          config_value: configValue,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }),
+      });
+    }
+
     res.json({
       success: true,
       autoGenerationEnabled: enabled,
