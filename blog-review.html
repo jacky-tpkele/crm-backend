@@ -355,6 +355,64 @@
       margin-top: 2px;
     }
 
+    .seo-index-status-card {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .seo-index-status-row {
+      display: grid;
+      grid-template-columns: 118px minmax(0, 1fr);
+      gap: 8px;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .seo-index-status-label {
+      color: #86868B;
+      font-weight: 500;
+    }
+    .seo-index-status-value {
+      color: #1D1D1F;
+      min-width: 0;
+      word-break: break-word;
+    }
+    .seo-index-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid transparent;
+    }
+    .seo-index-pending { background:#F2F2F4; color:#6E6E73; border-color:#E5E5E7; }
+    .seo-index-page_ok { background:#E8F1FF; color:#066128; border-color:#DCE7FF; }
+    .seo-index-sitemap_pending { background:#FFF8E1; color:#8A6D00; border-color:#FFE9A8; }
+    .seo-index-in_sitemap { background:#E6F6EB; color:#0F7A3A; border-color:#CFEED8; }
+    .seo-index-sitemap_missing_24h,
+    .seo-index-page_error { background:#FFEDEC; color:#C7321F; border-color:#FFD7D5; }
+    .seo-index-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 2px;
+    }
+    .seo-index-actions button {
+      padding: 6px 9px;
+      border: 1px solid #E5E5E7;
+      background: #FFFFFF;
+      color: #424245;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 11px;
+      line-height: 1.2;
+    }
+    .seo-index-actions button:hover {
+      background: #F5F5F7;
+      border-color: #D2D2D7;
+    }
+
     /* 章节卡 */
     .section-card {
       border: 1px solid #E5E5E7;
@@ -621,6 +679,17 @@
         </div>
       </div>
 
+      <!-- 4b. SEO Indexing / Sitemap 状态 -->
+      <div class="panel" id="seoIndexPanel">
+        <div class="panel-header">
+          <span>SEO Status</span>
+          <button onclick="loadSeoIndexStatus()">刷新</button>
+        </div>
+        <div class="panel-body" id="seoIndexStatusBox">
+          <div style="font-size:12px;color:#86868B;text-align:center;padding:10px;">加载中...</div>
+        </div>
+      </div>
+
       <!-- 5. 链接管理（内链 + 外链） -->
       <div class="panel">
         <div class="panel-header">🔗 链接管理</div>
@@ -759,6 +828,7 @@
       renderOg();
       renderInternalLinks();
       renderExternalLinks();
+      loadSeoIndexStatus();
       loadSitePagesOnce();
     }
 
@@ -1162,6 +1232,161 @@
             </div>`).join('')}
         </div>`;
       document.getElementById('seoResult').innerHTML = html;
+    }
+
+    function normalizeSeoIndexStatus(status) {
+      const code = status?.display_status || status?.status || 'pending';
+      const labels = {
+        pending: '待检测',
+        page_ok: '页面可访问',
+        sitemap_pending: 'Sitemap 暂未发现，等待刷新',
+        in_sitemap: '已在 Sitemap 中',
+        sitemap_missing_24h: '24小时未发现，需检查网站 Sitemap 设置',
+        page_error: '页面访问异常',
+      };
+      return {
+        ...(status || {}),
+        display_status: code,
+        display_label: status?.display_label || labels[code] || labels.pending,
+      };
+    }
+
+    function formatSeoDate(value) {
+      if (!value) return '—';
+      try {
+        return new Date(value).toLocaleString('zh-CN');
+      } catch {
+        return value;
+      }
+    }
+
+    function getPublishedBlogUrl() {
+      const slug = post?.slug || post?.slug_url || document.getElementById('fSlug')?.value || '';
+      return slug ? `https://www.tpkele.com/blog/${slug}` : '';
+    }
+
+    function renderSeoIndexStatus(status) {
+      const s = normalizeSeoIndexStatus(status);
+      const url = s.url || getPublishedBlogUrl();
+      const pageStatus = s.http_status
+        ? `${s.page_accessible ? '页面可访问' : '页面访问异常'} (HTTP ${s.http_status})`
+        : (s.page_accessible ? '页面可访问' : '待检测');
+      const sitemapStatus = s.in_sitemap
+        ? `已在 Sitemap 中${s.sitemap_url_found ? '：' + escapeHtml(s.sitemap_url_found) : ''}`
+        : (s.display_status === 'sitemap_missing_24h' ? '24小时未发现，需检查网站 Sitemap 设置' : 'Sitemap 暂未发现，等待刷新');
+
+      document.getElementById('seoIndexStatusBox').innerHTML = `
+        <div class="seo-index-status-card">
+          <div>${renderSeoIndexBadge(s)}</div>
+          <div class="seo-index-status-row">
+            <div class="seo-index-status-label">BLOG URL</div>
+            <div class="seo-index-status-value">${url ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(url)}</a>` : '—'}</div>
+          </div>
+          <div class="seo-index-status-row">
+            <div class="seo-index-status-label">页面访问状态</div>
+            <div class="seo-index-status-value">${escapeHtml(pageStatus)}</div>
+          </div>
+          <div class="seo-index-status-row">
+            <div class="seo-index-status-label">Sitemap 状态</div>
+            <div class="seo-index-status-value">${sitemapStatus}</div>
+          </div>
+          <div class="seo-index-status-row">
+            <div class="seo-index-status-label">最后检测时间</div>
+            <div class="seo-index-status-value">${formatSeoDate(s.last_checked_at)}</div>
+          </div>
+          <div class="seo-index-status-row">
+            <div class="seo-index-status-label">下一次检测时间</div>
+            <div class="seo-index-status-value">${formatSeoDate(s.next_check_at)}</div>
+          </div>
+          <div class="seo-index-status-row">
+            <div class="seo-index-status-label">检测次数</div>
+            <div class="seo-index-status-value">${s.check_count || 0}</div>
+          </div>
+          <div class="seo-index-status-row">
+            <div class="seo-index-status-label">错误原因</div>
+            <div class="seo-index-status-value">${escapeHtml(s.error_message || '—')}</div>
+          </div>
+          <div class="seo-index-actions">
+            <button onclick="manualSeoIndexAction('check-url')">手动检测页面</button>
+            <button onclick="manualSeoIndexAction('check-sitemap')">手动检测 Sitemap</button>
+            <button onclick="manualSeoIndexAction('recheck')">重新检测</button>
+            <button onclick="copyBlogUrl('${escapeHtml(url)}')">复制 URL</button>
+            <button onclick="openGscSubmit('${escapeHtml(url)}')">打开 GSC 提交页面</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSeoIndexBadge(status) {
+      const s = normalizeSeoIndexStatus(status);
+      return `<span class="seo-index-badge seo-index-${escapeHtml(s.display_status)}">${escapeHtml(s.display_label)}</span>`;
+    }
+
+    async function loadSeoIndexStatus() {
+      const box = document.getElementById('seoIndexStatusBox');
+      if (!box || !postId) return;
+      if (post && post.status !== 'published') {
+        box.innerHTML = '<div style="font-size:12px;color:#86868B;text-align:center;padding:10px;">文章发布后会自动开始 URL 和 Sitemap 检测。</div>';
+        return;
+      }
+      box.innerHTML = '<div style="font-size:12px;color:#86868B;text-align:center;padding:10px;">加载中...</div>';
+      try {
+        const r = await fetch('/api/blog/seo-index/' + postId);
+        const d = await r.json();
+        if (d.success) {
+          renderSeoIndexStatus(d.status);
+        } else {
+          box.innerHTML = '<div style="font-size:12px;color:#FF3B30;">加载失败：' + escapeHtml(d.error || '') + '</div>';
+        }
+      } catch (e) {
+        box.innerHTML = '<div style="font-size:12px;color:#FF3B30;">错误：' + escapeHtml(e.message) + '</div>';
+      }
+    }
+
+    async function manualSeoIndexAction(action) {
+      const labels = {
+        'check-url': '页面检测',
+        'check-sitemap': 'Sitemap 检测',
+        recheck: '重新检测',
+      };
+      showToast((labels[action] || '检测') + '中...');
+      try {
+        const r = await fetch(`/api/blog/seo-index/${postId}/${action}`, { method: 'POST' });
+        const d = await r.json();
+        if (d.success) {
+          renderSeoIndexStatus(d.status);
+          showToast('✓ ' + normalizeSeoIndexStatus(d.status).display_label);
+        } else {
+          showToast('检测失败：' + (d.error || ''));
+        }
+      } catch (e) {
+        showToast('错误：' + e.message);
+      }
+    }
+
+    async function copyBlogUrl(url) {
+      if (!url) {
+        showToast('URL 为空');
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast('✓ 已复制 URL');
+      } catch {
+        const input = document.createElement('input');
+        input.value = url;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        input.remove();
+        showToast('✓ 已复制 URL');
+      }
+    }
+
+    function openGscSubmit(url) {
+      copyBlogUrl(url);
+      window.open('https://search.google.com/search-console', '_blank', 'noopener');
+      showToast('已复制 URL，请在 GSC 的 URL Inspection 中粘贴并请求编入索引');
     }
 
     async function openSitePreview() {

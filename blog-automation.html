@@ -1824,6 +1824,85 @@
       opacity: 0.78;
       font-size: 11px;
     }
+
+    .seo-index-overview {
+      margin-top: 16px;
+      padding: 14px;
+      border: 1px solid #E5E5E7;
+      border-radius: 12px;
+      background: #FFFFFF;
+    }
+    .seo-index-overview-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1D1D1F;
+      margin-bottom: 10px;
+    }
+    .seo-index-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .seo-index-mini {
+      padding: 10px;
+      border: 1px solid #F2F2F2;
+      border-radius: 8px;
+      background: #FAFAFA;
+    }
+    .seo-index-mini-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1D1D1F;
+      line-height: 1;
+    }
+    .seo-index-mini-label {
+      margin-top: 5px;
+      font-size: 11px;
+      color: #6E6E73;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .seo-index-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid transparent;
+      vertical-align: middle;
+    }
+    .seo-index-pending { background:#F2F2F4; color:#6E6E73; border-color:#E5E5E7; }
+    .seo-index-page_ok { background:#E8F1FF; color:#066128; border-color:#DCE7FF; }
+    .seo-index-sitemap_pending { background:#FFF8E1; color:#8A6D00; border-color:#FFE9A8; }
+    .seo-index-in_sitemap { background:#E6F6EB; color:#0F7A3A; border-color:#CFEED8; }
+    .seo-index-sitemap_missing_24h,
+    .seo-index-page_error { background:#FFEDEC; color:#C7321F; border-color:#FFD7D5; }
+    .seo-index-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 8px;
+    }
+    .seo-index-actions button,
+    .seo-index-actions a {
+      padding: 5px 9px;
+      border: 1px solid #E5E5E7;
+      background: #FFFFFF;
+      color: #424245;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 11px;
+      text-decoration: none;
+      line-height: 1.2;
+    }
+    .seo-index-actions button:hover,
+    .seo-index-actions a:hover {
+      background: #F5F5F7;
+      border-color: #D2D2D7;
+    }
   </style>
 </head>
 <body>
@@ -1917,6 +1996,32 @@
             <div class="stat-label">生成失败</div>
             <div class="stat-value" id="statFailed">0</div>
             <div class="stat-unit">篇</div>
+          </div>
+        </div>
+
+        <div class="seo-index-overview">
+          <div class="seo-index-overview-title">SEO Indexing / Sitemap 检测概览</div>
+          <div class="seo-index-grid">
+            <div class="seo-index-mini">
+              <div class="seo-index-mini-value" id="seoStatPublished">0</div>
+              <div class="seo-index-mini-label">已发布文章</div>
+            </div>
+            <div class="seo-index-mini">
+              <div class="seo-index-mini-value" id="seoStatInSitemap">0</div>
+              <div class="seo-index-mini-label">已在 Sitemap</div>
+            </div>
+            <div class="seo-index-mini">
+              <div class="seo-index-mini-value" id="seoStatWaiting">0</div>
+              <div class="seo-index-mini-label">等待刷新</div>
+            </div>
+            <div class="seo-index-mini">
+              <div class="seo-index-mini-value" id="seoStatMissing24h">0</div>
+              <div class="seo-index-mini-label">24小时未发现</div>
+            </div>
+            <div class="seo-index-mini">
+              <div class="seo-index-mini-value" id="seoStatPageError">0</div>
+              <div class="seo-index-mini-label">页面异常</div>
+            </div>
           </div>
         </div>
 
@@ -2725,6 +2830,8 @@
     function renderPublishedCard(p) {
       const typeLabels = { product:'产品知识', buying:'选型指南', comparison:'对比文章', application:'应用场景', faq:'FAQ' };
       const typeLabel = typeLabels[p.article_type] || p.article_type || '未分类';
+      const seoStatus = normalizeSeoIndexStatus(p.seo_status);
+      const seoBadge = renderSeoIndexBadge(seoStatus);
       const cover = p.cover_image_url
         ? `<img src="${p.cover_image_url}" style="width:160px;height:90px;object-fit:cover;border-radius:8px;flex-shrink:0;" alt="">`
         : `<div style="width:160px;height:90px;background:#FAFAFA;border:1px solid #E5E5E7;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#86868B;font-size:12px;flex-shrink:0;">无封面</div>`;
@@ -2747,6 +2854,7 @@
             <div style="font-size:12px;color:#6E6E73;margin-bottom:4px;">
               <span style="background:#E6F6EB;color:#0F7A3A;padding:3px 10px;border-radius:999px;margin-right:6px;font-weight:500;">${escapeHtml(typeLabel)}</span>
               ${p.main_keyword ? `<span style="margin-right:8px;color:#86868B;">🔑 ${escapeHtml(p.main_keyword)}</span>` : ''}
+              ${isPublished ? seoBadge : ''}
             </div>
             <div style="font-size:11px;color:#86868B;margin-bottom:4px;">
               <span style="margin-right:10px;">${dateLabel} ${dateStr}</span>
@@ -2754,6 +2862,15 @@
               <span>⏱ ${p.reading_time || 0} 分钟</span>
             </div>
             ${slug ? `<div style="font-size:11px;color:#0b9b3f;font-family:Consolas,Menlo,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">/blog/${escapeHtml(slug)}</div>` : ''}
+            ${isPublished ? `
+              <div class="seo-index-actions">
+                <button onclick="event.stopPropagation();manualSeoIndexAction('${p.id}', 'check-url')">检测页面</button>
+                <button onclick="event.stopPropagation();manualSeoIndexAction('${p.id}', 'check-sitemap')">检测 Sitemap</button>
+                <button onclick="event.stopPropagation();manualSeoIndexAction('${p.id}', 'recheck')">重新检测</button>
+                <button onclick="event.stopPropagation();copyBlogUrl('${websiteUrl}')">复制 URL</button>
+                <button onclick="event.stopPropagation();openGscSubmit('${websiteUrl}')">打开 GSC</button>
+              </div>
+            ` : ''}
           </div>
           <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">
             ${isPublished ? `<a href="${websiteUrl}" target="_blank" rel="noopener" style="text-align:center;padding:6px 14px;background:#0b9b3f;color:white;border:none;border-radius:8px;text-decoration:none;font-size:12px;font-weight:500;">🌐 网站查看</a>` : ''}
@@ -2766,6 +2883,72 @@
             <button onclick="deletePostPermanent('${p.id}', '${escapeHtml(p.title || '').replace(/'/g, "\\'")}')" style="padding:6px 14px;border:1px solid #FFD7D5;background:#FFFFFF;color:#FF3B30;border-radius:8px;cursor:pointer;font-size:12px;">🗑 永久删除</button>
           </div>
         </div>`;
+    }
+
+    function normalizeSeoIndexStatus(status) {
+      const code = status?.display_status || status?.status || 'pending';
+      const labels = {
+        pending: '待检测',
+        page_ok: '页面可访问',
+        sitemap_pending: 'Sitemap 暂未发现',
+        in_sitemap: '已在 Sitemap 中',
+        sitemap_missing_24h: '24小时未发现需检查设置',
+        page_error: '页面访问异常',
+      };
+      return {
+        ...(status || {}),
+        display_status: code,
+        display_label: status?.display_label || labels[code] || labels.pending,
+      };
+    }
+
+    function renderSeoIndexBadge(status) {
+      const s = normalizeSeoIndexStatus(status);
+      return `<span class="seo-index-badge seo-index-${escapeHtml(s.display_status)}">${escapeHtml(s.display_label)}</span>`;
+    }
+
+    async function manualSeoIndexAction(postId, action) {
+      const actionLabels = {
+        'check-url': '页面检测',
+        'check-sitemap': 'Sitemap 检测',
+        recheck: '重新检测',
+      };
+      showToast((actionLabels[action] || '检测') + '中...');
+      try {
+        const r = await fetch(`/api/blog/seo-index/${postId}/${action}`, { method: 'POST' });
+        const d = await r.json();
+        if (d.success) {
+          const status = normalizeSeoIndexStatus(d.status);
+          showToast('✓ ' + status.display_label);
+          loadPublishedList();
+          loadDashboard();
+        } else {
+          showToast('检测失败：' + (d.error || ''));
+        }
+      } catch (e) {
+        showToast('错误：' + e.message);
+      }
+    }
+
+    async function copyBlogUrl(url) {
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast('✓ 已复制 URL');
+      } catch {
+        const input = document.createElement('input');
+        input.value = url;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        input.remove();
+        showToast('✓ 已复制 URL');
+      }
+    }
+
+    function openGscSubmit(url) {
+      copyBlogUrl(url);
+      window.open('https://search.google.com/search-console', '_blank', 'noopener');
+      showToast('已复制 URL，请在 GSC 的 URL Inspection 中粘贴并请求编入索引');
     }
 
     async function unpublishPost(postId) {
@@ -2899,6 +3082,13 @@
           document.getElementById('statPending').textContent = data.todayStats.pending_review;
           document.getElementById('statPublished').textContent = data.todayStats.published;
           document.getElementById('statFailed').textContent = data.todayStats.failed;
+
+          const seo = data.seoOverview || {};
+          document.getElementById('seoStatPublished').textContent = seo.publishedCount || 0;
+          document.getElementById('seoStatInSitemap').textContent = seo.inSitemapCount || 0;
+          document.getElementById('seoStatWaiting').textContent = seo.waitingSitemapCount || 0;
+          document.getElementById('seoStatMissing24h').textContent = seo.missing24hCount || 0;
+          document.getElementById('seoStatPageError').textContent = seo.pageErrorCount || 0;
 
           // 同步顶部 tab 的待审核 badge
           const badge = document.getElementById('tabPendingBadge');

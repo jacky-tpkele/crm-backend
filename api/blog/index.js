@@ -65,6 +65,24 @@ const IMAGE_CONFIG = {
   maxSize: parseInt(process.env.IMAGE_MAX_SIZE || '200000'),
 };
 
+const BLOG_SITE_BASE_URL = (process.env.BLOG_SITE_BASE_URL || 'https://www.tpkele.com').replace(/\/$/, '');
+const BLOG_SITEMAP_URL = process.env.BLOG_SITEMAP_URL || `${BLOG_SITE_BASE_URL}/sitemap.xml`;
+const SEO_SCHEDULE_DELAYS_MS = [
+  1 * 60 * 1000,
+  30 * 60 * 1000,
+  2 * 60 * 60 * 1000,
+  24 * 60 * 60 * 1000,
+];
+
+const SEO_STATUS_LABELS = {
+  pending: '待检测',
+  page_ok: '页面可访问',
+  sitemap_pending: 'Sitemap 暂未发现，等待刷新',
+  in_sitemap: '已在 Sitemap 中',
+  sitemap_missing_24h: '24小时未发现，需检查网站 Sitemap 设置',
+  page_error: '页面访问异常',
+};
+
 // ──────────────────────────────────────────
 // Supabase 辅助函数
 // ──────────────────────────────────────────
@@ -89,6 +107,337 @@ async function sb(path, opts = {}) {
   }
   if (!res.ok) throw new Error(data?.message || data?.error || JSON.stringify(data));
   return data;
+}
+
+function buildBlogUrl(slug) {
+  return `${BLOG_SITE_BASE_URL}/blog/${encodeURIComponent(String(slug || '').replace(/^\/+/, ''))}`;
+}
+
+function normalizeUrlForCompare(url) {
+  return String(url || '').trim().replace(/\/$/, '');
+}
+
+function xmlDecode(text) {
+  return String(text || '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+}
+
+function nextSeoCheckAt(publishedAt, now = new Date()) {
+  const base = publishedAt ? new Date(publishedAt) : now;
+  for (const delay of SEO_SCHEDULE_DELAYS_MS) {
+    const target = new Date(base.getTime() + delay);
+    if (target > now) return target.toISOString();
+  }
+  return null;
+}
+
+function finalSeoCheckAt(publishedAt) {
+  const base = publishedAt ? new Date(publishedAt) : new Date();
+  return new Date(base.getTime() + SEO_SCHEDULE_DELAYS_MS[SEO_SCHEDULE_DELAYS_MS.length - 1]).toISOString();
+}
+
+function getSeoDisplayStatus(row) {
+  if (!row) return 'pending';
+  if (row.status) return row.status;
+  if (row.in_sitemap) return 'in_sitemap';
+  if (row.page_accessible) return 'page_ok';
+  return 'pending';
+}
+
+function getSeoDisplayLabel(row) {
+  return SEO_STATUS_LABELS[getSeoDisplayStatus(row)] || SEO_STATUS_LABELS.pending;
+}
+
+function decorateSeoStatus(row) {
+  if (!row) return null;
+  return {
+    ...row,
+    display_status: getSeoDisplayStatus(row),
+    display_label: getSeoDisplayLabel(row),
+  };
+}
+
+async function getPostForSeo(blogId) {
+  const posts = await sb(`blog_posts?id=eq.${encodeURIComponent(blogId)}&select=id,title,slug,slug_url,status,published_at,created_at`);
+  if (!posts || posts.length === 0) throw new Error('Post not found');
+  const post = posts[0];
+  const slug = post.slug || post.slug_url;
+  if (!slug) throw new Error('Post slug is missing');
+  return { post, slug, url: buildBlogUrl(slug) };
+}
+
+async function getSeoIndexStatus(blogId) {
+  const rows = await sb(`seo_index_status?blog_id=eq.${encodeURIComponent(blogId)}&select=*`);
+  return rows && rows[0] ? rows[0] : null;
+}
+
+async function saveSeoIndexStatus(blogId, fields) {
+  const existing = await getSeoIndexStatus(blogId);
+  const now = new Date().toISOString();
+  const payload = { ...fields, updated_at: now };
+
+  if (existing) {
+    const rows = await sb(`seo_index_status?blog_id=eq.${encodeURIComponent(blogId)}`, {
+      method: 'PATCH',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify(payload),
+    });
+    return rows && rows[0] ? rows[0] : { ...existing, ...payload };
+  }
+
+  const rows = await sb('seo_index_status', {
+    method: 'POST',
+    headers: { Prefer: 'return=representation' },
+    body: JSON.stringify({
+      blog_id: blogId,
+      ...payload,
+      created_at: now,
+    }),
+  });
+  return rows && rows[0] ? rows[0] : { blog_id: blogId, ...payload };
+}
+
+async function scheduleSitemapChecks(blogId, explicitUrl) {
+  const { post, url } = await getPostForSeo(blogId);
+  const now = new Date().toISOString();
+  const targetUrl = explicitUrl || url;
+  const existing = await getSeoIndexStatus(blogId).catch(() => null);
+  const nextCheck = nextSeoCheckAt(post.published_at || now);
+
+  const row = await saveSeoIndexStatus(blogId, {
+    url: targetUrl,
+    status: existing?.status || 'pending',
+    check_count: existing?.check_count || 0,
+    next_check_at: nextCheck,
+    error_message: null,
+  });
+
+  scheduleShortSeoTimer(blogId, nextCheck);
+  return row;
+}
+
+function scheduleShortSeoTimer(blogId, nextCheckAt) {
+  if (!nextCheckAt) return;
+  const delay = new Date(nextCheckAt).getTime() - Date.now();
+  if (delay < 0 || delay > 2 * 60 * 1000) return;
+  const timer = setTimeout(() => {
+    manualRecheck(blogId).catch((err) => console.warn('SEO scheduled check failed:', err.message));
+  }, delay);
+  if (typeof timer.unref === 'function') timer.unref();
+}
+
+async function checkBlogUrlStatus(blogId) {
+  const { post, url } = await getPostForSeo(blogId);
+  const existing = await getSeoIndexStatus(blogId).catch(() => null);
+  const now = new Date().toISOString();
+  let httpStatus = null;
+  let pageAccessible = false;
+  let errorMessage = null;
+
+  try {
+    let response = await fetch(url, {
+      method: 'HEAD',
+      redirect: 'follow',
+      timeout: 15000,
+      headers: { 'User-Agent': 'TPKELE-CRM-SEO-Checker/1.0' },
+    });
+    if ([405, 403].includes(response.status)) {
+      response = await fetch(url, {
+        method: 'GET',
+        redirect: 'follow',
+        timeout: 15000,
+        headers: { 'User-Agent': 'TPKELE-CRM-SEO-Checker/1.0' },
+      });
+    }
+    httpStatus = response.status;
+    pageAccessible = response.status === 200;
+  } catch (error) {
+    errorMessage = error.message;
+  }
+
+  const status = pageAccessible
+    ? (existing?.in_sitemap ? 'in_sitemap' : 'page_ok')
+    : 'page_error';
+
+  return await saveSeoIndexStatus(blogId, {
+    url,
+    http_status: httpStatus,
+    page_accessible: pageAccessible,
+    status,
+    check_count: (existing?.check_count || 0) + 1,
+    first_checked_at: existing?.first_checked_at || now,
+    last_checked_at: now,
+    next_check_at: pageAccessible ? nextSeoCheckAt(post.published_at || now) : existing?.next_check_at || nextSeoCheckAt(post.published_at || now),
+    error_message: pageAccessible ? null : (errorMessage || `HTTP ${httpStatus || 'unknown'}`),
+  });
+}
+
+async function fetchSitemapUrlList(rootUrl = BLOG_SITEMAP_URL) {
+  const urls = new Set();
+  const sitemapQueue = [rootUrl];
+  const visited = new Set();
+  const maxSitemaps = 30;
+
+  while (sitemapQueue.length && visited.size < maxSitemaps) {
+    const sitemapUrl = sitemapQueue.shift();
+    if (!sitemapUrl || visited.has(sitemapUrl)) continue;
+    visited.add(sitemapUrl);
+
+    const response = await fetch(sitemapUrl, {
+      method: 'GET',
+      redirect: 'follow',
+      timeout: 20000,
+      headers: { 'User-Agent': 'TPKELE-CRM-SEO-Checker/1.0' },
+    });
+    if (!response.ok) {
+      throw new Error(`Sitemap fetch failed ${response.status}: ${sitemapUrl}`);
+    }
+
+    const xml = await response.text();
+    const locs = [...xml.matchAll(/<loc>\s*([^<]+)\s*<\/loc>/gi)].map((m) => xmlDecode(m[1]).trim()).filter(Boolean);
+    for (const loc of locs) {
+      if (/\.xml(\?|$)/i.test(loc) || /sitemap/i.test(loc)) {
+        if (!visited.has(loc)) sitemapQueue.push(loc);
+      } else {
+        urls.add(loc);
+      }
+    }
+  }
+
+  return [...urls];
+}
+
+async function checkBlogSitemapStatus(blogId) {
+  const { post, url } = await getPostForSeo(blogId);
+  const existing = await getSeoIndexStatus(blogId).catch(() => null);
+  const nowDate = new Date();
+  const now = nowDate.toISOString();
+  const publishedAt = post.published_at || existing?.created_at || now;
+  const finalAt = finalSeoCheckAt(publishedAt);
+  let sitemapUrlFound = null;
+  let inSitemap = false;
+  let errorMessage = null;
+
+  try {
+    const sitemapUrls = await fetchSitemapUrlList(BLOG_SITEMAP_URL);
+    const target = normalizeUrlForCompare(url);
+    sitemapUrlFound = sitemapUrls.find((item) => normalizeUrlForCompare(item) === target) || null;
+    inSitemap = Boolean(sitemapUrlFound);
+  } catch (error) {
+    errorMessage = error.message;
+  }
+
+  const finalExpired = new Date(finalAt) <= nowDate;
+  const nextCheck = inSitemap || finalExpired ? null : nextSeoCheckAt(publishedAt, nowDate);
+  const status = inSitemap
+    ? 'in_sitemap'
+    : finalExpired
+      ? 'sitemap_missing_24h'
+      : (existing?.page_accessible === false && existing?.http_status ? 'page_error' : 'sitemap_pending');
+
+  return await saveSeoIndexStatus(blogId, {
+    url,
+    in_sitemap: inSitemap,
+    sitemap_url_found: sitemapUrlFound,
+    status,
+    check_count: (existing?.check_count || 0) + 1,
+    first_checked_at: existing?.first_checked_at || now,
+    last_checked_at: now,
+    next_check_at: nextCheck,
+    final_checked_at: inSitemap || finalExpired ? now : existing?.final_checked_at || null,
+    error_message: errorMessage,
+  });
+}
+
+async function manualRecheck(blogId) {
+  const pageRow = await checkBlogUrlStatus(blogId);
+  if (!pageRow.page_accessible) return pageRow;
+  return await checkBlogSitemapStatus(blogId);
+}
+
+async function initializeSeoStatusAfterPublish(blogId, slug, publishedAt) {
+  const url = buildBlogUrl(slug);
+  const nextCheck = nextSeoCheckAt(publishedAt || new Date().toISOString());
+  const row = await saveSeoIndexStatus(blogId, {
+    url,
+    status: 'pending',
+    http_status: null,
+    page_accessible: false,
+    in_sitemap: false,
+    sitemap_url_found: null,
+    error_message: null,
+    next_check_at: nextCheck,
+  });
+  scheduleShortSeoTimer(blogId, nextCheck);
+  return row;
+}
+
+async function processDueSeoChecks(limit = 10) {
+  const now = new Date().toISOString();
+  const rows = await sb(
+    `seo_index_status?next_check_at=lte.${encodeURIComponent(now)}&status=in.(pending,page_ok,sitemap_pending,page_error)&select=blog_id&order=next_check_at.asc&limit=${limit}`
+  );
+  const results = [];
+  for (const row of rows || []) {
+    try {
+      const status = await manualRecheck(row.blog_id);
+      results.push({ blogId: row.blog_id, success: true, status: getSeoDisplayStatus(status) });
+    } catch (error) {
+      results.push({ blogId: row.blog_id, success: false, error: error.message });
+    }
+  }
+  return results;
+}
+
+async function getSeoStatusesForBlogIds(blogIds) {
+  const ids = [...new Set((blogIds || []).filter(Boolean))];
+  if (ids.length === 0) return {};
+
+  const rows = await sb(`seo_index_status?blog_id=in.(${ids.map(encodeURIComponent).join(',')})&select=*`);
+  return (rows || []).reduce((map, row) => {
+    map[row.blog_id] = decorateSeoStatus(row);
+    return map;
+  }, {});
+}
+
+async function getSeoOverviewStats() {
+  try {
+    const publishedRows = await sb('blog_posts?status=eq.published&select=id');
+    const publishedIds = new Set((publishedRows || []).map((p) => p.id));
+    if (publishedIds.size === 0) {
+      return {
+        publishedCount: 0,
+        inSitemapCount: 0,
+        waitingSitemapCount: 0,
+        missing24hCount: 0,
+        pageErrorCount: 0,
+      };
+    }
+
+    const seoRows = await sb(`seo_index_status?blog_id=in.(${[...publishedIds].map(encodeURIComponent).join(',')})&select=status,page_accessible,in_sitemap,http_status`);
+
+    const related = seoRows || [];
+    return {
+      publishedCount: publishedIds.size,
+      inSitemapCount: related.filter((row) => row.in_sitemap || row.status === 'in_sitemap').length,
+      waitingSitemapCount: related.filter((row) => ['pending', 'page_ok', 'sitemap_pending'].includes(getSeoDisplayStatus(row))).length,
+      missing24hCount: related.filter((row) => row.status === 'sitemap_missing_24h').length,
+      pageErrorCount: related.filter((row) => row.status === 'page_error' || row.page_accessible === false && row.http_status).length,
+    };
+  } catch (error) {
+    console.warn('SEO overview stats failed:', error.message);
+    return {
+      publishedCount: 0,
+      inSitemapCount: 0,
+      waitingSitemapCount: 0,
+      missing24hCount: 0,
+      pageErrorCount: 0,
+    };
+  }
 }
 
 // 鈹€鈹€ 安全解析 AI 返回的 JSON（处理 markdown 代码块包裹、额外文本等异常情形） 鈹€鈹€
@@ -810,6 +1159,12 @@ router.post('/publish', async (req, res) => {
       });
     }
 
+    try {
+      await initializeSeoStatusAfterPublish(postId, slug, updates.published_at);
+    } catch (seoError) {
+      console.warn('SEO status init failed after publish:', seoError.message);
+    }
+
     res.json({
       success: true,
       slug,
@@ -832,6 +1187,13 @@ router.get('/cron', async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    let seoDueChecks = [];
+    try {
+      seoDueChecks = await processDueSeoChecks(10);
+    } catch (seoError) {
+      console.warn('SEO due checks failed in cron:', seoError.message);
+    }
+
     // 检查自动生成开关是否打开
     const config = await sb('blog_config?config_key=eq.auto_generation_enabled');
     const autoEnabled = config && config.length > 0 && config[0].config_value === 'true';
@@ -842,6 +1204,7 @@ router.get('/cron', async (req, res) => {
         message: '自动生成已关闭，跳过本次执行',
         timestamp: new Date().toISOString(),
         generatedCount: 0,
+        seoDueChecks,
         results: [],
       });
     }
@@ -903,6 +1266,7 @@ router.get('/cron', async (req, res) => {
       success: true,
       timestamp: new Date().toISOString(),
       generatedCount: results.filter(r => r.status === 'success').length,
+      seoDueChecks,
       results,
     });
   } catch (error) {
@@ -1249,8 +1613,15 @@ Keep questions and answers concise and suitable for a public webpage.`;
 // 1. 获取仪表盘统计数据
 router.get('/dashboard', async (req, res) => {
   try {
+    try {
+      await processDueSeoChecks(5);
+    } catch (seoError) {
+      console.warn('SEO due checks failed in dashboard:', seoError.message);
+    }
+
     const plans = await sb('blog_plans?select=*');
     const posts = await sb('blog_posts?select=*');
+    const seoOverview = await getSeoOverviewStats();
 
     // 文章状态：draft/pending_review = 待审核, approved = 已批准, published = 已发布, generation_failed/failed = 失败
     const todayStats = {
@@ -1278,6 +1649,7 @@ router.get('/dashboard', async (req, res) => {
       nextExecutionTime: next.toISOString(),
       hoursUntilNextExecution: hoursUntil,
       autoGenerationEnabled: autoEnabled,
+      seoOverview,
     });
   } catch (error) {
     console.error('Error fetching dashboard:', error);
@@ -1619,6 +1991,13 @@ router.post('/approve', async (req, res) => {
           body: JSON.stringify({ status: 'published' }),
         });
       } catch {}
+    }
+
+    try {
+      await initializeSeoStatusAfterPublish(postId, slug, now);
+      await writeAuditLog(postId, 'seo_check_scheduled', `SEO check scheduled for ${buildBlogUrl(slug)}`, {});
+    } catch (seoError) {
+      console.warn('SEO status init failed after approve:', seoError.message);
     }
 
     res.json({
@@ -2703,7 +3082,37 @@ router.get('/published', async (req, res) => {
       query += `&title=ilike.*${encodeURIComponent(search.trim())}*`;
     }
 
+    if (safeStatus === 'published') {
+      try {
+        await processDueSeoChecks(5);
+      } catch (seoError) {
+        console.warn('SEO due checks failed in published list:', seoError.message);
+      }
+    }
+
     const posts = await sb(query);
+    if (safeStatus === 'published') {
+      for (const post of posts || []) {
+        if (!post.slug && !post.slug_url) continue;
+        try {
+          await scheduleSitemapChecks(post.id, buildBlogUrl(post.slug || post.slug_url));
+        } catch (seoError) {
+          console.warn('SEO status backfill failed:', seoError.message);
+        }
+      }
+    }
+
+    let seoStatusMap = {};
+    try {
+      seoStatusMap = await getSeoStatusesForBlogIds((posts || []).map((p) => p.id));
+    } catch (seoError) {
+      console.warn('SEO status merge failed:', seoError.message);
+    }
+
+    const postsWithSeo = (posts || []).map((post) => ({
+      ...post,
+      seo_status: seoStatusMap[post.id] || null,
+    }));
 
     // 同时返回未筛选的总数（统计卡片用）
     const allPublished = await sb('blog_posts?status=eq.published&select=id');
@@ -2711,7 +3120,7 @@ router.get('/published', async (req, res) => {
 
     res.json({
       success: true,
-      posts,
+      posts: postsWithSeo,
       counts: {
         published: (allPublished || []).length,
         archived: (allArchived || []).length,
@@ -2729,6 +3138,72 @@ function nextMonthIso(yyyymm) {
   const next = new Date(Date.UTC(y, m, 1));
   return next.toISOString().split('T')[0] + 'T00:00:00';
 }
+
+// 16b. SEO Indexing / Sitemap 检测助手
+router.get('/seo-index/due', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit || '10', 10), 30);
+    const results = await processDueSeoChecks(limit);
+    res.json({ success: true, results });
+  } catch (error) {
+    console.error('SEO due check error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/seo-index/:postId', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    let status = await getSeoIndexStatus(postId);
+    if (!status) {
+      status = await scheduleSitemapChecks(postId);
+    }
+    res.json({ success: true, status: decorateSeoStatus(status) });
+  } catch (error) {
+    console.error('SEO status fetch error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/seo-index/:postId/check-url', async (req, res) => {
+  try {
+    const status = await checkBlogUrlStatus(req.params.postId);
+    res.json({ success: true, status: decorateSeoStatus(status) });
+  } catch (error) {
+    console.error('SEO URL check error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/seo-index/:postId/check-sitemap', async (req, res) => {
+  try {
+    const status = await checkBlogSitemapStatus(req.params.postId);
+    res.json({ success: true, status: decorateSeoStatus(status) });
+  } catch (error) {
+    console.error('SEO sitemap check error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/seo-index/:postId/recheck', async (req, res) => {
+  try {
+    const status = await manualRecheck(req.params.postId);
+    res.json({ success: true, status: decorateSeoStatus(status) });
+  } catch (error) {
+    console.error('SEO manual recheck error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/seo-index/:postId/schedule', async (req, res) => {
+  try {
+    const status = await scheduleSitemapChecks(req.params.postId);
+    res.json({ success: true, status: decorateSeoStatus(status) });
+  } catch (error) {
+    console.error('SEO schedule error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // 16b. 下线文章（status: published → archived）
 router.post('/post/:postId/unpublish', async (req, res) => {
@@ -2780,6 +3255,12 @@ router.post('/post/:postId/republish', async (req, res) => {
     });
 
     await writeAuditLog(postId, 'republished', `Article republished: ${posts[0].title}`, {});
+
+    try {
+      await initializeSeoStatusAfterPublish(postId, posts[0].slug, now);
+    } catch (seoError) {
+      console.warn('SEO status init failed after republish:', seoError.message);
+    }
 
     res.json({
       success: true,
