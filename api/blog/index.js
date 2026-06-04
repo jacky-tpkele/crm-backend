@@ -140,6 +140,19 @@ function finalSeoCheckAt(publishedAt) {
   return new Date(base.getTime() + SEO_SCHEDULE_DELAYS_MS[SEO_SCHEDULE_DELAYS_MS.length - 1]).toISOString();
 }
 
+function getSeoTrackingStartAt(post, existing, fallback) {
+  return existing?.first_checked_at || existing?.created_at || post?.published_at || fallback;
+}
+
+function getScheduledSeoStatus(post, existing, fallback) {
+  if (!existing?.status) return 'pending';
+  if (existing.status !== 'sitemap_missing_24h') return existing.status;
+
+  const trackingStartAt = getSeoTrackingStartAt(post, existing, fallback);
+  const finalAt = finalSeoCheckAt(trackingStartAt);
+  return new Date(finalAt) <= new Date() ? existing.status : 'sitemap_pending';
+}
+
 function getSeoDisplayStatus(row) {
   if (!row) return 'pending';
   if (row.status) return row.status;
@@ -210,7 +223,7 @@ async function scheduleSitemapChecks(blogId, explicitUrl) {
 
   const row = await saveSeoIndexStatus(blogId, {
     url: targetUrl,
-    status: existing?.status || 'pending',
+    status: getScheduledSeoStatus(post, existing, now),
     check_count: existing?.check_count || 0,
     next_check_at: nextCheck,
     error_message: null,
@@ -316,8 +329,8 @@ async function checkBlogSitemapStatus(blogId) {
   const existing = await getSeoIndexStatus(blogId).catch(() => null);
   const nowDate = new Date();
   const now = nowDate.toISOString();
-  const publishedAt = post.published_at || existing?.created_at || now;
-  const finalAt = finalSeoCheckAt(publishedAt);
+  const trackingStartAt = getSeoTrackingStartAt(post, existing, now);
+  const finalAt = finalSeoCheckAt(trackingStartAt);
   let sitemapUrlFound = null;
   let inSitemap = false;
   let errorMessage = null;
@@ -332,7 +345,7 @@ async function checkBlogSitemapStatus(blogId) {
   }
 
   const finalExpired = new Date(finalAt) <= nowDate;
-  const nextCheck = inSitemap || finalExpired ? null : nextSeoCheckAt(publishedAt, nowDate);
+  const nextCheck = inSitemap || finalExpired ? null : nextSeoCheckAt(trackingStartAt, nowDate);
   const status = inSitemap
     ? 'in_sitemap'
     : finalExpired
@@ -348,7 +361,7 @@ async function checkBlogSitemapStatus(blogId) {
     first_checked_at: existing?.first_checked_at || now,
     last_checked_at: now,
     next_check_at: nextCheck,
-    final_checked_at: inSitemap || finalExpired ? now : existing?.final_checked_at || null,
+    final_checked_at: inSitemap || finalExpired ? now : null,
     error_message: errorMessage,
   });
 }
