@@ -2302,11 +2302,11 @@
       <div class="plan-list-header">
         <div class="plan-stats">
           <span id="publishedStatusToggle" style="display:inline-flex;gap:6px;margin-right:14px;">
-            <button class="pubtab-btn pubtab-active" data-pub-status="published" onclick="switchPublishedStatus('published')">📚 已发布 <span id="pubCountPublished">0</span></button>
-            <button class="pubtab-btn" data-pub-status="archived" onclick="switchPublishedStatus('archived')">📦 已下线 <span id="pubCountArchived">0</span></button>
+            <button class="pubtab-btn pubtab-active" data-pub-status="published" onclick="switchPublishedStatus('published')">已发布 <span id="pubCountPublished">0</span></button>
+            <button class="pubtab-btn" data-pub-status="archived" onclick="switchPublishedStatus('archived')">已下线 <span id="pubCountArchived">0</span></button>
           </span>
         </div>
-        <button onclick="loadPublishedList()" style="padding:8px 14px;border:1px solid #E5E5E7;background:#FFFFFF;color:#1D1D1F;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">🔄 刷新</button>
+        <button onclick="loadPublishedList()" style="padding:8px 14px;border:1px solid #E5E5E7;background:#FFFFFF;color:#1D1D1F;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">刷新</button>
       </div>
 
       <div style="display:flex;gap:10px;margin-bottom:14px;align-items:center;flex-wrap:wrap;">
@@ -2839,7 +2839,7 @@
       const dateStr = currentPubStatus === 'published'
         ? (p.published_at ? new Date(p.published_at).toLocaleString('zh-CN') : '—')
         : (p.archived_at ? new Date(p.archived_at).toLocaleString('zh-CN') : '—');
-      const dateLabel = currentPubStatus === 'published' ? '📅 发布于' : '📦 下线于';
+      const dateLabel = currentPubStatus === 'published' ? '发布于' : '下线于';
 
       const slug = p.slug || p.slug_url || '';
       const websiteUrl = `https://www.tpkele.com/blog/${slug}`;
@@ -2873,14 +2873,14 @@
             ` : ''}
           </div>
           <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">
-            ${isPublished ? `<a href="${websiteUrl}" target="_blank" rel="noopener" style="text-align:center;padding:6px 14px;background:#0b9b3f;color:white;border:none;border-radius:8px;text-decoration:none;font-size:12px;font-weight:500;">🌐 网站查看</a>` : ''}
-            <button onclick="openReviewWorkspace('${p.id}')" style="padding:6px 14px;border:1px solid #E5E5E7;background:#FFFFFF;color:#1D1D1F;border-radius:8px;cursor:pointer;font-size:12px;">✏ 重新编辑</button>
-            <button onclick="viewAuditLog('${p.id}', '${escapeHtml(p.title || '').replace(/'/g, "\\'")}')" style="padding:6px 14px;border:1px solid #E5E5E7;background:#FFFFFF;color:#424245;border-radius:8px;cursor:pointer;font-size:12px;">📜 历史</button>
+            ${isPublished ? `<a href="${websiteUrl}" target="_blank" rel="noopener" style="text-align:center;padding:6px 14px;background:#0b9b3f;color:white;border:none;border-radius:8px;text-decoration:none;font-size:12px;font-weight:500;">网站查看</a>` : ''}
+            <button onclick="openReviewWorkspace('${p.id}')" style="padding:6px 14px;border:1px solid #E5E5E7;background:#FFFFFF;color:#1D1D1F;border-radius:8px;cursor:pointer;font-size:12px;">重新编辑</button>
+            <button onclick="viewAuditLog('${p.id}', '${escapeHtml(p.title || '').replace(/'/g, "\\'")}')" style="padding:6px 14px;border:1px solid #E5E5E7;background:#FFFFFF;color:#424245;border-radius:8px;cursor:pointer;font-size:12px;">历史</button>
             ${isPublished
-              ? `<button onclick="unpublishPost('${p.id}')" style="padding:6px 14px;border:1px solid #E5E5E7;background:#FFFFFF;color:#FF9500;border-radius:8px;cursor:pointer;font-size:12px;">📥 下线</button>`
+              ? `<button onclick="unpublishPost('${p.id}')" style="padding:6px 14px;border:1px solid #E5E5E7;background:#FFFFFF;color:#FF9500;border-radius:8px;cursor:pointer;font-size:12px;">下线</button>`
               : `<button onclick="republishPost('${p.id}')" style="padding:6px 14px;border:1px solid #34C759;background:#FFFFFF;color:#34C759;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;">🚀 重新上线</button>`
             }
-            <button onclick="deletePostPermanent('${p.id}', '${escapeHtml(p.title || '').replace(/'/g, "\\'")}')" style="padding:6px 14px;border:1px solid #FFD7D5;background:#FFFFFF;color:#FF3B30;border-radius:8px;cursor:pointer;font-size:12px;">🗑 永久删除</button>
+            <button onclick="deletePostPermanent('${p.id}', '${escapeHtml(p.title || '').replace(/'/g, "\\'")}')" style="padding:6px 14px;border:1px solid #FFD7D5;background:#FFFFFF;color:#FF3B30;border-radius:8px;cursor:pointer;font-size:12px;">永久删除</button>
           </div>
         </div>`;
     }
