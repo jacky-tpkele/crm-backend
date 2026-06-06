@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BLOG 自动化</title>
+  <link rel="icon" type="image/png" href="/icons/icon-192.png?v=2026-05-24b">
+  <link rel="shortcut icon" href="/icons/icon-192.png?v=2026-05-24b">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png?v=2026-05-24b">
   <link rel="stylesheet" href="/light-theme.css">
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
@@ -3070,10 +3073,9 @@
           }
 
           // 更新下次执行时间
-          const nextExecTime = new Date(data.nextExecutionTime);
           const hoursUntil = parseFloat(data.hoursUntilNextExecution);
           document.getElementById('nextExecTime').innerHTML = `
-            ${nextExecTime.toLocaleString('zh-CN')} (还有 ${hoursUntil} 小时)
+            ${data.nextExecutionTimeDisplay || new Date(data.nextExecutionTime).toLocaleString('zh-CN')} (还有 ${hoursUntil} 小时)
           `;
 
           // 更新统计卡片

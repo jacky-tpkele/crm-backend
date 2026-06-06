@@ -67,6 +67,7 @@ const IMAGE_CONFIG = {
 
 const BLOG_SITE_BASE_URL = (process.env.BLOG_SITE_BASE_URL || 'https://www.tpkele.com').replace(/\/$/, '');
 const BLOG_SITEMAP_URL = process.env.BLOG_SITEMAP_URL || `${BLOG_SITE_BASE_URL}/sitemap.xml`;
+const BLOG_DASHBOARD_TIMEZONE = 'Asia/Shanghai';
 const SEO_SCHEDULE_DELAYS_MS = [
   1 * 60 * 1000,
   30 * 60 * 1000,
@@ -124,6 +125,31 @@ function xmlDecode(text) {
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'");
+}
+
+function getNextBeijingEight(now = new Date()) {
+  const beijingNow = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+  const targetBeijing = new Date(beijingNow);
+  targetBeijing.setUTCHours(8, 0, 0, 0);
+
+  if (beijingNow.getTime() >= targetBeijing.getTime()) {
+    targetBeijing.setUTCDate(targetBeijing.getUTCDate() + 1);
+  }
+
+  return new Date(targetBeijing.getTime() - 8 * 60 * 60 * 1000);
+}
+
+function formatBeijingDateTime(date) {
+  return new Intl.DateTimeFormat('zh-CN', {
+    timeZone: BLOG_DASHBOARD_TIMEZONE,
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).format(date);
 }
 
 function nextSeoCheckAt(publishedAt, now = new Date()) {
@@ -1710,9 +1736,7 @@ router.get('/dashboard', async (req, res) => {
     };
 
     // 下次执行时间：明天上午 8:00
-    const next = new Date();
-    next.setDate(next.getDate() + (next.getHours() >= 8 ? 1 : 0));
-    next.setHours(8, 0, 0, 0);
+    const next = getNextBeijingEight();
     const hoursUntil = ((next.getTime() - Date.now()) / (1000 * 60 * 60)).toFixed(1);
 
     // 获取自动生成开关状态
@@ -1723,6 +1747,7 @@ router.get('/dashboard', async (req, res) => {
       success: true,
       todayStats,
       nextExecutionTime: next.toISOString(),
+      nextExecutionTimeDisplay: formatBeijingDateTime(next),
       hoursUntilNextExecution: hoursUntil,
       autoGenerationEnabled: autoEnabled,
       seoOverview,
