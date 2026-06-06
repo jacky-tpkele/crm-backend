@@ -813,6 +813,22 @@ router.post('/generate-plan-v2', async (req, res) => {
       return res.status(400).json({ error: '关键词库为空，请先添加关键词' });
     }
 
+    const existingPlans = await sb(
+      `blog_plans?plan_month=eq.${encodeURIComponent(month)}&select=id,plan_order,status&order=plan_order.asc&limit=1000`
+    );
+    const pendingPlansByOrder = new Map(
+      (existingPlans || [])
+        .filter(p => p.status === 'pending')
+        .map(p => [Number(p.plan_order), p])
+        .filter(([order]) => Number.isFinite(order))
+    );
+    const occupiedOrders = new Set(
+      (existingPlans || [])
+        .filter(p => p.status !== 'pending')
+        .map(p => Number(p.plan_order))
+        .filter(Number.isFinite)
+    );
+
     const keywordsByCategory = {
       product: allKeywords.filter(k => k.category === 'product'),
       comparison: allKeywords.filter(k => k.category === 'comparison'),
@@ -892,6 +908,8 @@ router.post('/generate-plan-v2', async (req, res) => {
         title = `${kw} Guide`;
       }
 
+      while (occupiedOrders.has(orderNum)) orderNum += 1;
+
       plans.push({
         plan_month: month,
         plan_order: orderNum++,
@@ -903,16 +921,58 @@ router.post('/generate-plan-v2', async (req, res) => {
       });
     }
 
-    const result = await sb('blog_plans', {
-      method: 'POST',
-      headers: { 'Prefer': 'return=representation' },
-      body: JSON.stringify(plans),
-    });
+    const result = [];
+    let updatedPlans = 0;
+    let insertedPlans = 0;
+    const reusedPendingIds = new Set();
+    for (const plan of plans) {
+      const reusablePlan = pendingPlansByOrder.get(Number(plan.plan_order));
+      if (reusablePlan) {
+        reusedPendingIds.add(reusablePlan.id);
+        const rows = await sb(`blog_plans?id=eq.${reusablePlan.id}`, {
+          method: 'PATCH',
+          headers: { 'Prefer': 'return=representation' },
+          body: JSON.stringify({
+            keyword: plan.keyword,
+            title: plan.title,
+            article_type: plan.article_type,
+            daily_count: plan.daily_count,
+            status: 'pending',
+            updated_at: new Date().toISOString(),
+          }),
+        });
+        result.push(...(Array.isArray(rows) ? rows : []));
+        updatedPlans += 1;
+      } else {
+        const rows = await sb('blog_plans', {
+          method: 'POST',
+          headers: { 'Prefer': 'return=representation' },
+          body: JSON.stringify(plan),
+        });
+        result.push(...(Array.isArray(rows) ? rows : []));
+        insertedPlans += 1;
+      }
+    }
+
+    const supersededPendingPlans = [...pendingPlansByOrder.values()].filter(plan => !reusedPendingIds.has(plan.id));
+    for (const plan of supersededPendingPlans) {
+      await sb(`blog_plans?id=eq.${plan.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          status: 'superseded',
+          updated_at: new Date().toISOString(),
+        }),
+      });
+    }
 
     res.json({
       success: true,
       planMonth: month,
       totalPlans: plans.length,
+      protectedPlans: occupiedOrders.size,
+      updatedPendingPlans: updatedPlans,
+      insertedPlans,
+      supersededPendingPlans: supersededPendingPlans.length,
       dailyCount,
       typeDistribution,
       plans: result,
