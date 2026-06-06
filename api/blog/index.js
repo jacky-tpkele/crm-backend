@@ -1194,9 +1194,12 @@ router.post('/publish', async (req, res) => {
 router.get('/cron', async (req, res) => {
   try {
     const { token } = req.query;
+    const authHeader = req.headers.authorization || '';
+    const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+    const cronToken = token || bearerToken;
 
-    // 验证 CRON 密钥
-    if (token !== process.env.CRON_SECRET) {
+    // 验证 CRON 密钥：兼容手动 ?token=... 和 Vercel Cron 的 Authorization: Bearer ...
+    if (cronToken !== process.env.CRON_SECRET) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
