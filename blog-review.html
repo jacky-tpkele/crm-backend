@@ -960,7 +960,7 @@
     async function loadPost() {
       try {
         const r = await fetch('/api/blog/post/' + postId);
-        const d = await r.json();
+        const d = await parseApiResponse(r);
         if (!d.success) {
           showToast('加载失败：' + d.error);
           return;
@@ -1165,7 +1165,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
         });
-        const d = await r.json();
+        const d = await parseApiResponse(r);
         if (d.success) {
           dirty = false;
           showToast('✓ 已保存');
@@ -1219,13 +1219,68 @@
       }
     }
 
-    async function fileToBase64(file) {
+    async function readAsDataUrl(fileOrBlob) {
       return new Promise((resolve, reject) => {
         const r = new FileReader();
         r.onload = e => resolve(e.target.result);
         r.onerror = reject;
-        r.readAsDataURL(file);
+        r.readAsDataURL(fileOrBlob);
       });
+    }
+
+    async function fileToBase64(file) {
+      if (!file || !String(file.type || '').startsWith('image/') || file.type === 'image/svg+xml') {
+        return readAsDataUrl(file);
+      }
+
+      const objectUrl = URL.createObjectURL(file);
+      try {
+        const image = await new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = reject;
+          img.src = objectUrl;
+        });
+
+        const maxWidth = 1600;
+        const maxHeight = 1600;
+        const ratio = Math.min(1, maxWidth / image.width, maxHeight / image.height);
+        const width = Math.max(1, Math.round(image.width * ratio));
+        const height = Math.max(1, Math.round(image.height * ratio));
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx || !canvas.toBlob) return readAsDataUrl(file);
+
+        ctx.drawImage(image, 0, 0, width, height);
+
+        const qualitySteps = [0.86, 0.78, 0.7, 0.62];
+        let optimizedBlob = null;
+        for (const quality of qualitySteps) {
+          const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', quality));
+          if (!blob) continue;
+          optimizedBlob = blob;
+          if (blob.size <= 2.4 * 1024 * 1024) break;
+        }
+
+        return readAsDataUrl(optimizedBlob || file);
+      } finally {
+        URL.revokeObjectURL(objectUrl);
+      }
+    }
+
+    async function parseApiResponse(response) {
+      const text = await response.text();
+      let data = null;
+      try { data = text ? JSON.parse(text) : null; } catch (e) {}
+      if (!response.ok) {
+        const fallback = response.status === 413
+          ? '图片过大，超过上传限制，请换一张图片重试。'
+          : (text || `HTTP ${response.status}`);
+        throw new Error((data && (data.error || data.message)) || fallback);
+      }
+      return data || {};
     }
 
     async function uploadCover(e) {
@@ -1239,7 +1294,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ imageBase64: b64, altText: document.getElementById('fCoverAlt').value }),
         });
-        const d = await r.json();
+        const d = await parseApiResponse(r);
         if (d.success) {
           post.cover_image_url = d.imageUrl;
           renderCover();
@@ -1265,7 +1320,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ imageBase64: b64 }),
         });
-        const d = await r.json();
+        const d = await parseApiResponse(r);
         if (d.success) {
           post.og_image_url = d.imageUrl;
           renderOg();
@@ -1286,7 +1341,7 @@
       try {
         if (dirty) await saveAll();
         const r = await fetch('/api/blog/post/' + postId + '/suggest-images', { method: 'POST' });
-        const d = await r.json();
+        const d = await parseApiResponse(r);
         if (!d.success) {
           box.innerHTML = '<div style="font-size:12px;color:#FF3B30;padding:14px;">' + (d.error || '失败') + '</div>';
           return;
@@ -1332,7 +1387,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ imageBase64: b64, altText: defaultAlt || '', sectionIndex }),
         });
-        const d = await r.json();
+        const d = await parseApiResponse(r);
         if (d.success) {
           showToast('✓ 已插入正文');
           await loadPost();
@@ -1497,7 +1552,7 @@
       box.innerHTML = '<div style="font-size:12px;color:#86868B;text-align:center;padding:10px;">加载中...</div>';
       try {
         const r = await fetch('/api/blog/seo-index/' + postId);
-        const d = await r.json();
+        const d = await parseApiResponse(r);
         if (d.success) {
           renderSeoIndexStatus(d.status);
         } else {
@@ -1517,7 +1572,7 @@
       showToast((labels[action] || '检测') + '中...');
       try {
         const r = await fetch(`/api/blog/seo-index/${postId}/${action}`, { method: 'POST' });
-        const d = await r.json();
+        const d = await parseApiResponse(r);
         if (d.success) {
           renderSeoIndexStatus(d.status);
           showToast('✓ ' + normalizeSeoIndexStatus(d.status).display_label);
@@ -1559,7 +1614,7 @@
       if (dirty) await saveAll();
       try {
         const r = await fetch('/api/blog/post/' + postId + '/preview-token', { method: 'POST' });
-        const d = await r.json();
+        const d = await parseApiResponse(r);
         if (d.success && d.url) {
           window.open(d.url, '_blank');
           showToast('已在新窗口打开（链接 1 小时有效）');
