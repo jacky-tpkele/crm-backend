@@ -541,14 +541,14 @@ html body .tox .tox-edit-area iframe{background:#ffffff !important}
 
       <div class="folder-list">
         <div class="folder-item active" onclick="selectFolder('INBOX',this)">
-          <span>📥</span><span>收件箱</span>
+          <span>收件箱</span>
           <span class="badge" id="badge-inbox" style="display:none"></span>
         </div>
         <div class="folder-item" onclick="selectFolder('SENT',this)">
-          <span>📤</span><span>已发送</span>
+          <span>已发送</span>
         </div>
         <div class="folder-item" onclick="selectFolder('INQUIRY',this)">
-          <span>📋</span><span>网站询盘</span>
+          <span>网站询盘</span>
           <span class="badge" id="badge-inquiry" style="display:none"></span>
         </div>
       </div>
@@ -556,7 +556,6 @@ html body .tox .tox-edit-area iframe{background:#ffffff !important}
       <div class="acct-section">
         <div class="acct-hd">
           <span>邮箱账号</span>
-          <button class="btn-add-acct" onclick="openAccountModal()" title="添加邮箱">＋</button>
         </div>
         <div class="acct-list" id="acctList">
           <div class="acct-empty">加载中…</div>
@@ -565,7 +564,7 @@ html body .tox .tox-edit-area iframe{background:#ffffff !important}
 
       <div class="folder-sync">
         <button class="btn-sync" id="btnSync" onclick="syncEmails()">
-          <span id="syncIcon">🔄</span> 同步收件箱
+          同步收件箱
         </button>
       </div>
     </div>
@@ -1113,15 +1112,19 @@ function showPlaceholder() {
 // ── Sync ──
 async function syncEmails() {
   const btn = document.getElementById('btnSync');
-  const icon = document.getElementById('syncIcon');
-  btn.classList.add('syncing'); icon.textContent = '⏳';
+  const originalText = btn.textContent;
+  btn.classList.add('syncing');
+  btn.textContent = '同步中...';
   try {
     const res  = await apiFetch('/api/emails/sync', { method:'POST', body: JSON.stringify({ account_id: currentAccountId }) });
     const data = await res.json();
     if (data.success) { showToast(`同步完成，新增 ${data.synced} 封`); loadEmails(currentFolder); }
     else showToast(data.message||'同步失败','err');
   } catch (e) { showToast('同步失败：'+e.message,'err'); }
-  finally { btn.classList.remove('syncing'); icon.textContent = '🔄'; }
+  finally {
+    btn.classList.remove('syncing');
+    btn.textContent = originalText;
+  }
 }
 
 // ── Compose ──
