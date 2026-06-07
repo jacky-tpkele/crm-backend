@@ -842,15 +842,15 @@ router.post('/generate-plan-v2', async (req, res) => {
     const existingPlans = await sb(
       `blog_plans?plan_month=eq.${encodeURIComponent(month)}&select=id,plan_order,status&order=plan_order.asc&limit=1000`
     );
-    const pendingPlansByOrder = new Map(
+    const reusablePlansByOrder = new Map(
       (existingPlans || [])
-        .filter(p => p.status === 'pending')
+        .filter(p => ['pending', 'superseded'].includes(p.status || 'pending'))
         .map(p => [Number(p.plan_order), p])
         .filter(([order]) => Number.isFinite(order))
     );
     const occupiedOrders = new Set(
       (existingPlans || [])
-        .filter(p => p.status !== 'pending')
+        .filter(p => !['pending', 'superseded'].includes(p.status || 'pending'))
         .map(p => Number(p.plan_order))
         .filter(Number.isFinite)
     );
@@ -952,7 +952,7 @@ router.post('/generate-plan-v2', async (req, res) => {
     let insertedPlans = 0;
     const reusedPendingIds = new Set();
     for (const plan of plans) {
-      const reusablePlan = pendingPlansByOrder.get(Number(plan.plan_order));
+      const reusablePlan = reusablePlansByOrder.get(Number(plan.plan_order));
       if (reusablePlan) {
         reusedPendingIds.add(reusablePlan.id);
         const rows = await sb(`blog_plans?id=eq.${reusablePlan.id}`, {
@@ -980,15 +980,9 @@ router.post('/generate-plan-v2', async (req, res) => {
       }
     }
 
-    const supersededPendingPlans = [...pendingPlansByOrder.values()].filter(plan => !reusedPendingIds.has(plan.id));
-    for (const plan of supersededPendingPlans) {
-      await sb(`blog_plans?id=eq.${plan.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({
-          status: 'superseded',
-          updated_at: new Date().toISOString(),
-        }),
-      });
+    const removedPendingPlans = [...reusablePlansByOrder.values()].filter(plan => !reusedPendingIds.has(plan.id));
+    for (const plan of removedPendingPlans) {
+      await sb(`blog_plans?id=eq.${plan.id}`, { method: 'DELETE' });
     }
 
     res.json({
@@ -998,7 +992,7 @@ router.post('/generate-plan-v2', async (req, res) => {
       protectedPlans: occupiedOrders.size,
       updatedPendingPlans: updatedPlans,
       insertedPlans,
-      supersededPendingPlans: supersededPendingPlans.length,
+      removedPendingPlans: removedPendingPlans.length,
       dailyCount,
       typeDistribution,
       plans: result,
@@ -2024,9 +2018,10 @@ router.post('/toggle-auto-generation', async (req, res) => {
 // 6. 获取计划列表
 router.get('/plans', async (req, res) => {
   try {
-    const { status, limit = 100 } = req.query;
-    let query = `blog_plans?select=*&order=created_at.desc&limit=${limit}`;
-    if (status) query += `&status=eq.${status}`;
+    const { status, month, limit = 500 } = req.query;
+    let query = `blog_plans?select=*&order=plan_month.desc,plan_order.asc&limit=${limit}`;
+    if (month && /^\d{4}-\d{2}$/.test(month)) query += `&plan_month=eq.${encodeURIComponent(month)}`;
+    if (status) query += `&status=eq.${encodeURIComponent(status)}`;
 
     const plans = await sb(query);
 
@@ -2849,6 +2844,34 @@ router.post('/post/:postId/preview-token', async (req, res) => {
 // ──────────────────────────────────────────
 // 13. plan 单条管理（删除 / 编辑 / 立即跑某条）
 // ──────────────────────────────────────────
+
+// 13a. 删除某个月的待生成 plan（保留已生成/待审核/已发布文章）
+router.delete('/plans/month/:month', async (req, res) => {
+  try {
+    const { month } = req.params;
+    if (!/^\d{4}-\d{2}$/.test(month)) {
+      return res.status(400).json({ error: 'Invalid month format, expected YYYY-MM' });
+    }
+
+    const pendingPlans = await sb(
+      `blog_plans?plan_month=eq.${encodeURIComponent(month)}&status=eq.pending&select=id&limit=1000`
+    );
+    const planIds = (pendingPlans || []).map(plan => plan.id).filter(Boolean);
+
+    for (const planId of planIds) {
+      await sb(`blog_plans?id=eq.${encodeURIComponent(planId)}`, { method: 'DELETE' });
+    }
+
+    res.json({
+      success: true,
+      month,
+      deletedCount: planIds.length,
+    });
+  } catch (error) {
+    console.error('Error deleting monthly pending plans:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // 13a. 删除一条 plan
 router.delete('/plans/:planId', async (req, res) => {
