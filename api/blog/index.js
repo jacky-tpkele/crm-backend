@@ -2873,6 +2873,38 @@ router.delete('/plans/month/:month', async (req, res) => {
   }
 });
 
+router.delete('/plans/batch', async (req, res) => {
+  try {
+    const planIds = Array.isArray(req.body?.planIds) ? req.body.planIds : [];
+    const safePlanIds = [...new Set(planIds.map(id => String(id || '').trim()).filter(Boolean))];
+
+    if (safePlanIds.length === 0) {
+      return res.status(400).json({ error: 'No planIds provided' });
+    }
+
+    const plans = await sb(
+      `blog_plans?id=in.(${safePlanIds.map(id => `"${id}"`).join(',')})&select=id,status&limit=${safePlanIds.length}`
+    );
+    const pendingPlanIds = (plans || [])
+      .filter(plan => plan.status === 'pending')
+      .map(plan => plan.id)
+      .filter(Boolean);
+
+    for (const planId of pendingPlanIds) {
+      await sb(`blog_plans?id=eq.${encodeURIComponent(planId)}`, { method: 'DELETE' });
+    }
+
+    res.json({
+      success: true,
+      deletedCount: pendingPlanIds.length,
+      ignoredCount: safePlanIds.length - pendingPlanIds.length,
+    });
+  } catch (error) {
+    console.error('Error batch deleting plans:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // 13a. 删除一条 plan
 router.delete('/plans/:planId', async (req, res) => {
   try {

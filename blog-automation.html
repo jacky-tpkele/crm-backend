@@ -351,15 +351,55 @@
     .plan-filters {
       display: flex;
       gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
     }
 
-    .plan-filters select {
+    .plan-filters select,
+    .plan-filters input[type="month"] {
       padding: 8px 12px;
       border: 1px solid #E5E5E7;
       border-radius: 8px;
       font-size: 13px;
       background: #FFFFFF;
       color: #1D1D1F;
+    }
+
+    .plan-batch-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding: 10px 14px;
+      background: #FFFFFF;
+      border: 1px solid #E5E5E7;
+      border-radius: 10px;
+      flex-wrap: wrap;
+    }
+
+    .plan-batch-meta {
+      font-size: 12px;
+      color: #6E6E73;
+    }
+
+    .plan-batch-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .plan-checkbox-cell {
+      width: 42px;
+      text-align: center;
+    }
+
+    .plan-checkbox {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      accent-color: #0b9b3f;
     }
 
     .plan-table {
@@ -2254,15 +2294,31 @@
             <option value="">所有状态</option>
             <option value="pending">待生成</option>
             <option value="content_generated">已生成</option>
+            <option value="pending_review">待审核</option>
+            <option value="approved">已批准</option>
             <option value="published">已发布</option>
+            <option value="generation_failed">生成失败</option>
+            <option value="publish_failed">发布失败</option>
+            <option value="superseded">已替换</option>
           </select>
+          <button class="btn-secondary" onclick="resetPlanFilters()">全部月份</button>
           <button class="btn-secondary" onclick="deleteCurrentMonthPlans()">删除本月待生成计划</button>
+        </div>
+      </div>
+
+      <div class="plan-batch-bar">
+        <div class="plan-batch-meta" id="planSelectionInfo">已选 0 条，仅可批量删除待生成计划</div>
+        <div class="plan-batch-actions">
+          <button class="btn-secondary" onclick="toggleSelectVisiblePlans(true)">全选当前列表</button>
+          <button class="btn-secondary" onclick="toggleSelectVisiblePlans(false)">清空选择</button>
+          <button class="btn-secondary" onclick="deleteSelectedPlans()">删除选中待生成</button>
         </div>
       </div>
 
       <table class="plan-table">
         <thead>
           <tr>
+            <th class="plan-checkbox-cell"><input class="plan-checkbox" type="checkbox" id="selectAllPlans" onchange="toggleSelectAllPlans(this.checked)"></th>
             <th>#</th>
             <th>日期</th>
             <th>关键词</th>
@@ -2276,7 +2332,7 @@
         </thead>
         <tbody id="planTableBody">
           <tr>
-            <td colspan="5" style="text-align: center; color: #86868B;">暂无数据</td>
+            <td colspan="10" style="text-align: center; color: #86868B;">暂无数据</td>
           </tr>
         </tbody>
       </table>
@@ -2622,6 +2678,7 @@
     let isReviewMode = false;
     let keywords = [];
     let plans = [];
+    let selectedPlanIds = new Set();
 
     // 标签页切换
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -3292,6 +3349,7 @@
         const r = await fetch(`/api/blog/plans/${planId}`, { method: 'DELETE' });
         const d = await r.json();
         if (d.success) {
+          selectedPlanIds.delete(planId);
           showToast('已删除');
           loadPlans();
         } else {
@@ -3458,6 +3516,9 @@
         const response = await fetch('/api/blog/plans' + (params.toString() ? `?${params.toString()}` : ''));
         const data = await response.json();
         plans = data.plans || [];
+        selectedPlanIds = new Set(
+          [...selectedPlanIds].filter(id => plans.some(plan => plan.id === id))
+        );
         renderPlans();
       } catch (error) {
         console.error('加载计划失败:', error);
@@ -3469,7 +3530,8 @@
       const tbody = document.getElementById('planTableBody');
 
       if (plans.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #86868B;">暂无数据</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #86868B;">暂无数据</td></tr>';
+        updatePlanSelectionUI();
         return;
       }
 
@@ -3480,11 +3542,20 @@
         const typeLabels = { product:'产品知识', buying:'选型指南', comparison:'对比', application:'应用', faq:'FAQ' };
         const typeLabel = typeLabels[plan.article_type] || plan.article_type || '-';
         const isPending = plan.status === 'pending';
+        const isSelected = selectedPlanIds.has(plan.id);
         const safeKw = String(plan.keyword || '').replace(/'/g, "&#39;").replace(/"/g, "&quot;");
         const safeTitle = String(plan.title || '').replace(/'/g, "&#39;").replace(/"/g, "&quot;");
 
         return `
           <tr>
+            <td class="plan-checkbox-cell">
+              <input
+                class="plan-checkbox"
+                type="checkbox"
+                ${isSelected ? 'checked' : ''}
+                onchange="togglePlanSelection('${plan.id}', this.checked)"
+              >
+            </td>
             <td>${idx + 1}</td>
             <td>${date}</td>
             <td>${plan.keyword}</td>
@@ -3518,6 +3589,79 @@
       // 更新统计
       document.getElementById('totalPlans').textContent = plans.length;
       document.getElementById('publishedPlans').textContent = plans.filter(p => p.status === 'published').length;
+      updatePlanSelectionUI();
+    }
+
+    function updatePlanSelectionUI() {
+      const selectedVisiblePlans = plans.filter(plan => selectedPlanIds.has(plan.id));
+      const pendingSelectedCount = selectedVisiblePlans.filter(plan => plan.status === 'pending').length;
+      const info = document.getElementById('planSelectionInfo');
+      if (info) {
+        info.textContent = `已选 ${selectedVisiblePlans.length} 条，可删除 ${pendingSelectedCount} 条待生成计划`;
+      }
+
+      const selectAll = document.getElementById('selectAllPlans');
+      if (selectAll) {
+        const selectableCount = plans.length;
+        selectAll.checked = selectableCount > 0 && selectedVisiblePlans.length === selectableCount;
+        selectAll.indeterminate = selectedVisiblePlans.length > 0 && selectedVisiblePlans.length < selectableCount;
+      }
+    }
+
+    function togglePlanSelection(planId, checked) {
+      if (checked) {
+        selectedPlanIds.add(planId);
+      } else {
+        selectedPlanIds.delete(planId);
+      }
+      updatePlanSelectionUI();
+    }
+
+    function toggleSelectVisiblePlans(checked) {
+      plans.forEach(plan => {
+        if (checked) {
+          selectedPlanIds.add(plan.id);
+        } else {
+          selectedPlanIds.delete(plan.id);
+        }
+      });
+      renderPlans();
+    }
+
+    function toggleSelectAllPlans(checked) {
+      toggleSelectVisiblePlans(checked);
+    }
+
+    async function deleteSelectedPlans() {
+      const selectedVisiblePlans = plans.filter(plan => selectedPlanIds.has(plan.id));
+      const pendingPlanIds = selectedVisiblePlans
+        .filter(plan => plan.status === 'pending')
+        .map(plan => plan.id);
+
+      if (pendingPlanIds.length === 0) {
+        showToast('请选择至少一条待生成计划');
+        return;
+      }
+
+      if (!confirm(`删除选中的 ${pendingPlanIds.length} 条待生成计划？`)) return;
+
+      try {
+        const response = await fetch('/api/blog/plans/batch', {
+          method: 'DELETE',
+          headers: getHeaders(),
+          body: JSON.stringify({ planIds: pendingPlanIds })
+        });
+        const data = await response.json();
+        if (data.success) {
+          pendingPlanIds.forEach(id => selectedPlanIds.delete(id));
+          showToast(`已删除 ${data.deletedCount || pendingPlanIds.length} 条待生成计划`);
+          loadPlans();
+        } else {
+          showToast('批量删除失败：' + (data.error || ''));
+        }
+      } catch (error) {
+        showToast('错误：' + error.message);
+      }
     }
 
     // 获取状态标签
@@ -3840,6 +3984,15 @@
 
     // 过滤计划
     function filterPlans() {
+      loadPlans();
+    }
+
+    function resetPlanFilters() {
+      const monthFilter = document.getElementById('monthFilter');
+      const statusFilter = document.getElementById('statusFilter');
+      if (monthFilter) monthFilter.value = '';
+      if (statusFilter) statusFilter.value = '';
+      selectedPlanIds.clear();
       loadPlans();
     }
 
