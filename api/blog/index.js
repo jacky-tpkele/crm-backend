@@ -68,6 +68,13 @@ const IMAGE_CONFIG = {
 const BLOG_SITE_BASE_URL = (process.env.BLOG_SITE_BASE_URL || 'https://www.tpkele.com').replace(/\/$/, '');
 const BLOG_SITEMAP_URL = process.env.BLOG_SITEMAP_URL || `${BLOG_SITE_BASE_URL}/sitemap.xml`;
 const BLOG_DASHBOARD_TIMEZONE = 'Asia/Shanghai';
+const BLOG_CATEGORY_ROUTE_MAP = {
+  product: 'product-knowledge',
+  buying: 'selection-guides',
+  comparison: 'comparisons',
+  application: 'application-scenarios',
+  faq: 'faqs',
+};
 const SEO_SCHEDULE_DELAYS_MS = [
   1 * 60 * 1000,
   30 * 60 * 1000,
@@ -112,6 +119,11 @@ async function sb(path, opts = {}) {
 
 function buildBlogUrl(slug) {
   return `${BLOG_SITE_BASE_URL}/blog/${encodeURIComponent(String(slug || '').replace(/^\/+/, ''))}`;
+}
+
+function buildBlogCategoryPath(slug) {
+  const routeSlug = BLOG_CATEGORY_ROUTE_MAP[String(slug || '').trim()] || String(slug || '').trim();
+  return `/blog/${routeSlug}`;
 }
 
 function normalizeUrlForCompare(url) {
@@ -3185,7 +3197,7 @@ router.get('/site-pages-list', async (req, res) => {
           title: c.name,
         })),
         blogCategories: staticPages.blogCategories.map(c => ({
-          url: `/blog/category/${c.slug}`,
+          url: buildBlogCategoryPath(c.slug),
           title: c.name,
         })),
       },
