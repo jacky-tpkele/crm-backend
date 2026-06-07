@@ -3139,4 +3139,15 @@ app.post('/api/chat/push/test', auth, async (req, res) => {
   }
 });
 
+app.use((err, req, res, next) => {
+  if (err && (err.type === 'entity.too.large' || err.status === 413)) {
+    return res.status(413).json({ error: '图片过大，超过上传限制，请压缩后重试。' });
+  }
+  if (err) {
+    console.error('Unhandled API error:', err.message);
+    return res.status(err.status || 500).json({ error: err.message || 'Server error' });
+  }
+  next();
+});
+
 module.exports = app;

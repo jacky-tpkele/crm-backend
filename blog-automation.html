@@ -4010,8 +4010,7 @@
 
     // 处理图片上传
     async function handleImageUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
+      return legacyHandleImageUpload(event);
 
       const reader = new FileReader();
       reader.onload = async (e) => {
@@ -4856,6 +4855,113 @@
 
     function closeBlogSidebar() {
       document.body.classList.remove('blog-sidebar-open');
+    }
+
+    async function readAsDataUrl(fileOrBlob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(fileOrBlob);
+      });
+    }
+
+    async function optimizeImageForUpload(file) {
+      if (!file || !String(file.type || '').startsWith('image/') || file.type === 'image/svg+xml') {
+        return readAsDataUrl(file);
+      }
+
+      const objectUrl = URL.createObjectURL(file);
+      try {
+        const image = await new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = reject;
+          img.src = objectUrl;
+        });
+
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx || !canvas.toBlob) return readAsDataUrl(file);
+
+        const maxDimensionSteps = [1600, 1280, 960, 720];
+        const qualitySteps = [0.86, 0.78, 0.7, 0.62, 0.54];
+        const maxUploadBytes = 1.5 * 1024 * 1024;
+        let optimizedBlob = null;
+
+        for (const maxDimension of maxDimensionSteps) {
+          const ratio = Math.min(1, maxDimension / image.width, maxDimension / image.height);
+          const width = Math.max(1, Math.round(image.width * ratio));
+          const height = Math.max(1, Math.round(image.height * ratio));
+          canvas.width = width;
+          canvas.height = height;
+          ctx.clearRect(0, 0, width, height);
+          ctx.drawImage(image, 0, 0, width, height);
+
+          for (const quality of qualitySteps) {
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', quality));
+            if (!blob) continue;
+            optimizedBlob = blob;
+            if (blob.size <= maxUploadBytes) return readAsDataUrl(blob);
+          }
+        }
+
+        return readAsDataUrl(optimizedBlob || file);
+      } finally {
+        URL.revokeObjectURL(objectUrl);
+      }
+    }
+
+    async function parseUploadApiResponse(response) {
+      const text = await response.text();
+      let data = null;
+      try { data = text ? JSON.parse(text) : null; } catch (e) {}
+      if (!response.ok) {
+        const fallback = response.status === 413
+          ? '图片过大，超过上传限制，请换一张图片重试。'
+          : (text || `HTTP ${response.status}`);
+        throw new Error((data && (data.error || data.message)) || fallback);
+      }
+      return data || {};
+    }
+
+    async function legacyHandleImageUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      try {
+        const imageBase64 = await optimizeImageForUpload(file);
+        const response = await fetch('/api/blog/upload-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            postId: currentPostId,
+            imageBase64,
+            fileName: file.name
+          })
+        });
+
+        const data = await parseUploadApiResponse(response);
+        if (data.success) {
+          const preview = document.getElementById('imagePreview');
+          preview.innerHTML = `
+            <img src="${data.imageUrl}" alt="预览">
+            <div class="image-info">
+              原始大小：${formatBytes(data.originalSize)} -> 压缩后：${formatBytes(data.compressedSize)} (${data.compressionRate}压缩率)
+            </div>
+          `;
+
+          document.getElementById('detailPreview').innerHTML = `<img src="${data.imageUrl}" style="width: 100%; height: auto;">`;
+          document.getElementById('cardPreview').innerHTML = `<img src="${data.imageUrl}" style="width: 100%; height: auto;">`;
+          showToast('图片上传成功');
+        } else {
+          showToast('上传失败：' + (data.error || '未知错误'));
+        }
+      } catch (error) {
+        showToast('上传失败：' + error.message);
+      } finally {
+        event.target.value = '';
+      }
     }
 
     window.addEventListener('resize', () => {
