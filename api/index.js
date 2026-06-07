@@ -1206,7 +1206,7 @@ app.post('/api/password-vault/items/:id/reveal', auth, async (req, res) => {
     const sec = await sb(`vault_security?username=eq.${encodeURIComponent(username)}&select=*`);
     if (!sec.length) return res.status(400).json({ message: 'Second password is not set yet' });
     if (!verifySecondPassword(secondPassword, sec[0].second_pass_hash)) {
-      return res.status(401).json({ message: 'Second password is incorrect' });
+      return res.status(400).json({ message: 'Second password is incorrect' });
     }
 
     const rows = await sb(`password_items?id=eq.${req.params.id}&username=eq.${encodeURIComponent(username)}&select=*`);
