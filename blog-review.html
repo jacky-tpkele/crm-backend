@@ -446,6 +446,22 @@
       display: block;
       border: 1px solid #E5E5E7;
     }
+    .section-card .manual-anchor {
+      width: 100%;
+      padding: 7px 10px;
+      border: 1px solid #E5E5E7;
+      border-radius: 6px;
+      font-size: 11px;
+      color: #1D1D1F;
+      background: #FFFFFF;
+      margin-bottom: 6px;
+    }
+    .section-card .manual-anchor-help {
+      font-size: 10px;
+      color: #6E6E73;
+      margin-bottom: 8px;
+      line-height: 1.45;
+    }
     .section-card button {
       padding: 5px 11px;
       border: 1px solid #E5E5E7;
@@ -1381,11 +1397,14 @@
       }, {});
       box.innerHTML = sections.map((s, i) => {
         const img = existing[i];
+        const manualAnchor = img && img.manualAnchorText ? img.manualAnchorText : '';
         return `
           <div class="section-card">
             <div class="section-heading">${escapeHtml(s.heading)}</div>
             <div class="section-suggestion">💡 ${escapeHtml(s.suggestion)}</div>
             ${img ? `<img class="section-image" src="${img.url}">` : ''}
+            <input class="manual-anchor" id="secAnchor${i}" type="text" placeholder="手动输入文章中的一段内容，用来定位插图位置" value="${escapeHtml(manualAnchor)}">
+            <div class="manual-anchor-help">不填时按 AI 推荐章节插图；填写后会优先按这段正文内容定位。</div>
             <input type="file" accept="image/*" id="secFile${i}" onchange="uploadSectionImage(event, ${i}, '${escapeHtml(s.suggestion).replace(/'/g, "\\'")}')">
             <button onclick="document.getElementById('secFile${i}').click()">${img ? '🔄 替换' : '📤 上传插图'}</button>
             ${img ? `<button class="danger" onclick="deleteSectionImage('${img.id}')">删除</button>` : ''}
@@ -1399,14 +1418,22 @@
       showToast('上传中...');
       try {
         const b64 = await fileToBase64(file);
+        const manualAnchorInput = document.getElementById('secAnchor' + sectionIndex);
+        const manualAnchorText = manualAnchorInput ? manualAnchorInput.value.trim() : '';
         const r = await fetch('/api/blog/post/' + postId + '/content-image', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ imageBase64: b64, altText: defaultAlt || '', sectionIndex }),
+          body: JSON.stringify({ imageBase64: b64, altText: defaultAlt || '', sectionIndex, manualAnchorText }),
         });
         const d = await parseApiResponse(r);
         if (d.success) {
-          showToast('✓ 已插入正文');
+          if (d.placementMode === 'manual') {
+            showToast('✓ 已按手动内容定位插图');
+          } else if (manualAnchorText) {
+            showToast('✓ 未匹配到手动内容，已按 AI 推荐位置插图');
+          } else {
+            showToast('✓ 已插入正文');
+          }
           await loadPost();
           await loadImageSuggestions();
         } else {

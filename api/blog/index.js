@@ -2502,11 +2502,11 @@ router.post('/post/:postId/og-image', async (req, res) => {
   }
 });
 
-// 12f. 上传正文插图（关联到 H2 章节）
+// 12f. 上传正文插图（可按 H2 章节或手动输入的正文片段定位）
 router.post('/post/:postId/content-image', async (req, res) => {
   try {
     const { postId } = req.params;
-    const { imageBase64, altText, sectionIndex } = req.body;
+    const { imageBase64, altText, sectionIndex, manualAnchorText } = req.body;
     if (!imageBase64) return res.status(400).json({ error: 'imageBase64 is required' });
 
     const compressedBuffer = await compressImage(imageBase64);
@@ -2524,12 +2524,25 @@ router.post('/post/:postId/content-image', async (req, res) => {
       width: cdn.width,
       height: cdn.height,
       sectionIndex: typeof sectionIndex === 'number' ? sectionIndex : null,
+      manualAnchorText: typeof manualAnchorText === 'string' ? manualAnchorText.trim() : '',
     };
 
-    // 自动把 ![alt](url) 插入到对应 H2 章节末尾
+    // 优先按手动输入的正文片段定位；匹配不到时回退到 AI 推荐章节
     let content = posts[0].content || '';
-    if (typeof sectionIndex === 'number' && sectionIndex >= 0) {
+    let placementMode = 'append';
+    const hasManualAnchor = !!newImage.manualAnchorText;
+    if (hasManualAnchor) {
+      const manualResult = insertImageAfterAnchorText(content, newImage.manualAnchorText, newImage);
+      if (manualResult.matched) {
+        content = manualResult.content;
+        placementMode = 'manual';
+      }
+    }
+    if (placementMode !== 'manual' && typeof sectionIndex === 'number' && sectionIndex >= 0) {
       content = insertImageAfterSection(content, sectionIndex, newImage);
+      placementMode = 'section';
+    } else if (placementMode !== 'manual') {
+      content = appendImageToContent(content, newImage);
     }
 
     await sb(`blog_posts?id=eq.${postId}`, {
@@ -2541,7 +2554,7 @@ router.post('/post/:postId/content-image', async (req, res) => {
       }),
     });
 
-    res.json({ success: true, image: newImage });
+    res.json({ success: true, image: newImage, placementMode });
   } catch (error) {
     console.error('content-image upload error:', error);
     res.status(500).json({ error: error.message });
@@ -2738,6 +2751,40 @@ function extractH2Sections(content) {
   return sections;
 }
 
+function buildImageMarkdown(image) {
+  return `![${image.altText || ''}](${image.url})`;
+}
+
+function appendImageToContent(content, image) {
+  return content + `\n\n${buildImageMarkdown(image)}\n`;
+}
+
+function insertImageAfterAnchorText(content, anchorText, image) {
+  const target = String(anchorText || '').trim();
+  if (!target) return { matched: false, content };
+
+  const normalizedTarget = target.replace(/\s+/g, ' ').toLowerCase();
+  const lines = content.split('\n');
+  let insertAt = -1;
+
+  for (let i = 0; i < lines.length; i++) {
+    const normalizedLine = String(lines[i] || '').replace(/\s+/g, ' ').toLowerCase();
+    if (normalizedLine.includes(normalizedTarget)) {
+      insertAt = i + 1;
+      break;
+    }
+  }
+
+  if (insertAt === -1) return { matched: false, content };
+
+  const before = lines.slice(0, insertAt);
+  const after = lines.slice(insertAt);
+  return {
+    matched: true,
+    content: [...before, '', buildImageMarkdown(image), '', ...after].join('\n'),
+  };
+}
+
 function insertImageAfterSection(content, sectionIndex, image) {
   const lines = content.split('\n');
   let h2Seen = -1;
@@ -2758,11 +2805,11 @@ function insertImageAfterSection(content, sectionIndex, image) {
     }
   }
   if (insertAt === -1) {
-    return content + `\n\n![${image.altText || ''}](${image.url})\n`;
+    return appendImageToContent(content, image);
   }
   const before = lines.slice(0, insertAt);
   const after = lines.slice(insertAt);
-  return [...before, '', `![${image.altText || ''}](${image.url})`, '', ...after].join('\n');
+  return [...before, '', buildImageMarkdown(image), '', ...after].join('\n');
 }
 
 // 12j. 自动生成 Slug
