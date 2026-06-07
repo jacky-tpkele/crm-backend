@@ -1946,9 +1946,232 @@
       background: #F5F5F7;
       border-color: #D2D2D7;
     }
+
+    .blog-mobile-topbar,
+    .blog-sidebar-overlay {
+      display: none;
+    }
+
+    .plan-table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .published-filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 768px) {
+      html, body {
+        height: auto;
+        min-height: 100%;
+        overflow: auto;
+      }
+
+      body {
+        background: var(--bg);
+      }
+
+      .blog-mobile-topbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
+        position: sticky;
+        top: 0;
+        z-index: 1250;
+        background: rgba(255,255,255,0.96);
+        border-bottom: 1px solid var(--border);
+        backdrop-filter: blur(12px);
+      }
+
+      .blog-mobile-menu-btn {
+        width: 38px;
+        height: 38px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #FFFFFF;
+        color: var(--text);
+        cursor: pointer;
+        font-size: 20px;
+        line-height: 1;
+        flex-shrink: 0;
+      }
+
+      .blog-mobile-title {
+        min-width: 0;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .blog-container {
+        display: block;
+        height: auto;
+        min-height: calc(100vh - 63px);
+      }
+
+      .blog-sidebar-overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.36);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+        z-index: 1190;
+      }
+
+      .blog-sidebar {
+        position: fixed;
+        left: -252px;
+        top: 0;
+        bottom: 0;
+        width: 240px;
+        height: 100vh;
+        z-index: 1200;
+        box-shadow: 8px 0 28px rgba(0,0,0,0.16);
+        transition: left 0.25s ease;
+      }
+
+      body.blog-sidebar-open .blog-sidebar {
+        left: 0;
+      }
+
+      body.blog-sidebar-open .blog-sidebar-overlay {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .blog-main {
+        min-height: calc(100vh - 63px);
+      }
+
+      .blog-main-content {
+        padding: 14px 12px 18px;
+      }
+
+      .tab-content {
+        width: 100%;
+      }
+
+      .keywords-header,
+      .plan-list-header,
+      .plan-batch-bar,
+      .plan-batch-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .control-item,
+      .published-filters,
+      .keywords-filter,
+      .control-buttons,
+      .recommend-actions,
+      .ai-recommend-input {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .control-item {
+        gap: 10px;
+      }
+
+      .control-buttons button,
+      .recommend-actions button,
+      .keywords-filter select,
+      .plan-filters select,
+      .plan-filters input[type="month"],
+      .plan-filters button,
+      .published-filters select,
+      .published-filters input,
+      .published-filters button,
+      .ai-recommend-input input,
+      .ai-recommend-input button {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .stats-cards,
+      .seo-index-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .keyword-input-row > *,
+      .type-ratio-item input {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .type-ratio-item {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .type-ratio-item span:first-child {
+        width: auto;
+      }
+
+      .recommend-tabs,
+      .modal-tabs,
+      #publishedStatusToggle {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+
+      .recommend-tabs::-webkit-scrollbar,
+      .modal-tabs::-webkit-scrollbar,
+      #publishedStatusToggle::-webkit-scrollbar {
+        display: none;
+      }
+
+      .recommend-tab,
+      .modal-tab-btn,
+      .pubtab-btn {
+        flex-shrink: 0;
+        white-space: nowrap;
+      }
+
+      .keyword-table,
+      .plan-table {
+        min-width: 760px;
+      }
+
+      .modal-content {
+        width: 100%;
+        max-width: 100%;
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+      }
+
+      .modal-header,
+      .modal-body,
+      .edit-section,
+      .plan-form,
+      .control-panel {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+    }
   </style>
 </head>
 <body>
+  <div class="blog-mobile-topbar">
+    <button class="blog-mobile-menu-btn" type="button" aria-label="打开菜单" onclick="toggleBlogSidebar()">☰</button>
+    <div class="blog-mobile-title">BLOG 自动化</div>
+  </div>
+  <div class="blog-sidebar-overlay" onclick="closeBlogSidebar()"></div>
   <div class="blog-container">
     <!-- 左侧导航 -->
     <aside class="blog-sidebar">
@@ -2315,27 +2538,29 @@
         </div>
       </div>
 
-      <table class="plan-table">
-        <thead>
-          <tr>
-            <th class="plan-checkbox-cell"><input class="plan-checkbox" type="checkbox" id="selectAllPlans" onchange="toggleSelectAllPlans(this.checked)"></th>
-            <th>#</th>
-            <th>日期</th>
-            <th>关键词</th>
-            <th>标题</th>
-            <th>类型</th>
-            <th>SEO评分</th>
-            <th>状态</th>
-            <th>网站同步</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody id="planTableBody">
-          <tr>
-            <td colspan="10" style="text-align: center; color: #86868B;">暂无数据</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="plan-table-wrap">
+        <table class="plan-table">
+          <thead>
+            <tr>
+              <th class="plan-checkbox-cell"><input class="plan-checkbox" type="checkbox" id="selectAllPlans" onchange="toggleSelectAllPlans(this.checked)"></th>
+              <th>#</th>
+              <th>日期</th>
+              <th>关键词</th>
+              <th>标题</th>
+              <th>类型</th>
+              <th>SEO评分</th>
+              <th>状态</th>
+              <th>网站同步</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="planTableBody">
+            <tr>
+              <td colspan="10" style="text-align: center; color: #86868B;">暂无数据</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- 标签页 4：待审核 -->
@@ -2365,7 +2590,7 @@
         <button onclick="loadPublishedList()" style="padding:8px 14px;border:1px solid #E5E5E7;background:#FFFFFF;color:#1D1D1F;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">刷新</button>
       </div>
 
-      <div style="display:flex;gap:10px;margin-bottom:14px;align-items:center;flex-wrap:wrap;">
+      <div class="published-filters">
         <select id="publishedFilterType" onchange="loadPublishedList()" style="padding:7px 9px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;">
           <option value="all">全部类型</option>
           <option value="product">产品知识</option>
@@ -4618,6 +4843,23 @@
       if (typeof lucide !== 'undefined') {
         lucide.createIcons();
       }
+      document.querySelectorAll('.tab-btn, .btn-back-crm').forEach((el) => {
+        el.addEventListener('click', () => {
+          if (window.innerWidth <= 768) closeBlogSidebar();
+        });
+      });
+    });
+
+    function toggleBlogSidebar() {
+      document.body.classList.toggle('blog-sidebar-open');
+    }
+
+    function closeBlogSidebar() {
+      document.body.classList.remove('blog-sidebar-open');
+    }
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) closeBlogSidebar();
     });
   </script>
 </body>

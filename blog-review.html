@@ -500,9 +500,174 @@
     .toast.show { opacity: 1; }
 
     input[type=file] { display: none; }
+
+    .review-mobile-topbar {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      html, body {
+        height: auto;
+        min-height: 100%;
+        overflow: auto;
+      }
+
+      body {
+        background: #F5F5F7;
+      }
+
+      .review-mobile-topbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
+        position: sticky;
+        top: 0;
+        z-index: 1200;
+        background: rgba(255,255,255,0.96);
+        border-bottom: 1px solid #E5E5E7;
+        backdrop-filter: blur(12px);
+      }
+
+      .review-mobile-topbar button {
+        padding: 7px 12px;
+        border: 1px solid #E5E5E7;
+        background: #FFFFFF;
+        color: #1D1D1F;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 13px;
+        flex-shrink: 0;
+      }
+
+      .review-mobile-title {
+        min-width: 0;
+        font-size: 15px;
+        font-weight: 600;
+        color: #1D1D1F;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .review-topbar {
+        height: auto;
+        padding: 12px 14px;
+        flex-wrap: wrap;
+        align-items: stretch;
+        gap: 10px;
+      }
+
+      .review-topbar .back-btn {
+        display: none;
+      }
+
+      .review-topbar .title {
+        order: 1;
+        width: 100%;
+        white-space: normal;
+      }
+
+      .review-topbar .status-badge {
+        order: 2;
+        align-self: flex-start;
+      }
+
+      .review-topbar .actions {
+        order: 3;
+        width: 100%;
+        flex-wrap: wrap;
+      }
+
+      .review-topbar .actions > button,
+      .review-topbar .actions > span,
+      .review-topbar .actions > span > button {
+        width: 100%;
+      }
+
+      .review-topbar .actions > span {
+        display: contents;
+      }
+
+      .review-body {
+        display: block;
+        height: auto;
+      }
+
+      .review-left,
+      .review-right {
+        width: 100%;
+        border: none;
+      }
+
+      .review-left {
+        min-height: 52vh;
+      }
+
+      .review-right {
+        padding: 12px;
+      }
+
+      .editor-toolbar {
+        padding: 10px 12px;
+        flex-wrap: wrap;
+      }
+
+      .editor-toolbar button {
+        flex: 1 1 calc(50% - 6px);
+      }
+
+      .editor-toolbar span {
+        width: 100%;
+        margin-left: 0 !important;
+      }
+
+      .editor-area {
+        min-height: 48vh;
+        flex-direction: column;
+      }
+
+      textarea.markdown-edit,
+      .markdown-preview {
+        min-height: 48vh;
+        padding: 16px 14px;
+      }
+
+      #selectionHint {
+        padding: 10px 12px !important;
+      }
+
+      .panel-header {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .panel-header button,
+      .image-slot button,
+      .seo-index-actions button {
+        width: 100%;
+        margin-right: 0;
+      }
+
+      .seo-index-status-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+
+      .toast {
+        left: 12px;
+        right: 12px;
+        top: auto;
+        bottom: 12px;
+      }
+    }
   </style>
 </head>
 <body>
+  <div class="review-mobile-topbar">
+    <button type="button" onclick="goBack()">返回</button>
+    <div class="review-mobile-title">文章审核</div>
+  </div>
   <div class="review-topbar">
     <button class="back-btn" onclick="goBack()">← 返回列表</button>
     <div class="title" id="topTitle">加载中...</div>
