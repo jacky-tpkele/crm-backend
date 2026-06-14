@@ -908,6 +908,10 @@
           <div style="font-size:11px;color:#066128;background:#F5F8FF;border:1px solid #DCE7FF;border-radius:8px;padding:10px 12px;margin-bottom:14px;line-height:1.55;">
             💡 <strong style="color:#066128;">推荐做法</strong>：先在左侧正文里<strong>选中</strong>一段文字（例如 "AC MCB 4P"），再在下面选目标页面，点"插入到正文"——会自动用链接替换选中的文字。
           </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+            <button id="btnGenerateLinks" class="primary" onclick="generateAiLinks()">AI 推荐链接</button>
+            <span id="linksGeneratingStatus" style="display:none;font-size:12px;color:#6E6E73;">正在生成内链 / 外链建议...</span>
+          </div>
 
           <!-- 内链 -->
           <div style="font-size:12.5px;font-weight:600;color:#1D1D1F;margin-bottom:8px;">内链（Internal Links）</div>
@@ -2176,6 +2180,60 @@
         showToast('已删除');
       } catch (e) {
         showToast('错误：' + e.message);
+      }
+    }
+
+    async function generateAiLinks() {
+      if (!postId) {
+        showToast('请先加载文章');
+        return;
+      }
+
+      const btn = document.getElementById('btnGenerateLinks');
+      const status = document.getElementById('linksGeneratingStatus');
+      btn.disabled = true;
+      status.style.display = 'inline';
+
+      try {
+        if (dirty) {
+          await saveAll();
+        }
+
+        const response = await fetch('/api/blog/generate-links', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ postId, modelType: 'claude' }),
+        });
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'AI 推荐链接生成失败');
+        }
+
+        post.internal_links = Array.isArray(data.linksData?.internal_links) ? data.linksData.internal_links : [];
+        post.external_links = Array.isArray(data.linksData?.external_links) ? data.linksData.external_links : [];
+
+        const saveResponse = await fetch('/api/blog/post/' + postId, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            internal_links: post.internal_links,
+            external_links: post.external_links,
+          }),
+        });
+
+        if (!saveResponse.ok) {
+          throw new Error('链接已生成，但保存到文章失败');
+        }
+
+        renderInternalLinks();
+        renderExternalLinks();
+        showToast(`AI 推荐完成：内链 ${post.internal_links.length}，外链 ${post.external_links.length}`);
+      } catch (e) {
+        showToast('错误：' + e.message);
+      } finally {
+        btn.disabled = false;
+        status.style.display = 'none';
       }
     }
 
