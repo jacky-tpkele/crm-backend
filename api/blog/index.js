@@ -126,6 +126,67 @@ function buildBlogCategoryPath(slug) {
   return `/blog/${routeSlug}`;
 }
 
+function buildLocalSitePagesFallback(blogs) {
+  const staticPages = {
+    products: [
+      { slug: 'ac-mcb-1p', name: 'AC MCB 1P' },
+      { slug: 'ac-mcb-2p', name: 'AC MCB 2P' },
+      { slug: 'ac-mcb-3p', name: 'AC MCB 3P' },
+      { slug: 'ac-mcb-4p', name: 'AC MCB 4P' },
+      { slug: 'dc-mcb-1p', name: 'DC MCB 1P' },
+      { slug: 'dc-mcb-2p', name: 'DC MCB 2P' },
+      { slug: 'dc-mcb-3p', name: 'DC MCB 3P' },
+      { slug: 'dc-mcb-4p', name: 'DC MCB 4P' },
+      { slug: 'ac-spd', name: 'AC SPD' },
+      { slug: 'dc-spd', name: 'DC SPD' },
+      { slug: 'ats', name: 'ATS Automatic Transfer Switch' },
+      { slug: 'pv-combiner-box', name: 'PV Combiner Box' },
+      { slug: 'voltage-protector', name: 'Voltage Protector' },
+      { slug: 'din-rail-energy-meter', name: 'DIN Rail Energy Meter' },
+    ],
+    categories: [
+      { slug: 'mcb/ac-mcb', name: 'AC MCB Category' },
+      { slug: 'mcb/dc-mcb', name: 'DC MCB Category' },
+      { slug: 'spd/ac-spd', name: 'AC SPD Category' },
+      { slug: 'spd/dc-spd', name: 'DC SPD Category' },
+    ],
+    productSubCategories: [
+      { url: '/products/category/mcb/ac-mcb', title: 'AC MCB' },
+      { url: '/products/category/mcb/dc-mcb', title: 'DC MCB' },
+      { url: '/products/category/spd/ac-spd', title: 'AC SPD' },
+      { url: '/products/category/spd/dc-spd', title: 'DC SPD Category' },
+    ],
+    blogCategories: [
+      { slug: 'product', name: 'Product Knowledge' },
+      { slug: 'buying', name: 'Selection Guides' },
+      { slug: 'comparison', name: 'Comparisons' },
+      { slug: 'application', name: 'Applications' },
+      { slug: 'faq', name: 'FAQs' },
+    ],
+  };
+
+  return {
+    blogs: (blogs || []).map(b => ({
+      url: `/blog/${b.slug_url}`,
+      title: b.title,
+      articleType: b.article_type,
+    })).filter(b => b.url && b.url !== '/blog/null'),
+    products: staticPages.products.map(p => ({
+      url: `/products/${p.slug}`,
+      title: p.name,
+    })),
+    productCategories: staticPages.categories.map(c => ({
+      url: `/products/category/${c.slug}`,
+      title: c.name,
+    })),
+    productSubCategories: staticPages.productSubCategories,
+    blogCategories: staticPages.blogCategories.map(c => ({
+      url: buildBlogCategoryPath(c.slug),
+      title: c.name,
+    })),
+  };
+}
+
 function normalizeUrlForCompare(url) {
   return String(url || '').trim().replace(/\/$/, '');
 }
@@ -3276,63 +3337,37 @@ router.post('/post/:postId/regenerate', async (req, res) => {
 // ──────────────────────────────────────────
 router.get('/site-pages-list', async (req, res) => {
   try {
-    // 已发布 blog 文章
     const blogs = await sb('blog_posts?status=eq.published&select=slug_url,title,article_type&order=published_at.desc');
+    const fallbackPages = buildLocalSitePagesFallback(blogs || []);
 
-    // 静态产品页 / 分类页（写死一份基础列表，比扫描 site.ts 简单可靠）
-    const staticPages = {
-      products: [
-        { slug: 'ac-mcb-1p', name: 'AC MCB 1P' },
-        { slug: 'ac-mcb-2p', name: 'AC MCB 2P' },
-        { slug: 'ac-mcb-3p', name: 'AC MCB 3P' },
-        { slug: 'ac-mcb-4p', name: 'AC MCB 4P' },
-        { slug: 'dc-mcb-1p', name: 'DC MCB 1P' },
-        { slug: 'dc-mcb-2p', name: 'DC MCB 2P' },
-        { slug: 'dc-mcb-3p', name: 'DC MCB 3P' },
-        { slug: 'dc-mcb-4p', name: 'DC MCB 4P' },
-        { slug: 'ac-spd', name: 'AC SPD' },
-        { slug: 'dc-spd', name: 'DC SPD' },
-        { slug: 'ats', name: 'ATS Automatic Transfer Switch' },
-        { slug: 'pv-combiner-box', name: 'PV Combiner Box' },
-        { slug: 'voltage-protector', name: 'Voltage Protector' },
-        { slug: 'din-rail-energy-meter', name: 'DIN Rail Energy Meter' },
-      ],
-      categories: [
-        { slug: 'mcb/ac-mcb', name: 'AC MCB Category' },
-        { slug: 'mcb/dc-mcb', name: 'DC MCB Category' },
-        { slug: 'spd/ac-spd', name: 'AC SPD Category' },
-        { slug: 'spd/dc-spd', name: 'DC SPD Category' },
-      ],
-      blogCategories: [
-        { slug: 'product', name: 'Product Knowledge' },
-        { slug: 'buying', name: 'Selection Guides' },
-        { slug: 'comparison', name: 'Comparisons' },
-        { slug: 'application', name: 'Applications' },
-        { slug: 'faq', name: 'FAQs' },
-      ],
-    };
+    try {
+      const response = await fetch(`${BLOG_SITE_BASE_URL}/api/site-pages`);
+      const remoteData = await response.json();
+      if (!response.ok || !remoteData?.success || !remoteData?.pages) {
+        throw new Error(remoteData?.error || `HTTP ${response.status}`);
+      }
+
+      return res.json({
+        success: true,
+        source: 'site-api',
+        pages: {
+          ...fallbackPages,
+          ...remoteData.pages,
+          blogs: Array.isArray(remoteData.pages.blogs) ? remoteData.pages.blogs : fallbackPages.blogs,
+          products: Array.isArray(remoteData.pages.products) ? remoteData.pages.products : fallbackPages.products,
+          productCategories: Array.isArray(remoteData.pages.productCategories) ? remoteData.pages.productCategories : fallbackPages.productCategories,
+          productSubCategories: Array.isArray(remoteData.pages.productSubCategories) ? remoteData.pages.productSubCategories : fallbackPages.productSubCategories,
+          blogCategories: Array.isArray(remoteData.pages.blogCategories) ? remoteData.pages.blogCategories : fallbackPages.blogCategories,
+        },
+      });
+    } catch (remoteError) {
+      console.warn('site-pages remote sync failed, using fallback:', remoteError.message);
+    }
 
     res.json({
       success: true,
-      pages: {
-        blogs: (blogs || []).map(b => ({
-          url: `/blog/${b.slug_url}`,
-          title: b.title,
-          articleType: b.article_type,
-        })).filter(b => b.url && b.url !== '/blog/null'),
-        products: staticPages.products.map(p => ({
-          url: `/products/${p.slug}`,
-          title: p.name,
-        })),
-        productCategories: staticPages.categories.map(c => ({
-          url: `/products/category/${c.slug}`,
-          title: c.name,
-        })),
-        blogCategories: staticPages.blogCategories.map(c => ({
-          url: buildBlogCategoryPath(c.slug),
-          title: c.name,
-        })),
-      },
+      source: 'crm-fallback',
+      pages: fallbackPages,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
