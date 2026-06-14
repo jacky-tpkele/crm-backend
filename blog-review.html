@@ -818,6 +818,7 @@
             <div id="coverEmpty" class="slot-empty">未上传</div>
             <input type="file" id="coverFile" accept="image/*" onchange="uploadCover(event)">
             <button class="primary" onclick="document.getElementById('coverFile').click()">📤 上传封面</button>
+            <button id="coverDeleteBtn" class="danger" onclick="deleteCoverImage()" style="display:none;">删除封面</button>
             <input id="fCoverAlt" type="text" placeholder="封面 Alt 文本（SEO 重要）" style="width:100%;padding:7px 10px;border:1px solid #E5E5E7;border-radius:6px;font-size:12px;margin-top:6px;background:#FFFFFF;color:#1D1D1F;" onchange="saveCoverAlt()">
           </div>
 
@@ -828,6 +829,7 @@
             <div id="ogEmpty" class="slot-empty">用封面图</div>
             <input type="file" id="ogFile" accept="image/*" onchange="uploadOg(event)">
             <button onclick="document.getElementById('ogFile').click()">📤 上传 OG 图</button>
+            <button id="ogDeleteBtn" class="danger" onclick="deleteOgImage()" style="display:none;">删除 OG 图</button>
           </div>
         </div>
       </div>
@@ -1032,26 +1034,32 @@
     function renderCover() {
       const img = document.getElementById('coverPreview');
       const empty = document.getElementById('coverEmpty');
+      const del = document.getElementById('coverDeleteBtn');
       if (post.cover_image_url) {
         img.src = post.cover_image_url;
         img.style.display = 'block';
         empty.style.display = 'none';
+        del.style.display = 'inline-block';
       } else {
         img.style.display = 'none';
         empty.style.display = 'flex';
+        del.style.display = 'none';
       }
     }
 
     function renderOg() {
       const img = document.getElementById('ogPreview');
       const empty = document.getElementById('ogEmpty');
+      const del = document.getElementById('ogDeleteBtn');
       if (post.og_image_url) {
         img.src = post.og_image_url;
         img.style.display = 'block';
         empty.style.display = 'none';
+        del.style.display = 'inline-block';
       } else {
         img.style.display = 'none';
         empty.style.display = 'flex';
+        del.style.display = 'none';
       }
     }
 
@@ -1374,6 +1382,46 @@
         showToast('错误：' + err.message);
       } finally {
         e.target.value = '';
+      }
+    }
+
+    async function deleteCoverImage() {
+      if (!post.cover_image_url) return;
+      if (!confirm('确定删除封面图吗？')) return;
+      try {
+        const r = await fetch('/api/blog/post/' + postId + '/cover-image', { method: 'DELETE' });
+        const d = await parseApiResponse(r);
+        if (d.success) {
+          post.cover_image_url = '';
+          post.cover_image_cloudinary_id = null;
+          post.cover_image_alt = '';
+          if (post.image_url !== undefined) post.image_url = '';
+          renderCover();
+          showToast('✓ 封面已删除');
+        } else {
+          showToast('删除失败：' + (d.error || ''));
+        }
+      } catch (err) {
+        showToast('错误：' + err.message);
+      }
+    }
+
+    async function deleteOgImage() {
+      if (!post.og_image_url) return;
+      if (!confirm('确定删除 OG 图吗？')) return;
+      try {
+        const r = await fetch('/api/blog/post/' + postId + '/og-image', { method: 'DELETE' });
+        const d = await parseApiResponse(r);
+        if (d.success) {
+          post.og_image_url = '';
+          post.og_image_cloudinary_id = null;
+          renderOg();
+          showToast('✓ OG 图已删除');
+        } else {
+          showToast('删除失败：' + (d.error || ''));
+        }
+      } catch (err) {
+        showToast('错误：' + err.message);
       }
     }
 

@@ -2487,6 +2487,41 @@ router.post('/post/:postId/cover-image', async (req, res) => {
   }
 });
 
+router.delete('/post/:postId/cover-image', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const posts = await sb(`blog_posts?id=eq.${postId}&select=cover_image_cloudinary_id,image_cloudinary_id`);
+    if (!posts || posts.length === 0) return res.status(404).json({ error: 'Post not found' });
+
+    const coverCloudinaryId = posts[0].cover_image_cloudinary_id;
+    const imageCloudinaryId = posts[0].image_cloudinary_id;
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        cover_image_url: null,
+        cover_image_cloudinary_id: null,
+        cover_image_alt: '',
+        image_url: null,
+        image_cloudinary_id: null,
+        image_width: null,
+        image_height: null,
+        updated_at: new Date().toISOString(),
+      }),
+    });
+
+    await deleteFromCloudinary(coverCloudinaryId);
+    if (imageCloudinaryId && imageCloudinaryId !== coverCloudinaryId) {
+      await deleteFromCloudinary(imageCloudinaryId);
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('cover-image delete error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // 12e. 上传 OG 分享图
 router.post('/post/:postId/og-image', async (req, res) => {
   try {
@@ -2511,6 +2546,32 @@ router.post('/post/:postId/og-image', async (req, res) => {
     res.json({ success: true, imageUrl: cdn.secure_url });
   } catch (error) {
     console.error('og-image upload error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.delete('/post/:postId/og-image', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const posts = await sb(`blog_posts?id=eq.${postId}&select=og_image_cloudinary_id`);
+    if (!posts || posts.length === 0) return res.status(404).json({ error: 'Post not found' });
+
+    const ogCloudinaryId = posts[0].og_image_cloudinary_id;
+
+    await sb(`blog_posts?id=eq.${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        og_image_url: null,
+        og_image_cloudinary_id: null,
+        updated_at: new Date().toISOString(),
+      }),
+    });
+
+    await deleteFromCloudinary(ogCloudinaryId);
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('og-image delete error:', error);
     res.status(500).json({ error: error.message });
   }
 });
