@@ -159,6 +159,34 @@
     .markdown-preview ul, .markdown-preview ol { margin: 8px 0 8px 22px; }
     .markdown-preview li { margin: 4px 0; }
     .markdown-preview img { max-width: 100%; height: auto; border-radius: 8px; margin: 12px 0; display: block; }
+    .markdown-preview .markdown-table-wrap {
+      margin: 12px 0 16px;
+      overflow-x: auto;
+      border: 1px solid #E5E5E7;
+      border-radius: 8px;
+      background: #FFFFFF;
+    }
+    .markdown-preview .markdown-table {
+      width: 100%;
+      min-width: 520px;
+      border-collapse: collapse;
+    }
+    .markdown-preview .markdown-table th,
+    .markdown-preview .markdown-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #E5E5E7;
+      text-align: left;
+      vertical-align: top;
+      font-size: 13px;
+      line-height: 1.65;
+    }
+    .markdown-preview .markdown-table th {
+      background: #F5F5F7;
+      font-weight: 600;
+    }
+    .markdown-preview .markdown-table tbody tr:last-child td {
+      border-bottom: none;
+    }
     .markdown-preview code {
       background: #F5F5F7;
       padding: 2px 6px;
@@ -1112,34 +1140,130 @@
     }
 
     function renderMarkdown(md) {
-      let html = escapeHtml(md);
-      html = html.replace(/^###### (.+)$/gm, '<h6>$1</h6>')
-                 .replace(/^##### (.+)$/gm, '<h5>$1</h5>')
-                 .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
-                 .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-                 .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-                 .replace(/^# (.+)$/gm, '<h1>$1</h1>');
-      html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
-      html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
-      html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-      html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-      html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-      const lines = html.split('\n');
+      const imagePattern = /^!\[([^\]]*)\]\(([^)]+)\)$/;
+      const tableRowPattern = /^\|.*\|$/;
+      const tableSeparatorPattern = /^\|?[\s:-]+(?:\|[\s:-]+)+\|?$/;
+
+      function renderInlineMarkdown(text) {
+        let html = escapeHtml(text.trim());
+        html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+        html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
+        html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+        html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+        return html;
+      }
+
+      function splitTableRow(row) {
+        return row.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(cell => cell.trim());
+      }
+
+      function renderTable(blockLines) {
+        const header = splitTableRow(blockLines[0]);
+        const bodyRows = blockLines.slice(2).filter(line => tableRowPattern.test(line)).map(splitTableRow);
+        return `
+          <div class="markdown-table-wrap">
+            <table class="markdown-table">
+              <thead><tr>${header.map(cell => `<th>${renderInlineMarkdown(cell)}</th>`).join('')}</tr></thead>
+              <tbody>${bodyRows.map(row => `<tr>${row.map(cell => `<td>${renderInlineMarkdown(cell)}</td>`).join('')}</tr>`).join('')}</tbody>
+            </table>
+          </div>
+        `;
+      }
+
+      const lines = md.split('\n');
       const out = [];
-      let inUl = false, inOl = false, inP = [];
-      const flushP = () => { if (inP.length) { out.push('<p>' + inP.join(' ') + '</p>'); inP = []; } };
+      let inUl = false;
+      let inOl = false;
+      let paragraphLines = [];
+      let tableLines = [];
+
+      const closeLists = () => {
+        if (inUl) { out.push('</ul>'); inUl = false; }
+        if (inOl) { out.push('</ol>'); inOl = false; }
+      };
+
+      const flushParagraph = () => {
+        if (paragraphLines.length) {
+          out.push('<p>' + renderInlineMarkdown(paragraphLines.join(' ')) + '</p>');
+          paragraphLines = [];
+        }
+      };
+
+      const flushTable = () => {
+        if (!tableLines.length) return;
+        const validTable =
+          tableLines.length >= 2 &&
+          tableSeparatorPattern.test(tableLines[1]) &&
+          tableLines.every(line => tableRowPattern.test(line) || tableSeparatorPattern.test(line));
+
+        if (validTable) {
+          out.push(renderTable(tableLines));
+        } else {
+          paragraphLines.push(...tableLines);
+        }
+        tableLines = [];
+      };
+
       for (const line of lines) {
         const t = line.trim();
-        if (!t) { flushP(); if (inUl) { out.push('</ul>'); inUl = false; } if (inOl) { out.push('</ol>'); inOl = false; } continue; }
-        if (/^<h\d>/.test(t)) { flushP(); if (inUl) { out.push('</ul>'); inUl = false; } if (inOl) { out.push('</ol>'); inOl = false; } out.push(t); continue; }
-        if (/^<img/.test(t)) { flushP(); out.push(t); continue; }
+
+        if (!t) {
+          flushTable();
+          flushParagraph();
+          closeLists();
+          continue;
+        }
+
+        if (tableRowPattern.test(t) || (tableLines.length && tableSeparatorPattern.test(t))) {
+          flushParagraph();
+          closeLists();
+          tableLines.push(t);
+          continue;
+        }
+
+        flushTable();
+
+        const heading = t.match(/^(#{1,6})\s+(.+)$/);
+        if (heading) {
+          flushParagraph();
+          closeLists();
+          const level = heading[1].length;
+          out.push(`<h${level}>${renderInlineMarkdown(heading[2])}</h${level}>`);
+          continue;
+        }
+
+        if (imagePattern.test(t)) {
+          flushParagraph();
+          closeLists();
+          out.push(renderInlineMarkdown(t));
+          continue;
+        }
+
         const ul = t.match(/^[-*]\s+(.+)$/);
         const ol = t.match(/^\d+\.\s+(.+)$/);
-        if (ul) { flushP(); if (!inUl) { out.push('<ul>'); inUl = true; } out.push('<li>' + ul[1] + '</li>'); continue; }
-        if (ol) { flushP(); if (!inOl) { out.push('<ol>'); inOl = true; } out.push('<li>' + ol[1] + '</li>'); continue; }
-        inP.push(t);
+        if (ul) {
+          flushParagraph();
+          if (inOl) { out.push('</ol>'); inOl = false; }
+          if (!inUl) { out.push('<ul>'); inUl = true; }
+          out.push('<li>' + renderInlineMarkdown(ul[1]) + '</li>');
+          continue;
+        }
+        if (ol) {
+          flushParagraph();
+          if (inUl) { out.push('</ul>'); inUl = false; }
+          if (!inOl) { out.push('<ol>'); inOl = true; }
+          out.push('<li>' + renderInlineMarkdown(ol[1]) + '</li>');
+          continue;
+        }
+
+        closeLists();
+        paragraphLines.push(t);
       }
-      flushP(); if (inUl) out.push('</ul>'); if (inOl) out.push('</ol>');
+
+      flushTable();
+      flushParagraph();
+      closeLists();
       return out.join('\n');
     }
 
