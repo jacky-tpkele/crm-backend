@@ -1325,11 +1325,16 @@
         const r = await fetch('/api/blog/post/' + postId + '/cover-image', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ imageBase64: b64, altText: document.getElementById('fCoverAlt').value }),
+          body: JSON.stringify({
+            imageBase64: b64,
+            altText: document.getElementById('fCoverAlt').value,
+            replaceCloudinaryId: post.cover_image_cloudinary_id || null,
+          }),
         });
         const d = await parseUploadApiResponse(r);
         if (d.success) {
           post.cover_image_url = d.imageUrl;
+          post.cover_image_cloudinary_id = null;
           renderCover();
           showToast('✓ 封面已上传（已自动转 WebP）');
         } else {
@@ -1351,11 +1356,15 @@
         const r = await fetch('/api/blog/post/' + postId + '/og-image', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ imageBase64: b64 }),
+          body: JSON.stringify({
+            imageBase64: b64,
+            replaceCloudinaryId: post.og_image_cloudinary_id || null,
+          }),
         });
         const d = await parseUploadApiResponse(r);
         if (d.success) {
           post.og_image_url = d.imageUrl;
+          post.og_image_cloudinary_id = null;
           renderOg();
           showToast('✓ OG 图已上传');
         } else {
@@ -1420,10 +1429,17 @@
         const b64 = await fileToBase64(file);
         const manualAnchorInput = document.getElementById('secAnchor' + sectionIndex);
         const manualAnchorText = manualAnchorInput ? manualAnchorInput.value.trim() : '';
+        const oldSectionImage = (post.content_images || []).find(img => img.sectionIndex === sectionIndex);
         const r = await fetch('/api/blog/post/' + postId + '/content-image', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ imageBase64: b64, altText: defaultAlt || '', sectionIndex, manualAnchorText }),
+          body: JSON.stringify({
+            imageBase64: b64,
+            altText: defaultAlt || '',
+            sectionIndex,
+            manualAnchorText,
+            replaceImageId: oldSectionImage ? oldSectionImage.id : null,
+          }),
         });
         const d = await parseApiResponse(r);
         if (d.success) {

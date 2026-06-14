@@ -829,6 +829,15 @@ async function uploadToCloudinary(imageBuffer, fileName) {
   });
 }
 
+async function deleteFromCloudinary(publicId) {
+  if (!publicId) return;
+  try {
+    await cloudinary.uploader.destroy(publicId, { resource_type: 'image' });
+  } catch (error) {
+    console.warn('Cloudinary delete failed:', error.message);
+  }
+}
+
 // ──────────────────────────────────────────
 // API 路由
 // ──────────────────────────────────────────
@@ -2449,7 +2458,7 @@ router.put('/post/:postId', async (req, res) => {
 router.post('/post/:postId/cover-image', async (req, res) => {
   try {
     const { postId } = req.params;
-    const { imageBase64, altText } = req.body;
+    const { imageBase64, altText, replaceCloudinaryId } = req.body;
     if (!imageBase64) return res.status(400).json({ error: 'imageBase64 is required' });
 
     const compressedBuffer = await compressImage(imageBase64);
@@ -2469,6 +2478,8 @@ router.post('/post/:postId/cover-image', async (req, res) => {
       }),
     });
 
+    await deleteFromCloudinary(replaceCloudinaryId);
+
     res.json({ success: true, imageUrl: cdn.secure_url, width: cdn.width, height: cdn.height });
   } catch (error) {
     console.error('cover-image upload error:', error);
@@ -2480,7 +2491,7 @@ router.post('/post/:postId/cover-image', async (req, res) => {
 router.post('/post/:postId/og-image', async (req, res) => {
   try {
     const { postId } = req.params;
-    const { imageBase64 } = req.body;
+    const { imageBase64, replaceCloudinaryId } = req.body;
     if (!imageBase64) return res.status(400).json({ error: 'imageBase64 is required' });
 
     const compressedBuffer = await compressImage(imageBase64);
@@ -2495,6 +2506,8 @@ router.post('/post/:postId/og-image', async (req, res) => {
       }),
     });
 
+    await deleteFromCloudinary(replaceCloudinaryId);
+
     res.json({ success: true, imageUrl: cdn.secure_url });
   } catch (error) {
     console.error('og-image upload error:', error);
@@ -2506,7 +2519,7 @@ router.post('/post/:postId/og-image', async (req, res) => {
 router.post('/post/:postId/content-image', async (req, res) => {
   try {
     const { postId } = req.params;
-    const { imageBase64, altText, sectionIndex, manualAnchorText } = req.body;
+    const { imageBase64, altText, sectionIndex, manualAnchorText, replaceImageId } = req.body;
     if (!imageBase64) return res.status(400).json({ error: 'imageBase64 is required' });
 
     const compressedBuffer = await compressImage(imageBase64);
@@ -2554,6 +2567,13 @@ router.post('/post/:postId/content-image', async (req, res) => {
       }),
     });
 
+    if (replaceImageId) {
+      const oldImage = existing.find(i => i.id === replaceImageId);
+      if (oldImage && oldImage.cloudinaryId) {
+        await deleteFromCloudinary(oldImage.cloudinaryId);
+      }
+    }
+
     res.json({ success: true, image: newImage, placementMode });
   } catch (error) {
     console.error('content-image upload error:', error);
@@ -2583,6 +2603,10 @@ router.delete('/post/:postId/content-image/:imageId', async (req, res) => {
         updated_at: new Date().toISOString(),
       }),
     });
+
+    if (target && target.cloudinaryId) {
+      await deleteFromCloudinary(target.cloudinaryId);
+    }
 
     res.json({ success: true });
   } catch (error) {
