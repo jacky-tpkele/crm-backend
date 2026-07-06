@@ -6,6 +6,7 @@
      --bg       #f5f7f6   page background (soft wash)
      --panel    #ffffff   card / panel background
      --panel-2  #f9fbfa   elevated / sub-panel
+     --panel2   #f9fbfa   legacy elevated / sub-panel token
      --hover    #eef4f0   hover surface
      --selected #eaf8ef   selected surface (green-soft)
      --border   #e7ece9   hairline borders
@@ -35,14 +36,26 @@ button.primary,.btn.primary{ font-weight:700 !important; }
   --bg:#f5f7f6 !important;
   --panel:#ffffff !important;
   --panel-2:#f9fbfa !important;
+  --panel2:#f9fbfa !important;
+  --hover:#eef4f0 !important;
+  --selected:#eaf8ef !important;
   --text:#111718 !important;
   --muted:#5f6d68 !important;
   --muted2:#41514b !important;
   --border:#e7ece9 !important;
+  --border-h:#cfe0d6 !important;
   --primary:#0b9b3f !important;
+  --p1:#0b9b3f !important;
+  --primary-d:#066128 !important;
+  --primary2:#066128 !important;
+  --accent:#14b85a !important;
   --cyan:#14b85a !important;
   --purple:#066128 !important;
   --danger:#d92d20 !important;
+  --warn:#b45309 !important;
+  --warning:#b45309 !important;
+  --success:#0b9b3f !important;
+  --green:#0b9b3f !important;
   --shadow:0 18px 45px rgba(13,34,28,.10) !important;
   --radius:10px !important;
 }
@@ -64,6 +77,7 @@ html,body{
 .card,.panel,.panel-2,.chart-card,.section,.tile,.box,.list,
 .modal,.modal-content,.dialog,.dropdown,.dd,.dd-item,
 .search-wrap,.search-dropdown,.sd-item,
+.kpi,.log-card,.sku-card,.comp-card,.rule-card,.suggestion-item,
 .login-panel,.fp-panel,.brand-wrap,.content,.main,.aside{
   background:#ffffff !important;
   color:#111718 !important;
@@ -550,5 +564,75 @@ button[title="Notifications"]:hover{
   color:#0b9b3f !important;
 }
 
+/* =========================================================
+   Low-risk legacy color cleanup
+   Some older pages use --panel2 or inline dark-theme surfaces.
+   Keep this as CSS-only coverage so business logic stays untouched.
+   ========================================================= */
+[style*="background:var(--panel2)"],
+[style*="background: var(--panel2)"],
+[style*="background:var(--panel-2)"],
+[style*="background: var(--panel-2)"]{
+  background:#f9fbfa !important;
+  color:#111718 !important;
+}
+
+[style*="background:rgba(255,255,255,.04)"],
+[style*="background: rgba(255,255,255,.04)"],
+[style*="background:rgba(255,255,255,.03)"],
+[style*="background: rgba(255,255,255,.03)"],
+[style*="background:rgba(255,255,255,.02)"],
+[style*="background: rgba(255,255,255,.02)"]{
+  background:#ffffff !important;
+  color:#111718 !important;
+}
+
+[style*="background:rgba(0,180,255"],
+[style*="background: rgba(0,180,255"],
+[style*="background:rgba(0,200,240"],
+[style*="background: rgba(0,200,240"]{
+  background:#f7faf8 !important;
+  color:#111718 !important;
+}
+
+.filter-bar input,
+.filter-bar select,
+.search-input,
+.search,
+#ppSearch,
+.field input,
+.field select,
+.field textarea,
+.form-ctrl,
+.tbl-num{
+  background:#ffffff !important;
+  color:#111718 !important;
+  border-color:#d8e0db !important;
+}
+
+.item-row,
+.calc-summary,
+.iq-detail-msg,
+.card-order,
+.trace-box,
+.attach-chip,
+.ql-toolbar.ql-snow,
+.ql-snow .ql-picker-options{
+  background:#f9fbfa !important;
+  color:#111718 !important;
+  border-color:#e7ece9 !important;
+}
+
+.chat-messages,
+.chat-msg.visitor{
+  background:#f9fbfa !important;
+  color:#111718 !important;
+}
+
+th,
+.bkw-matrix th{
+  background:#f4f7f5 !important;
+  color:#5f6d68 !important;
+}
 
 
