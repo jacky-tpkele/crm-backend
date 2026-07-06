@@ -28,7 +28,7 @@ a{color:inherit;text-decoration:none}
 .app{position:relative;z-index:1;}
 
 /* ── Sidebar ── */
-.sidebar{transition:width .25s ease;overflow:hidden;position:relative;z-index:20;}
+.sidebar{transition:width .25s ease;position:relative;z-index:20;}
 .sidebar.collapsed{width:64px}
 .sb-logo{gap:12px;}
 .logo-icon{width:36px;height:36px;flex-shrink:0;display:grid;place-items:center;}
@@ -65,7 +65,7 @@ a{color:inherit;text-decoration:none}
 .sb-toggle:hover{border-color:var(--primary);color:var(--primary)}
 
 /* ── Main content ── */
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.main{min-width:0}
 
 /* ── Header ── */
 .header{
@@ -131,9 +131,27 @@ a{color:inherit;text-decoration:none}
 .dd-item:hover{background:#eef4f0;color:var(--text)}
 .dd-item.danger{color:var(--danger)}
 .dd-item.danger:hover{background:rgba(251,113,133,.1)}
+.header-link{
+  display:inline-flex;align-items:center;gap:6px;padding:7px 14px;
+  border:1px solid var(--border);border-radius:8px;background:#ffffff;
+  color:var(--muted2);font-size:13px;white-space:nowrap;transition:.2s;
+}
+.header-link:hover{border-color:var(--primary);background:#eef4f0;color:var(--primary-d)}
+.header-link.accent{
+  border-color:rgba(74,222,128,0.3);
+  background:rgba(74,222,128,0.05);
+  color:var(--primary);
+}
+.header-link.accent:hover{background:rgba(74,222,128,0.14)}
+.header-link.warn{
+  border-color:rgba(251,191,36,0.35);
+  background:rgba(251,191,36,0.07);
+  color:#b45309;
+}
+.header-link.warn:hover{background:rgba(251,191,36,0.16);color:#92400e}
 
 /* ── Workspace ── */
-.workspace{flex:1;overflow-y:auto;overflow-x:hidden;padding:24px 22px;position:relative}
+.workspace{overflow-x:hidden;padding:24px 22px;position:relative}
 .section{display:none}
 .section.active{display:block}
 .section-title{font-size:22px;font-weight:700;margin-bottom:4px}   /* H1 */
@@ -188,12 +206,25 @@ input[type="month"]::-webkit-calendar-picker-indicator:hover{opacity:1}
 .qa-btn.primary:hover{background:var(--primary-d);border-color:var(--primary-d);box-shadow:0 6px 20px rgba(11,155,63,.22)}
 
 /* ── Cards ── */
-.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+.card-head{justify-content:space-between}
 .card-head h2{font-size:16px;font-weight:600}  /* H2 卡片标题 */
 
 /* ── Filter bar ── */
 .filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.filter-bar input,.filter-bar select{
+  background:#ffffff;border:1px solid #d8e0db;border-radius:10px;
+  padding:9px 14px;color:var(--text);font-size:13px;outline:none;
+  min-height:38px;transition:.2s;
+}
+.filter-bar input{width:min(260px,100%)}
+.filter-bar input:focus,.filter-bar select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(11,155,63,.14)}
 .filter-bar select option{background:var(--panel);color:var(--text)}
+.toolbar-input{
+  background:#ffffff;border:1px solid #d8e0db;border-radius:10px;
+  padding:9px 14px;color:var(--text);font-size:13px;outline:none;
+  width:min(260px,100%);transition:.2s;
+}
+.toolbar-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(11,155,63,.14)}
 
 /* ── Table ── */
 .actions-cell{display:flex;gap:6px;flex-wrap:wrap}
@@ -519,8 +550,8 @@ tr.iq-unread td{font-weight:600}
       <kbd id="searchKbd" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(11,155,63,.12);border:1px solid rgba(11,155,63,.32);color:#14b85a;padding:2px 7px;border-radius:5px;font-size:11px;font-family:inherit;pointer-events:none;letter-spacing:.5px">Ctrl K</kbd>
       <div class="search-dropdown" id="searchDropdown"></div>
     </div>
-    <a href="logistics.html" target="_blank" data-i18n="btnLogistics" style="padding:7px 14px;border:1px solid rgba(74,222,128,0.3);border-radius:8px;background:rgba(74,222,128,0.05);color:rgba(74,222,128,0.9);font-size:13px;text-decoration:none;white-space:nowrap;transition:.2s;display:inline-flex;align-items:center;gap:6px" onmouseover="this.style.background='rgba(74,222,128,0.14)'" onmouseout="this.style.background='rgba(74,222,128,0.05)'"><i data-lucide="truck" style="width:14px;height:14px;stroke-width:2"></i> 物流管理</a>
-    <a id="vaultLink" href="password-vault.html" target="_blank" data-i18n="btnVault" style="padding:7px 14px;border:1px solid rgba(251,191,36,0.35);border-radius:8px;background:rgba(251,191,36,0.07);color:rgba(253,224,71,0.95);font-size:13px;text-decoration:none;white-space:nowrap;transition:.2s" onmouseover="this.style.background='rgba(251,191,36,0.16)'" onmouseout="this.style.background='rgba(251,191,36,0.07)'">Password Vault</a>
+    <a href="logistics.html" target="_blank" data-i18n="btnLogistics" class="header-link accent"><i data-lucide="truck" style="width:14px;height:14px;stroke-width:2"></i> 物流管理</a>
+    <a id="vaultLink" href="password-vault.html" target="_blank" data-i18n="btnVault" class="header-link warn">Password Vault</a>
     <div class="header-right">
       <button class="lang-btn" id="langBtn" onclick="toggleLang()">中/EN</button>
       <button class="icon-btn" title="Notifications"><i data-lucide="bell" style="width:16px;height:16px;stroke-width:2"></i></button>
@@ -576,7 +607,7 @@ tr.iq-unread td{font-weight:600}
       <div class="card">
         <div class="card-head">
           <div class="filter-bar">
-            <input type="text" id="iq-search" data-i18n-ph="phSearchIq" placeholder="客户 / 邮箱 / 主题..." oninput="renderInquiries()">
+            <input type="text" id="iq-search" class="toolbar-input" data-i18n-ph="phSearchIq" placeholder="客户 / 邮箱 / 主题..." oninput="renderInquiries()">
             <select id="iq-status" onchange="renderInquiries()">
               <option value="" data-i18n="allStatus">全部状态</option>
               <option value="new" data-i18n="stNew">新询盘</option>
@@ -648,7 +679,7 @@ tr.iq-unread td{font-weight:600}
       <div class="section-sub" data-i18n="subCustomers">Buyer master data — auto-fills PI documents</div>
       <div class="card">
         <div class="card-head">
-          <input type="text" id="cu-search" data-i18n-ph="phSearchCu" placeholder="Name / country / email..." oninput="renderCustomers()" style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:9px 14px;color:var(--text);font-size:13px;outline:none;width:260px">
+          <input type="text" id="cu-search" class="toolbar-input" data-i18n-ph="phSearchCu" placeholder="Name / country / email..." oninput="renderCustomers()">
           <button class="btn" data-i18n="btnExportExcel" onclick="exportExcel('customers')" title="导出 Excel">📥 导出</button>
           <button class="btn" data-i18n="btnImportExcel" onclick="importExcel('customers')" title="从 Excel 批量导入">📤 导入</button>
           <button class="btn btn-primary" data-i18n="btnNewCustomerCard" onclick="openCustomerModal()">＋ New Customer</button>
@@ -670,7 +701,7 @@ tr.iq-unread td{font-weight:600}
       <div class="section-sub" data-i18n="subProducts">Product library — auto-fills order items with specs and prices</div>
       <div class="card">
         <div class="card-head">
-          <input type="text" id="pr-search" data-i18n-ph="phSearchPr" placeholder="Code / name / spec..." oninput="renderProducts()" style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:9px 14px;color:var(--text);font-size:13px;outline:none;width:260px">
+          <input type="text" id="pr-search" class="toolbar-input" data-i18n-ph="phSearchPr" placeholder="Code / name / spec..." oninput="renderProducts()">
           <button class="btn" data-i18n="btnExportExcel" onclick="exportExcel('products')" title="导出 Excel">📥 导出</button>
           <button class="btn" data-i18n="btnImportExcel" onclick="importExcel('products')" title="从 Excel 批量导入">📤 导入</button>
           <button class="btn btn-primary" data-i18n="btnNewProductCard" onclick="openProductModal()">＋ New Product</button>
@@ -692,7 +723,7 @@ tr.iq-unread td{font-weight:600}
       <div class="section-sub" data-i18n="subSuppliers">Supplier master data with product image and contact info</div>
       <div class="card">
         <div class="card-head">
-          <input type="text" id="su-search" data-i18n-ph="phSearchSu" placeholder="Name / contact / phone..." oninput="renderSuppliers()" style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:9px 14px;color:var(--text);font-size:13px;outline:none;width:260px">
+          <input type="text" id="su-search" class="toolbar-input" data-i18n-ph="phSearchSu" placeholder="Name / contact / phone..." oninput="renderSuppliers()">
           <button class="btn" data-i18n="btnExportExcel" onclick="exportExcel('suppliers')" title="导出 Excel">📥 导出</button>
           <button class="btn" data-i18n="btnImportExcel" onclick="importExcel('suppliers')" title="从 Excel 批量导入">📤 导入</button>
           <button class="btn btn-primary" data-i18n="btnNewSupplierCard" onclick="openSupplierModal()">＋ New Supplier</button>
@@ -715,7 +746,7 @@ tr.iq-unread td{font-weight:600}
       <div class="card">
         <div class="card-head">
           <div class="filter-bar">
-            <input type="text" id="or-customer" data-i18n-ph="phSearchOr" placeholder="Customer..." oninput="renderOrders()">
+            <input type="text" id="or-customer" class="toolbar-input" data-i18n-ph="phSearchOr" placeholder="Customer..." oninput="renderOrders()">
             <input type="date" id="or-date" onchange="renderOrders()">
             <input type="month" id="or-month" onchange="renderOrders()">
           </div>
@@ -742,7 +773,7 @@ tr.iq-unread td{font-weight:600}
       <div class="card">
         <div class="card-head">
           <div class="filter-bar">
-            <input type="text" id="po-search" placeholder="供应商 / 采购单号..." oninput="renderPurchaseOrders()">
+            <input type="text" id="po-search" class="toolbar-input" placeholder="供应商 / 采购单号..." oninput="renderPurchaseOrders()">
             <select id="po-status-filter" onchange="renderPurchaseOrders()">
               <option value="">全部状态</option>
               <option value="pending">待发出</option>
