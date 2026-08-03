@@ -252,7 +252,7 @@ button,input,select,textarea{font:inherit}
 .detail-placeholder{background:#ffffff;color:#94a3b8}
 
 /* Reader（查看邮件） */
-.reader{background:#ffffff}
+.reader{background:#ffffff;min-height:0}
 .reader-header{padding:22px 28px 16px;background:#ffffff !important;border-bottom:1px solid #e5e7eb !important}
 .reader-subject{font-size:20px;font-weight:600;color:#111827 !important;margin-bottom:12px}
 .reader-meta{font-size:13px;color:#4b5563 !important;gap:6px 24px}
@@ -262,7 +262,8 @@ button,input,select,textarea{font:inherit}
 .btn-action:hover{background:#f9fafb !important;border-color:#9ca3af !important;color:#111827 !important}
 .btn-action.danger{border-color:#fca5a5 !important;color:#dc2626 !important}
 .btn-action.danger:hover{background:#fef2f2 !important;border-color:#dc2626 !important;color:#b91c1c !important}
-.reader-body{padding:0 !important;background:#ffffff !important;overflow:hidden}
+.reader-body{padding:0 !important;background:#ffffff !important;overflow-y:auto !important;min-height:0;-webkit-overflow-scrolling:touch}
+.reader-body.collapsed{max-height:none !important;overflow-y:auto !important}
 .reader-html{color:#1f2937 !important;font-size:14px;line-height:1.75;max-width:880px}
 .reader-html a{color:#2563eb !important}
 .reader-text{color:#1f2937 !important;font-size:13.5px;line-height:1.8;max-width:880px}
@@ -304,6 +305,7 @@ button,input,select,textarea{font:inherit}
 <link rel="stylesheet" href="light-theme.css">
 
 <!-- ★ 覆盖 light-theme.css：写邮件区域强制白底黑字、按钮恢复正常 -->
+<script src="/_shared/theme.js"></script>
 <style>
 /* 写信框输入框：白底、深色文字、细灰边、聚焦淡蓝；高特异性盖过 light-theme.css */
 html body .compose .field-row{padding:10px 22px !important;border-bottom:1px solid #e5e7eb !important;background:#ffffff !important;border-radius:0 !important}
@@ -1032,7 +1034,7 @@ async function openEmail(id, el) {
             <button class="btn-action danger" onclick="deleteCurrent()">🗑 删除</button>
           </div>
         </div>
-        <div class="reader-body collapsed" id="readerBody">
+        <div class="reader-body" id="readerBody">
           ${email.body_html
             ? `<iframe class="reader-frame" id="readerFrame" sandbox="allow-same-origin allow-popups"></iframe>`
             : `<div class="reader-text" style="padding:24px 28px">${esc(email.body_text||'（无内容）')}</div>`}
@@ -1180,7 +1182,7 @@ function openCompose(opts = {}) {
 
 const EMAIL_SIGNATURE = `
 <br><br>
-<div style="border-top:1px solid #e5e7eb; padding-top:14px; margin-top:20px;">
+<div data-crm-signature="tpkele" style="border-top:1px solid #e5e7eb; padding-top:14px; margin-top:20px;">
 <table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,Helvetica,sans-serif; color:#1f2937; width:680px; max-width:680px;">
   <tr>
     <td style="padding:0 0 10px 0;">
@@ -1328,9 +1330,15 @@ function initMailEditor(initialHtml = '') {
     table_toolbar: 'tableprops tabledelete | tableinsertrowbefore tableinsertrowafter tabledeleterow | tableinsertcolbefore tableinsertcolafter tabledeletecol | tablecellprops tablemergecells tablesplitcells',
     setup: (editor) => {
       mailEditor = editor;
-      editor.on('init', () => editor.setContent((initialHtml || '<p><br></p>') + EMAIL_SIGNATURE));
+      editor.on('init', () => editor.setContent(buildEditorInitialHtml(initialHtml)));
     }
   });
+}
+
+function buildEditorInitialHtml(initialHtml = '') {
+  const html = String(initialHtml || '').trim() || '<p><br></p>';
+  if (html.includes('data-crm-signature="tpkele"')) return html;
+  return html + EMAIL_SIGNATURE;
 }
 
 function addFiles(input) {
@@ -1357,7 +1365,7 @@ function replyEmail(to, subject) {
 }
 
 function forwardEmail(subject, body) {
-  openCompose({ title:'转发', subject: subject.startsWith('Fwd:')?subject:`Fwd: ${subject}`, body:`<br><br><hr><p><b>--- 转发邮件 ---</b></p>${body}` });
+  openCompose({ title:'转发', subject: subject.startsWith('Fwd:')?subject:`Fwd: ${subject}`, body:`<p><br></p>${EMAIL_SIGNATURE}<br><br><hr><p><b>--- 转发邮件 ---</b></p>${body}` });
 }
 
 // 简化版：回复/转发/删除当前查看的邮件（避免 inline onclick 转义问题）

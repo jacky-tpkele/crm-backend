@@ -441,6 +441,7 @@ tr.iq-unread td{font-weight:600}
 </style>
 <link rel="stylesheet" href="light-theme.css">
 <link rel="stylesheet" href="/_shared/mobile.css">
+<script src="/_shared/theme.js"></script>
 </head>
 <body>
 <div class="app">
@@ -554,7 +555,7 @@ tr.iq-unread td{font-weight:600}
     <a id="vaultLink" href="password-vault.html" target="_blank" data-i18n="btnVault" class="header-link warn">Password Vault</a>
     <div class="header-right">
       <button class="lang-btn" id="langBtn" onclick="toggleLang()">中/EN</button>
-      <button class="icon-btn" title="Notifications"><i data-lucide="bell" style="width:16px;height:16px;stroke-width:2"></i></button>
+      <button id="themeToggle" title="切换主题 Light/Dark" onclick="toggleTheme()">◐</button>
       <div style="position:relative">
         <button class="user-btn" id="userBtn" onclick="toggleUserMenu()">
           <div class="user-avatar" id="userAvatar">T</div>
