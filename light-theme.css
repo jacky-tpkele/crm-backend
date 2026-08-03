@@ -432,3 +432,39 @@ body:has(.brand-wrap)::before{
 }
 body:has(.brand-wrap) .page>.card,
 body:has(.brand-wrap) .card{position:relative;z-index:1;}
+
+/* ── 修复：<a> 标签用作实色按钮时（inline style 含 color:var(--on-solid)）
+   通用 a{color:var(--text)!important} 会把文字盖成同色导致不可见。
+   用更高特异性的选择器还原 inline style 的 color 值。 ── */
+a[style*="color:var(--on-solid)"],
+a[style*="color: var(--on-solid)"]{
+  color:var(--on-solid) !important;
+}
+
+/* 同理覆盖 span/div 徽章被强制变色的问题 */
+span[style*="background:var(--hover)"],
+span[style*="background: var(--hover)"]{
+  color:var(--text) !important;
+}
+span[style*="background:var(--text)"],
+span[style*="background: var(--text)"]{
+  color:var(--on-solid) !important;
+}
+span[style*="background:var(--panel-2)"],
+span[style*="background: var(--panel-2)"]{
+  color:var(--text) !important;
+}
+
+/* 通用兜底：含 background 的 inline style 元素，让 color 跟随自己的 inline color */
+[style*="color:var(--on-solid)"],[style*="color: var(--on-solid)"]{
+  color:var(--on-solid) !important;
+}
+[style*="color:var(--muted)"],[style*="color: var(--muted)"]{
+  color:var(--muted) !important;
+}
+[style*="color:var(--muted2)"],[style*="color: var(--muted2)"]{
+  color:var(--muted2) !important;
+}
+[style*="color:var(--text)"],[style*="color: var(--text)"]{
+  color:var(--text) !important;
+}
