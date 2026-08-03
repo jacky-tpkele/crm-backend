@@ -1750,7 +1750,42 @@ async function confirmImport(type, count) {
   else if (type === 'suppliers') await loadSuppliers();
 }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+function openModal(id) {
+  const backdrop = document.getElementById(id);
+  backdrop.style.display = 'grid';
+  // 启用拖动
+  const modal = backdrop.querySelector('.modal');
+  if (modal && !modal._draggableInit) {
+    modal._draggableInit = true;
+    let isDragging = false, startX, startY, offsetX, offsetY;
+    const header = modal.querySelector('.modal-head');
+    if (header) {
+      header.style.cursor = 'move';
+      header.addEventListener('mousedown', e => {
+        if (e.target.closest('.modal-close')) return;
+        isDragging = true;
+        const rect = modal.getBoundingClientRect();
+        startX = e.clientX;
+        startY = e.clientY;
+        offsetX = rect.left;
+        offsetY = rect.top;
+        modal.style.position = 'fixed';
+        modal.style.margin = '0';
+        modal.style.left = offsetX + 'px';
+        modal.style.top = offsetY + 'px';
+        e.preventDefault();
+      });
+      document.addEventListener('mousemove', e => {
+        if (!isDragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        modal.style.left = (offsetX + dx) + 'px';
+        modal.style.top = (offsetY + dy) + 'px';
+      });
+      document.addEventListener('mouseup', () => isDragging = false);
+    }
+  }
+}
 
 function logout() {
   localStorage.removeItem('crm_token');

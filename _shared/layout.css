@@ -77,12 +77,16 @@ td { padding: 10px 12px; border-bottom: 1px solid var(--border) }
 /* Modal */
 .modal-backdrop { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.42); backdrop-filter: blur(3px); display: none; place-items: center }
 .modal-backdrop.open { display: grid }
-.modal { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; width: 640px; max-width: 95vw; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow) }
-.modal-head { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between }
+.modal { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; width: 640px; max-width: 95vw; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow); overflow: hidden }
+.modal-head { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0 }
 .modal-head h2 { font-size: 15px; font-weight: 600 }
 .modal-close { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--muted2); cursor: pointer; font-size: 16px; display: grid; place-items: center }
-.modal-body { padding: 18px 20px; overflow-y: auto; flex: 1 }
-.modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end }
+.modal-body { padding: 18px 20px; overflow-y: auto; flex: 1; scrollbar-width: thin; scrollbar-color: rgba(0,0,0,.2) transparent }
+.modal-body::-webkit-scrollbar { width: 8px }
+.modal-body::-webkit-scrollbar-track { background: transparent }
+.modal-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,.2); border-radius: 4px }
+.modal-body::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,.35) }
+.modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; flex-shrink: 0 }
 
 /* Tabs */
 .tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 0 }
