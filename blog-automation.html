@@ -11,43 +11,28 @@
   <script src="/_shared/theme.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
     /* 全局重置 */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; overflow: hidden; }
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Microsoft YaHei', sans-serif;
-      background: #f0f4f8;
-      color: #1a1a1a;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue',
+                   'PingFang SC', 'Microsoft YaHei', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
       font-size: 14px;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
 
-    /* CSS 变量 - 浅色绿色主题 */
+    /* 页面专属变量：只补 light-theme.css 里没有的，其余全部继承主题 */
     :root {
-      --bg: #f0f4f8;
-      --sidebar-bg: #f7f7f7;
-      --panel: #ffffff;
-      --panel-alt: #f7f7f7;
-      --border: #e3e3e3;
-      --border-h: #1a1a1a;
-      --text: #1a1a1a;
-      --text-light: #4a4a4a;
-      --text-muted: #767676;
-      --primary: #1a1a1a;
-      --primary-light: #f0f0f0;
-      --primary-lighter: #f7f7f7;
-      --cyan: #1a1a1a;
-      --danger: #1a1a1a;
-      --warn: #1a1a1a;
-      --success: #1a1a1a;
-      --shadow: 0 2px 8px rgba(0,0,0,0.08);
-      --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
-      --radius: 12px;
+      --sidebar-bg: var(--panel-2);
+      --panel-alt: var(--panel-2);
+      --text-light: var(--muted2);
+      --text-muted: var(--muted);
+      --primary-light: var(--hover);
+      --primary-lighter: var(--panel-2);
+      --shadow-lg: var(--shadow);
     }
 
     /* 主布局：左 sidebar + 右 main */
@@ -212,23 +197,23 @@
     .keyword-input-group input {
       flex: 1;
       padding: 10px 12px;
-      border: 1px solid #E5E5E7;
+      border: 1px solid var(--border);
       border-radius: 8px;
       font-size: 14px;
-      background: #FFFFFF;
-      color: #1D1D1F;
+      background: var(--panel);
+      color: var(--text);
       transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
     .keyword-input-group input:focus {
       outline: none;
-      border-color: #1a1a1a;
+      border-color: var(--text);
       box-shadow: 0 0 0 3px rgba(26,26,26, 0.15);
     }
 
     .keyword-input-group button {
       padding: 10px 18px;
-      background: #1a1a1a;
-      color: white;
+      background: var(--text);
+      color: var(--on-solid);
       border: none;
       border-radius: 8px;
       cursor: pointer;
@@ -236,7 +221,7 @@
       font-weight: 500;
       transition: background 0.15s ease;
     }
-    .keyword-input-group button:hover { background: #000000; }
+    .keyword-input-group button:hover { background: var(--primary-d); }
 
     .keyword-list {
       display: grid;
@@ -245,9 +230,9 @@
     }
 
     .keyword-tag {
-      background: #FFFFFF;
+      background: var(--panel);
       padding: 10px 12px;
-      border: 1px solid #E5E5E7;
+      border: 1px solid var(--border);
       border-radius: 8px;
       display: flex;
       justify-content: space-between;
@@ -257,16 +242,16 @@
 
     .keyword-tag .remove {
       cursor: pointer;
-      color: #1a1a1a;
+      color: var(--text);
       font-weight: 500;
     }
 
     /* 规划生成标签页 */
     .plan-form {
-      background: #FAFAFA;
+      background: var(--panel-2);
       padding: 24px;
       border-radius: 12px;
-      border: 1px solid #E5E5E7;
+      border: 1px solid var(--border);
       max-width: 640px;
     }
 
@@ -279,7 +264,7 @@
       margin-bottom: 6px;
       font-weight: 500;
       font-size: 13px;
-      color: #424245;
+      color: var(--muted2);
     }
 
     .form-group input,
@@ -287,19 +272,19 @@
     .form-group textarea {
       width: 100%;
       padding: 10px 12px;
-      border: 1px solid #E5E5E7;
+      border: 1px solid var(--border);
       border-radius: 8px;
       font-size: 14px;
       font-family: inherit;
-      background: #FFFFFF;
-      color: #1D1D1F;
+      background: var(--panel);
+      color: var(--text);
       transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
     .form-group input:focus,
     .form-group select:focus,
     .form-group textarea:focus {
       outline: none;
-      border-color: #1a1a1a;
+      border-color: var(--text);
       box-shadow: 0 0 0 3px rgba(26,26,26, 0.15);
     }
 
@@ -324,17 +309,17 @@
     }
 
     .btn-primary {
-      background: #1a1a1a;
-      color: white;
+      background: var(--text);
+      color: var(--on-solid);
     }
-    .btn-primary:hover { background: #000000; }
+    .btn-primary:hover { background: var(--primary-d); }
 
     .btn-secondary {
-      background: #FFFFFF;
-      color: #1D1D1F;
-      border: 1px solid #E5E5E7 !important;
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--border) !important;
     }
-    .btn-secondary:hover { background: #F5F5F7; }
+    .btn-secondary:hover { background: var(--panel-2); }
 
     /* 计划列表标签页 */
     .plan-list-header {
@@ -346,7 +331,7 @@
 
     .plan-stats {
       font-size: 13px;
-      color: #6E6E73;
+      color: var(--muted);
     }
 
     .plan-filters {
@@ -359,11 +344,11 @@
     .plan-filters select,
     .plan-filters input[type="month"] {
       padding: 8px 12px;
-      border: 1px solid #E5E5E7;
+      border: 1px solid var(--border);
       border-radius: 8px;
       font-size: 13px;
-      background: #FFFFFF;
-      color: #1D1D1F;
+      background: var(--panel);
+      color: var(--text);
     }
 
     .plan-batch-bar {
@@ -373,15 +358,15 @@
       gap: 12px;
       margin-bottom: 14px;
       padding: 10px 14px;
-      background: #FFFFFF;
-      border: 1px solid #E5E5E7;
+      background: var(--panel);
+      border: 1px solid var(--border);
       border-radius: 10px;
       flex-wrap: wrap;
     }
 
     .plan-batch-meta {
       font-size: 12px;
-      color: #6E6E73;
+      color: var(--muted);
     }
 
     .plan-batch-actions {
@@ -400,42 +385,42 @@
       width: 16px;
       height: 16px;
       cursor: pointer;
-      accent-color: #1a1a1a;
+      accent-color: var(--text);
     }
 
     .plan-table {
       width: 100%;
       border-collapse: collapse;
-      background: #FFFFFF;
-      border: 1px solid #E5E5E7;
+      background: var(--panel);
+      border: 1px solid var(--border);
       border-radius: 12px;
       overflow: hidden;
       box-shadow: none;
     }
 
     .plan-table th {
-      background: #FAFAFA;
+      background: var(--panel-2);
       padding: 12px 14px;
       text-align: left;
       font-weight: 600;
       font-size: 12px;
-      color: #6E6E73;
+      color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      border-bottom: 1px solid #E5E5E7;
+      border-bottom: 1px solid var(--border);
     }
 
     .plan-table td {
       padding: 13px 14px;
-      border-bottom: 1px solid #F2F2F2;
+      border-bottom: 1px solid var(--border);
       font-size: 13px;
-      color: #1D1D1F;
+      color: var(--text);
     }
 
     .plan-table tr:last-child td { border-bottom: none; }
 
     .plan-table tr:hover {
-      background: #FAFAFA;
+      background: var(--panel-2);
     }
 
     .status-badge {
@@ -448,48 +433,48 @@
     }
 
     .status-pending {
-      background: #f7f7f7;
-      color: #1a1a1a;
+      background: var(--panel-2);
+      color: var(--text);
     }
 
     .status-draft {
-      background: #F2F2F4;
-      color: #6E6E73;
+      background: var(--hover);
+      color: var(--muted);
     }
 
     .status-pending_review {
-      background: #f7f7f7;
-      color: #000000;
+      background: var(--panel-2);
+      color: var(--text);
     }
 
     .status-approved {
-      background: #f0f0f0;
-      color: #1a1a1a;
+      background: var(--hover);
+      color: var(--text);
     }
 
     .status-needs_revision {
-      background: #f7f7f7;
-      color: #1a1a1a;
+      background: var(--panel-2);
+      color: var(--text);
     }
 
     .status-generated {
-      background: #E6F4F7;
-      color: #0E6A82;
+      background: var(--hover);
+      color: var(--text);
     }
 
     .status-published {
-      background: #f0f0f0;
-      color: #1a1a1a;
+      background: var(--hover);
+      color: var(--text);
     }
 
     .status-generation_failed {
-      background: #f7f7f7;
-      color: #1a1a1a;
+      background: var(--panel-2);
+      color: var(--text);
     }
 
     .status-publish_failed {
-      background: #f7f7f7;
-      color: #1a1a1a;
+      background: var(--panel-2);
+      color: var(--text);
     }
 
     /* SEO 评分样式 */
@@ -504,18 +489,18 @@
     }
 
     .seo-good {
-      background: #f0f0f0;
-      color: #1a1a1a;
+      background: var(--hover);
+      color: var(--text);
     }
 
     .seo-fair {
-      background: #f7f7f7;
-      color: #1a1a1a;
+      background: var(--panel-2);
+      color: var(--text);
     }
 
     .seo-poor {
-      background: #f7f7f7;
-      color: #1a1a1a;
+      background: var(--panel-2);
+      color: var(--text);
     }
 
     /* 同步状态样式 */
@@ -528,23 +513,23 @@
     }
 
     .sync-pending {
-      background: #F2F2F4;
-      color: #6E6E73;
+      background: var(--hover);
+      color: var(--muted);
     }
 
     .sync-syncing {
-      background: #f7f7f7;
-      color: #000000;
+      background: var(--panel-2);
+      color: var(--text);
     }
 
     .sync-success {
-      background: #f0f0f0;
-      color: #1a1a1a;
+      background: var(--hover);
+      color: var(--text);
     }
 
     .sync-failed {
-      background: #f7f7f7;
-      color: #1a1a1a;
+      background: var(--panel-2);
+      color: var(--text);
     }
 
     .action-buttons {
@@ -554,9 +539,9 @@
 
     .action-buttons button {
       padding: 5px 10px;
-      border: 1px solid #E5E5E7;
-      background: #FFFFFF;
-      color: #1D1D1F;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
       border-radius: 6px;
       cursor: pointer;
       font-size: 12px;
@@ -564,8 +549,8 @@
     }
 
     .action-buttons button:hover {
-      background: #F5F5F7;
-      border-color: #D2D2D7;
+      background: var(--panel-2);
+      border-color: var(--border-h);
     }
 
     /* 预览编辑弹窗 */
@@ -590,7 +575,7 @@
     }
 
     .modal-content {
-      background: #FFFFFF;
+      background: var(--panel);
       border-radius: 16px;
       max-width: 920px;
       width: 90%;
@@ -605,7 +590,7 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 22px;
-      border-bottom: 1px solid #F2F2F2;
+      border-bottom: 1px solid var(--border);
       padding-bottom: 16px;
     }
 
@@ -614,7 +599,7 @@
       font-size: 18px;
       font-weight: 600;
       letter-spacing: -0.01em;
-      color: #1D1D1F;
+      color: var(--text);
     }
 
     .modal-close {
@@ -622,10 +607,10 @@
       border: none;
       font-size: 24px;
       cursor: pointer;
-      color: #86868B;
+      color: var(--muted);
       transition: color 0.15s ease;
     }
-    .modal-close:hover { color: #1D1D1F; }
+    .modal-close:hover { color: var(--text); }
 
     .edit-section {
       margin-bottom: 20px;
@@ -635,7 +620,7 @@
       font-size: 13px;
       font-weight: 600;
       margin-bottom: 10px;
-      color: #424245;
+      color: var(--muted2);
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
@@ -644,18 +629,18 @@
     .edit-section textarea {
       width: 100%;
       padding: 10px 12px;
-      border: 1px solid #E5E5E7;
+      border: 1px solid var(--border);
       border-radius: 8px;
       font-size: 14px;
       font-family: inherit;
-      background: #FFFFFF;
-      color: #1D1D1F;
+      background: var(--panel);
+      color: var(--text);
       transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
     .edit-section input:focus,
     .edit-section textarea:focus {
       outline: none;
-      border-color: #1a1a1a;
+      border-color: var(--text);
       box-shadow: 0 0 0 3px rgba(26,26,26, 0.15);
     }
 
@@ -669,14 +654,14 @@
       flex-wrap: wrap;
       gap: 6px;
       padding: 8px 10px;
-      border: 1px solid #E5E5E7;
+      border: 1px solid var(--border);
       border-radius: 8px;
-      background: #FFFFFF;
+      background: var(--panel);
     }
 
     .keyword-chip {
-      background: #f7f7f7;
-      color: #000000;
+      background: var(--panel-2);
+      color: var(--text);
       padding: 4px 10px;
       border-radius: 999px;
       display: flex;
@@ -687,7 +672,7 @@
 
     .keyword-chip .remove {
       cursor: pointer;
-      color: #000000;
+      color: var(--text);
       font-weight: 600;
       opacity: 0.7;
       transition: opacity 0.15s ease;
@@ -704,17 +689,17 @@
     }
 
     .image-upload {
-      border: 2px dashed #D2D2D7;
+      border: 2px dashed var(--border-h);
       border-radius: 12px;
       padding: 28px 20px;
       text-align: center;
       cursor: pointer;
       transition: all 0.2s ease;
-      background: #FAFAFA;
+      background: var(--panel-2);
     }
 
     .image-upload:hover {
-      border-color: #1a1a1a;
+      border-color: var(--text);
       background: rgba(26,26,26, 0.04);
     }
 
@@ -735,7 +720,7 @@
 
     .image-info {
       font-size: 12px;
-      color: #6E6E73;
+      color: var(--muted);
       margin-top: 10px;
     }
 
@@ -750,14 +735,14 @@
       font-size: 13px;
       font-weight: 600;
       margin-bottom: 10px;
-      color: #424245;
+      color: var(--muted2);
     }
 
     .preview-box {
-      border: 1px solid #E5E5E7;
+      border: 1px solid var(--border);
       border-radius: 10px;
       padding: 16px;
-      background: #FAFAFA;
+      background: var(--panel-2);
     }
 
     .modal-actions {
@@ -766,7 +751,7 @@
       justify-content: flex-end;
       margin-top: 22px;
       padding-top: 20px;
-      border-top: 1px solid #F2F2F2;
+      border-top: 1px solid var(--border);
     }
 
     .modal-actions button {
@@ -780,30 +765,30 @@
     }
 
     .btn-cancel {
-      background: #FFFFFF;
-      color: #1D1D1F;
-      border: 1px solid #E5E5E7 !important;
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--border) !important;
     }
-    .btn-cancel:hover { background: #F5F5F7; }
+    .btn-cancel:hover { background: var(--panel-2); }
 
     .btn-reset {
-      background: #f7f7f7;
-      color: #1a1a1a;
+      background: var(--panel-2);
+      color: var(--text);
     }
-    .btn-reset:hover { background: #FFF0C2; }
+    .btn-reset:hover { background: var(--hover); }
 
     .btn-publish {
-      background: #1a1a1a;
-      color: white;
+      background: var(--text);
+      color: var(--on-solid);
     }
-    .btn-publish:hover { background: #2BB14B; }
+    .btn-publish:hover { background: var(--text); }
 
     .loading {
       display: inline-block;
       width: 16px;
       height: 16px;
-      border: 2px solid #F2F2F4;
-      border-top: 2px solid #1a1a1a;
+      border: 2px solid var(--border);
+      border-top: 2px solid var(--text);
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
@@ -820,7 +805,7 @@
       background: rgba(28, 28, 30, 0.92);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      color: white;
+      color: var(--on-solid);
       padding: 13px 20px;
       border-radius: 12px;
       z-index: 2000;
@@ -895,7 +880,7 @@
       display: inline-block;
       width: 50px;
       height: 30px;
-      background: #e0e7e9;
+      background: var(--hover);
       border-radius: 15px;
       cursor: pointer;
       position: relative;
@@ -947,18 +932,18 @@
     .btn-generate-now {
       background: var(--primary);
       border: 1px solid var(--primary);
-      color: white;
+      color: var(--on-solid);
       font-weight: 600;
     }
 
     .btn-generate-now:hover {
-      background: #099235;
+      background: var(--text);
       box-shadow: 0 4px 12px rgba(26,26,26,0.25);
       transform: translateY(-1px);
     }
 
     .btn-generate-now:disabled {
-      background: #e0e7e9;
+      background: var(--hover);
       color: var(--text-muted);
       border: 1px solid var(--border);
       cursor: not-allowed;
@@ -1065,7 +1050,7 @@
 
     .btn-retry:disabled,
     .btn-sync:disabled {
-      background: #f5f5f5;
+      background: var(--panel-2);
       color: var(--text-muted);
       border-color: var(--border);
       cursor: not-allowed;
@@ -1140,7 +1125,7 @@
     .keyword-input-row button {
       padding: 9px 18px;
       background: var(--primary);
-      color: white;
+      color: var(--on-solid);
       border: 1px solid var(--primary);
       border-radius: 8px;
       cursor: pointer;
@@ -1150,15 +1135,15 @@
       transition: all 0.15s ease;
     }
     .keyword-input-row button:hover {
-      background: #099235;
+      background: var(--text);
       box-shadow: 0 4px 12px rgba(26,26,26,0.25);
       transform: translateY(-1px);
     }
 
     /* AI 推荐样式 */
     .ai-recommend-section {
-      background: #f7f7f7;
-      border: 1px solid #ececec;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 18px;
       margin-bottom: 20px;
@@ -1168,13 +1153,13 @@
       margin: 0 0 4px 0;
       font-size: 14.5px;
       font-weight: 600;
-      color: #1D1D1F;
+      color: var(--text);
     }
 
     .ai-recommend-header p {
       margin: 0 0 12px 0;
       font-size: 13px;
-      color: #6E6E73;
+      color: var(--muted);
     }
 
     .ai-recommend-input {
@@ -1185,22 +1170,22 @@
     .ai-recommend-input input {
       flex: 1;
       padding: 9px 12px;
-      border: 1px solid #E5E5E7;
+      border: 1px solid var(--border);
       border-radius: 8px;
       font-size: 14px;
-      background: #FFFFFF;
-      color: #1D1D1F;
+      background: var(--panel);
+      color: var(--text);
     }
     .ai-recommend-input input:focus {
       outline: none;
-      border-color: #1a1a1a;
+      border-color: var(--text);
       box-shadow: 0 0 0 3px rgba(26,26,26, 0.15);
     }
 
     .ai-recommend-input button {
       padding: 9px 18px;
-      background: #5E5CE6;
-      color: white;
+      background: var(--text);
+      color: var(--on-solid);
       border: none;
       border-radius: 8px;
       cursor: pointer;
@@ -1209,7 +1194,7 @@
       white-space: nowrap;
       transition: background 0.15s ease;
     }
-    .ai-recommend-input button:hover { background: #4E4DC9; }
+    .ai-recommend-input button:hover { background: var(--panel-2); }
 
     .recommend-tabs {
       display: flex;
@@ -1219,9 +1204,9 @@
 
     .recommend-tab {
       padding: 6px 14px;
-      border: 1px solid #E5E5E7;
-      background: #FFFFFF;
-      color: #424245;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--muted2);
       border-radius: 999px;
       cursor: pointer;
       font-size: 13px;
@@ -1229,9 +1214,9 @@
     }
 
     .recommend-tab.active {
-      background: #1a1a1a;
-      color: white;
-      border-color: #1a1a1a;
+      background: var(--text);
+      color: var(--on-solid);
+      border-color: var(--text);
     }
 
     .recommend-list {
@@ -1246,23 +1231,23 @@
       align-items: center;
       gap: 8px;
       padding: 9px 11px;
-      background: #FFFFFF;
-      border: 1px solid #E5E5E7;
+      background: var(--panel);
+      border: 1px solid var(--border);
       border-radius: 8px;
       font-size: 13px;
       transition: border-color 0.15s ease;
     }
-    .recommend-item:hover { border-color: #D2D2D7; }
+    .recommend-item:hover { border-color: var(--border-h); }
 
     .recommend-item.exists {
-      background: #FAFAFA;
-      color: #86868B;
+      background: var(--panel-2);
+      color: var(--muted);
     }
 
     .recommend-item.exists::after {
       content: '已添加';
       font-size: 11px;
-      color: #1a1a1a;
+      color: var(--text);
       margin-left: auto;
     }
 
@@ -1347,11 +1332,11 @@
       font-weight: 500;
     }
 
-    .category-product { background: #f7f7f7; color: #000000; }
-    .category-comparison { background: #f0f0f0; color: #1a1a1a; }
-    .category-application { background: #f7f7f7; color: #1a1a1a; }
-    .category-buying { background: #f7f7f7; color: #1a1a1a; }
-    .category-faq { background: #F2F2F4; color: #6E6E73; }
+    .category-product { background: var(--panel-2); color: var(--text); }
+    .category-comparison { background: var(--hover); color: var(--text); }
+    .category-application { background: var(--panel-2); color: var(--text); }
+    .category-buying { background: var(--panel-2); color: var(--text); }
+    .category-faq { background: var(--hover); color: var(--muted); }
 
     .priority-badge {
       display: inline-block;
@@ -1361,12 +1346,12 @@
       font-weight: 500;
     }
 
-    .priority-high { background: #f7f7f7; color: #1a1a1a; }
-    .priority-medium { background: #f7f7f7; color: #1a1a1a; }
-    .priority-low { background: #f0f0f0; color: #1a1a1a; }
+    .priority-high { background: var(--panel-2); color: var(--text); }
+    .priority-medium { background: var(--panel-2); color: var(--text); }
+    .priority-low { background: var(--hover); color: var(--text); }
 
     .difficulty-stars {
-      color: #FFCC00;
+      color: var(--muted);
       font-size: 12px;
     }
 
@@ -1382,16 +1367,16 @@
       align-items: center;
       gap: 10px;
       padding: 10px 14px;
-      border: 1px solid #E5E5E7;
+      border: 1px solid var(--border);
       border-radius: 10px;
       cursor: pointer;
       font-size: 14px;
-      background: #FFFFFF;
+      background: var(--panel);
       transition: all 0.15s ease;
     }
 
     .radio-option:hover {
-      border-color: #1a1a1a;
+      border-color: var(--text);
       background: rgba(26,26,26, 0.04);
     }
 
@@ -1416,16 +1401,16 @@
     .type-ratio-item input {
       width: 70px;
       padding: 7px 10px;
-      border: 1px solid #E5E5E7;
+      border: 1px solid var(--border);
       border-radius: 8px;
       font-size: 14px;
       text-align: center;
-      background: #FFFFFF;
-      color: #1D1D1F;
+      background: var(--panel);
+      color: var(--text);
     }
     .type-ratio-item input:focus {
       outline: none;
-      border-color: #1a1a1a;
+      border-color: var(--text);
       box-shadow: 0 0 0 3px rgba(26,26,26, 0.15);
     }
 
@@ -1438,9 +1423,9 @@
 
     .template-btn {
       padding: 8px 16px;
-      border: 1px solid #E5E5E7;
-      background: #FFFFFF;
-      color: #424245;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--muted2);
       border-radius: 999px;
       cursor: pointer;
       font-size: 13px;
@@ -1448,30 +1433,30 @@
     }
 
     .template-btn:hover {
-      border-color: #1a1a1a;
-      color: #1a1a1a;
+      border-color: var(--text);
+      color: var(--text);
     }
 
     .template-btn.active {
-      background: #1a1a1a;
-      color: white;
-      border-color: #1a1a1a;
+      background: var(--text);
+      color: var(--on-solid);
+      border-color: var(--text);
     }
 
     .template-preview {
       padding: 12px 14px;
-      background: #FAFAFA;
-      border: 1px solid #E5E5E7;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
       border-radius: 8px;
       font-size: 13px;
-      color: #6E6E73;
+      color: var(--muted);
       font-style: italic;
     }
 
     /* SEO 检查结果样式 */
     .seo-check-result {
-      background: #FAFAFA;
-      border: 1px solid #E5E5E7;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
       border-radius: 10px;
       padding: 16px;
       margin-top: 10px;
@@ -1480,7 +1465,7 @@
     .seo-check-result h4 {
       margin: 0 0 14px 0;
       font-size: 14px;
-      color: #1D1D1F;
+      color: var(--text);
       font-weight: 600;
     }
 
@@ -1500,13 +1485,13 @@
     }
 
     .seo-check-item.passed {
-      background: #f0f0f0;
-      color: #1a1a1a;
+      background: var(--hover);
+      color: var(--text);
     }
 
     .seo-check-item.failed {
-      background: #f7f7f7;
-      color: #1a1a1a;
+      background: var(--panel-2);
+      color: var(--text);
     }
 
     .check-icon {
@@ -1525,8 +1510,8 @@
 
     /* 审核按钮样式 */
     .btn-approve {
-      background: #1a1a1a;
-      color: white;
+      background: var(--text);
+      color: var(--on-solid);
       padding: 10px 20px;
       border: none;
       border-radius: 8px;
@@ -1537,12 +1522,12 @@
     }
 
     .btn-approve:hover {
-      background: #2BB14B;
+      background: var(--text);
     }
 
     .btn-reject {
-      background: #1a1a1a;
-      color: white;
+      background: var(--text);
+      color: var(--on-solid);
       padding: 10px 20px;
       border: none;
       border-radius: 8px;
@@ -1553,7 +1538,7 @@
     }
 
     .btn-reject:hover {
-      background: #E0271D;
+      background: var(--text);
     }
 
     /* Phase 3: SEO/链接/FAQ 标签页 */
@@ -1561,7 +1546,7 @@
       display: flex;
       gap: 4px;
       margin-bottom: 20px;
-      border-bottom: 1px solid #E5E5E7;
+      border-bottom: 1px solid var(--border);
       overflow-x: auto;
     }
 
@@ -1571,18 +1556,18 @@
       border: none;
       cursor: pointer;
       font-size: 13px;
-      color: #6E6E73;
+      color: var(--muted);
       border-bottom: 2px solid transparent;
       transition: all 0.15s ease;
       white-space: nowrap;
       font-weight: 500;
     }
 
-    .modal-tab-btn:hover { color: #1D1D1F; }
+    .modal-tab-btn:hover { color: var(--text); }
 
     .modal-tab-btn.active {
-      color: #1a1a1a;
-      border-bottom-color: #1a1a1a;
+      color: var(--text);
+      border-bottom-color: var(--text);
     }
 
     .modal-tab-content {
@@ -1609,24 +1594,24 @@
     .seo-field label {
       font-weight: 500;
       font-size: 13px;
-      color: #424245;
+      color: var(--muted2);
     }
 
     .seo-field input,
     .seo-field textarea {
       padding: 9px 12px;
-      border: 1px solid #E5E5E7;
+      border: 1px solid var(--border);
       border-radius: 8px;
       font-size: 13px;
       font-family: inherit;
-      background: #FFFFFF;
-      color: #1D1D1F;
+      background: var(--panel);
+      color: var(--text);
       transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
     .seo-field input:focus,
     .seo-field textarea:focus {
       outline: none;
-      border-color: #1a1a1a;
+      border-color: var(--text);
       box-shadow: 0 0 0 3px rgba(26,26,26, 0.15);
     }
 
@@ -1640,14 +1625,14 @@
       flex-wrap: wrap;
       gap: 6px;
       padding: 8px 10px;
-      border: 1px solid #E5E5E7;
+      border: 1px solid var(--border);
       border-radius: 8px;
-      background: #FFFFFF;
+      background: var(--panel);
     }
 
     .seo-keyword-chip {
-      background: #f7f7f7;
-      color: #000000;
+      background: var(--panel-2);
+      color: var(--text);
       padding: 4px 10px;
       border-radius: 999px;
       display: flex;
@@ -1658,7 +1643,7 @@
 
     .seo-keyword-chip .remove {
       cursor: pointer;
-      color: #000000;
+      color: var(--text);
       font-weight: 600;
       opacity: 0.7;
     }
@@ -1691,12 +1676,12 @@
     }
 
     .btn-generate-seo {
-      background: #1a1a1a;
-      color: white;
+      background: var(--text);
+      color: var(--on-solid);
     }
 
     .btn-generate-seo:hover {
-      background: #000000;
+      background: var(--primary-d);
     }
 
     /* 链接管理样式 */
@@ -1715,17 +1700,17 @@
     .links-group h4 {
       font-size: 13px;
       font-weight: 600;
-      color: #424245;
+      color: var(--muted2);
       margin: 0;
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
 
     .link-item {
-      background: #FAFAFA;
+      background: var(--panel-2);
       padding: 12px 14px;
       border-radius: 10px;
-      border: 1px solid #E5E5E7;
+      border: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -1738,12 +1723,12 @@
 
     .link-title {
       font-weight: 500;
-      color: #1D1D1F;
+      color: var(--text);
       margin-bottom: 3px;
     }
 
     .link-url {
-      color: #1a1a1a;
+      color: var(--text);
       text-decoration: none;
       font-size: 12px;
       word-break: break-all;
@@ -1751,14 +1736,14 @@
     .link-url:hover { text-decoration: underline; }
 
     .link-reason {
-      color: #6E6E73;
+      color: var(--muted);
       font-size: 12px;
       margin-top: 3px;
     }
 
     .link-remove {
       cursor: pointer;
-      color: #1a1a1a;
+      color: var(--text);
       font-weight: 500;
       padding: 0 10px;
     }
@@ -1770,8 +1755,8 @@
     }
 
     .btn-generate-links {
-      background: #1a1a1a;
-      color: white;
+      background: var(--text);
+      color: var(--on-solid);
       padding: 8px 16px;
       border: none;
       border-radius: 8px;
@@ -1782,7 +1767,7 @@
     }
 
     .btn-generate-links:hover {
-      background: #000000;
+      background: var(--primary-d);
     }
 
     /* FAQ 编辑样式 */
@@ -1793,10 +1778,10 @@
     }
 
     .faq-item {
-      background: #FAFAFA;
+      background: var(--panel-2);
       padding: 14px;
       border-radius: 10px;
-      border: 1px solid #E5E5E7;
+      border: 1px solid var(--border);
     }
 
     .faq-item-header {
@@ -1809,19 +1794,19 @@
 
     .faq-question {
       font-weight: 500;
-      color: #1D1D1F;
+      color: var(--text);
       font-size: 13px;
       flex: 1;
     }
 
     .faq-remove {
       cursor: pointer;
-      color: #1a1a1a;
+      color: var(--text);
       font-weight: 500;
     }
 
     .faq-answer {
-      color: #6E6E73;
+      color: var(--muted);
       font-size: 13px;
       line-height: 1.55;
     }
@@ -1833,8 +1818,8 @@
     }
 
     .btn-generate-faq {
-      background: #1a1a1a;
-      color: white;
+      background: var(--text);
+      color: var(--on-solid);
       padding: 8px 16px;
       border: none;
       border-radius: 8px;
@@ -1845,23 +1830,23 @@
     }
 
     .btn-generate-faq:hover {
-      background: #000000;
+      background: var(--primary-d);
     }
     .pubtab-btn {
       padding: 7px 14px;
-      border: 1px solid #E5E5E7;
-      background: #FFFFFF;
-      color: #424245;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--muted2);
       border-radius: 999px;
       cursor: pointer;
       font-size: 13px;
       transition: all 0.15s ease;
     }
-    .pubtab-btn:hover { background: #F5F5F7; border-color: #D2D2D7; }
+    .pubtab-btn:hover { background: var(--panel-2); border-color: var(--border-h); }
     .pubtab-btn.pubtab-active {
-      background: #1a1a1a;
-      color: white;
-      border-color: #1a1a1a;
+      background: var(--text);
+      color: var(--on-solid);
+      border-color: var(--text);
     }
     .pubtab-btn span {
       margin-left: 4px;
@@ -1872,14 +1857,14 @@
     .seo-index-overview {
       margin-top: 16px;
       padding: 14px;
-      border: 1px solid #E5E5E7;
+      border: 1px solid var(--border);
       border-radius: 12px;
-      background: #FFFFFF;
+      background: var(--panel);
     }
     .seo-index-overview-title {
       font-size: 13px;
       font-weight: 600;
-      color: #1D1D1F;
+      color: var(--text);
       margin-bottom: 10px;
     }
     .seo-index-grid {
@@ -1889,20 +1874,20 @@
     }
     .seo-index-mini {
       padding: 10px;
-      border: 1px solid #F2F2F2;
+      border: 1px solid var(--border);
       border-radius: 8px;
-      background: #FAFAFA;
+      background: var(--panel-2);
     }
     .seo-index-mini-value {
       font-size: 20px;
       font-weight: 700;
-      color: #1D1D1F;
+      color: var(--text);
       line-height: 1;
     }
     .seo-index-mini-label {
       margin-top: 5px;
       font-size: 11px;
-      color: #6E6E73;
+      color: var(--muted);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -1918,12 +1903,12 @@
       border: 1px solid transparent;
       vertical-align: middle;
     }
-    .seo-index-pending { background:#F2F2F4; color:#6E6E73; border-color:#E5E5E7; }
-    .seo-index-page_ok { background:#f7f7f7; color:#000000; border-color:#ececec; }
-    .seo-index-sitemap_pending { background:#f7f7f7; color:#1a1a1a; border-color:#FFE9A8; }
-    .seo-index-in_sitemap { background:#f0f0f0; color:#1a1a1a; border-color:#CFEED8; }
+    .seo-index-pending { background:var(--hover); color:var(--muted); border-color:var(--border); }
+    .seo-index-page_ok { background:var(--panel-2); color:var(--text); border-color:var(--border); }
+    .seo-index-sitemap_pending { background:var(--panel-2); color:var(--text); border-color:var(--border); }
+    .seo-index-in_sitemap { background:var(--hover); color:var(--text); border-color:var(--border); }
     .seo-index-sitemap_missing_24h,
-    .seo-index-page_error { background:#f7f7f7; color:#1a1a1a; border-color:#ececec; }
+    .seo-index-page_error { background:var(--panel-2); color:var(--text); border-color:var(--border); }
     .seo-index-actions {
       display: flex;
       flex-wrap: wrap;
@@ -1933,9 +1918,9 @@
     .seo-index-actions button,
     .seo-index-actions a {
       padding: 5px 9px;
-      border: 1px solid #E5E5E7;
-      background: #FFFFFF;
-      color: #424245;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--muted2);
       border-radius: 7px;
       cursor: pointer;
       font-size: 11px;
@@ -1944,8 +1929,8 @@
     }
     .seo-index-actions button:hover,
     .seo-index-actions a:hover {
-      background: #F5F5F7;
-      border-color: #D2D2D7;
+      background: var(--panel-2);
+      border-color: var(--border-h);
     }
 
     .blog-mobile-topbar,
@@ -1995,7 +1980,7 @@
         height: 38px;
         border: 1px solid var(--border);
         border-radius: 8px;
-        background: #FFFFFF;
+        background: var(--panel);
         color: var(--text);
         cursor: pointer;
         font-size: 20px;
@@ -2196,7 +2181,7 @@
             <i data-lucide="list-checks"></i> 计划列表
           </button>
           <button class="tab-btn" data-tab="review">
-            <i data-lucide="search-check"></i> 待审核 <span id="tabPendingBadge" style="display:none;background:#1a1a1a;color:#fff;border-radius:999px;padding:1px 8px;font-size:11px;margin-left:4px;font-weight:500;">0</span>
+            <i data-lucide="search-check"></i> 待审核 <span id="tabPendingBadge" style="display:none;background:var(--text);color:#fff;border-radius:999px;padding:1px 8px;font-size:11px;margin-left:4px;font-weight:500;">0</span>
           </button>
           <button class="tab-btn" data-tab="published">
             <i data-lucide="book-open"></i> 已发布 <span id="tabPublishedBadge" style="display:none;background:var(--success);color:#fff;border-radius:999px;padding:1px 8px;font-size:11px;margin-left:4px;font-weight:500;">0</span>
@@ -2410,7 +2395,7 @@
               </tr>
             </thead>
             <tbody id="keywordTableBody">
-              <tr><td colspan="6" style="text-align:center;color:#86868B;">加载中...</td></tr>
+              <tr><td colspan="6" style="text-align:center;color:var(--muted);">加载中...</td></tr>
             </tbody>
           </table>
         </div>
@@ -2478,7 +2463,7 @@
               <span>%</span>
             </div>
           </div>
-          <div id="ratioTotal" style="margin-top:8px;font-size:13px;color:#6E6E73;">总计：100%</div>
+          <div id="ratioTotal" style="margin-top:8px;font-size:13px;color:var(--muted);">总计：100%</div>
         </div>
 
         <!-- 第 4 步：标题模板 -->
@@ -2557,7 +2542,7 @@
           </thead>
           <tbody id="planTableBody">
             <tr>
-              <td colspan="10" style="text-align: center; color: #86868B;">暂无数据</td>
+              <td colspan="10" style="text-align: center; color: var(--muted);">暂无数据</td>
             </tr>
           </tbody>
         </table>
@@ -2569,13 +2554,13 @@
       <div class="plan-list-header">
         <div class="plan-stats">
           待审核 <strong id="reviewTotalCount">0</strong> 篇文章
-          <span style="color:#6E6E73;font-size:12px;margin-left:8px;">点"审核"进入工作台：补图片、SEO 质检、批准发布</span>
+          <span style="color:var(--muted);font-size:12px;margin-left:8px;">点"审核"进入工作台：补图片、SEO 质检、批准发布</span>
         </div>
-        <button onclick="loadReviewList()" style="padding:8px 14px;border:1px solid #E5E5E7;background:#FFFFFF;color:#1D1D1F;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">🔄 刷新</button>
+        <button onclick="loadReviewList()" style="padding:8px 14px;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">🔄 刷新</button>
       </div>
 
       <div id="reviewListContainer">
-        <div style="text-align:center;color:#86868B;padding:40px;">加载中...</div>
+        <div style="text-align:center;color:var(--muted);padding:40px;">加载中...</div>
       </div>
     </div>
 
@@ -2588,11 +2573,11 @@
             <button class="pubtab-btn" data-pub-status="archived" onclick="switchPublishedStatus('archived')">已下线 <span id="pubCountArchived">0</span></button>
           </span>
         </div>
-        <button onclick="loadPublishedList()" style="padding:8px 14px;border:1px solid #E5E5E7;background:#FFFFFF;color:#1D1D1F;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">刷新</button>
+        <button onclick="loadPublishedList()" style="padding:8px 14px;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">刷新</button>
       </div>
 
       <div class="published-filters">
-        <select id="publishedFilterType" onchange="loadPublishedList()" style="padding:7px 9px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;">
+        <select id="publishedFilterType" onchange="loadPublishedList()" style="padding:7px 9px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--panel);color:var(--text);">
           <option value="all">全部类型</option>
           <option value="product">产品知识</option>
           <option value="buying">选型指南</option>
@@ -2600,14 +2585,14 @@
           <option value="application">应用场景</option>
           <option value="faq">FAQ</option>
         </select>
-        <input type="month" id="publishedFilterMonth" onchange="loadPublishedList()" style="padding:7px 9px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;">
-        <input type="text" id="publishedFilterSearch" placeholder="🔍 搜标题..." style="padding:7px 9px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;flex:1;min-width:180px;">
-        <button onclick="loadPublishedList()" style="padding:7px 14px;border:1px solid #1a1a1a;background:#1a1a1a;color:white;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;">应用</button>
-        <button onclick="resetPublishedFilters()" style="padding:7px 14px;border:1px solid #E5E5E7;background:#FFFFFF;color:#424245;border-radius:8px;cursor:pointer;font-size:12px;">重置</button>
+        <input type="month" id="publishedFilterMonth" onchange="loadPublishedList()" style="padding:7px 9px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--panel);color:var(--text);">
+        <input type="text" id="publishedFilterSearch" placeholder="🔍 搜标题..." style="padding:7px 9px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--panel);color:var(--text);flex:1;min-width:180px;">
+        <button onclick="loadPublishedList()" style="padding:7px 14px;border:1px solid var(--text);background:var(--text);color:var(--on-solid);border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;">应用</button>
+        <button onclick="resetPublishedFilters()" style="padding:7px 14px;border:1px solid var(--border);background:var(--panel);color:var(--muted2);border-radius:8px;cursor:pointer;font-size:12px;">重置</button>
       </div>
 
       <div id="publishedListContainer">
-        <div style="text-align:center;color:#86868B;padding:40px;">加载中...</div>
+        <div style="text-align:center;color:var(--muted);padding:40px;">加载中...</div>
       </div>
     </div>
       </div><!-- /.blog-main-content -->
@@ -2617,24 +2602,24 @@
   <!-- 手动生成文章弹窗 -->
   <div id="manualGenModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.32);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9000;align-items:center;justify-content:center;">
     <div style="background:white;padding:26px 30px;border-radius:16px;width:480px;max-width:90vw;box-shadow:0 20px 50px rgba(0,0,0,0.18);">
-      <h3 style="margin:0 0 4px 0;font-size:17px;font-weight:600;letter-spacing:-0.01em;color:#1D1D1F;">立即生成文章</h3>
-      <p style="font-size:12.5px;color:#6E6E73;margin:0 0 18px 0;">手动模式：选关键词、文章类型和 AI 模型，立即生成一篇</p>
+      <h3 style="margin:0 0 4px 0;font-size:17px;font-weight:600;letter-spacing:-0.01em;color:var(--text);">立即生成文章</h3>
+      <p style="font-size:12.5px;color:var(--muted);margin:0 0 18px 0;">手动模式：选关键词、文章类型和 AI 模型，立即生成一篇</p>
 
       <div style="margin-bottom:14px;">
-        <label style="display:block;font-size:12px;color:#6E6E73;margin-bottom:6px;font-weight:500;">关键词来源</label>
+        <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500;">关键词来源</label>
         <div style="display:flex;gap:14px;font-size:13px;margin-bottom:6px;">
           <label><input type="radio" name="kwSource" value="lib" checked onchange="onKwSourceChange()"> 从关键词库选</label>
           <label><input type="radio" name="kwSource" value="manual" onchange="onKwSourceChange()"> 手动输入</label>
         </div>
-        <select id="manualKwSelect" style="width:100%;padding:7px 9px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;">
+        <select id="manualKwSelect" style="width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--panel);color:var(--text);">
           <option value="">加载中...</option>
         </select>
-        <input id="manualKwInput" type="text" placeholder="例如：solar inverter MCB" style="display:none;width:100%;padding:7px 9px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;">
+        <input id="manualKwInput" type="text" placeholder="例如：solar inverter MCB" style="display:none;width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--panel);color:var(--text);">
       </div>
 
       <div style="margin-bottom:14px;">
-        <label style="display:block;font-size:12px;color:#6E6E73;margin-bottom:6px;font-weight:500;">文章类型</label>
-        <select id="manualArticleType" style="width:100%;padding:7px 9px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;">
+        <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500;">文章类型</label>
+        <select id="manualArticleType" style="width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--panel);color:var(--text);">
           <option value="product">产品知识 (Product Knowledge)</option>
           <option value="buying">选型指南 (Selection Guide)</option>
           <option value="comparison">对比文章 (Comparison)</option>
@@ -2644,13 +2629,13 @@
       </div>
 
       <div style="margin-bottom:14px;">
-        <label style="display:block;font-size:12px;color:#6E6E73;margin-bottom:6px;font-weight:500;">自定义标题（可选，留空自动生成）</label>
-        <input id="manualTitle" type="text" placeholder="留空 → 按关键词+类型自动生成" style="width:100%;padding:7px 9px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;">
+        <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500;">自定义标题（可选，留空自动生成）</label>
+        <input id="manualTitle" type="text" placeholder="留空 → 按关键词+类型自动生成" style="width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--panel);color:var(--text);">
       </div>
 
       <div style="margin-bottom:18px;">
-        <label style="display:block;font-size:12px;color:#6E6E73;margin-bottom:6px;font-weight:500;">AI 模型</label>
-        <select id="manualModel" style="width:100%;padding:7px 9px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;">
+        <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500;">AI 模型</label>
+        <select id="manualModel" style="width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--panel);color:var(--text);">
           <option value="deepseek">DeepSeek（便宜、推荐）</option>
           <option value="claude">Claude 3.5 Sonnet</option>
           <option value="gpt">GPT-4 Turbo</option>
@@ -2659,8 +2644,8 @@
       </div>
 
       <div style="display:flex;gap:8px;justify-content:flex-end;">
-        <button onclick="closeManualGen()" style="padding:7px 16px;border:1px solid #E5E5E7;background:#FFFFFF;color:#1D1D1F;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">取消</button>
-        <button id="manualGenBtn" onclick="submitManualGen()" style="padding:7px 16px;border:1px solid #1a1a1a;background:#1a1a1a;color:white;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">▶ 开始生成</button>
+        <button onclick="closeManualGen()" style="padding:7px 16px;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">取消</button>
+        <button id="manualGenBtn" onclick="submitManualGen()" style="padding:7px 16px;border:1px solid var(--text);background:var(--text);color:var(--on-solid);border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">▶ 开始生成</button>
       </div>
     </div>
   </div>
@@ -2668,19 +2653,19 @@
   <!-- plan 编辑弹窗 -->
   <div id="planEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.32);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9000;align-items:center;justify-content:center;">
     <div style="background:white;padding:26px 30px;border-radius:16px;width:460px;max-width:90vw;box-shadow:0 20px 50px rgba(0,0,0,0.18);">
-      <h3 style="margin:0 0 18px 0;font-size:17px;font-weight:600;letter-spacing:-0.01em;color:#1D1D1F;">编辑计划</h3>
+      <h3 style="margin:0 0 18px 0;font-size:17px;font-weight:600;letter-spacing:-0.01em;color:var(--text);">编辑计划</h3>
       <input type="hidden" id="editPlanId">
       <div style="margin-bottom:12px;">
-        <label style="display:block;font-size:12px;color:#6E6E73;margin-bottom:6px;font-weight:500;">关键词</label>
-        <input id="editPlanKw" type="text" style="width:100%;padding:7px 9px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;">
+        <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500;">关键词</label>
+        <input id="editPlanKw" type="text" style="width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--panel);color:var(--text);">
       </div>
       <div style="margin-bottom:12px;">
-        <label style="display:block;font-size:12px;color:#6E6E73;margin-bottom:6px;font-weight:500;">标题</label>
-        <input id="editPlanTitle" type="text" style="width:100%;padding:7px 9px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;">
+        <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500;">标题</label>
+        <input id="editPlanTitle" type="text" style="width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--panel);color:var(--text);">
       </div>
       <div style="margin-bottom:18px;">
-        <label style="display:block;font-size:12px;color:#6E6E73;margin-bottom:6px;font-weight:500;">类型</label>
-        <select id="editPlanType" style="width:100%;padding:7px 9px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;">
+        <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500;">类型</label>
+        <select id="editPlanType" style="width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--panel);color:var(--text);">
           <option value="product">产品知识</option>
           <option value="buying">选型指南</option>
           <option value="comparison">对比文章</option>
@@ -2689,8 +2674,8 @@
         </select>
       </div>
       <div style="display:flex;gap:8px;justify-content:flex-end;">
-        <button onclick="closePlanEdit()" style="padding:7px 16px;border:1px solid #E5E5E7;background:#FFFFFF;color:#1D1D1F;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">取消</button>
-        <button onclick="submitPlanEdit()" style="padding:7px 16px;border:1px solid #1a1a1a;background:#1a1a1a;color:white;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">保存</button>
+        <button onclick="closePlanEdit()" style="padding:7px 16px;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">取消</button>
+        <button onclick="submitPlanEdit()" style="padding:7px 16px;border:1px solid var(--text);background:var(--text);color:var(--on-solid);border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">保存</button>
       </div>
     </div>
   </div>
@@ -2736,7 +2721,7 @@
             <p>推荐尺寸：1200 × 540 px (16:9)</p>
             <p>推荐格式：WebP / JPEG</p>
             <p>最大文件：200KB</p>
-            <p style="margin-top: 10px; color: #1D1D1F;">拖拽上传或点击选择文件</p>
+            <p style="margin-top: 10px; color: var(--text);">拖拽上传或点击选择文件</p>
             <input type="file" id="imageInput" accept="image/*" onchange="handleImageUpload(event)">
           </div>
           <div class="image-preview" id="imagePreview"></div>
@@ -2746,13 +2731,13 @@
           <div class="preview-item">
             <h4>详情页预览（1200×540）</h4>
             <div class="preview-box" id="detailPreview">
-              <p style="color: #86868B;">上传图片后显示</p>
+              <p style="color: var(--muted);">上传图片后显示</p>
             </div>
           </div>
           <div class="preview-item">
             <h4>前台卡片预览（470×210）</h4>
             <div class="preview-box" id="cardPreview">
-              <p style="color: #86868B;">上传图片后显示</p>
+              <p style="color: var(--muted);">上传图片后显示</p>
             </div>
           </div>
         </div>
@@ -2770,13 +2755,13 @@
           <div class="seo-field">
             <label>Meta Title (SEO 标题)</label>
             <input type="text" id="seoMetaTitle" placeholder="50-60 字符" maxlength="60">
-            <small style="color: #86868B;">用于搜索引擎结果页面</small>
+            <small style="color: var(--muted);">用于搜索引擎结果页面</small>
           </div>
 
           <div class="seo-field">
             <label>Meta Description (SEO 描述)</label>
             <textarea id="seoMetaDescription" placeholder="150-160 字符" maxlength="160"></textarea>
-            <small style="color: #86868B;">用于搜索引擎结果页面摘要</small>
+            <small style="color: var(--muted);">用于搜索引擎结果页面摘要</small>
           </div>
 
           <div class="seo-field">
@@ -2791,15 +2776,15 @@
             </div>
           </div>
 
-          <div style="background: #f7f7f7; border: 1px solid #ececec; padding: 12px 14px; border-radius: 10px; font-size: 13px; color: #1D1D1F;">
-            <strong style="color: #000000;">💡 提示：</strong>点击下方按钮让 AI 自动生成 SEO 元数据
+          <div style="background: var(--panel-2); border: 1px solid var(--border); padding: 12px 14px; border-radius: 10px; font-size: 13px; color: var(--text);">
+            <strong style="color: var(--text);">💡 提示：</strong>点击下方按钮让 AI 自动生成 SEO 元数据
           </div>
 
           <div class="seo-actions">
             <button class="btn-generate-seo" onclick="generateSEO()">🤖 AI 生成 SEO 元数据</button>
           </div>
 
-          <div id="seoGeneratingStatus" style="display: none; color: #1D1D1F; font-size: 13px;">
+          <div id="seoGeneratingStatus" style="display: none; color: var(--text); font-size: 13px;">
             <span class="loading"></span> 正在生成 SEO 元数据...
           </div>
         </div>
@@ -2811,26 +2796,26 @@
           <div class="links-group">
             <h4>🔗 内部链接（指向其他 BLOG）</h4>
             <div id="internalLinksList" style="display: flex; flex-direction: column; gap: 8px;">
-              <p style="color: #86868B; font-size: 13px;">暂无内部链接</p>
+              <p style="color: var(--muted); font-size: 13px;">暂无内部链接</p>
             </div>
           </div>
 
           <div class="links-group">
             <h4>🌐 外部链接（参考资源）</h4>
             <div id="externalLinksList" style="display: flex; flex-direction: column; gap: 8px;">
-              <p style="color: #86868B; font-size: 13px;">暂无外部链接</p>
+              <p style="color: var(--muted); font-size: 13px;">暂无外部链接</p>
             </div>
           </div>
 
-          <div style="background: #f7f7f7; border: 1px solid #ececec; padding: 12px 14px; border-radius: 10px; font-size: 13px; color: #1D1D1F;">
-            <strong style="color: #000000;">💡 提示：</strong>点击下方按钮让 AI 推荐相关链接
+          <div style="background: var(--panel-2); border: 1px solid var(--border); padding: 12px 14px; border-radius: 10px; font-size: 13px; color: var(--text);">
+            <strong style="color: var(--text);">💡 提示：</strong>点击下方按钮让 AI 推荐相关链接
           </div>
 
           <div class="links-actions">
             <button class="btn-generate-links" onclick="generateLinks()">🤖 AI 推荐链接</button>
           </div>
 
-          <div id="linksGeneratingStatus" style="display: none; color: #1D1D1F; font-size: 13px;">
+          <div id="linksGeneratingStatus" style="display: none; color: var(--text); font-size: 13px;">
             <span class="loading"></span> 正在推荐链接...
           </div>
         </div>
@@ -2840,18 +2825,18 @@
       <div class="modal-tab-content" id="faq-tab">
         <div class="faq-section">
           <div id="faqList" style="display: flex; flex-direction: column; gap: 10px;">
-            <p style="color: #86868B; font-size: 13px;">暂无 FAQ</p>
+            <p style="color: var(--muted); font-size: 13px;">暂无 FAQ</p>
           </div>
 
-          <div style="background: #f7f7f7; border: 1px solid #ececec; padding: 12px 14px; border-radius: 10px; font-size: 13px; color: #1D1D1F; margin-top: 15px;">
-            <strong style="color: #000000;">💡 提示：</strong>点击下方按钮让 AI 从文章内容生成常见问题
+          <div style="background: var(--panel-2); border: 1px solid var(--border); padding: 12px 14px; border-radius: 10px; font-size: 13px; color: var(--text); margin-top: 15px;">
+            <strong style="color: var(--text);">💡 提示：</strong>点击下方按钮让 AI 从文章内容生成常见问题
           </div>
 
           <div class="faq-actions">
             <button class="btn-generate-faq" onclick="generateFAQ()">🤖 AI 生成 FAQ</button>
           </div>
 
-          <div id="faqGeneratingStatus" style="display: none; color: #1D1D1F; font-size: 13px;">
+          <div id="faqGeneratingStatus" style="display: none; color: var(--text); font-size: 13px;">
             <span class="loading"></span> 正在生成 FAQ...
           </div>
         </div>
@@ -2944,12 +2929,12 @@
     // 加载待审核列表
     async function loadReviewList() {
       const container = document.getElementById('reviewListContainer');
-      container.innerHTML = '<div style="text-align:center;color:#86868B;padding:40px;">加载中...</div>';
+      container.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px;">加载中...</div>';
       try {
         const response = await fetch('/api/blog/pending-review');
         const data = await response.json();
         if (!data.success) {
-          container.innerHTML = `<div style="text-align:center;color:#1a1a1a;padding:40px;">加载失败：${data.error || ''}</div>`;
+          container.innerHTML = `<div style="text-align:center;color:var(--text);padding:40px;">加载失败：${data.error || ''}</div>`;
           return;
         }
 
@@ -2963,7 +2948,7 @@
 
         if (posts.length === 0) {
           container.innerHTML = `
-            <div style="text-align:center;color:#86868B;padding:60px;border:1px dashed #E5E5E7;border-radius:12px;background:#FAFAFA;">
+            <div style="text-align:center;color:var(--muted);padding:60px;border:1px dashed var(--border);border-radius:12px;background:var(--panel-2);">
               <div style="font-size:42px;margin-bottom:8px;">✅</div>
               <div>暂无待审核文章</div>
               <div style="margin-top:8px;font-size:12px;">到「控制面板」点"立即生成今日文章"，或等定时任务运行</div>
@@ -2976,36 +2961,36 @@
             ${posts.map(p => renderReviewCard(p)).join('')}
           </div>`;
       } catch (error) {
-        container.innerHTML = `<div style="text-align:center;color:#1a1a1a;padding:40px;">错误：${error.message}</div>`;
+        container.innerHTML = `<div style="text-align:center;color:var(--text);padding:40px;">错误：${error.message}</div>`;
       }
     }
 
     function renderReviewCard(p) {
       const cover = p.cover_image_url
         ? `<img src="${p.cover_image_url}" style="width:160px;height:90px;object-fit:cover;border-radius:8px;flex-shrink:0;" alt="">`
-        : `<div style="width:160px;height:90px;background:#FAFAFA;border:1px solid #E5E5E7;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#86868B;font-size:12px;flex-shrink:0;">⚠ 缺封面图</div>`;
+        : `<div style="width:160px;height:90px;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;flex-shrink:0;">⚠ 缺封面图</div>`;
       const time = p.created_at ? new Date(p.created_at).toLocaleString('zh-CN') : '';
       const kw = p.main_keyword || (p.keywords && p.keywords[0]) || '—';
       const wc = p.word_count || 0;
       const rt = p.reading_time || 0;
       return `
-        <div style="display:flex;gap:14px;padding:16px;border:1px solid #E5E5E7;border-radius:12px;background:#FFFFFF;transition:all 0.15s ease;" onmouseover="this.style.borderColor='#D2D2D7';this.style.boxShadow='0 4px 14px rgba(0,0,0,0.04)'" onmouseout="this.style.borderColor='#E5E5E7';this.style.boxShadow='none'">
+        <div style="display:flex;gap:14px;padding:16px;border:1px solid var(--border);border-radius:12px;background:var(--panel);transition:all 0.15s ease;" onmouseover="this.style.borderColor='var(--border-h)';this.style.boxShadow='0 4px 14px rgba(0,0,0,0.04)'" onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow='none'">
           ${cover}
           <div style="flex:1;min-width:0;">
-            <div style="font-weight:600;font-size:15px;margin-bottom:6px;color:#1D1D1F;letter-spacing:-0.01em;">${escapeHtml(p.title || '(无标题)')}</div>
-            <div style="font-size:12px;color:#6E6E73;margin-bottom:4px;">
-              <span style="background:#f7f7f7;color:#000000;padding:3px 10px;border-radius:999px;margin-right:6px;font-weight:500;">${escapeHtml(kw)}</span>
+            <div style="font-weight:600;font-size:15px;margin-bottom:6px;color:var(--text);letter-spacing:-0.01em;">${escapeHtml(p.title || '(无标题)')}</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">
+              <span style="background:var(--panel-2);color:var(--text);padding:3px 10px;border-radius:999px;margin-right:6px;font-weight:500;">${escapeHtml(kw)}</span>
               <span style="margin-right:10px;">📝 ${wc} 字</span>
               <span style="margin-right:10px;">⏱ ${rt} 分钟</span>
               <span>🕐 ${time}</span>
             </div>
-            <div style="font-size:12px;color:${p.cover_image_url ? '#1a1a1a' : '#FF9500'};font-weight:500;">
+            <div style="font-size:12px;color:var(--text);font-weight:500;">
               ${p.cover_image_url ? '✓ 已配封面' : '⚠ 未配封面'}
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
-            <button onclick="openReviewWorkspace('${p.id}')" style="padding:8px 18px;background:#1a1a1a;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">📝 进入审核</button>
-            <button onclick="quickReject('${p.id}')" style="padding:6px 18px;background:#FFFFFF;color:#6E6E73;border:1px solid #E5E5E7;border-radius:8px;cursor:pointer;font-size:12px;">拒绝</button>
+            <button onclick="openReviewWorkspace('${p.id}')" style="padding:8px 18px;background:var(--text);color:var(--on-solid);border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">📝 进入审核</button>
+            <button onclick="quickReject('${p.id}')" style="padding:6px 18px;background:var(--panel);color:var(--muted);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;">拒绝</button>
           </div>
         </div>`;
     }
@@ -3061,7 +3046,7 @@
 
     async function loadPublishedList() {
       const container = document.getElementById('publishedListContainer');
-      container.innerHTML = '<div style="text-align:center;color:#86868B;padding:40px;">加载中...</div>';
+      container.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px;">加载中...</div>';
 
       const articleType = document.getElementById('publishedFilterType').value;
       const month = document.getElementById('publishedFilterMonth').value;
@@ -3076,7 +3061,7 @@
         const r = await fetch('/api/blog/published?' + params.toString());
         const d = await r.json();
         if (!d.success) {
-          container.innerHTML = `<div style="text-align:center;color:#1a1a1a;padding:40px;">加载失败：${d.error || ''}</div>`;
+          container.innerHTML = `<div style="text-align:center;color:var(--text);padding:40px;">加载失败：${d.error || ''}</div>`;
           return;
         }
 
@@ -3094,7 +3079,7 @@
             ? '没有符合条件的已发布文章'
             : '没有已下线的文章';
           container.innerHTML = `
-            <div style="text-align:center;color:#86868B;padding:60px;border:1px dashed #E5E5E7;border-radius:12px;background:#FAFAFA;">
+            <div style="text-align:center;color:var(--muted);padding:60px;border:1px dashed var(--border);border-radius:12px;background:var(--panel-2);">
               <div style="font-size:42px;margin-bottom:8px;">${currentPubStatus === 'published' ? '📭' : '📦'}</div>
               <div>${emptyMsg}</div>
             </div>`;
@@ -3106,7 +3091,7 @@
             ${posts.map(p => renderPublishedCard(p)).join('')}
           </div>`;
       } catch (e) {
-        container.innerHTML = `<div style="text-align:center;color:#1a1a1a;padding:40px;">错误：${e.message}</div>`;
+        container.innerHTML = `<div style="text-align:center;color:var(--text);padding:40px;">错误：${e.message}</div>`;
       }
     }
 
@@ -3117,7 +3102,7 @@
       const seoBadge = renderSeoIndexBadge(seoStatus);
       const cover = p.cover_image_url
         ? `<img src="${p.cover_image_url}" style="width:160px;height:90px;object-fit:cover;border-radius:8px;flex-shrink:0;" alt="">`
-        : `<div style="width:160px;height:90px;background:#FAFAFA;border:1px solid #E5E5E7;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#86868B;font-size:12px;flex-shrink:0;">无封面</div>`;
+        : `<div style="width:160px;height:90px;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;flex-shrink:0;">无封面</div>`;
 
       const dateStr = currentPubStatus === 'published'
         ? (p.published_at ? new Date(p.published_at).toLocaleString('zh-CN') : '—')
@@ -3130,21 +3115,21 @@
       const isPublished = currentPubStatus === 'published';
 
       return `
-        <div style="display:flex;gap:14px;padding:16px;border:1px solid #E5E5E7;border-radius:12px;background:#FFFFFF;transition:all 0.15s ease;${!isPublished ? 'opacity:0.78;' : ''}" onmouseover="this.style.borderColor='#D2D2D7';this.style.boxShadow='0 4px 14px rgba(0,0,0,0.04)'" onmouseout="this.style.borderColor='#E5E5E7';this.style.boxShadow='none'">
+        <div style="display:flex;gap:14px;padding:16px;border:1px solid var(--border);border-radius:12px;background:var(--panel);transition:all 0.15s ease;${!isPublished ? 'opacity:0.78;' : ''}" onmouseover="this.style.borderColor='var(--border-h)';this.style.boxShadow='0 4px 14px rgba(0,0,0,0.04)'" onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow='none'">
           ${cover}
           <div style="flex:1;min-width:0;">
-            <div style="font-weight:600;font-size:15px;margin-bottom:6px;color:#1D1D1F;letter-spacing:-0.01em;">${escapeHtml(p.title || '(无标题)')}</div>
-            <div style="font-size:12px;color:#6E6E73;margin-bottom:4px;">
-              <span style="background:#f0f0f0;color:#1a1a1a;padding:3px 10px;border-radius:999px;margin-right:6px;font-weight:500;">${escapeHtml(typeLabel)}</span>
-              ${p.main_keyword ? `<span style="margin-right:8px;color:#86868B;">🔑 ${escapeHtml(p.main_keyword)}</span>` : ''}
+            <div style="font-weight:600;font-size:15px;margin-bottom:6px;color:var(--text);letter-spacing:-0.01em;">${escapeHtml(p.title || '(无标题)')}</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">
+              <span style="background:var(--hover);color:var(--text);padding:3px 10px;border-radius:999px;margin-right:6px;font-weight:500;">${escapeHtml(typeLabel)}</span>
+              ${p.main_keyword ? `<span style="margin-right:8px;color:var(--muted);">🔑 ${escapeHtml(p.main_keyword)}</span>` : ''}
               ${isPublished ? seoBadge : ''}
             </div>
-            <div style="font-size:11px;color:#86868B;margin-bottom:4px;">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">
               <span style="margin-right:10px;">${dateLabel} ${dateStr}</span>
               <span style="margin-right:10px;">📝 ${p.word_count || 0} 字</span>
               <span>⏱ ${p.reading_time || 0} 分钟</span>
             </div>
-            ${slug ? `<div style="font-size:11px;color:#1a1a1a;font-family:Consolas,Menlo,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">/blog/${escapeHtml(slug)}</div>` : ''}
+            ${slug ? `<div style="font-size:11px;color:var(--text);font-family:Consolas,Menlo,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">/blog/${escapeHtml(slug)}</div>` : ''}
             ${isPublished ? `
               <div class="seo-index-actions">
                 <button onclick="event.stopPropagation();manualSeoIndexAction('${p.id}', 'check-url')">检测页面</button>
@@ -3156,14 +3141,14 @@
             ` : ''}
           </div>
           <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">
-            ${isPublished ? `<a href="${websiteUrl}" target="_blank" rel="noopener" style="text-align:center;padding:6px 14px;background:#1a1a1a;color:white;border:none;border-radius:8px;text-decoration:none;font-size:12px;font-weight:500;">网站查看</a>` : ''}
-            <button onclick="openReviewWorkspace('${p.id}')" style="padding:6px 14px;border:1px solid #E5E5E7;background:#FFFFFF;color:#1D1D1F;border-radius:8px;cursor:pointer;font-size:12px;">重新编辑</button>
-            <button onclick="viewAuditLog('${p.id}', '${escapeHtml(p.title || '').replace(/'/g, "\\'")}')" style="padding:6px 14px;border:1px solid #E5E5E7;background:#FFFFFF;color:#424245;border-radius:8px;cursor:pointer;font-size:12px;">历史</button>
+            ${isPublished ? `<a href="${websiteUrl}" target="_blank" rel="noopener" style="text-align:center;padding:6px 14px;background:var(--text);color:var(--on-solid);border:none;border-radius:8px;text-decoration:none;font-size:12px;font-weight:500;">网站查看</a>` : ''}
+            <button onclick="openReviewWorkspace('${p.id}')" style="padding:6px 14px;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;cursor:pointer;font-size:12px;">重新编辑</button>
+            <button onclick="viewAuditLog('${p.id}', '${escapeHtml(p.title || '').replace(/'/g, "\\'")}')" style="padding:6px 14px;border:1px solid var(--border);background:var(--panel);color:var(--muted2);border-radius:8px;cursor:pointer;font-size:12px;">历史</button>
             ${isPublished
-              ? `<button onclick="unpublishPost('${p.id}')" style="padding:6px 14px;border:1px solid #E5E5E7;background:#FFFFFF;color:#FF9500;border-radius:8px;cursor:pointer;font-size:12px;">下线</button>`
-              : `<button onclick="republishPost('${p.id}')" style="padding:6px 14px;border:1px solid #1a1a1a;background:#FFFFFF;color:#1a1a1a;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;">🚀 重新上线</button>`
+              ? `<button onclick="unpublishPost('${p.id}')" style="padding:6px 14px;border:1px solid var(--border);background:var(--panel);color:var(--muted);border-radius:8px;cursor:pointer;font-size:12px;">下线</button>`
+              : `<button onclick="republishPost('${p.id}')" style="padding:6px 14px;border:1px solid var(--text);background:var(--panel);color:var(--text);border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;">🚀 重新上线</button>`
             }
-            <button onclick="deletePostPermanent('${p.id}', '${escapeHtml(p.title || '').replace(/'/g, "\\'")}')" style="padding:6px 14px;border:1px solid #ececec;background:#FFFFFF;color:#1a1a1a;border-radius:8px;cursor:pointer;font-size:12px;">永久删除</button>
+            <button onclick="deletePostPermanent('${p.id}', '${escapeHtml(p.title || '').replace(/'/g, "\\'")}')" style="padding:6px 14px;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;cursor:pointer;font-size:12px;">永久删除</button>
           </div>
         </div>`;
     }
@@ -3308,12 +3293,12 @@
           image_uploaded: '🖼 上传图片',
         };
         const html = logs.length === 0
-          ? '<div style="text-align:center;color:#86868B;padding:30px;">暂无历史记录</div>'
+          ? '<div style="text-align:center;color:var(--muted);padding:30px;">暂无历史记录</div>'
           : logs.map(l => `
-              <div style="border-left:3px solid #1a1a1a;padding:10px 14px;margin-bottom:6px;background:#FAFAFA;border-radius:0 8px 8px 0;">
-                <div style="font-weight:600;color:#1D1D1F;font-size:13px;">${actionLabels[l.action] || l.action}</div>
-                <div style="font-size:11px;color:#86868B;margin-top:1px;">${new Date(l.created_at).toLocaleString('zh-CN')}</div>
-                ${l.detail ? `<div style="font-size:12px;color:#424245;margin-top:3px;">${escapeHtml(l.detail)}</div>` : ''}
+              <div style="border-left:3px solid var(--text);padding:10px 14px;margin-bottom:6px;background:var(--panel-2);border-radius:0 8px 8px 0;">
+                <div style="font-weight:600;color:var(--text);font-size:13px;">${actionLabels[l.action] || l.action}</div>
+                <div style="font-size:11px;color:var(--muted);margin-top:1px;">${new Date(l.created_at).toLocaleString('zh-CN')}</div>
+                ${l.detail ? `<div style="font-size:12px;color:var(--muted2);margin-top:3px;">${escapeHtml(l.detail)}</div>` : ''}
               </div>`).join('');
 
         const modal = document.createElement('div');
@@ -3322,10 +3307,10 @@
           <div style="background:white;padding:24px 28px;border-radius:16px;width:540px;max-width:90vw;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,0.18);">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
               <div>
-                <div style="font-weight:600;font-size:15px;color:#1D1D1F;letter-spacing:-0.01em;">📜 文章历史</div>
-                <div style="font-size:12px;color:#86868B;margin-top:2px;">${escapeHtml(title)}</div>
+                <div style="font-weight:600;font-size:15px;color:var(--text);letter-spacing:-0.01em;">📜 文章历史</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px;">${escapeHtml(title)}</div>
               </div>
-              <button onclick="this.closest('[data-audit-modal]').remove()" style="border:none;background:transparent;font-size:22px;cursor:pointer;color:#86868B;">×</button>
+              <button onclick="this.closest('[data-audit-modal]').remove()" style="border:none;background:transparent;font-size:22px;cursor:pointer;color:var(--muted);">×</button>
             </div>
             <div style="overflow-y:auto;flex:1;">${html}</div>
           </div>`;
@@ -3386,7 +3371,7 @@
             const logTime = new Date(log.generationTime).toLocaleString('zh-CN');
             let errorHtml = '';
             if (log.failureCount > 0 && log.errorMessage) {
-              errorHtml = `<div style="color: #1a1a1a; margin-top: 8px;">❌ ${log.errorMessage}</div>`;
+              errorHtml = `<div style="color: var(--text); margin-top: 8px;">❌ ${log.errorMessage}</div>`;
             }
             document.getElementById('lastRunRecord').innerHTML = `
               <div>最后生成时间：${logTime}</div>
@@ -3396,7 +3381,7 @@
               ${errorHtml}
             `;
           } else {
-            document.getElementById('lastRunRecord').innerHTML = '<div style="color: #86868B;">暂无生成记录</div>';
+            document.getElementById('lastRunRecord').innerHTML = '<div style="color: var(--muted);">暂无生成记录</div>';
           }
 
           // 更新快速操作按钮状态
@@ -3756,7 +3741,7 @@
       const tbody = document.getElementById('planTableBody');
 
       if (plans.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #86868B;">暂无数据</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: var(--muted);">暂无数据</td></tr>';
         updatePlanSelectionUI();
         return;
       }
@@ -3802,9 +3787,9 @@
             </td>
             <td>
               <div class="action-buttons" style="display:flex;gap:4px;flex-wrap:wrap;">
-                ${isPending ? `<button onclick="generateOnePlan('${plan.id}')" style="background:#1a1a1a;color:white;border-color:#1a1a1a;">▶ 立即生成</button>` : ''}
+                ${isPending ? `<button onclick="generateOnePlan('${plan.id}')" style="background:var(--text);color:var(--on-solid);border-color:var(--text);">▶ 立即生成</button>` : ''}
                 ${isPending ? `<button onclick="editPlan('${plan.id}','${safeKw}','${safeTitle}','${plan.article_type||'product'}')">编辑</button>` : ''}
-                ${isPending ? `<button onclick="deletePlan('${plan.id}')" style="color:#1a1a1a;">删除</button>` : ''}
+                ${isPending ? `<button onclick="deletePlan('${plan.id}')" style="color:var(--text);">删除</button>` : ''}
                 ${!isPending ? `<button onclick="openPreview('${plan.id}')">预览</button>` : ''}
               </div>
             </td>
@@ -4197,8 +4182,8 @@
       document.getElementById('editContent').value = '';
       document.getElementById('editKeywords').innerHTML = '<input type="text" placeholder="输入关键词，按 Enter 添加">';
       document.getElementById('imagePreview').innerHTML = '';
-      document.getElementById('detailPreview').innerHTML = '<p style="color: #86868B;">上传图片后显示</p>';
-      document.getElementById('cardPreview').innerHTML = '<p style="color: #86868B;">上传图片后显示</p>';
+      document.getElementById('detailPreview').innerHTML = '<p style="color: var(--muted);">上传图片后显示</p>';
+      document.getElementById('cardPreview').innerHTML = '<p style="color: var(--muted);">上传图片后显示</p>';
     }
 
     // 重置规划表单
@@ -4340,7 +4325,7 @@
       if (!keywords || keywords.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="6" style="text-align:center;padding:30px;color:#86868B;">
+            <td colspan="6" style="text-align:center;padding:30px;color:var(--muted);">
               <div>暂无关键词</div>
               <div style="margin-top:8px;font-size:12px;">请添加关键词或使用 AI 推荐功能</div>
             </td>
@@ -4359,7 +4344,7 @@
           <td><span class="priority-badge priority-${kw.priority}">${priorityLabels[kw.priority] || kw.priority}</span></td>
           <td>${kw.used_count || 0} 次</td>
           <td>
-            <button onclick="deleteKeyword('${kw.id}')" style="padding:3px 10px;border:1px solid #E5E5E7;background:#FFFFFF;border-radius:6px;cursor:pointer;font-size:12px;color:#1a1a1a;">删除</button>
+            <button onclick="deleteKeyword('${kw.id}')" style="padding:3px 10px;border:1px solid var(--border);background:var(--panel);border-radius:6px;cursor:pointer;font-size:12px;color:var(--text);">删除</button>
           </td>
         </tr>
       `).join('');
@@ -4460,7 +4445,7 @@
     function renderRecommendations() {
       const list = document.getElementById('recommendList');
       if (!list || !recommendData || recommendData.length === 0) {
-        if (list) list.innerHTML = '<p style="color: #86868B;">暂无推荐</p>';
+        if (list) list.innerHTML = '<p style="color: var(--muted);">暂无推荐</p>';
         return;
       }
 
@@ -4551,7 +4536,7 @@
       }, 0);
       const el = document.getElementById('ratioTotal');
       el.textContent = `总计：${total}%`;
-      el.style.color = total === 100 ? '#1a1a1a' : '#1a1a1a';
+      el.style.color = 'var(--text)';
     }
 
     // 选择标题模板
@@ -4752,7 +4737,7 @@
               internalList.appendChild(item);
             });
           } else {
-            internalList.innerHTML = '<p style="color: #86868B; font-size: 13px;">暂无内部链接推荐</p>';
+            internalList.innerHTML = '<p style="color: var(--muted); font-size: 13px;">暂无内部链接推荐</p>';
           }
 
           // 显示外部链接
@@ -4773,7 +4758,7 @@
               externalList.appendChild(item);
             });
           } else {
-            externalList.innerHTML = '<p style="color: #86868B; font-size: 13px;">暂无外部链接推荐</p>';
+            externalList.innerHTML = '<p style="color: var(--muted); font-size: 13px;">暂无外部链接推荐</p>';
           }
 
           showToast(`✅ 链接推荐已生成！内部: ${data.linksData.internal_links?.length || 0}, 外部: ${data.linksData.external_links?.length || 0}`);
@@ -4824,7 +4809,7 @@
               faqList.appendChild(faqItem);
             });
           } else {
-            faqList.innerHTML = '<p style="color: #86868B; font-size: 13px;">暂无 FAQ</p>';
+            faqList.innerHTML = '<p style="color: var(--muted); font-size: 13px;">暂无 FAQ</p>';
           }
 
           showToast(`✅ FAQ 已生成！共 ${data.faqData.faq?.length || 0} 个问题`);
