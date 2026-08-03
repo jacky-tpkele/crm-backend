@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0b9b3f">
+<meta name="theme-color" content="#ffffff">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png?v=2026-05-24b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -19,8 +19,8 @@
 <link rel="stylesheet" href="_shared/layout.css">
 <style>
 :root{
-  --primary-dim:rgba(11,155,63,0.08);--cyan:#14b85a;--purple:#066128;
-  --warn:#b45309;--sb:180px;
+  --primary-dim:rgba(26,26,26,0.08);--cyan:#1a1a1a;--purple:#000000;
+  --warn:#1a1a1a;--sb:180px;
 }
 a{color:inherit;text-decoration:none}
 
@@ -76,18 +76,18 @@ a{color:inherit;text-decoration:none}
 }
 .search-wrap{flex:1;max-width:360px;position:relative;}
 .search-wrap input{
-  width:100%;background:#ffffff;border:1px solid #d8e0db;
+  width:100%;background:#ffffff;border:1px solid #e3e3e3;
   border-radius:8px;padding:8px 14px 8px 36px;color:var(--text);
   font-size:13px;outline:none;transition:.2s;
 }
-.search-wrap input:focus{border-color:var(--primary);background:#ffffff;box-shadow:0 0 0 3px rgba(11,155,63,.14);}
+.search-wrap input:focus{border-color:var(--primary);background:#ffffff;box-shadow:0 0 0 3px rgba(26,26,26,.14);}
 .search-wrap .si{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px}
 .search-dropdown{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--panel);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);z-index:500;max-height:420px;overflow-y:auto;display:none;}
 .search-dropdown.open{display:block}
 .sd-group-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;padding:8px 14px 4px;border-top:1px solid var(--border);}
 .sd-group-label:first-child{border-top:none}
 .sd-item{padding:9px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:.15s}
-.sd-item:hover{background:#eef4f0}
+.sd-item:hover{background:#f0f0f0}
 .sd-item .sd-main{flex:1;min-width:0}
 .sd-item .sd-title{font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sd-item .sd-sub{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
@@ -111,7 +111,7 @@ a{color:inherit;text-decoration:none}
   background:#ffffff;cursor:pointer;color:var(--text);
   font-size:13px;font-weight:500;transition:.2s;position:relative;
 }
-.user-btn:hover{border-color:var(--primary);background:#f7faf8}
+.user-btn:hover{border-color:var(--primary);background:#f7f7f7}
 .user-avatar{
   width:30px;height:30px;border-radius:8px;
   background:var(--primary);
@@ -128,27 +128,27 @@ a{color:inherit;text-decoration:none}
   display:flex;align-items:center;gap:10px;padding:9px 12px;
   border-radius:8px;cursor:pointer;font-size:13px;color:var(--muted2);transition:.15s;
 }
-.dd-item:hover{background:#eef4f0;color:var(--text)}
+.dd-item:hover{background:#f0f0f0;color:var(--text)}
 .dd-item.danger{color:var(--danger)}
-.dd-item.danger:hover{background:rgba(251,113,133,.1)}
+.dd-item.danger:hover{background:rgba(26,26,26,.1)}
 .header-link{
   display:inline-flex;align-items:center;gap:6px;padding:7px 14px;
   border:1px solid var(--border);border-radius:8px;background:#ffffff;
   color:var(--muted2);font-size:13px;white-space:nowrap;transition:.2s;
 }
-.header-link:hover{border-color:var(--primary);background:#eef4f0;color:var(--primary-d)}
+.header-link:hover{border-color:var(--primary);background:#f0f0f0;color:var(--primary-d)}
 .header-link.accent{
-  border-color:rgba(74,222,128,0.3);
-  background:rgba(74,222,128,0.05);
+  border-color:rgba(26,26,26,0.3);
+  background:rgba(26,26,26,0.05);
   color:var(--primary);
 }
-.header-link.accent:hover{background:rgba(74,222,128,0.14)}
+.header-link.accent:hover{background:rgba(26,26,26,0.14)}
 .header-link.warn{
-  border-color:rgba(251,191,36,0.35);
-  background:rgba(251,191,36,0.07);
-  color:#b45309;
+  border-color:rgba(26,26,26,0.35);
+  background:rgba(26,26,26,0.07);
+  color:#1a1a1a;
 }
-.header-link.warn:hover{background:rgba(251,191,36,0.16);color:#92400e}
+.header-link.warn:hover{background:rgba(26,26,26,0.16);color:#92400e}
 
 /* ── Workspace ── */
 .workspace{overflow-x:hidden;padding:24px 22px;position:relative}
@@ -165,7 +165,7 @@ a{color:inherit;text-decoration:none}
   transition:.2s;cursor:default;position:relative;overflow:hidden;
 }
 .kpi::before{content:'';position:absolute;inset:0;border-radius:var(--radius);opacity:0;transition:.2s;
-  background:linear-gradient(135deg,rgba(11,155,63,.07),transparent)}
+  background:linear-gradient(135deg,rgba(26,26,26,.07),transparent)}
 .kpi:hover{border-color:var(--border-h);transform:translateY(-2px)}
 .kpi:hover::before{opacity:1}
 .kpi-label{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
@@ -174,7 +174,7 @@ a{color:inherit;text-decoration:none}
 .kpi-value.cyan{color:var(--cyan)}
 .kpi-value.purple{color:var(--purple)}
 .kpi{transition:.18s}
-.kpi:hover{border-color:var(--p1);transform:translateY(-1px);box-shadow:0 4px 14px rgba(11,155,63,.2)}
+.kpi:hover{border-color:var(--p1);transform:translateY(-1px);box-shadow:0 4px 14px rgba(26,26,26,.2)}
 
 /* 日期/月份输入框主题色 */
 input[type="date"],input[type="month"]{color-scheme:light}
@@ -201,9 +201,9 @@ input[type="month"]::-webkit-calendar-picker-indicator:hover{opacity:1}
   border-radius:8px;border:1px solid var(--border);background:transparent;
   color:var(--muted2);cursor:pointer;font-size:13px;font-weight:500;transition:.2s;
 }
-.qa-btn:hover{border-color:var(--primary);background:#eef4f0;color:var(--primary-d)}
+.qa-btn:hover{border-color:var(--primary);background:#f0f0f0;color:var(--primary-d)}
 .qa-btn.primary{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:600}
-.qa-btn.primary:hover{background:var(--primary-d);border-color:var(--primary-d);box-shadow:0 6px 20px rgba(11,155,63,.22)}
+.qa-btn.primary:hover{background:var(--primary-d);border-color:var(--primary-d);box-shadow:0 6px 20px rgba(26,26,26,.22)}
 
 /* ── Cards ── */
 .card-head{justify-content:space-between}
@@ -212,27 +212,27 @@ input[type="month"]::-webkit-calendar-picker-indicator:hover{opacity:1}
 /* ── Filter bar ── */
 .filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
 .filter-bar input,.filter-bar select{
-  background:#ffffff;border:1px solid #d8e0db;border-radius:10px;
+  background:#ffffff;border:1px solid #e3e3e3;border-radius:10px;
   padding:9px 14px;color:var(--text);font-size:13px;outline:none;
   min-height:38px;transition:.2s;
 }
 .filter-bar input{width:min(260px,100%)}
-.filter-bar input:focus,.filter-bar select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(11,155,63,.14)}
+.filter-bar input:focus,.filter-bar select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,26,26,.14)}
 .filter-bar select option{background:var(--panel);color:var(--text)}
 .toolbar-input{
-  background:#ffffff;border:1px solid #d8e0db;border-radius:10px;
+  background:#ffffff;border:1px solid #e3e3e3;border-radius:10px;
   padding:9px 14px;color:var(--text);font-size:13px;outline:none;
   width:min(260px,100%);transition:.2s;
 }
-.toolbar-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(11,155,63,.14)}
+.toolbar-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,26,26,.14)}
 
 /* ── Table ── */
 .actions-cell{display:flex;gap:6px;flex-wrap:wrap}
 
 /* ── Buttons ── */
 .btn-sm{padding:4px 10px;font-size:11px;border-radius:6px}
-.btn-cyan{border-color:rgba(11,155,63,.25);color:var(--primary);background:rgba(11,155,63,.05)}
-.btn-cyan:hover{background:rgba(11,155,63,.12)}
+.btn-cyan{border-color:rgba(26,26,26,.25);color:var(--primary);background:rgba(26,26,26,.05)}
+.btn-cyan:hover{background:rgba(26,26,26,.12)}
 .del-col{border:none !important;padding:2px !important;width:22px !important;background:transparent !important}
 .del-row-btn{display:none;background:rgba(255,80,80,.15);border:1px solid rgba(255,80,80,.4);color:#f87171;border-radius:4px;cursor:pointer;font-size:13px;padding:1px 5px;line-height:1}
 .del-row-btn:hover{background:rgba(255,80,80,.35)}
@@ -242,13 +242,13 @@ tr:hover .del-row-btn{display:inline-block}
 .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
 .badge-new{background:#f2ecff;color:#7c3aed}
 .badge-quoted{background:#eef7f1;color:var(--primary-d)}
-.badge-confirmed{background:#eaf8ef;color:var(--primary-d)}
-.badge-producing{background:rgba(251,191,36,.15);color:var(--warn)}
+.badge-confirmed{background:#ececec;color:var(--primary-d)}
+.badge-producing{background:rgba(26,26,26,.15);color:var(--warn)}
 .badge-shipped{background:#eef7f1;color:var(--primary)}
-.badge-completed{background:rgba(74,222,128,.15);color:var(--success)}
+.badge-completed{background:rgba(26,26,26,.15);color:var(--success)}
 .badge-draft{background:#f1f5f3;color:var(--muted)}
 .badge-standard{background:#eef7f1;color:var(--primary-d)}
-.badge-vip{background:rgba(251,191,36,.15);color:var(--warn)}
+.badge-vip{background:rgba(26,26,26,.15);color:var(--warn)}
 .badge-potential{background:#f2ecff;color:#7c3aed}
 
 /* ── Modal ── */
@@ -281,8 +281,8 @@ tr.iq-unread td{font-weight:600}
 }
 .item-row .field label{font-size:10px}
 .item-row input{padding:7px 9px;font-size:13px}
-.item-remove{background:transparent;border:1px solid rgba(251,113,133,.25);color:var(--danger);border-radius:7px;width:36px;height:36px;cursor:pointer;font-size:16px;display:grid;place-items:center;align-self:flex-end;transition:.2s;flex-shrink:0}
-.item-remove:hover{background:rgba(251,113,133,.1)}
+.item-remove{background:transparent;border:1px solid rgba(26,26,26,.25);color:var(--danger);border-radius:7px;width:36px;height:36px;cursor:pointer;font-size:16px;display:grid;place-items:center;align-self:flex-end;transition:.2s;flex-shrink:0}
+.item-remove:hover{background:rgba(26,26,26,.1)}
 .calc-summary{
   background:var(--panel2);border:1px solid var(--border);
   border-radius:10px;padding:12px;margin-top:10px;
@@ -299,8 +299,8 @@ tr.iq-unread td{font-weight:600}
 }
 .quick-export.collapsed{
   width:52px;height:52px;border-radius:50%;
-  background:linear-gradient(135deg,rgba(11,155,63,0.18),rgba(11,155,63,0.08));
-  border-color:rgba(11,155,63,0.35);
+  background:linear-gradient(135deg,rgba(26,26,26,0.18),rgba(26,26,26,0.08));
+  border-color:rgba(26,26,26,0.35);
 }
 .quick-export.collapsed .qe-head{
   padding:0;border-bottom:none;justify-content:center;height:100%;
@@ -315,12 +315,12 @@ tr.iq-unread td{font-weight:600}
   padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);
   font-size:13px;font-weight:600;
 }
-.qe-head:hover{background:#eef4f0}
+.qe-head:hover{background:#f0f0f0}
 .qe-body{padding:12px;display:block}
 .qe-body.hidden{display:none}
 .qe-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
 .qe-body select{
-  width:100%;background:#ffffff;border:1px solid #d8e0db;
+  width:100%;background:#ffffff;border:1px solid #e3e3e3;
   border-radius:7px;padding:7px 10px;color:var(--text);font-size:12px;outline:none;margin-bottom:9px;
 }
 .qe-body select option{background:var(--panel)}
@@ -329,25 +329,25 @@ tr.iq-unread td{font-weight:600}
   width:100%;padding:7px 12px;border-radius:7px;border:1px solid var(--border);
   background:transparent;color:var(--primary);cursor:pointer;font-size:12px;font-weight:600;transition:.2s;text-align:left;
 }
-.qe-btns button:hover{background:#eef4f0;border-color:var(--primary)}
+.qe-btns button:hover{background:#f0f0f0;border-color:var(--primary)}
 
 /* ── Empty state ── */
 .empty-state{text-align:center;padding:44px 20px;color:var(--muted)}
 /* 订单全流程迷你进度条 */
 .flow-row{display:inline-flex;align-items:center;min-width:90px}
-.flow-dot{width:9px;height:9px;border-radius:50%;background:#e7ece9;border:2px solid #ffffff;display:inline-block;flex-shrink:0;transition:.2s}
-.flow-dot.ok{background:#0b9b3f;box-shadow:0 0 6px rgba(11,155,63,.5)}
-.flow-line{flex:1;height:2px;background:rgba(231,236,233,.6);min-width:14px}
-.flow-line.ok{background:#0b9b3f}
-.pm-img-drop{display:flex;align-items:center;justify-content:center;min-height:140px;padding:16px;border:2px dashed rgba(11,155,63,.3);border-radius:10px;background:rgba(11,155,63,.04);cursor:pointer;transition:.2s;outline:none}
-.pm-img-drop:hover,.pm-img-drop:focus{border-color:#14b85a;background:rgba(11,155,63,.08)}
-.pm-img-drop.drag{border-color:#0b9b3f;background:rgba(11,155,63,.14)}
+.flow-dot{width:9px;height:9px;border-radius:50%;background:#e3e3e3;border:2px solid #ffffff;display:inline-block;flex-shrink:0;transition:.2s}
+.flow-dot.ok{background:#1a1a1a;box-shadow:0 0 6px rgba(26,26,26,.5)}
+.flow-line{flex:1;height:2px;background:rgba(227,227,227,.6);min-width:14px}
+.flow-line.ok{background:#1a1a1a}
+.pm-img-drop{display:flex;align-items:center;justify-content:center;min-height:140px;padding:16px;border:2px dashed rgba(26,26,26,.3);border-radius:10px;background:rgba(26,26,26,.04);cursor:pointer;transition:.2s;outline:none}
+.pm-img-drop:hover,.pm-img-drop:focus{border-color:#1a1a1a;background:rgba(26,26,26,.08)}
+.pm-img-drop.drag{border-color:#1a1a1a;background:rgba(26,26,26,.14)}
 .pr-thumb{width:42px;height:42px;border-radius:8px;object-fit:cover;cursor:pointer;display:block;border:1px solid var(--border);background:rgba(255,255,255,.04)}
 .pr-thumb-empty{display:grid;place-items:center;font-size:18px;color:var(--muted)}
 .spec-cell{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;white-space:pre-wrap;max-width:240px;line-height:1.4;font-size:12.5px}
 .spec-hover-trigger{cursor:help}
-.spec-popover{position:fixed;z-index:9999;max-width:420px;background:#fff;border:1px solid rgba(11,155,63,.4);border-radius:8px;padding:10px 14px;color:#111718;font-size:12.5px;line-height:1.6;white-space:pre-wrap;box-shadow:0 12px 32px rgba(0,0,0,.6);pointer-events:none}
-.thumb-popover{position:fixed;z-index:9999;background:#fff;border:1px solid rgba(11,155,63,.4);border-radius:10px;padding:6px;box-shadow:0 12px 32px rgba(0,0,0,.7);pointer-events:none}
+.spec-popover{position:fixed;z-index:9999;max-width:420px;background:#fff;border:1px solid rgba(26,26,26,.4);border-radius:8px;padding:10px 14px;color:#1a1a1a;font-size:12.5px;line-height:1.6;white-space:pre-wrap;box-shadow:0 12px 32px rgba(0,0,0,.6);pointer-events:none}
+.thumb-popover{position:fixed;z-index:9999;background:#fff;border:1px solid rgba(26,26,26,.4);border-radius:10px;padding:6px;box-shadow:0 12px 32px rgba(0,0,0,.7);pointer-events:none}
 .thumb-popover img{display:block;max-width:240px;max-height:240px;border-radius:6px}
 .empty-state .icon{font-size:36px;margin-bottom:10px;opacity:.4}
 .empty-state p{font-size:14px}
@@ -402,15 +402,15 @@ tr.iq-unread td{font-weight:600}
 .chat-sidebar-head{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--text)}
 .chat-session-list{flex:1;overflow-y:auto;padding:6px}
 .chat-session{padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:4px;transition:.15s;position:relative;border:1px solid transparent}
-.chat-session:hover{background:#eef4f0}
-.chat-session.active{background:#eaf8ef;border-color:rgba(11,155,63,.35)}
+.chat-session:hover{background:#f0f0f0}
+.chat-session.active{background:#ececec;border-color:rgba(26,26,26,.35)}
 .chat-session .cs-name{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px}
 .chat-session .cs-preview{font-size:11px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chat-session .cs-time{font-size:10px;color:var(--muted);position:absolute;top:10px;right:32px}
-.chat-session .cs-badge{background:#ef4444;color:#fff;font-size:10px;padding:0 6px;border-radius:999px;font-weight:700;min-width:18px;text-align:center}
+.chat-session .cs-badge{background:#1a1a1a;color:#fff;font-size:10px;padding:0 6px;border-radius:999px;font-weight:700;min-width:18px;text-align:center}
 .chat-session .cs-delete{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:4px;border:1px solid transparent;background:transparent;color:var(--muted);display:none;align-items:center;justify-content:center;cursor:pointer;transition:.15s;padding:0}
 .chat-session:hover .cs-delete{display:flex}
-.chat-session .cs-delete:hover{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.3);color:#ef4444}
+.chat-session .cs-delete:hover{background:rgba(26,26,26,0.12);border-color:rgba(26,26,26,0.3);color:#1a1a1a}
 .chat-session.closed{opacity:.5}
 
 .chat-main{background:var(--panel);border:1px solid var(--border);border-radius:12px;display:flex;flex-direction:column;overflow:hidden}
@@ -419,13 +419,13 @@ tr.iq-unread td{font-weight:600}
 .chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;background:var(--panel2)}
 .chat-msg{max-width:72%;padding:8px 12px;border-radius:12px;font-size:13px;line-height:1.5;word-break:break-word;white-space:pre-wrap}
 .chat-msg.visitor{align-self:flex-start;background:#ffffff;color:var(--text);border:1px solid var(--border);border-bottom-left-radius:3px}
-.chat-msg.agent{align-self:flex-end;background:linear-gradient(135deg,#0b9b3f,#14b85a);color:#fff;border-bottom-right-radius:3px;font-weight:500}
+.chat-msg.agent{align-self:flex-end;background:linear-gradient(135deg,#1a1a1a,#1a1a1a);color:#fff;border-bottom-right-radius:3px;font-weight:500}
 .chat-msg.system{align-self:center;background:transparent;color:var(--muted);font-size:11px;padding:4px 8px;text-align:center}
 .chat-msg .msg-time{font-size:10px;opacity:.6;margin-top:3px;display:block}
 
 .chat-composer{display:flex;gap:8px;padding:10px;border-top:1px solid var(--border);background:var(--panel)}
-.chat-composer textarea{flex:1;background:#ffffff;border:1px solid #d8e0db;border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;resize:none;font-family:inherit;outline:none}
-.chat-composer textarea:focus{border-color:rgba(11,155,63,.5)}
+.chat-composer textarea{flex:1;background:#ffffff;border:1px solid #e3e3e3;border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;resize:none;font-family:inherit;outline:none}
+.chat-composer textarea:focus{border-color:rgba(26,26,26,.5)}
 
 @media (max-width:768px){
   .chat-layout{grid-template-columns:1fr;height:auto}
@@ -452,10 +452,10 @@ tr.iq-unread td{font-weight:600}
   <div class="sb-logo">
     <div class="logo-icon">
       <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-        <polygon points="18,2 34,10 34,26 18,34 2,26 2,10" stroke="rgba(11,155,63,0.55)" stroke-width="1.1" fill="rgba(0,200,255,0.05)"/>
-        <polygon points="18,7 29,13 29,23 18,29 7,23 7,13" stroke="rgba(11,155,63,0.22)" stroke-width="0.7" fill="none"/>
-        <line x1="10" y1="13" x2="26" y2="13" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="round"/>
-        <line x1="18" y1="13" x2="18" y2="26" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="round"/>
+        <polygon points="18,2 34,10 34,26 18,34 2,26 2,10" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.1" fill="none"/>
+        <polygon points="18,7 29,13 29,23 18,29 7,23 7,13" stroke="currentColor" stroke-opacity="0.2" stroke-width="0.7" fill="none"/>
+        <line x1="10" y1="13" x2="26" y2="13" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        <line x1="18" y1="13" x2="18" y2="26" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
       </svg>
     </div>
     <div class="logo-text">TPKELE <span>CRM</span></div>
@@ -469,7 +469,7 @@ tr.iq-unread td{font-weight:600}
     </div>
     <div class="nav-item" data-sec="chat">
       <i class="nav-icon" data-lucide="message-square"></i><span class="nav-label" data-i18n="navChat">在线客服</span>
-      <span id="chatNavBadge" style="display:none;margin-left:auto;background:#ef4444;color:#fff;font-size:10px;padding:1px 6px;border-radius:999px;font-weight:700">0</span>
+      <span id="chatNavBadge" style="display:none;margin-left:auto;background:#1a1a1a;color:#fff;font-size:10px;padding:1px 6px;border-radius:999px;font-weight:700">0</span>
     </div>
     <div class="nav-item" data-sec="customers">
       <i class="nav-icon" data-lucide="users"></i><span class="nav-label" data-i18n="navCustomers">客户管理</span>
@@ -548,7 +548,7 @@ tr.iq-unread td{font-weight:600}
     <div class="search-wrap">
       <span class="si"><i data-lucide="search" style="width:14px;height:14px;stroke-width:2"></i></span>
       <input type="text" id="globalSearch" data-i18n-ph="phGlobalSearch" placeholder="搜索订单/客户/产品/供应商/询盘/物流  ⌘ K  /  Ctrl+K" autocomplete="off">
-      <kbd id="searchKbd" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(11,155,63,.12);border:1px solid rgba(11,155,63,.32);color:#14b85a;padding:2px 7px;border-radius:5px;font-size:11px;font-family:inherit;pointer-events:none;letter-spacing:.5px">Ctrl K</kbd>
+      <kbd id="searchKbd" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(26,26,26,.12);border:1px solid rgba(26,26,26,.32);color:#1a1a1a;padding:2px 7px;border-radius:5px;font-size:11px;font-family:inherit;pointer-events:none;letter-spacing:.5px">Ctrl K</kbd>
       <div class="search-dropdown" id="searchDropdown"></div>
     </div>
     <a href="logistics.html" target="_blank" data-i18n="btnLogistics" class="header-link accent"><i data-lucide="truck" style="width:14px;height:14px;stroke-width:2"></i> 物流管理</a>
@@ -560,7 +560,7 @@ tr.iq-unread td{font-weight:600}
         <button class="user-btn" id="userBtn" onclick="toggleUserMenu()">
           <div class="user-avatar" id="userAvatar">T</div>
           <span id="userNameDisplay">TPKELE</span>
-          <span class="role-badge" id="userRoleBadge" style="display:none;font-size:10px;padding:1px 6px;border-radius:999px;margin-left:6px;background:rgba(11,155,63,.18);color:#14b85a;border:1px solid rgba(11,155,63,.35);font-weight:600;letter-spacing:.5px">ADMIN</span>
+          <span class="role-badge" id="userRoleBadge" style="display:none;font-size:10px;padding:1px 6px;border-radius:999px;margin-left:6px;background:rgba(26,26,26,.18);color:#1a1a1a;border:1px solid rgba(26,26,26,.35);font-weight:600;letter-spacing:.5px">ADMIN</span>
           <span style="color:var(--muted)">▾</span>
         </button>
         <div class="user-dropdown" id="userDropdown">
@@ -950,7 +950,7 @@ tr.iq-unread td{font-weight:600}
         <div class="field" style="position:relative">
           <label data-i18n="lblCustCountry">Country</label>
           <input type="text" id="cm-country" autocomplete="off" placeholder="" oninput="filterCountryList()" onfocus="openCountryList()">
-          <div id="cm-country-list" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:240px;overflow-y:auto;background:var(--panel,#f9fbfa);border:1px solid var(--border);border-radius:8px;margin-top:4px;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.5)"></div>
+          <div id="cm-country-list" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:240px;overflow-y:auto;background:var(--panel,#f7f7f7);border:1px solid var(--border);border-radius:8px;margin-top:4px;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.5)"></div>
         </div>
         <div class="field"><label data-i18n="lblCustEmail">Email</label><input type="email" id="cm-email"></div>
         <div class="field"><label data-i18n="lblCustWhatsApp">WhatsApp / Tel</label><input type="text" id="cm-whatsapp"></div>
@@ -1501,7 +1501,7 @@ async function loadRecycleBin() {
     }
     body.innerHTML = sections.map(([tableName, s]) => `
       <details ${s.items.length<=10?'open':''} style="margin-bottom:8px;border:1px solid var(--border);border-radius:8px;background:var(--panel-2)">
-        <summary style="padding:10px 14px;cursor:pointer;font-weight:600;color:#14b85a">${esc(s.label)} <span style="color:var(--muted);font-weight:300;font-size:12px">(${s.items.length})</span></summary>
+        <summary style="padding:10px 14px;cursor:pointer;font-weight:600;color:#1a1a1a">${esc(s.label)} <span style="color:var(--muted);font-weight:300;font-size:12px">(${s.items.length})</span></summary>
         <div style="padding:0 14px 10px">
           <table style="width:100%;font-size:12px">
             <thead><tr style="color:var(--muted);text-align:left">
@@ -1527,7 +1527,7 @@ async function loadRecycleBin() {
       </details>
     `).join('');
   } catch (e) {
-    body.innerHTML = `<div style="color:#fca5a5;padding:20px">加载失败：${esc(e.message||'')}</div>`;
+    body.innerHTML = `<div style="color:#767676;padding:20px">加载失败：${esc(e.message||'')}</div>`;
   }
 }
 async function restoreItem(type, id) {
@@ -1682,9 +1682,9 @@ function showImportPreview(type, meta, rows) {
 
   const previewHtml = `
     <div style="font-size:13px;color:var(--text);margin-bottom:10px">
-      📋 共解析 <strong style="color:#14b85a">${normalized.length}</strong> 行${errors.length?` · <span style="color:#fca5a5">${errors.length} 处错误</span>`:''}
+      📋 共解析 <strong style="color:#1a1a1a">${normalized.length}</strong> 行${errors.length?` · <span style="color:#767676">${errors.length} 处错误</span>`:''}
     </div>
-    ${errors.length ? `<div style="max-height:120px;overflow-y:auto;padding:8px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:6px;font-size:11.5px;color:#fca5a5;margin-bottom:10px">${errors.slice(0,20).map(esc).join('<br>')}${errors.length>20?'<br>...（剩余 '+(errors.length-20)+' 条）':''}</div>`:''}
+    ${errors.length ? `<div style="max-height:120px;overflow-y:auto;padding:8px;background:rgba(26,26,26,.08);border:1px solid rgba(26,26,26,.3);border-radius:6px;font-size:11.5px;color:#767676;margin-bottom:10px">${errors.slice(0,20).map(esc).join('<br>')}${errors.length>20?'<br>...（剩余 '+(errors.length-20)+' 条）':''}</div>`:''}
     <div style="max-height:50vh;overflow:auto;border:1px solid var(--border);border-radius:8px">
       <table style="width:100%;font-size:11.5px">
         <thead style="position:sticky;top:0;background:var(--panel);z-index:1">
@@ -1693,7 +1693,7 @@ function showImportPreview(type, meta, rows) {
         <tbody>
           ${normalized.slice(0,200).map(r=>`<tr>${meta.fields.map(f=>{
             const v = r[f.key]; const bad = f.required && (!v||String(v).trim()==='');
-            return `<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);${bad?'color:#fca5a5':'color:var(--text)'}">${esc(String(v??''))}</td>`;
+            return `<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);${bad?'color:#767676':'color:var(--text)'}">${esc(String(v??''))}</td>`;
           }).join('')}</tr>`).join('')}
         </tbody>
       </table>
@@ -1868,16 +1868,10 @@ function loadSettings() {
   if (roleBadge && user?.role) {
     roleBadge.style.display = '';
     roleBadge.textContent = user.role.toUpperCase();
-    const colors = {
-      admin:    { bg:'rgba(11,155,63,.18)',  fg:'#14b85a', bd:'rgba(11,155,63,.35)' },
-      sales:    { bg:'rgba(11,155,63,.12)', fg:'#0b9b3f', bd:'rgba(11,155,63,.35)' },
-      purchase: { bg:'rgba(251,191,36,.14)',  fg:'#fde68a', bd:'rgba(251,191,36,.3)' },
-      viewer:   { bg:'rgba(148,163,184,.18)', fg:'#cbd5e1', bd:'rgba(148,163,184,.3)' },
-    };
-    const c = colors[user.role] || colors.viewer;
-    roleBadge.style.background = c.bg;
-    roleBadge.style.color = c.fg;
-    roleBadge.style.borderColor = c.bd;
+    // 灰阶：全部用相同的中性样式
+    roleBadge.style.background = '';
+    roleBadge.style.color = '';
+    roleBadge.style.borderColor = '';
   }
   // 异步刷一次后端，更新到最新（如果 admin 改过 display_name 或角色）
   fetch('/api/users/me', { headers: { Authorization: 'Bearer ' + (localStorage.getItem('crm_token')||'') }})
@@ -1901,14 +1895,32 @@ async function loadDashboard() {
   } catch (e) { toast('Load error: '+e.message,'err'); }
 }
 
+/* CODEX 灰阶图表色板：跟随 light/dark 主题 */
+function chartPalette() {
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  return dark ? {
+    tick:'#8a8a8a', grid:'rgba(255,255,255,.08)',
+    line:'#f0f0f0', fill:'rgba(240,240,240,.14)',
+    bar1:'rgba(240,240,240,.72)', bar2:'rgba(240,240,240,.42)',
+    bar3:'rgba(240,240,240,.58)', bar4:'rgba(240,240,240,.30)'
+  } : {
+    tick:'#767676', grid:'rgba(0,0,0,.08)',
+    line:'#1a1a1a', fill:'rgba(26,26,26,.10)',
+    bar1:'rgba(26,26,26,.78)', bar2:'rgba(26,26,26,.42)',
+    bar3:'rgba(26,26,26,.60)', bar4:'rgba(26,26,26,.28)'
+  };
+}
+
 function chartDefaults() {
-  Chart.defaults.color = '#5f6d68';
-  Chart.defaults.borderColor = 'rgba(231,236,233,.6)';
-  Chart.defaults.font.family = 'Microsoft YaHei Light, 微软雅黑 Light, Microsoft YaHei, Segoe UI Light, sans-serif';
+  const P = chartPalette();
+  Chart.defaults.color = P.tick;
+  Chart.defaults.borderColor = P.grid;
+  Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, Segoe UI, Microsoft YaHei, sans-serif';
 }
 
 function initDashCharts(trends, topP, topC) {
   chartDefaults();
+  const P = chartPalette();
   const labels = (trends.labels || []).map(l => l.slice(5)); // MM
   const destroy = id => { if (S.charts[id]) { S.charts[id].destroy(); } };
 
@@ -1918,18 +1930,18 @@ function initDashCharts(trends, topP, topC) {
     type: 'line',
     data: {
       labels,
-      datasets: [{ label:'Orders', data: trends.orders||[], borderColor:'#0b9b3f', backgroundColor:'rgba(11,155,63,.18)', tension:.4, fill:true, pointRadius:3 }]
+      datasets: [{ label:'Orders', data: trends.orders||[], borderColor:P.line, backgroundColor:P.fill, tension:.4, fill:true, pointRadius:3 }]
     },
-    options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,grid:{color:'rgba(255,255,255,.04)'}},x:{grid:{color:'rgba(255,255,255,.04)'}}} }
+    options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,grid:{color:P.grid}},x:{grid:{color:P.grid}}} }
   });
 
   S.charts.profit = new Chart(document.getElementById('chartProfit'), {
     type: 'line',
     data: {
       labels,
-      datasets: [{ label:'Profit', data: trends.profit||[], borderColor:'#0b9b3f', backgroundColor:'rgba(11,155,63,.14)', tension:.4, fill:true, pointRadius:3 }]
+      datasets: [{ label:'Profit', data: trends.profit||[], borderColor:P.line, backgroundColor:P.fill, tension:.4, fill:true, pointRadius:3 }]
     },
-    options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,grid:{color:'rgba(255,255,255,.04)'}},x:{grid:{color:'rgba(255,255,255,.04)'}}} }
+    options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,grid:{color:P.grid}},x:{grid:{color:P.grid}}} }
   });
 
   if (topP?.length) {
@@ -1937,9 +1949,9 @@ function initDashCharts(trends, topP, topC) {
       type: 'bar',
       data: {
         labels: topP.slice(0,6).map(p=>p.name.slice(0,8)),
-        datasets: [{ label:'Sales', data: topP.slice(0,6).map(p=>p.sales), backgroundColor:'rgba(11,155,63,.65)', borderRadius:6 }]
+        datasets: [{ label:'Sales', data: topP.slice(0,6).map(p=>p.sales), backgroundColor:P.bar1, borderRadius:6 }]
       },
-      options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,grid:{color:'rgba(255,255,255,.04)'}},x:{grid:{display:false}}} }
+      options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,grid:{color:P.grid}},x:{grid:{display:false}}} }
     });
   }
 
@@ -1948,9 +1960,9 @@ function initDashCharts(trends, topP, topC) {
       type: 'bar',
       data: {
         labels: topC.slice(0,6).map(c=>c.name.slice(0,10)),
-        datasets: [{ label:'Sales', data: topC.slice(0,6).map(c=>c.sales), backgroundColor:'rgba(52,211,153,.65)', borderRadius:6 }]
+        datasets: [{ label:'Sales', data: topC.slice(0,6).map(c=>c.sales), backgroundColor:P.bar1, borderRadius:6 }]
       },
-      options: { responsive:true, plugins:{legend:{display:false}}, indexAxis:'y', scales:{x:{beginAtZero:true,grid:{color:'rgba(255,255,255,.04)'}},y:{grid:{display:false}}} }
+      options: { responsive:true, plugins:{legend:{display:false}}, indexAxis:'y', scales:{x:{beginAtZero:true,grid:{color:P.grid}},y:{grid:{display:false}}} }
     });
   }
 }
@@ -1970,22 +1982,22 @@ async function initAnalyticsCharts() {
     S.charts.a1 = new Chart(document.getElementById('chartAnalytics1'), {
       type:'bar',
       data:{ labels, datasets:[
-        {label:'Sales', data:trends.sales||[], backgroundColor:'rgba(11,155,63,.6)', borderRadius:4},
-        {label:'Profit', data:trends.profit||[], backgroundColor:'rgba(11,155,63,.55)', borderRadius:4}
+        {label:'Sales', data:trends.sales||[], backgroundColor:P.bar1, borderRadius:4},
+        {label:'Profit', data:trends.profit||[], backgroundColor:P.bar2, borderRadius:4}
       ]},
-      options:{responsive:true,scales:{y:{beginAtZero:true,grid:{color:'rgba(255,255,255,.04)'}},x:{grid:{display:false}}}}
+      options:{responsive:true,scales:{y:{beginAtZero:true,grid:{color:P.grid}},x:{grid:{display:false}}}}
     });
 
     if (topC?.length) {
       S.charts.a2 = new Chart(document.getElementById('chartAnalytics2'), {
-        type:'bar', data:{ labels:topC.map(c=>c.name.slice(0,12)), datasets:[{label:'Sales',data:topC.map(c=>c.sales),backgroundColor:'rgba(52,211,153,.6)',borderRadius:4}] },
-        options:{responsive:true,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{color:'rgba(255,255,255,.04)'}},y:{grid:{display:false}}}}
+        type:'bar', data:{ labels:topC.map(c=>c.name.slice(0,12)), datasets:[{label:'Sales',data:topC.map(c=>c.sales),backgroundColor:P.bar1,borderRadius:4}] },
+        options:{responsive:true,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{color:P.grid}},y:{grid:{display:false}}}}
       });
     }
     if (topP?.length) {
       S.charts.a3 = new Chart(document.getElementById('chartAnalytics3'), {
-        type:'bar', data:{ labels:topP.map(p=>p.name.slice(0,12)), datasets:[{label:'Sales',data:topP.map(p=>p.sales),backgroundColor:'rgba(11,155,63,.55)',borderRadius:4}] },
-        options:{responsive:true,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{color:'rgba(255,255,255,.04)'}},y:{grid:{display:false}}}}
+        type:'bar', data:{ labels:topP.map(p=>p.name.slice(0,12)), datasets:[{label:'Sales',data:topP.map(p=>p.sales),backgroundColor:P.bar1,borderRadius:4}] },
+        options:{responsive:true,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{color:P.grid}},y:{grid:{display:false}}}}
       });
     }
   } catch(e) { console.error(e); }
@@ -2081,7 +2093,7 @@ function renderCountryList(keyword = '') {
   box.innerHTML = list.slice(0, 80).map(c => `
     <div onclick="pickCountry('${c.en.replace(/'/g,"\\'")}','${c.zh}')"
          style="padding:8px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid rgba(255,255,255,.04);display:flex;justify-content:space-between;gap:10px"
-         onmouseover="this.style.background='rgba(11,155,63,.12)'" onmouseout="this.style.background=''">
+         onmouseover="this.style.background='rgba(26,26,26,.12)'" onmouseout="this.style.background=''">
       <span>${esc(getCountryDisplay(c))}</span>
       <span style="color:var(--muted);font-size:12px">${esc(S.lang==='zh'?c.en:c.zh)}</span>
     </div>`).join('');
@@ -2899,8 +2911,8 @@ function renderOrders() {
     const settleBadge = isRmb
       ? '<span style="font-size:10px;color:var(--muted)">RMB</span>'
       : settled
-        ? `<span class="badge" style="background:rgba(11,155,63,.15);color:#14b85a;border:1px solid rgba(11,155,63,.35);font-size:10px;padding:1px 6px" title="结算汇率 ${Number(o.settlement_rate).toFixed(4)} @ ${o.settlement_date||''}">✓ 已结算</span>`
-        : '<span class="badge" style="background:rgba(251,191,36,.12);color:#fde68a;border:1px solid rgba(251,191,36,.3);font-size:10px;padding:1px 6px" title="按录入汇率显示，可点结算按钮按今日汇率重算">⏳ 待结算</span>';
+        ? `<span class="badge" style="background:rgba(26,26,26,.15);color:#1a1a1a;border:1px solid rgba(26,26,26,.35);font-size:10px;padding:1px 6px" title="结算汇率 ${Number(o.settlement_rate).toFixed(4)} @ ${o.settlement_date||''}">✓ 已结算</span>`
+        : '<span class="badge" style="background:rgba(26,26,26,.12);color:#767676;border:1px solid rgba(26,26,26,.3);font-size:10px;padding:1px 6px" title="按录入汇率显示，可点结算按钮按今日汇率重算">⏳ 待结算</span>';
     return `<tr>
       <td data-label="Date">${esc((o.order_date||'').slice(0,10))}</td>
       <td data-label="Order#" style="font-size:12px">${esc(o.order_number||'—')}</td>
@@ -3216,8 +3228,8 @@ async function openSettleModal(orderId) {
         </div>
       </div>
 
-      <div style="padding:10px 12px;background:rgba(11,155,63,.06);border:1px solid rgba(11,155,63,.3);border-radius:8px">
-        <div style="font-size:12px;color:#14b85a;margin-bottom:8px">💱 按当日汇率结算</div>
+      <div style="padding:10px 12px;background:rgba(26,26,26,.06);border:1px solid rgba(26,26,26,.3);border-radius:8px">
+        <div style="font-size:12px;color:#1a1a1a;margin-bottom:8px">💱 按当日汇率结算</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
           <div class="field"><label>结算汇率 (USD→CNY)</label><input type="number" id="st-rate" step="0.0001" oninput="updateSettlePreview()"></div>
           <div class="field"><label>结算日期</label><input type="date" id="st-date" value="${new Date().toISOString().slice(0,10)}"></div>
@@ -3279,7 +3291,7 @@ async function openBatchSettleModal() {
   const body = document.getElementById('batchSettleBody');
   body.innerHTML = `
     <div style="padding:0 4px">
-      <div style="padding:10px 12px;background:rgba(11,155,63,.06);border:1px solid rgba(11,155,63,.3);border-radius:8px;margin-bottom:14px">
+      <div style="padding:10px 12px;background:rgba(26,26,26,.06);border:1px solid rgba(26,26,26,.3);border-radius:8px;margin-bottom:14px">
         <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end">
           <div class="field"><label>结算汇率 (USD→CNY)</label><input type="number" id="bst-rate" step="0.0001" oninput="updateBatchPreview()"></div>
           <div class="field"><label>结算日期</label><input type="date" id="bst-date" value="${new Date().toISOString().slice(0,10)}"></div>
@@ -3317,8 +3329,8 @@ function renderBatchRows(orders) {
   tbody.innerHTML = orders.map(o => {
     const settled = o.settlement_rate != null;
     const tag = settled
-      ? `<span style="font-size:10px;color:#14b85a">✓ 已结算@${Number(o.settlement_rate).toFixed(4)}</span>`
-      : '<span style="font-size:10px;color:#fde68a">⏳ 待结算</span>';
+      ? `<span style="font-size:10px;color:#1a1a1a">✓ 已结算@${Number(o.settlement_rate).toFixed(4)}</span>`
+      : '<span style="font-size:10px;color:#767676">⏳ 待结算</span>';
     return `<tr data-oid="${o.id}">
       <td><input type="checkbox" class="bst-cb" value="${o.id}" onchange="updateBatchPreview()"></td>
       <td style="font-size:12px">${esc(o.order_number||'')}<div style="color:var(--muted);font-size:11px">${esc((o.order_date||'').slice(0,10))}</div></td>
@@ -3408,13 +3420,13 @@ async function viewOrderDetail(id) {
     });
     const overallPct = totalOrdered > 0 ? Math.min(100, Math.round(totalShipped/totalOrdered*100)) : 0;
     const subEl = document.getElementById('detailSub');
-    subEl.innerHTML = `${esc(order.order_number||'')} · ${esc(order.customer_name||'')} · ${esc(order.order_date||'')} <span style="margin-left:10px;padding:2px 10px;border-radius:999px;font-size:11px;background:${overallPct>=100?'rgba(11,155,63,.16)':'rgba(11,155,63,.08)'};color:${overallPct>=100?'#0b9b3f':'#0b9b3f'};border:1px solid ${overallPct>=100?'rgba(11,155,63,.4)':'rgba(11,155,63,.3)'}">${overallPct>=100?t('badgeFullyShipped'):t('badgeProgress')+' '+overallPct+'%'}</span>`;
+    subEl.innerHTML = `${esc(order.order_number||'')} · ${esc(order.customer_name||'')} · ${esc(order.order_date||'')} <span style="margin-left:10px;padding:2px 10px;border-radius:999px;font-size:11px;background:${overallPct>=100?'rgba(26,26,26,.16)':'rgba(26,26,26,.08)'};color:${overallPct>=100?'#1a1a1a':'#1a1a1a'};border:1px solid ${overallPct>=100?'rgba(26,26,26,.4)':'rgba(26,26,26,.3)'}">${overallPct>=100?t('badgeFullyShipped'):t('badgeProgress')+' '+overallPct+'%'}</span>`;
     const body = document.getElementById('detailBody');
     body.innerHTML = (items||[]).map(i=>{
       const ordered = Number(i.quantity)||0;
       const sh = Number(shipped[i.product_id]?.shipped_qty)||0;
       const pct = ordered>0 ? Math.min(100, Math.round(sh/ordered*100)) : 0;
-      const color = pct>=100 ? '#0b9b3f' : (pct>0 ? '#0b9b3f' : '#5f6d68');
+      const color = pct>=100 ? '#1a1a1a' : (pct>0 ? '#1a1a1a' : '#767676');
       const label = pct>=100 ? `✅ ${sh}/${ordered}` : `${sh} / ${ordered}`;
       return `
       <tr>
@@ -3428,7 +3440,7 @@ async function viewOrderDetail(id) {
         <td>${fmtN(i.sales_total)}</td>
         <td style="min-width:130px">
           <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:${color}">${label}</div>
-          <div style="height:4px;background:rgba(231,236,233,.5);border-radius:2px;overflow:hidden;margin-top:3px"><div style="height:100%;width:${pct}%;background:${color};transition:.3s"></div></div>
+          <div style="height:4px;background:rgba(227,227,227,.5);border-radius:2px;overflow:hidden;margin-top:3px"><div style="height:100%;width:${pct}%;background:${color};transition:.3s"></div></div>
         </td>
       </tr>`;
     }).join('');
@@ -3587,22 +3599,22 @@ async function renderAndDownloadPoPdf(po) {
             <td style="padding:6px 0;color:#888">状态</td><td>${esc(po.status||'—')}</td></tr>
       </table>
       <table style="width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px">
-        <thead><tr style="background:#0b9b3f;color:#fff">
-          <th style="padding:10px;border:1px solid #0b9b3f;width:40px">#</th>
-          <th style="padding:10px;border:1px solid #0b9b3f">产品名称</th>
-          <th style="padding:10px;border:1px solid #0b9b3f">规格</th>
-          <th style="padding:10px;border:1px solid #0b9b3f;width:70px">数量</th>
-          <th style="padding:10px;border:1px solid #0b9b3f;width:60px">单位</th>
-          <th style="padding:10px;border:1px solid #0b9b3f;width:90px">单价</th>
-          <th style="padding:10px;border:1px solid #0b9b3f;width:110px">小计</th>
+        <thead><tr style="background:#1a1a1a;color:#fff">
+          <th style="padding:10px;border:1px solid #1a1a1a;width:40px">#</th>
+          <th style="padding:10px;border:1px solid #1a1a1a">产品名称</th>
+          <th style="padding:10px;border:1px solid #1a1a1a">规格</th>
+          <th style="padding:10px;border:1px solid #1a1a1a;width:70px">数量</th>
+          <th style="padding:10px;border:1px solid #1a1a1a;width:60px">单位</th>
+          <th style="padding:10px;border:1px solid #1a1a1a;width:90px">单价</th>
+          <th style="padding:10px;border:1px solid #1a1a1a;width:110px">小计</th>
         </tr></thead>
         <tbody>${itemRows}</tbody>
         <tfoot><tr>
           <td colspan="6" style="padding:10px;border:1px solid #ccc;text-align:right;font-weight:bold">合计 Total:</td>
-          <td style="padding:10px;border:1px solid #ccc;text-align:right;font-weight:bold;color:#0b9b3f">¥${fmtN(po.total_amount||0)}</td>
+          <td style="padding:10px;border:1px solid #ccc;text-align:right;font-weight:bold;color:#1a1a1a">¥${fmtN(po.total_amount||0)}</td>
         </tr></tfoot>
       </table>
-      ${po.remarks?`<div style="margin-top:18px;padding:12px;background:#f9f9f9;border-left:3px solid #0b9b3f;font-size:12.5px"><strong>备注：</strong>${esc(po.remarks)}</div>`:''}
+      ${po.remarks?`<div style="margin-top:18px;padding:12px;background:#f9f9f9;border-left:3px solid #1a1a1a;font-size:12.5px"><strong>备注：</strong>${esc(po.remarks)}</div>`:''}
       <div style="margin-top:32px;display:flex;justify-content:space-between;font-size:12px;color:#666">
         <div>采购方签字 / Buyer:_________________________</div>
         <div>供方确认 / Supplier:_________________________</div>
@@ -3873,7 +3885,7 @@ function kpiNavigate(scope) {
       if (row) {
         row.scrollIntoView({ behavior:'smooth', block:'center' });
         row.style.transition = 'background .3s';
-        row.style.background = 'rgba(0,200,255,0.12)';
+        row.style.background = 'var(--selected)';
         setTimeout(() => { row.style.background = ''; }, 1800);
       }
     }, 300);
@@ -4000,7 +4012,7 @@ window.loadChatSessions = async function(silent){
     renderChatSessionList();
     updateChatNavBadge();
   }catch(e){
-    document.getElementById('chatSessionList').innerHTML = '<div style="padding:16px;color:#ef4444;font-size:12px">加载失败：' + e.message + '</div>';
+    document.getElementById('chatSessionList').innerHTML = '<div style="padding:16px;color:#1a1a1a;font-size:12px">加载失败：' + e.message + '</div>';
   }
 };
 
@@ -4055,7 +4067,7 @@ window.openChatSession = async function(id){
     // 清未读 → 刷新列表
     loadChatSessions(true);
   }catch(e){
-    document.getElementById('chatMessages').innerHTML = '<div style="color:#ef4444;padding:16px">' + e.message + '</div>';
+    document.getElementById('chatMessages').innerHTML = '<div style="color:#1a1a1a;padding:16px">' + e.message + '</div>';
   }
 };
 
@@ -4186,7 +4198,7 @@ async function updateChatPushStatus(){
     const sub = await reg.pushManager.getSubscription();
     if (sub && Notification.permission === 'granted') {
       el.textContent = '✓ 已订阅推送';
-      el.style.color = '#14b85a';
+      el.style.color = 'var(--text)';
     } else {
       el.textContent = '未订阅推送';
       el.style.color = 'var(--muted)';

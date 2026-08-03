@@ -17,7 +17,7 @@
       -moz-osx-font-smoothing: grayscale;
       letter-spacing: -0.01em;
     }
-    a { color: #0b9b3f; }
+    a { color: #1a1a1a; }
 
     /* 顶栏 */
     .review-topbar {
@@ -60,9 +60,9 @@
       background: #F2F2F4;
       color: #6E6E73;
     }
-    .review-topbar .status-pending_review { background: #FFF8E1; color: #8A6D00; }
-    .review-topbar .status-approved { background: #E6F6EB; color: #0F7A3A; }
-    .review-topbar .status-published { background: #E8F1FF; color: #066128; }
+    .review-topbar .status-pending_review { background: #f7f7f7; color: #1a1a1a; }
+    .review-topbar .status-approved { background: #f0f0f0; color: #1a1a1a; }
+    .review-topbar .status-published { background: #f7f7f7; color: #000000; }
     .review-topbar .actions { display: flex; gap: 8px; }
     .review-topbar .actions button {
       padding: 7px 14px;
@@ -76,15 +76,15 @@
       transition: all 0.15s ease;
     }
     .review-topbar .actions button:hover { background: #F5F5F7; border-color: #D2D2D7; }
-    .btn-preview-site { background: #FFFFFF !important; border-color: #0b9b3f !important; color: #0b9b3f !important; }
-    .btn-preview-site:hover { background: rgba(11, 155, 63, 0.06) !important; }
+    .btn-preview-site { background: #FFFFFF !important; border-color: #1a1a1a !important; color: #1a1a1a !important; }
+    .btn-preview-site:hover { background: rgba(26,26,26, 0.06) !important; }
     .btn-save { background: #FFFFFF !important; }
-    .btn-reject { color: #FF3B30 !important; border-color: #FFD7D5 !important; }
-    .btn-reject:hover { background: #FFEDEC !important; }
+    .btn-reject { color: #1a1a1a !important; border-color: #ececec !important; }
+    .btn-reject:hover { background: #f7f7f7 !important; }
     .btn-approve {
-      background: #34C759 !important;
+      background: #1a1a1a !important;
       color: white !important;
-      border-color: #34C759 !important;
+      border-color: #1a1a1a !important;
       font-weight: 500;
     }
     .btn-approve:hover { background: #2BB14B !important; border-color: #2BB14B !important; }
@@ -122,9 +122,9 @@
     }
     .editor-toolbar button:hover { background: #F5F5F7; }
     .editor-toolbar button.active {
-      background: #0b9b3f;
+      background: #1a1a1a;
       color: white;
-      border-color: #0b9b3f;
+      border-color: #1a1a1a;
     }
     .editor-area {
       flex: 1;
@@ -195,7 +195,7 @@
       font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
       color: #1D1D1F;
     }
-    .markdown-preview a { color: #0b9b3f; text-decoration: none; }
+    .markdown-preview a { color: #1a1a1a; text-decoration: none; }
     .markdown-preview a:hover { text-decoration: underline; }
 
     /* 右侧栏 */
@@ -237,11 +237,11 @@
     }
     .panel-header button:hover { background: #F5F5F7; }
     .panel-header button.primary {
-      background: #0b9b3f;
+      background: #1a1a1a;
       color: white;
-      border-color: #0b9b3f;
+      border-color: #1a1a1a;
     }
-    .panel-header button.primary:hover { background: #066128; border-color: #066128; }
+    .panel-header button.primary:hover { background: #000000; border-color: #000000; }
     .panel-body { padding: 14px 16px; }
 
     .field { margin-bottom: 12px; }
@@ -265,8 +265,8 @@
     }
     .field input:focus, .field textarea:focus, .field select:focus {
       outline: none;
-      border-color: #0b9b3f;
-      box-shadow: 0 0 0 3px rgba(11, 155, 63, 0.15);
+      border-color: #1a1a1a;
+      box-shadow: 0 0 0 3px rgba(26,26,26, 0.15);
     }
     .field textarea { resize: vertical; min-height: 60px; }
     .field-help {
@@ -274,7 +274,7 @@
       color: #86868B;
       margin-top: 4px;
     }
-    .field-help a { color: #0b9b3f; text-decoration: none; }
+    .field-help a { color: #1a1a1a; text-decoration: none; }
     .field-help a:hover { text-decoration: underline; }
 
     /* 图片插槽 */
@@ -331,11 +331,11 @@
     }
     .image-slot button:hover { background: #F5F5F7; }
     .image-slot button.primary {
-      background: #0b9b3f;
+      background: #1a1a1a;
       color: white;
-      border-color: #0b9b3f;
+      border-color: #1a1a1a;
     }
-    .image-slot button.primary:hover { background: #066128; border-color: #066128; }
+    .image-slot button.primary:hover { background: #000000; border-color: #000000; }
 
     /* SEO 评分 */
     .seo-score {
@@ -347,12 +347,12 @@
     .seo-score .score-num {
       font-size: 42px;
       font-weight: 700;
-      color: #34C759;
+      color: #1a1a1a;
       line-height: 1;
       letter-spacing: -0.03em;
     }
     .seo-score .score-num.warn { color: #FF9500; }
-    .seo-score .score-num.bad { color: #FF3B30; }
+    .seo-score .score-num.bad { color: #1a1a1a; }
     .seo-score .score-label {
       font-size: 12px;
       color: #6E6E73;
@@ -374,8 +374,8 @@
       font-weight: bold;
       font-size: 14px;
     }
-    .seo-check-item.passed .check-icon { color: #34C759; }
-    .seo-check-item.failed .check-icon { color: #FF3B30; }
+    .seo-check-item.passed .check-icon { color: #1a1a1a; }
+    .seo-check-item.failed .check-icon { color: #1a1a1a; }
     .seo-check-item .check-name { font-weight: 500; color: #1D1D1F; }
     .seo-check-item .check-detail {
       color: #6E6E73;
@@ -415,11 +415,11 @@
       border: 1px solid transparent;
     }
     .seo-index-pending { background:#F2F2F4; color:#6E6E73; border-color:#E5E5E7; }
-    .seo-index-page_ok { background:#E8F1FF; color:#066128; border-color:#DCE7FF; }
-    .seo-index-sitemap_pending { background:#FFF8E1; color:#8A6D00; border-color:#FFE9A8; }
-    .seo-index-in_sitemap { background:#E6F6EB; color:#0F7A3A; border-color:#CFEED8; }
+    .seo-index-page_ok { background:#f7f7f7; color:#000000; border-color:#ececec; }
+    .seo-index-sitemap_pending { background:#f7f7f7; color:#1a1a1a; border-color:#FFE9A8; }
+    .seo-index-in_sitemap { background:#f0f0f0; color:#1a1a1a; border-color:#CFEED8; }
     .seo-index-sitemap_missing_24h,
-    .seo-index-page_error { background:#FFEDEC; color:#C7321F; border-color:#FFD7D5; }
+    .seo-index-page_error { background:#f7f7f7; color:#1a1a1a; border-color:#ececec; }
     .seo-index-actions {
       display: flex;
       flex-wrap: wrap;
@@ -461,7 +461,7 @@
       margin-bottom: 8px;
       padding: 6px 10px;
       background: #FAFAFA;
-      border-left: 2px solid #0b9b3f;
+      border-left: 2px solid #1a1a1a;
       border-radius: 0 6px 6px 0;
       font-style: normal;
     }
@@ -502,7 +502,7 @@
       transition: all 0.15s ease;
     }
     .section-card button:hover { background: #F5F5F7; }
-    .section-card button.danger { color: #FF3B30; border-color: #FFD7D5; }
+    .section-card button.danger { color: #1a1a1a; border-color: #ececec; }
 
     /* chip */
     .chip {
@@ -521,7 +521,7 @@
       margin-left: 5px;
       color: #86868B;
     }
-    .chip .x:hover { color: #FF3B30; }
+    .chip .x:hover { color: #1a1a1a; }
 
     /* toast */
     .toast {
@@ -748,7 +748,7 @@
       <h3 style="margin:0 0 4px 0;font-size:17px;font-weight:600;letter-spacing:-0.01em;color:#1D1D1F;">🔄 重新生成文章</h3>
       <p style="font-size:12.5px;color:#6E6E73;margin:0 0 16px 0;line-height:1.5;">
         用最新的 Prompt 模板按所选类型重新生成全文 + Meta + FAQ + 链接建议。<br>
-        <strong style="color:#8A6D00;">封面图、OG 图、正文插图、Slug 会保留。</strong>
+        <strong style="color:#1a1a1a;">封面图、OG 图、正文插图、Slug 会保留。</strong>
       </p>
 
       <div style="margin-bottom:14px;">
@@ -774,7 +774,7 @@
 
       <div style="display:flex;gap:8px;justify-content:flex-end;">
         <button onclick="closeRegenerateMenu()" style="padding:8px 18px;border:1px solid #E5E5E7;background:#FFFFFF;color:#1D1D1F;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">取消</button>
-        <button id="regenBtn" onclick="submitRegenerate()" style="padding:8px 18px;border:1px solid #0b9b3f;background:#0b9b3f;color:white;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">🔄 重新生成</button>
+        <button id="regenBtn" onclick="submitRegenerate()" style="padding:8px 18px;border:1px solid #1a1a1a;background:#1a1a1a;color:white;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">🔄 重新生成</button>
       </div>
     </div>
   </div>
@@ -786,7 +786,7 @@
         <button id="modePreview" onclick="setMode('preview')">👁 简易预览</button>
         <span style="margin-left:auto;font-size:12px;color:#86868B;" id="wordCountInfo">— 字</span>
       </div>
-      <div id="selectionHint" style="display:none;padding:10px 18px;background:#FFF8E1;border-bottom:1px solid #FFE9A8;font-size:12px;color:#8A6D00;">
+      <div id="selectionHint" style="display:none;padding:10px 18px;background:#f7f7f7;border-bottom:1px solid #FFE9A8;font-size:12px;color:#1a1a1a;">
         💡 已选中：<strong id="selectionText" style="color:#1D1D1F;"></strong>
         <span style="color:#86868B;margin-left:8px;">→ 在右侧"链接管理"里给它加链接，点"插入到正文"会自动替换</span>
       </div>
@@ -832,7 +832,7 @@
             <div class="field-help" id="metaDescLen">0 字符（建议 120-160）</div>
           </div>
           <div class="field">
-            <a href="#" onclick="event.preventDefault();autoGenerateMeta();" style="color:#0b9b3f;font-size:12px;">⚡ AI 生成 Meta Title + Description</a>
+            <a href="#" onclick="event.preventDefault();autoGenerateMeta();" style="color:#1a1a1a;font-size:12px;">⚡ AI 生成 Meta Title + Description</a>
           </div>
         </div>
       </div>
@@ -907,8 +907,8 @@
       <div class="panel">
         <div class="panel-header">🔗 链接管理</div>
         <div class="panel-body">
-          <div style="font-size:11px;color:#066128;background:#F5F8FF;border:1px solid #DCE7FF;border-radius:8px;padding:10px 12px;margin-bottom:14px;line-height:1.55;">
-            💡 <strong style="color:#066128;">推荐做法</strong>：先在左侧正文里<strong>选中</strong>一段文字（例如 "AC MCB 4P"），再在下面选目标页面，点"插入到正文"——会自动用链接替换选中的文字。
+          <div style="font-size:11px;color:#000000;background:#f7f7f7;border:1px solid #ececec;border-radius:8px;padding:10px 12px;margin-bottom:14px;line-height:1.55;">
+            💡 <strong style="color:#000000;">推荐做法</strong>：先在左侧正文里<strong>选中</strong>一段文字（例如 "AC MCB 4P"），再在下面选目标页面，点"插入到正文"——会自动用链接替换选中的文字。
           </div>
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
             <button id="btnGenerateLinks" class="primary" onclick="generateAiLinks()">AI 推荐链接</button>
@@ -934,7 +934,7 @@
             <input id="newInternalReason" type="text" placeholder="③ 链接说明（可选，会显示在文末"相关文章"列表）" style="width:100%;padding:7px 10px;border:1px solid #E5E5E7;border-radius:6px;font-size:12px;margin-bottom:10px;background:#FFFFFF;color:#1D1D1F;">
 
             <div style="display:flex;gap:5px;">
-              <button onclick="addInternalLink(true)" style="flex:2;padding:8px;font-size:11px;border:1px solid #0b9b3f;background:#0b9b3f;color:white;border-radius:6px;cursor:pointer;font-weight:500;">▶ 插入到正文（推荐）</button>
+              <button onclick="addInternalLink(true)" style="flex:2;padding:8px;font-size:11px;border:1px solid #1a1a1a;background:#1a1a1a;color:white;border-radius:6px;cursor:pointer;font-weight:500;">▶ 插入到正文（推荐）</button>
               <button onclick="addInternalLink(false)" style="flex:1;padding:8px;font-size:11px;border:1px solid #E5E5E7;background:#FFFFFF;color:#1D1D1F;border-radius:6px;cursor:pointer;">仅加到列表</button>
             </div>
           </div>
@@ -957,7 +957,7 @@
             <input id="newExternalReason" type="text" placeholder="③ 链接说明（可选）" style="width:100%;padding:7px 10px;border:1px solid #E5E5E7;border-radius:6px;font-size:12px;margin-bottom:10px;background:#FFFFFF;color:#1D1D1F;">
 
             <div style="display:flex;gap:5px;">
-              <button onclick="addExternalLink(true)" style="flex:2;padding:8px;font-size:11px;border:1px solid #0b9b3f;background:#0b9b3f;color:white;border-radius:6px;cursor:pointer;font-weight:500;">▶ 插入到正文（推荐）</button>
+              <button onclick="addExternalLink(true)" style="flex:2;padding:8px;font-size:11px;border:1px solid #1a1a1a;background:#1a1a1a;color:white;border-radius:6px;cursor:pointer;font-weight:500;">▶ 插入到正文（推荐）</button>
               <button onclick="addExternalLink(false)" style="flex:1;padding:8px;font-size:11px;border:1px solid #E5E5E7;background:#FFFFFF;color:#1D1D1F;border-radius:6px;cursor:pointer;">仅加到列表</button>
             </div>
           </div>
@@ -1296,9 +1296,9 @@
       const tEl = document.getElementById('metaTitleLen');
       const dEl = document.getElementById('metaDescLen');
       tEl.textContent = `${t} 字符（建议 30-60）`;
-      tEl.style.color = (t >= 30 && t <= 60) ? '#34C759' : '#86868B';
+      tEl.style.color = (t >= 30 && t <= 60) ? '#1a1a1a' : '#86868B';
       dEl.textContent = `${d} 字符（建议 120-160）`;
-      dEl.style.color = (d >= 120 && d <= 160) ? '#34C759' : '#86868B';
+      dEl.style.color = (d >= 120 && d <= 160) ? '#1a1a1a' : '#86868B';
       dirty = true;
     }
 
@@ -1563,12 +1563,12 @@
         const r = await fetch('/api/blog/post/' + postId + '/suggest-images', { method: 'POST' });
         const d = await parseUploadApiResponse(r);
         if (!d.success) {
-          box.innerHTML = '<div style="font-size:12px;color:#FF3B30;padding:14px;">' + (d.error || '失败') + '</div>';
+          box.innerHTML = '<div style="font-size:12px;color:#1a1a1a;padding:14px;">' + (d.error || '失败') + '</div>';
           return;
         }
         renderSections(d.sections);
       } catch (e) {
-        box.innerHTML = '<div style="font-size:12px;color:#FF3B30;padding:14px;">错误：' + e.message + '</div>';
+        box.innerHTML = '<div style="font-size:12px;color:#1a1a1a;padding:14px;">错误：' + e.message + '</div>';
       }
     }
 
@@ -1663,12 +1663,12 @@
         const r = await fetch('/api/blog/seo-check/' + postId);
         const d = await r.json();
         if (!d.success) {
-          box.innerHTML = '<div style="padding:14px;color:#FF3B30;font-size:12px;">' + (d.error || '失败') + '</div>';
+          box.innerHTML = '<div style="padding:14px;color:#1a1a1a;font-size:12px;">' + (d.error || '失败') + '</div>';
           return;
         }
         renderSeoResult(d);
       } catch (e) {
-        box.innerHTML = '<div style="padding:14px;color:#FF3B30;font-size:12px;">错误：' + e.message + '</div>';
+        box.innerHTML = '<div style="padding:14px;color:#1a1a1a;font-size:12px;">错误：' + e.message + '</div>';
       }
     }
 
@@ -1794,10 +1794,10 @@
         if (d.success) {
           renderSeoIndexStatus(d.status);
         } else {
-          box.innerHTML = '<div style="font-size:12px;color:#FF3B30;">加载失败：' + escapeHtml(d.error || '') + '</div>';
+          box.innerHTML = '<div style="font-size:12px;color:#1a1a1a;">加载失败：' + escapeHtml(d.error || '') + '</div>';
         }
       } catch (e) {
-        box.innerHTML = '<div style="font-size:12px;color:#FF3B30;">错误：' + escapeHtml(e.message) + '</div>';
+        box.innerHTML = '<div style="font-size:12px;color:#1a1a1a;">错误：' + escapeHtml(e.message) + '</div>';
       }
     }
 
@@ -2061,7 +2061,7 @@
             <div style="font-weight:500;color:#1D1D1F;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(l.title || l.anchor || '(无锚文本)')}</div>
             <div style="color:#86868B;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">→ ${escapeHtml(l.url || '')}</div>
           </div>
-          <button onclick="removeInternalLink(${i})" style="border:none;background:none;color:#FF3B30;cursor:pointer;font-size:16px;flex-shrink:0;">×</button>
+          <button onclick="removeInternalLink(${i})" style="border:none;background:none;color:#1a1a1a;cursor:pointer;font-size:16px;flex-shrink:0;">×</button>
         </div>
       `).join('');
     }
@@ -2079,7 +2079,7 @@
             <div style="font-weight:500;color:#1D1D1F;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(l.title || l.anchor || '(无锚文本)')}</div>
             <div style="color:#86868B;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">→ ${escapeHtml(l.url || '')}</div>
           </div>
-          <button onclick="removeExternalLink(${i})" style="border:none;background:none;color:#FF3B30;cursor:pointer;font-size:16px;flex-shrink:0;">×</button>
+          <button onclick="removeExternalLink(${i})" style="border:none;background:none;color:#1a1a1a;cursor:pointer;font-size:16px;flex-shrink:0;">×</button>
         </div>
       `).join('');
     }

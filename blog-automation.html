@@ -21,7 +21,7 @@
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Microsoft YaHei', sans-serif;
       background: #f0f4f8;
-      color: #2c3e50;
+      color: #1a1a1a;
       font-size: 14px;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
@@ -30,21 +30,21 @@
     /* CSS 变量 - 浅色绿色主题 */
     :root {
       --bg: #f0f4f8;
-      --sidebar-bg: #e8f5f0;
+      --sidebar-bg: #f7f7f7;
       --panel: #ffffff;
-      --panel-alt: #f8fcfa;
-      --border: #d5e5df;
-      --border-h: #0b9b3f;
-      --text: #2c3e50;
-      --text-light: #5a6c7d;
-      --text-muted: #8b95a0;
-      --primary: #0b9b3f;
-      --primary-light: #e8f5ed;
-      --primary-lighter: #f4faf6;
-      --cyan: #00a6a6;
-      --danger: #e74c3c;
-      --warn: #f39c12;
-      --success: #27ae60;
+      --panel-alt: #f7f7f7;
+      --border: #e3e3e3;
+      --border-h: #1a1a1a;
+      --text: #1a1a1a;
+      --text-light: #4a4a4a;
+      --text-muted: #767676;
+      --primary: #1a1a1a;
+      --primary-light: #f0f0f0;
+      --primary-lighter: #f7f7f7;
+      --cyan: #1a1a1a;
+      --danger: #1a1a1a;
+      --warn: #1a1a1a;
+      --success: #1a1a1a;
       --shadow: 0 2px 8px rgba(0,0,0,0.08);
       --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
       --radius: 12px;
@@ -221,13 +221,13 @@
     }
     .keyword-input-group input:focus {
       outline: none;
-      border-color: #0b9b3f;
-      box-shadow: 0 0 0 3px rgba(11, 155, 63, 0.15);
+      border-color: #1a1a1a;
+      box-shadow: 0 0 0 3px rgba(26,26,26, 0.15);
     }
 
     .keyword-input-group button {
       padding: 10px 18px;
-      background: #0b9b3f;
+      background: #1a1a1a;
       color: white;
       border: none;
       border-radius: 8px;
@@ -236,7 +236,7 @@
       font-weight: 500;
       transition: background 0.15s ease;
     }
-    .keyword-input-group button:hover { background: #066128; }
+    .keyword-input-group button:hover { background: #000000; }
 
     .keyword-list {
       display: grid;
@@ -257,7 +257,7 @@
 
     .keyword-tag .remove {
       cursor: pointer;
-      color: #FF3B30;
+      color: #1a1a1a;
       font-weight: 500;
     }
 
@@ -299,8 +299,8 @@
     .form-group select:focus,
     .form-group textarea:focus {
       outline: none;
-      border-color: #0b9b3f;
-      box-shadow: 0 0 0 3px rgba(11, 155, 63, 0.15);
+      border-color: #1a1a1a;
+      box-shadow: 0 0 0 3px rgba(26,26,26, 0.15);
     }
 
     .form-group textarea {
@@ -324,10 +324,10 @@
     }
 
     .btn-primary {
-      background: #0b9b3f;
+      background: #1a1a1a;
       color: white;
     }
-    .btn-primary:hover { background: #066128; }
+    .btn-primary:hover { background: #000000; }
 
     .btn-secondary {
       background: #FFFFFF;
@@ -400,7 +400,7 @@
       width: 16px;
       height: 16px;
       cursor: pointer;
-      accent-color: #0b9b3f;
+      accent-color: #1a1a1a;
     }
 
     .plan-table {
@@ -448,8 +448,8 @@
     }
 
     .status-pending {
-      background: #FFF8E1;
-      color: #8A6D00;
+      background: #f7f7f7;
+      color: #1a1a1a;
     }
 
     .status-draft {
@@ -458,18 +458,18 @@
     }
 
     .status-pending_review {
-      background: #E8F1FF;
-      color: #066128;
+      background: #f7f7f7;
+      color: #000000;
     }
 
     .status-approved {
-      background: #E6F6EB;
-      color: #0F7A3A;
+      background: #f0f0f0;
+      color: #1a1a1a;
     }
 
     .status-needs_revision {
-      background: #FFEDEC;
-      color: #C7321F;
+      background: #f7f7f7;
+      color: #1a1a1a;
     }
 
     .status-generated {
@@ -478,18 +478,18 @@
     }
 
     .status-published {
-      background: #E6F6EB;
-      color: #0F7A3A;
+      background: #f0f0f0;
+      color: #1a1a1a;
     }
 
     .status-generation_failed {
-      background: #FFEDEC;
-      color: #C7321F;
+      background: #f7f7f7;
+      color: #1a1a1a;
     }
 
     .status-publish_failed {
-      background: #FFEDEC;
-      color: #C7321F;
+      background: #f7f7f7;
+      color: #1a1a1a;
     }
 
     /* SEO 评分样式 */
@@ -504,18 +504,18 @@
     }
 
     .seo-good {
-      background: #E6F6EB;
-      color: #0F7A3A;
+      background: #f0f0f0;
+      color: #1a1a1a;
     }
 
     .seo-fair {
-      background: #FFF8E1;
-      color: #8A6D00;
+      background: #f7f7f7;
+      color: #1a1a1a;
     }
 
     .seo-poor {
-      background: #FFEDEC;
-      color: #C7321F;
+      background: #f7f7f7;
+      color: #1a1a1a;
     }
 
     /* 同步状态样式 */
@@ -533,18 +533,18 @@
     }
 
     .sync-syncing {
-      background: #E8F1FF;
-      color: #066128;
+      background: #f7f7f7;
+      color: #000000;
     }
 
     .sync-success {
-      background: #E6F6EB;
-      color: #0F7A3A;
+      background: #f0f0f0;
+      color: #1a1a1a;
     }
 
     .sync-failed {
-      background: #FFEDEC;
-      color: #C7321F;
+      background: #f7f7f7;
+      color: #1a1a1a;
     }
 
     .action-buttons {
@@ -655,8 +655,8 @@
     .edit-section input:focus,
     .edit-section textarea:focus {
       outline: none;
-      border-color: #0b9b3f;
-      box-shadow: 0 0 0 3px rgba(11, 155, 63, 0.15);
+      border-color: #1a1a1a;
+      box-shadow: 0 0 0 3px rgba(26,26,26, 0.15);
     }
 
     .edit-section textarea {
@@ -675,8 +675,8 @@
     }
 
     .keyword-chip {
-      background: #E8F1FF;
-      color: #066128;
+      background: #f7f7f7;
+      color: #000000;
       padding: 4px 10px;
       border-radius: 999px;
       display: flex;
@@ -687,7 +687,7 @@
 
     .keyword-chip .remove {
       cursor: pointer;
-      color: #066128;
+      color: #000000;
       font-weight: 600;
       opacity: 0.7;
       transition: opacity 0.15s ease;
@@ -714,8 +714,8 @@
     }
 
     .image-upload:hover {
-      border-color: #0b9b3f;
-      background: rgba(11, 155, 63, 0.04);
+      border-color: #1a1a1a;
+      background: rgba(26,26,26, 0.04);
     }
 
     .image-upload input {
@@ -787,13 +787,13 @@
     .btn-cancel:hover { background: #F5F5F7; }
 
     .btn-reset {
-      background: #FFF8E1;
-      color: #8A6D00;
+      background: #f7f7f7;
+      color: #1a1a1a;
     }
     .btn-reset:hover { background: #FFF0C2; }
 
     .btn-publish {
-      background: #34C759;
+      background: #1a1a1a;
       color: white;
     }
     .btn-publish:hover { background: #2BB14B; }
@@ -803,7 +803,7 @@
       width: 16px;
       height: 16px;
       border: 2px solid #F2F2F4;
-      border-top: 2px solid #0b9b3f;
+      border-top: 2px solid #1a1a1a;
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
@@ -876,7 +876,7 @@
     .control-item:hover {
       border-color: var(--primary);
       background: var(--primary-lighter);
-      box-shadow: 0 2px 8px rgba(11,155,63,0.08);
+      box-shadow: 0 2px 8px rgba(26,26,26,0.08);
     }
 
     .control-item-label {
@@ -953,7 +953,7 @@
 
     .btn-generate-now:hover {
       background: #099235;
-      box-shadow: 0 4px 12px rgba(11,155,63,0.25);
+      box-shadow: 0 4px 12px rgba(26,26,26,0.25);
       transform: translateY(-1px);
     }
 
@@ -1039,7 +1039,7 @@
     .btn-retry:hover {
       background: var(--primary-lighter);
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(11,155,63,0.15);
+      box-shadow: 0 4px 12px rgba(26,26,26,0.15);
     }
 
     .btn-sync {
@@ -1060,7 +1060,7 @@
     .btn-sync:hover {
       background: var(--primary-lighter);
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(11,155,63,0.15);
+      box-shadow: 0 4px 12px rgba(26,26,26,0.15);
     }
 
     .btn-retry:disabled,
@@ -1151,14 +1151,14 @@
     }
     .keyword-input-row button:hover {
       background: #099235;
-      box-shadow: 0 4px 12px rgba(11,155,63,0.25);
+      box-shadow: 0 4px 12px rgba(26,26,26,0.25);
       transform: translateY(-1px);
     }
 
     /* AI 推荐样式 */
     .ai-recommend-section {
-      background: #F5F8FF;
-      border: 1px solid #DCE7FF;
+      background: #f7f7f7;
+      border: 1px solid #ececec;
       border-radius: 12px;
       padding: 18px;
       margin-bottom: 20px;
@@ -1193,8 +1193,8 @@
     }
     .ai-recommend-input input:focus {
       outline: none;
-      border-color: #0b9b3f;
-      box-shadow: 0 0 0 3px rgba(11, 155, 63, 0.15);
+      border-color: #1a1a1a;
+      box-shadow: 0 0 0 3px rgba(26,26,26, 0.15);
     }
 
     .ai-recommend-input button {
@@ -1229,9 +1229,9 @@
     }
 
     .recommend-tab.active {
-      background: #0b9b3f;
+      background: #1a1a1a;
       color: white;
-      border-color: #0b9b3f;
+      border-color: #1a1a1a;
     }
 
     .recommend-list {
@@ -1262,7 +1262,7 @@
     .recommend-item.exists::after {
       content: '已添加';
       font-size: 11px;
-      color: #34C759;
+      color: #1a1a1a;
       margin-left: auto;
     }
 
@@ -1347,10 +1347,10 @@
       font-weight: 500;
     }
 
-    .category-product { background: #E8F1FF; color: #066128; }
-    .category-comparison { background: #E6F6EB; color: #0F7A3A; }
-    .category-application { background: #FFF8E1; color: #8A6D00; }
-    .category-buying { background: #FFEDEC; color: #C7321F; }
+    .category-product { background: #f7f7f7; color: #000000; }
+    .category-comparison { background: #f0f0f0; color: #1a1a1a; }
+    .category-application { background: #f7f7f7; color: #1a1a1a; }
+    .category-buying { background: #f7f7f7; color: #1a1a1a; }
     .category-faq { background: #F2F2F4; color: #6E6E73; }
 
     .priority-badge {
@@ -1361,9 +1361,9 @@
       font-weight: 500;
     }
 
-    .priority-high { background: #FFEDEC; color: #C7321F; }
-    .priority-medium { background: #FFF8E1; color: #8A6D00; }
-    .priority-low { background: #E6F6EB; color: #0F7A3A; }
+    .priority-high { background: #f7f7f7; color: #1a1a1a; }
+    .priority-medium { background: #f7f7f7; color: #1a1a1a; }
+    .priority-low { background: #f0f0f0; color: #1a1a1a; }
 
     .difficulty-stars {
       color: #FFCC00;
@@ -1391,8 +1391,8 @@
     }
 
     .radio-option:hover {
-      border-color: #0b9b3f;
-      background: rgba(11, 155, 63, 0.04);
+      border-color: #1a1a1a;
+      background: rgba(26,26,26, 0.04);
     }
 
     .type-ratio-grid {
@@ -1425,8 +1425,8 @@
     }
     .type-ratio-item input:focus {
       outline: none;
-      border-color: #0b9b3f;
-      box-shadow: 0 0 0 3px rgba(11, 155, 63, 0.15);
+      border-color: #1a1a1a;
+      box-shadow: 0 0 0 3px rgba(26,26,26, 0.15);
     }
 
     .template-options {
@@ -1448,14 +1448,14 @@
     }
 
     .template-btn:hover {
-      border-color: #0b9b3f;
-      color: #0b9b3f;
+      border-color: #1a1a1a;
+      color: #1a1a1a;
     }
 
     .template-btn.active {
-      background: #0b9b3f;
+      background: #1a1a1a;
       color: white;
-      border-color: #0b9b3f;
+      border-color: #1a1a1a;
     }
 
     .template-preview {
@@ -1500,13 +1500,13 @@
     }
 
     .seo-check-item.passed {
-      background: #E6F6EB;
-      color: #0F7A3A;
+      background: #f0f0f0;
+      color: #1a1a1a;
     }
 
     .seo-check-item.failed {
-      background: #FFEDEC;
-      color: #C7321F;
+      background: #f7f7f7;
+      color: #1a1a1a;
     }
 
     .check-icon {
@@ -1525,7 +1525,7 @@
 
     /* 审核按钮样式 */
     .btn-approve {
-      background: #34C759;
+      background: #1a1a1a;
       color: white;
       padding: 10px 20px;
       border: none;
@@ -1541,7 +1541,7 @@
     }
 
     .btn-reject {
-      background: #FF3B30;
+      background: #1a1a1a;
       color: white;
       padding: 10px 20px;
       border: none;
@@ -1581,8 +1581,8 @@
     .modal-tab-btn:hover { color: #1D1D1F; }
 
     .modal-tab-btn.active {
-      color: #0b9b3f;
-      border-bottom-color: #0b9b3f;
+      color: #1a1a1a;
+      border-bottom-color: #1a1a1a;
     }
 
     .modal-tab-content {
@@ -1626,8 +1626,8 @@
     .seo-field input:focus,
     .seo-field textarea:focus {
       outline: none;
-      border-color: #0b9b3f;
-      box-shadow: 0 0 0 3px rgba(11, 155, 63, 0.15);
+      border-color: #1a1a1a;
+      box-shadow: 0 0 0 3px rgba(26,26,26, 0.15);
     }
 
     .seo-field textarea {
@@ -1646,8 +1646,8 @@
     }
 
     .seo-keyword-chip {
-      background: #E8F1FF;
-      color: #066128;
+      background: #f7f7f7;
+      color: #000000;
       padding: 4px 10px;
       border-radius: 999px;
       display: flex;
@@ -1658,7 +1658,7 @@
 
     .seo-keyword-chip .remove {
       cursor: pointer;
-      color: #066128;
+      color: #000000;
       font-weight: 600;
       opacity: 0.7;
     }
@@ -1691,12 +1691,12 @@
     }
 
     .btn-generate-seo {
-      background: #0b9b3f;
+      background: #1a1a1a;
       color: white;
     }
 
     .btn-generate-seo:hover {
-      background: #066128;
+      background: #000000;
     }
 
     /* 链接管理样式 */
@@ -1743,7 +1743,7 @@
     }
 
     .link-url {
-      color: #0b9b3f;
+      color: #1a1a1a;
       text-decoration: none;
       font-size: 12px;
       word-break: break-all;
@@ -1758,7 +1758,7 @@
 
     .link-remove {
       cursor: pointer;
-      color: #FF3B30;
+      color: #1a1a1a;
       font-weight: 500;
       padding: 0 10px;
     }
@@ -1770,7 +1770,7 @@
     }
 
     .btn-generate-links {
-      background: #0b9b3f;
+      background: #1a1a1a;
       color: white;
       padding: 8px 16px;
       border: none;
@@ -1782,7 +1782,7 @@
     }
 
     .btn-generate-links:hover {
-      background: #066128;
+      background: #000000;
     }
 
     /* FAQ 编辑样式 */
@@ -1816,7 +1816,7 @@
 
     .faq-remove {
       cursor: pointer;
-      color: #FF3B30;
+      color: #1a1a1a;
       font-weight: 500;
     }
 
@@ -1833,7 +1833,7 @@
     }
 
     .btn-generate-faq {
-      background: #0b9b3f;
+      background: #1a1a1a;
       color: white;
       padding: 8px 16px;
       border: none;
@@ -1845,7 +1845,7 @@
     }
 
     .btn-generate-faq:hover {
-      background: #066128;
+      background: #000000;
     }
     .pubtab-btn {
       padding: 7px 14px;
@@ -1859,9 +1859,9 @@
     }
     .pubtab-btn:hover { background: #F5F5F7; border-color: #D2D2D7; }
     .pubtab-btn.pubtab-active {
-      background: #0b9b3f;
+      background: #1a1a1a;
       color: white;
-      border-color: #0b9b3f;
+      border-color: #1a1a1a;
     }
     .pubtab-btn span {
       margin-left: 4px;
@@ -1919,11 +1919,11 @@
       vertical-align: middle;
     }
     .seo-index-pending { background:#F2F2F4; color:#6E6E73; border-color:#E5E5E7; }
-    .seo-index-page_ok { background:#E8F1FF; color:#066128; border-color:#DCE7FF; }
-    .seo-index-sitemap_pending { background:#FFF8E1; color:#8A6D00; border-color:#FFE9A8; }
-    .seo-index-in_sitemap { background:#E6F6EB; color:#0F7A3A; border-color:#CFEED8; }
+    .seo-index-page_ok { background:#f7f7f7; color:#000000; border-color:#ececec; }
+    .seo-index-sitemap_pending { background:#f7f7f7; color:#1a1a1a; border-color:#FFE9A8; }
+    .seo-index-in_sitemap { background:#f0f0f0; color:#1a1a1a; border-color:#CFEED8; }
     .seo-index-sitemap_missing_24h,
-    .seo-index-page_error { background:#FFEDEC; color:#C7321F; border-color:#FFD7D5; }
+    .seo-index-page_error { background:#f7f7f7; color:#1a1a1a; border-color:#ececec; }
     .seo-index-actions {
       display: flex;
       flex-wrap: wrap;
@@ -2196,7 +2196,7 @@
             <i data-lucide="list-checks"></i> 计划列表
           </button>
           <button class="tab-btn" data-tab="review">
-            <i data-lucide="search-check"></i> 待审核 <span id="tabPendingBadge" style="display:none;background:#fb7185;color:#fff;border-radius:999px;padding:1px 8px;font-size:11px;margin-left:4px;font-weight:500;">0</span>
+            <i data-lucide="search-check"></i> 待审核 <span id="tabPendingBadge" style="display:none;background:#1a1a1a;color:#fff;border-radius:999px;padding:1px 8px;font-size:11px;margin-left:4px;font-weight:500;">0</span>
           </button>
           <button class="tab-btn" data-tab="published">
             <i data-lucide="book-open"></i> 已发布 <span id="tabPublishedBadge" style="display:none;background:var(--success);color:#fff;border-radius:999px;padding:1px 8px;font-size:11px;margin-left:4px;font-weight:500;">0</span>
@@ -2602,7 +2602,7 @@
         </select>
         <input type="month" id="publishedFilterMonth" onchange="loadPublishedList()" style="padding:7px 9px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;">
         <input type="text" id="publishedFilterSearch" placeholder="🔍 搜标题..." style="padding:7px 9px;border:1px solid #E5E5E7;border-radius:8px;font-size:13px;background:#FFFFFF;color:#1D1D1F;flex:1;min-width:180px;">
-        <button onclick="loadPublishedList()" style="padding:7px 14px;border:1px solid #0b9b3f;background:#0b9b3f;color:white;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;">应用</button>
+        <button onclick="loadPublishedList()" style="padding:7px 14px;border:1px solid #1a1a1a;background:#1a1a1a;color:white;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;">应用</button>
         <button onclick="resetPublishedFilters()" style="padding:7px 14px;border:1px solid #E5E5E7;background:#FFFFFF;color:#424245;border-radius:8px;cursor:pointer;font-size:12px;">重置</button>
       </div>
 
@@ -2660,7 +2660,7 @@
 
       <div style="display:flex;gap:8px;justify-content:flex-end;">
         <button onclick="closeManualGen()" style="padding:7px 16px;border:1px solid #E5E5E7;background:#FFFFFF;color:#1D1D1F;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">取消</button>
-        <button id="manualGenBtn" onclick="submitManualGen()" style="padding:7px 16px;border:1px solid #0b9b3f;background:#0b9b3f;color:white;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">▶ 开始生成</button>
+        <button id="manualGenBtn" onclick="submitManualGen()" style="padding:7px 16px;border:1px solid #1a1a1a;background:#1a1a1a;color:white;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">▶ 开始生成</button>
       </div>
     </div>
   </div>
@@ -2690,7 +2690,7 @@
       </div>
       <div style="display:flex;gap:8px;justify-content:flex-end;">
         <button onclick="closePlanEdit()" style="padding:7px 16px;border:1px solid #E5E5E7;background:#FFFFFF;color:#1D1D1F;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">取消</button>
-        <button onclick="submitPlanEdit()" style="padding:7px 16px;border:1px solid #0b9b3f;background:#0b9b3f;color:white;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">保存</button>
+        <button onclick="submitPlanEdit()" style="padding:7px 16px;border:1px solid #1a1a1a;background:#1a1a1a;color:white;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">保存</button>
       </div>
     </div>
   </div>
@@ -2791,8 +2791,8 @@
             </div>
           </div>
 
-          <div style="background: #F5F8FF; border: 1px solid #DCE7FF; padding: 12px 14px; border-radius: 10px; font-size: 13px; color: #1D1D1F;">
-            <strong style="color: #066128;">💡 提示：</strong>点击下方按钮让 AI 自动生成 SEO 元数据
+          <div style="background: #f7f7f7; border: 1px solid #ececec; padding: 12px 14px; border-radius: 10px; font-size: 13px; color: #1D1D1F;">
+            <strong style="color: #000000;">💡 提示：</strong>点击下方按钮让 AI 自动生成 SEO 元数据
           </div>
 
           <div class="seo-actions">
@@ -2822,8 +2822,8 @@
             </div>
           </div>
 
-          <div style="background: #F5F8FF; border: 1px solid #DCE7FF; padding: 12px 14px; border-radius: 10px; font-size: 13px; color: #1D1D1F;">
-            <strong style="color: #066128;">💡 提示：</strong>点击下方按钮让 AI 推荐相关链接
+          <div style="background: #f7f7f7; border: 1px solid #ececec; padding: 12px 14px; border-radius: 10px; font-size: 13px; color: #1D1D1F;">
+            <strong style="color: #000000;">💡 提示：</strong>点击下方按钮让 AI 推荐相关链接
           </div>
 
           <div class="links-actions">
@@ -2843,8 +2843,8 @@
             <p style="color: #86868B; font-size: 13px;">暂无 FAQ</p>
           </div>
 
-          <div style="background: #F5F8FF; border: 1px solid #DCE7FF; padding: 12px 14px; border-radius: 10px; font-size: 13px; color: #1D1D1F; margin-top: 15px;">
-            <strong style="color: #066128;">💡 提示：</strong>点击下方按钮让 AI 从文章内容生成常见问题
+          <div style="background: #f7f7f7; border: 1px solid #ececec; padding: 12px 14px; border-radius: 10px; font-size: 13px; color: #1D1D1F; margin-top: 15px;">
+            <strong style="color: #000000;">💡 提示：</strong>点击下方按钮让 AI 从文章内容生成常见问题
           </div>
 
           <div class="faq-actions">
@@ -2949,7 +2949,7 @@
         const response = await fetch('/api/blog/pending-review');
         const data = await response.json();
         if (!data.success) {
-          container.innerHTML = `<div style="text-align:center;color:#FF3B30;padding:40px;">加载失败：${data.error || ''}</div>`;
+          container.innerHTML = `<div style="text-align:center;color:#1a1a1a;padding:40px;">加载失败：${data.error || ''}</div>`;
           return;
         }
 
@@ -2976,7 +2976,7 @@
             ${posts.map(p => renderReviewCard(p)).join('')}
           </div>`;
       } catch (error) {
-        container.innerHTML = `<div style="text-align:center;color:#FF3B30;padding:40px;">错误：${error.message}</div>`;
+        container.innerHTML = `<div style="text-align:center;color:#1a1a1a;padding:40px;">错误：${error.message}</div>`;
       }
     }
 
@@ -2994,17 +2994,17 @@
           <div style="flex:1;min-width:0;">
             <div style="font-weight:600;font-size:15px;margin-bottom:6px;color:#1D1D1F;letter-spacing:-0.01em;">${escapeHtml(p.title || '(无标题)')}</div>
             <div style="font-size:12px;color:#6E6E73;margin-bottom:4px;">
-              <span style="background:#E8F1FF;color:#066128;padding:3px 10px;border-radius:999px;margin-right:6px;font-weight:500;">${escapeHtml(kw)}</span>
+              <span style="background:#f7f7f7;color:#000000;padding:3px 10px;border-radius:999px;margin-right:6px;font-weight:500;">${escapeHtml(kw)}</span>
               <span style="margin-right:10px;">📝 ${wc} 字</span>
               <span style="margin-right:10px;">⏱ ${rt} 分钟</span>
               <span>🕐 ${time}</span>
             </div>
-            <div style="font-size:12px;color:${p.cover_image_url ? '#34C759' : '#FF9500'};font-weight:500;">
+            <div style="font-size:12px;color:${p.cover_image_url ? '#1a1a1a' : '#FF9500'};font-weight:500;">
               ${p.cover_image_url ? '✓ 已配封面' : '⚠ 未配封面'}
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
-            <button onclick="openReviewWorkspace('${p.id}')" style="padding:8px 18px;background:#0b9b3f;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">📝 进入审核</button>
+            <button onclick="openReviewWorkspace('${p.id}')" style="padding:8px 18px;background:#1a1a1a;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">📝 进入审核</button>
             <button onclick="quickReject('${p.id}')" style="padding:6px 18px;background:#FFFFFF;color:#6E6E73;border:1px solid #E5E5E7;border-radius:8px;cursor:pointer;font-size:12px;">拒绝</button>
           </div>
         </div>`;
@@ -3076,7 +3076,7 @@
         const r = await fetch('/api/blog/published?' + params.toString());
         const d = await r.json();
         if (!d.success) {
-          container.innerHTML = `<div style="text-align:center;color:#FF3B30;padding:40px;">加载失败：${d.error || ''}</div>`;
+          container.innerHTML = `<div style="text-align:center;color:#1a1a1a;padding:40px;">加载失败：${d.error || ''}</div>`;
           return;
         }
 
@@ -3106,7 +3106,7 @@
             ${posts.map(p => renderPublishedCard(p)).join('')}
           </div>`;
       } catch (e) {
-        container.innerHTML = `<div style="text-align:center;color:#FF3B30;padding:40px;">错误：${e.message}</div>`;
+        container.innerHTML = `<div style="text-align:center;color:#1a1a1a;padding:40px;">错误：${e.message}</div>`;
       }
     }
 
@@ -3135,7 +3135,7 @@
           <div style="flex:1;min-width:0;">
             <div style="font-weight:600;font-size:15px;margin-bottom:6px;color:#1D1D1F;letter-spacing:-0.01em;">${escapeHtml(p.title || '(无标题)')}</div>
             <div style="font-size:12px;color:#6E6E73;margin-bottom:4px;">
-              <span style="background:#E6F6EB;color:#0F7A3A;padding:3px 10px;border-radius:999px;margin-right:6px;font-weight:500;">${escapeHtml(typeLabel)}</span>
+              <span style="background:#f0f0f0;color:#1a1a1a;padding:3px 10px;border-radius:999px;margin-right:6px;font-weight:500;">${escapeHtml(typeLabel)}</span>
               ${p.main_keyword ? `<span style="margin-right:8px;color:#86868B;">🔑 ${escapeHtml(p.main_keyword)}</span>` : ''}
               ${isPublished ? seoBadge : ''}
             </div>
@@ -3144,7 +3144,7 @@
               <span style="margin-right:10px;">📝 ${p.word_count || 0} 字</span>
               <span>⏱ ${p.reading_time || 0} 分钟</span>
             </div>
-            ${slug ? `<div style="font-size:11px;color:#0b9b3f;font-family:Consolas,Menlo,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">/blog/${escapeHtml(slug)}</div>` : ''}
+            ${slug ? `<div style="font-size:11px;color:#1a1a1a;font-family:Consolas,Menlo,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">/blog/${escapeHtml(slug)}</div>` : ''}
             ${isPublished ? `
               <div class="seo-index-actions">
                 <button onclick="event.stopPropagation();manualSeoIndexAction('${p.id}', 'check-url')">检测页面</button>
@@ -3156,14 +3156,14 @@
             ` : ''}
           </div>
           <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">
-            ${isPublished ? `<a href="${websiteUrl}" target="_blank" rel="noopener" style="text-align:center;padding:6px 14px;background:#0b9b3f;color:white;border:none;border-radius:8px;text-decoration:none;font-size:12px;font-weight:500;">网站查看</a>` : ''}
+            ${isPublished ? `<a href="${websiteUrl}" target="_blank" rel="noopener" style="text-align:center;padding:6px 14px;background:#1a1a1a;color:white;border:none;border-radius:8px;text-decoration:none;font-size:12px;font-weight:500;">网站查看</a>` : ''}
             <button onclick="openReviewWorkspace('${p.id}')" style="padding:6px 14px;border:1px solid #E5E5E7;background:#FFFFFF;color:#1D1D1F;border-radius:8px;cursor:pointer;font-size:12px;">重新编辑</button>
             <button onclick="viewAuditLog('${p.id}', '${escapeHtml(p.title || '').replace(/'/g, "\\'")}')" style="padding:6px 14px;border:1px solid #E5E5E7;background:#FFFFFF;color:#424245;border-radius:8px;cursor:pointer;font-size:12px;">历史</button>
             ${isPublished
               ? `<button onclick="unpublishPost('${p.id}')" style="padding:6px 14px;border:1px solid #E5E5E7;background:#FFFFFF;color:#FF9500;border-radius:8px;cursor:pointer;font-size:12px;">下线</button>`
-              : `<button onclick="republishPost('${p.id}')" style="padding:6px 14px;border:1px solid #34C759;background:#FFFFFF;color:#34C759;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;">🚀 重新上线</button>`
+              : `<button onclick="republishPost('${p.id}')" style="padding:6px 14px;border:1px solid #1a1a1a;background:#FFFFFF;color:#1a1a1a;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;">🚀 重新上线</button>`
             }
-            <button onclick="deletePostPermanent('${p.id}', '${escapeHtml(p.title || '').replace(/'/g, "\\'")}')" style="padding:6px 14px;border:1px solid #FFD7D5;background:#FFFFFF;color:#FF3B30;border-radius:8px;cursor:pointer;font-size:12px;">永久删除</button>
+            <button onclick="deletePostPermanent('${p.id}', '${escapeHtml(p.title || '').replace(/'/g, "\\'")}')" style="padding:6px 14px;border:1px solid #ececec;background:#FFFFFF;color:#1a1a1a;border-radius:8px;cursor:pointer;font-size:12px;">永久删除</button>
           </div>
         </div>`;
     }
@@ -3310,7 +3310,7 @@
         const html = logs.length === 0
           ? '<div style="text-align:center;color:#86868B;padding:30px;">暂无历史记录</div>'
           : logs.map(l => `
-              <div style="border-left:3px solid #0b9b3f;padding:10px 14px;margin-bottom:6px;background:#FAFAFA;border-radius:0 8px 8px 0;">
+              <div style="border-left:3px solid #1a1a1a;padding:10px 14px;margin-bottom:6px;background:#FAFAFA;border-radius:0 8px 8px 0;">
                 <div style="font-weight:600;color:#1D1D1F;font-size:13px;">${actionLabels[l.action] || l.action}</div>
                 <div style="font-size:11px;color:#86868B;margin-top:1px;">${new Date(l.created_at).toLocaleString('zh-CN')}</div>
                 ${l.detail ? `<div style="font-size:12px;color:#424245;margin-top:3px;">${escapeHtml(l.detail)}</div>` : ''}
@@ -3386,7 +3386,7 @@
             const logTime = new Date(log.generationTime).toLocaleString('zh-CN');
             let errorHtml = '';
             if (log.failureCount > 0 && log.errorMessage) {
-              errorHtml = `<div style="color: #FF3B30; margin-top: 8px;">❌ ${log.errorMessage}</div>`;
+              errorHtml = `<div style="color: #1a1a1a; margin-top: 8px;">❌ ${log.errorMessage}</div>`;
             }
             document.getElementById('lastRunRecord').innerHTML = `
               <div>最后生成时间：${logTime}</div>
@@ -3802,9 +3802,9 @@
             </td>
             <td>
               <div class="action-buttons" style="display:flex;gap:4px;flex-wrap:wrap;">
-                ${isPending ? `<button onclick="generateOnePlan('${plan.id}')" style="background:#0b9b3f;color:white;border-color:#0b9b3f;">▶ 立即生成</button>` : ''}
+                ${isPending ? `<button onclick="generateOnePlan('${plan.id}')" style="background:#1a1a1a;color:white;border-color:#1a1a1a;">▶ 立即生成</button>` : ''}
                 ${isPending ? `<button onclick="editPlan('${plan.id}','${safeKw}','${safeTitle}','${plan.article_type||'product'}')">编辑</button>` : ''}
-                ${isPending ? `<button onclick="deletePlan('${plan.id}')" style="color:#FF3B30;">删除</button>` : ''}
+                ${isPending ? `<button onclick="deletePlan('${plan.id}')" style="color:#1a1a1a;">删除</button>` : ''}
                 ${!isPending ? `<button onclick="openPreview('${plan.id}')">预览</button>` : ''}
               </div>
             </td>
@@ -4359,7 +4359,7 @@
           <td><span class="priority-badge priority-${kw.priority}">${priorityLabels[kw.priority] || kw.priority}</span></td>
           <td>${kw.used_count || 0} 次</td>
           <td>
-            <button onclick="deleteKeyword('${kw.id}')" style="padding:3px 10px;border:1px solid #E5E5E7;background:#FFFFFF;border-radius:6px;cursor:pointer;font-size:12px;color:#FF3B30;">删除</button>
+            <button onclick="deleteKeyword('${kw.id}')" style="padding:3px 10px;border:1px solid #E5E5E7;background:#FFFFFF;border-radius:6px;cursor:pointer;font-size:12px;color:#1a1a1a;">删除</button>
           </td>
         </tr>
       `).join('');
@@ -4551,7 +4551,7 @@
       }, 0);
       const el = document.getElementById('ratioTotal');
       el.textContent = `总计：${total}%`;
-      el.style.color = total === 100 ? '#34C759' : '#FF3B30';
+      el.style.color = total === 100 ? '#1a1a1a' : '#1a1a1a';
     }
 
     // 选择标题模板
