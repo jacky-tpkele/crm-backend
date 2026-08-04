@@ -13,175 +13,287 @@
 <title>TPKELE — Sign In</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,"Microsoft YaHei",sans-serif;background:#ffffff;color:#1a1a1a;overflow:hidden;}
+html,body{height:100%;font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,"Microsoft YaHei",sans-serif;background:#f5f5f5;color:#1a1a1a;}
 
 .page{
   position:relative;z-index:1;
   min-height:100vh;
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
-  padding:16px;
+  padding:20px;
 }
-
-/* ── Brand ── */
-.brand-wrap{display:flex;align-items:center;gap:12px;margin-bottom:2px;}
-.brand-title{font-size:22px;font-weight:700;letter-spacing:4px;color:#1a1a1a;text-transform:uppercase;}
-.sub-title{font-size:18px;font-weight:300;letter-spacing:2px;color:#767676;margin-bottom:20px;}
 
 /* ── Card ── */
 .card{
   display:flex;
   background:#ffffff;
-  border:1px solid #e3e3e3;
-  border-radius:8px;
+  border-radius:16px;
   overflow:hidden;
-  width:min(800px,97vw);
-  box-shadow:0 18px 45px rgba(0,0,0,.10);
-  backdrop-filter:blur(12px);
+  width:min(960px,95vw);
+  min-height:580px;
+  box-shadow:0 8px 32px rgba(0,0,0,.08);
 }
 
-/* ── Fingerprint Panel ── */
-.fp-panel{
-  flex-shrink:0;width:286px;
-  display:flex;align-items:center;justify-content:center;
-  padding:40px 28px;
+/* ── Brand Panel (左侧) ── */
+.brand-panel{
+  flex-shrink:0;
+  width:420px;
+  padding:60px 50px;
   position:relative;
-  background:#f7f7f7;
+  background:linear-gradient(135deg,#10b981 0%,#059669 100%);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  overflow:hidden;
 }
 
-.fp-outer{
-  width:216px;height:216px;
-  border-radius:50%;
-  border:2px solid rgba(26,26,26,0.45);
-  box-shadow:0 0 22px rgba(26,26,26,0.18),0 0 50px rgba(26,26,26,0.08),inset 0 0 22px rgba(26,26,26,0.05);
-  display:flex;align-items:center;justify-content:center;
-  position:relative;
-}
-.fp-outer::before{
+.brand-panel::before{
   content:'';
-  position:absolute;inset:-4px;
+  position:absolute;
+  top:-120px;
+  right:-80px;
+  width:400px;
+  height:400px;
+  background:rgba(255,255,255,.12);
   border-radius:50%;
-  border:4px solid rgba(26,26,26,0.06);
-  border-top:4px solid rgba(26,26,26,0.7);
-  border-right:4px solid rgba(26,26,26,0.3);
-  animation:spin 4s linear infinite;
+  filter:blur(60px);
 }
-@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 
-.fp-inner{
-  width:168px;height:168px;
+.brand-panel::after{
+  content:'';
+  position:absolute;
+  bottom:-140px;
+  left:-100px;
+  width:480px;
+  height:480px;
+  background:rgba(255,255,255,.08);
   border-radius:50%;
-  background:#ffffff;
-  border:1px solid #e3e3e3;
-  display:flex;align-items:center;justify-content:center;
+  filter:blur(80px);
+}
+
+.brand-content{
   position:relative;
-  overflow:hidden;
   z-index:1;
 }
 
-/* Scan line */
-.fp-scan{
-  position:absolute;
-  left:0;right:0;height:2px;
-  background:linear-gradient(90deg,transparent 0%,rgba(26,26,26,0.5) 50%,transparent 100%);
-  animation:scan 3s ease-in-out infinite;
-  pointer-events:none;
-  z-index:2;
-}
-@keyframes scan{
-  0%{top:10%;opacity:0;}
-  10%{opacity:1;}
-  90%{opacity:1;}
-  100%{top:88%;opacity:0;}
+.brand-logo{
+  margin-bottom:32px;
 }
 
-.fp-svg{width:106px;height:106px;animation:fp-pulse 3s ease-in-out infinite;}
-@keyframes fp-pulse{0%,100%{opacity:0.75;}50%{opacity:1;}}
+.brand-logo svg{
+  width:64px;
+  height:64px;
+  filter:drop-shadow(0 4px 12px rgba(0,0,0,.15));
+}
 
-/* ── Login Panel ── */
+.brand-title{
+  font-size:42px;
+  font-weight:700;
+  color:#ffffff;
+  line-height:1.2;
+  margin-bottom:16px;
+  letter-spacing:-0.5px;
+}
+
+.brand-subtitle{
+  font-size:16px;
+  font-weight:400;
+  color:rgba(255,255,255,.85);
+  line-height:1.6;
+  max-width:340px;
+}
+
+/* ── Login Panel (右侧) ── */
 .login-panel{
   flex:1;
-  padding:40px 30px;
-  border-left:1px solid #e3e3e3;
-  display:flex;flex-direction:column;
+  padding:60px 70px;
+  display:flex;
+  flex-direction:column;
   justify-content:center;
 }
 
-/* Floating label fields */
-.field{position:relative;margin-bottom:26px;}
-.field label{
-  position:absolute;left:0;top:13px;
-  font-size:13px;color:#767676;
-  transition:.2s ease;pointer-events:none;
-}
-.field input{
-  width:100%;background:none;
-  border:none;border-bottom:1px solid #e3e3e3;
-  padding:12px 0 6px;
-  font-size:14px;color:#1a1a1a;
-  font-family:inherit;outline:none;
-  transition:.2s;
-}
-.field input:focus{border-bottom-color:#1a1a1a;}
-.field input:focus ~ label,
-.field input:not(:placeholder-shown) ~ label{
-  top:-7px;font-size:10.5px;color:#1a1a1a;
+.login-header{
+  margin-bottom:40px;
 }
 
-.err{color:#1a1a1a;font-size:11.5px;min-height:14px;margin-bottom:8px;text-align:center;}
+.login-title{
+  font-size:28px;
+  font-weight:700;
+  color:#1a1a1a;
+  margin-bottom:8px;
+}
+
+.login-desc{
+  font-size:14px;
+  color:#767676;
+}
+
+/* Input fields */
+.field{
+  position:relative;
+  margin-bottom:24px;
+}
+
+.field label{
+  display:block;
+  font-size:13px;
+  font-weight:500;
+  color:#1a1a1a;
+  margin-bottom:8px;
+}
+
+.field input{
+  width:100%;
+  padding:12px 16px;
+  background:#f7f7f7;
+  border:1.5px solid #e3e3e3;
+  border-radius:8px;
+  font-size:14px;
+  color:#1a1a1a;
+  font-family:inherit;
+  outline:none;
+  transition:all .2s;
+}
+
+.field input:focus{
+  background:#ffffff;
+  border-color:#10b981;
+  box-shadow:0 0 0 3px rgba(16,185,129,.1);
+}
+
+.field input::placeholder{
+  color:#a0a0a0;
+}
+
+/* Options row */
+.options-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:28px;
+  font-size:13px;
+}
+
+.remember-wrap{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.remember-wrap input[type="checkbox"]{
+  width:16px;
+  height:16px;
+  cursor:pointer;
+  accent-color:#10b981;
+}
+
+.remember-wrap label{
+  color:#1a1a1a;
+  cursor:pointer;
+  user-select:none;
+}
+
+.forgot-link{
+  color:#10b981;
+  text-decoration:none;
+  font-weight:500;
+  transition:color .2s;
+}
+
+.forgot-link:hover{
+  color:#059669;
+}
+
+.err{
+  color:#dc2626;
+  font-size:13px;
+  min-height:18px;
+  margin-bottom:12px;
+}
 
 .login-btn{
-  width:100%;padding:11px;
-  background:#1a1a1a;
-  border:1.5px solid #1a1a1a;
+  width:100%;
+  padding:14px;
+  background:#10b981;
+  border:none;
   border-radius:8px;
-  color:#fff;font-size:14px;font-weight:700;
-  font-family:inherit;cursor:pointer;letter-spacing:.5px;
-  box-shadow:0 6px 18px rgba(26,26,26,.28);
-  transition:.2s;
+  color:#ffffff;
+  font-size:15px;
+  font-weight:600;
+  font-family:inherit;
+  cursor:pointer;
+  letter-spacing:0.3px;
+  box-shadow:0 4px 12px rgba(16,185,129,.3);
+  transition:all .2s;
 }
+
 .login-btn:hover{
-  background:#000000;
-  border-color:#000000;
-  box-shadow:0 8px 24px rgba(26,26,26,.36);
+  background:#059669;
+  box-shadow:0 6px 16px rgba(16,185,129,.4);
+  transform:translateY(-1px);
 }
-.login-btn:active{transform:translateY(1px);}
-.login-btn:disabled{opacity:.48;cursor:not-allowed;transform:none;}
+
+.login-btn:active{
+  transform:translateY(0);
+}
+
+.login-btn:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+  transform:none;
+}
 
 /* ── Footer ── */
-.status-bar{
-  margin-top:9px;
-  font-size:11px;color:#767676;
-  text-align:center;letter-spacing:.3px;
-}
-.status-online{color:#1a1a1a;}
-.status-offline{color:#1a1a1a;}
-
 .bottom-row{
-  display:flex;align-items:center;
-  width:min(800px,97vw);
-  margin-top:7px;padding:0 2px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  width:min(960px,95vw);
+  margin-top:16px;
+  padding:0 4px;
 }
+
 .lang-select{
-  padding:5px 12px;
+  padding:6px 14px;
   background:#ffffff;
   border:1px solid #e3e3e3;
-  border-radius:6px;color:#1a1a1a;
-  font-size:11.5px;font-family:inherit;
-  cursor:pointer;outline:none;
+  border-radius:6px;
+  color:#1a1a1a;
+  font-size:12px;
+  font-family:inherit;
+  cursor:pointer;
+  outline:none;
+  transition:border-color .2s;
 }
-.lang-select option{background:#ffffff;color:#1a1a1a;}
-.legal-link{
-  margin-left:auto;
-  font-size:11px;color:#767676;
-  text-decoration:none;
-}
-.legal-link:hover{color:#1a1a1a;}
 
-@media(max-width:600px){
-  .fp-panel{display:none;}
-  html,body{overflow:auto;}
-  .page{padding:12px;}
+.lang-select:hover{
+  border-color:#c8c8c8;
+}
+
+.lang-select option{
+  background:#ffffff;
+  color:#1a1a1a;
+}
+
+.status-bar{
+  font-size:11px;
+  color:#a0a0a0;
+  letter-spacing:0.3px;
+}
+
+.status-online{color:#10b981;}
+.status-offline{color:#767676;}
+
+@media(max-width:768px){
+  .brand-panel{display:none;}
+  .card{min-height:auto;}
+  .login-panel{padding:40px 30px;}
+}
+
+@media(max-width:480px){
+  .page{padding:16px;}
+  .login-panel{padding:32px 24px;}
+  .login-title{font-size:24px;}
 }
 </style>
 <link rel="stylesheet" href="light-theme.css">
@@ -192,76 +304,59 @@ html,body{height:100%;font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,"M
 
 <div class="page">
 
-  <!-- Brand -->
-  <div class="brand-wrap">
-    <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-      <polygon points="22,2 42,12 42,32 22,42 2,32 2,12"
-        stroke="rgba(26,26,26,0.55)" stroke-width="1.2" fill="rgba(26,26,26,0.05)"/>
-      <polygon points="22,8 36,16 36,28 22,36 8,28 8,16"
-        stroke="rgba(26,26,26,0.22)" stroke-width="0.7" fill="none"/>
-      <line x1="13" y1="16" x2="31" y2="16" stroke="#1a1a1a" stroke-width="2.6" stroke-linecap="round"/>
-      <line x1="22" y1="16" x2="22" y2="31" stroke="#1a1a1a" stroke-width="2.6" stroke-linecap="round"/>
-    </svg>
-    <span class="brand-title">TPKELE</span>
-  </div>
-
   <div class="card">
 
-    <!-- Fingerprint panel -->
-    <div class="fp-panel">
-      <div class="fp-outer">
-        <div class="fp-inner">
-          <div class="fp-scan"></div>
-          <svg class="fp-svg" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <filter id="fg" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="1.2" result="b"/>
-                <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-            </defs>
-            <g filter="url(#fg)" stroke="#1a1a1a" stroke-linecap="round">
-              <circle cx="55" cy="55" r="2.8" fill="#1a1a1a" stroke="none"/>
-              <ellipse cx="55" cy="55" rx="7"  ry="5.5"  stroke-width="1.4" stroke-dasharray="10 3 7 3"  stroke-dashoffset="0"/>
-              <ellipse cx="55" cy="55" rx="13" ry="10"   stroke-width="1.4" stroke-dasharray="15 4 9 4"  stroke-dashoffset="3"/>
-              <ellipse cx="55" cy="55" rx="19" ry="15"   stroke-width="1.4" stroke-dasharray="22 5 11 5" stroke-dashoffset="5"/>
-              <ellipse cx="55" cy="55" rx="25" ry="20.5" stroke-width="1.4" stroke-dasharray="30 6 14 6" stroke-dashoffset="7"/>
-              <ellipse cx="55" cy="55" rx="31" ry="26"   stroke-width="1.4" stroke-dasharray="38 7 16 7" stroke-dashoffset="9"/>
-              <ellipse cx="55" cy="55" rx="37" ry="31"   stroke-width="1.4" stroke-dasharray="47 8 18 8" stroke-dashoffset="11"/>
-              <ellipse cx="55" cy="55" rx="43" ry="36"   stroke-width="1.4" stroke-dasharray="56 9 20 9" stroke-dashoffset="13"/>
-              <ellipse cx="55" cy="55" rx="49" ry="41"   stroke-width="1.4" stroke-dasharray="65 10 22 10" stroke-dashoffset="15"/>
-              <ellipse cx="55" cy="55" rx="53" ry="46"   stroke-width="1.4" stroke-dasharray="73 11 24 11" stroke-dashoffset="17"/>
-            </g>
+    <!-- Brand panel -->
+    <div class="brand-panel">
+      <div class="brand-content">
+        <div class="brand-logo">
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="32,3 61,17 61,47 32,61 3,47 3,17"
+              stroke="rgba(255,255,255,.6)" stroke-width="1.8" fill="rgba(255,255,255,.12)"/>
+            <polygon points="32,12 52,22 52,42 32,52 12,42 12,22"
+              stroke="rgba(255,255,255,.3)" stroke-width="1" fill="none"/>
+            <line x1="19" y1="23" x2="45" y2="23" stroke="#ffffff" stroke-width="3.6" stroke-linecap="round"/>
+            <line x1="32" y1="23" x2="32" y2="45" stroke="#ffffff" stroke-width="3.6" stroke-linecap="round"/>
           </svg>
         </div>
+        <h1 class="brand-title" id="lbl-brand">TPKELE<br>CRM</h1>
+        <p class="brand-subtitle" id="lbl-tagline">Customer Relationship Management — manage customers, suppliers, products and orders in one place.</p>
       </div>
     </div>
 
     <!-- Login panel -->
     <div class="login-panel">
+      <div class="login-header">
+        <h2 class="login-title" id="lbl-signin">Sign In to CRM</h2>
+        <p class="login-desc" id="lbl-signin-desc">Enter your credentials to access your workspace</p>
+      </div>
+
       <form id="loginForm" onsubmit="doLogin(event)">
         <div class="field">
-          <input type="text" id="inp-account" placeholder=" " required autocomplete="username"/>
-          <label id="lbl-a">Username</label>
+          <label for="inp-account" id="lbl-a">Username</label>
+          <input type="text" id="inp-account" placeholder="Enter your username" required autocomplete="username"/>
         </div>
         <div class="field">
-          <input type="password" id="inp-pw" placeholder=" " required autocomplete="current-password"/>
-          <label id="lbl-p">Password</label>
+          <label for="inp-pw" id="lbl-p">Password</label>
+          <input type="password" id="inp-pw" placeholder="Enter your password" required autocomplete="current-password"/>
+        </div>
+
+        <div class="options-row">
+          <div class="remember-wrap">
+            <input type="checkbox" id="rememberMe"/>
+            <label for="rememberMe" id="lbl-remember">Remember me</label>
+          </div>
+          <a href="#" class="forgot-link" id="lbl-forgot">Forgot password?</a>
         </div>
 
         <div class="err" id="errMsg"></div>
 
         <button type="submit" class="login-btn" id="signBtn">
-          <span id="lbl-btn">Login</span>
+          <span id="lbl-btn">LOG IN</span>
         </button>
       </form>
     </div>
 
-  </div>
-
-  <div class="status-bar">
-    Status: <span id="s-dot" class="status-offline">offline</span>
-    &nbsp;|&nbsp;IP: <span id="s-ip">--</span>
-    &nbsp;|&nbsp;MAC: <span id="s-mac">--</span>
   </div>
 
   <div class="bottom-row">
@@ -269,7 +364,11 @@ html,body{height:100%;font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,"M
       <option value="en">English</option>
       <option value="zh">中文</option>
     </select>
-    <a href="#" class="legal-link">Legal Notice</a>
+    <div class="status-bar">
+      <span id="s-dot" class="status-offline">offline</span>
+      &nbsp;|&nbsp;IP: <span id="s-ip">--</span>
+      &nbsp;|&nbsp;MAC: <span id="s-mac">--</span>
+    </div>
   </div>
 
 </div>
@@ -277,10 +376,22 @@ html,body{height:100%;font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,"M
 <script>
 /* ── i18n ── */
 const T = {
-  en: { a:'Username', p:'Password', btn:'Login',   loading:'Signing in...',
-        ef:'Please enter credentials', er:'Invalid account or password' },
-  zh: { a:'账号',    p:'密码',     btn:'登 录', loading:'登录中...',
-        ef:'请填写账号和密码',        er:'账号或密码错误' }
+  en: {
+    a:'Username', p:'Password', btn:'LOG IN', loading:'Signing in...',
+    ef:'Please enter credentials', er:'Invalid account or password',
+    signin:'Sign In to CRM', signdesc:'Enter your credentials to access your workspace',
+    remember:'Remember me', forgot:'Forgot password?',
+    brand:'TPKELE<br>CRM',
+    tagline:'Customer Relationship Management — manage customers, suppliers, products and orders in one place.'
+  },
+  zh: {
+    a:'账号', p:'密码', btn:'登 录', loading:'登录中...',
+    ef:'请填写账号和密码', er:'账号或密码错误',
+    signin:'登录 CRM 系统', signdesc:'请输入账号和密码以进入工作台',
+    remember:'记住我', forgot:'忘记密码？',
+    brand:'TPKELE<br>CRM',
+    tagline:'客户关系管理系统 — 客户、供应商、产品和订单，全部一站式管理。'
+  }
 };
 let cl = localStorage.getItem('crm_lang') || 'en';
 
@@ -291,7 +402,16 @@ function setLang(l) {
   document.getElementById('lbl-a').textContent = T[l].a;
   document.getElementById('lbl-p').textContent = T[l].p;
   document.getElementById('lbl-btn').textContent = T[l].btn;
+  document.getElementById('lbl-signin').textContent = T[l].signin;
+  document.getElementById('lbl-signin-desc').textContent = T[l].signdesc;
+  document.getElementById('lbl-remember').textContent = T[l].remember;
+  document.getElementById('lbl-forgot').textContent = T[l].forgot;
+  document.getElementById('lbl-brand').innerHTML = T[l].brand;
+  document.getElementById('lbl-tagline').textContent = T[l].tagline;
+  document.getElementById('inp-account').placeholder = l === 'zh' ? '请输入账号' : 'Enter your username';
+  document.getElementById('inp-pw').placeholder = l === 'zh' ? '请输入密码' : 'Enter your password';
 }
+
 async function doLogin(e) {
   e.preventDefault();
   const account = document.getElementById('inp-account').value.trim();
@@ -321,7 +441,22 @@ async function doLogin(e) {
   }
 }
 
+/* ── Status check ── */
+async function checkStatus() {
+  try {
+    const r = await fetch('/api/status', { cache: 'no-store' });
+    if (r.ok) {
+      document.getElementById('s-dot').textContent = 'online';
+      document.getElementById('s-dot').className = 'status-online';
+      const d = await r.json();
+      if (d.ip)  document.getElementById('s-ip').textContent  = d.ip;
+      if (d.mac) document.getElementById('s-mac').textContent = d.mac;
+    }
+  } catch {}
+}
+
 setLang(cl);
+checkStatus();
 if (localStorage.getItem('crm_token')) location.href = '/dashboard.html';
 </script>
 </body>
