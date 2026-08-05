@@ -402,15 +402,15 @@ tr.iq-unread td{font-weight:600}
 .chat-sidebar-head{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--text)}
 .chat-session-list{flex:1;overflow-y:auto;padding:6px}
 .chat-session{padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:4px;transition:.15s;position:relative;border:1px solid transparent}
-.chat-session:hover{background:#f0f0f0}
-.chat-session.active{background:#ececec;border-color:rgba(26,26,26,.35)}
+.chat-session:hover{background:var(--hover)}
+.chat-session.active{background:var(--selected);border-color:var(--border-h)}
 .chat-session .cs-name{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px}
 .chat-session .cs-preview{font-size:11px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chat-session .cs-time{font-size:10px;color:var(--muted);position:absolute;top:10px;right:32px}
-.chat-session .cs-badge{background:#1a1a1a;color:#fff;font-size:10px;padding:0 6px;border-radius:999px;font-weight:700;min-width:18px;text-align:center}
+.chat-session .cs-badge{background:var(--text);color:var(--panel);font-size:10px;padding:0 6px;border-radius:999px;font-weight:700;min-width:18px;text-align:center}
 .chat-session .cs-delete{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:4px;border:1px solid transparent;background:transparent;color:var(--muted);display:none;align-items:center;justify-content:center;cursor:pointer;transition:.15s;padding:0}
 .chat-session:hover .cs-delete{display:flex}
-.chat-session .cs-delete:hover{background:rgba(26,26,26,0.12);border-color:rgba(26,26,26,0.3);color:#1a1a1a}
+.chat-session .cs-delete:hover{background:var(--hover);border-color:var(--border-h);color:var(--text)}
 .chat-session.closed{opacity:.5}
 
 .chat-main{background:var(--panel);border:1px solid var(--border);border-radius:12px;display:flex;flex-direction:column;overflow:hidden}
