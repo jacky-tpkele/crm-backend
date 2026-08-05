@@ -468,3 +468,23 @@ span[style*="background: var(--panel-2)"]{
 [style*="color:var(--text)"],[style*="color: var(--text)"]{
   color:var(--text) !important;
 }
+
+/* ── 在线客服聊天气泡（覆盖全局 div color 规则） ── */
+.chat-msg.agent,
+.chat-msg.agent *,
+.chat-msg.agent span,
+.chat-msg.agent div,
+.chat-msg.agent .msg-time{
+  color:var(--on-solid) !important;
+}
+.chat-msg.visitor,
+.chat-msg.visitor *,
+.chat-msg.visitor span,
+.chat-msg.visitor div,
+.chat-msg.visitor .msg-time{
+  color:var(--text) !important;
+}
+.chat-msg.system,
+.chat-msg.system *{
+  color:var(--muted) !important;
+}
