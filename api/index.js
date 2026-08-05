@@ -2763,6 +2763,20 @@ app.post('/api/website-inquiry', async (req, res) => {
       }),
     }).catch((e) => { console.error('Failed to write inquiry to emails table:', e.message); });
 
+    // 发送邮件通知到管理员邮箱
+    try {
+      const transport = smtpTransport();
+      await transport.sendMail({
+        from: `"${EMAIL_FROM_NAME}" <${EMAIL_USER}>`,
+        to: 'jacky@tpkele.com',
+        subject: `[网站询盘] ${cleanSubject}`,
+        text: bodyText,
+        html: bodyHtml,
+      });
+    } catch (e) {
+      console.error('Failed to send inquiry notification email:', e.message);
+    }
+
     res.json({ success: true });
   } catch (e) {
     console.error('Website inquiry error:', e.message);
