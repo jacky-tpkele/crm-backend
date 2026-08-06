@@ -108,10 +108,10 @@ a{color:inherit;text-decoration:none}
 .user-btn{
   display:flex;align-items:center;gap:8px;padding:5px 12px;
   border-radius:8px;border:1px solid var(--border);
-  background:#ffffff;cursor:pointer;color:var(--text);
+  background:var(--panel);cursor:pointer;color:var(--text);
   font-size:13px;font-weight:500;transition:.2s;position:relative;
 }
-.user-btn:hover{border-color:var(--primary);background:#f7f7f7}
+.user-btn:hover{border-color:var(--primary);background:var(--hover)}
 .user-avatar{
   width:30px;height:30px;border-radius:8px;
   background:var(--primary);
@@ -128,15 +128,15 @@ a{color:inherit;text-decoration:none}
   display:flex;align-items:center;gap:10px;padding:9px 12px;
   border-radius:8px;cursor:pointer;font-size:13px;color:var(--muted2);transition:.15s;
 }
-.dd-item:hover{background:#f0f0f0;color:var(--text)}
+.dd-item:hover{background:var(--hover);color:var(--text)}
 .dd-item.danger{color:var(--danger)}
-.dd-item.danger:hover{background:rgba(26,26,26,.1)}
+.dd-item.danger:hover{background:var(--hover)}
 .header-link{
   display:inline-flex;align-items:center;gap:6px;padding:7px 14px;
-  border:1px solid var(--border);border-radius:8px;background:#ffffff;
+  border:1px solid var(--border);border-radius:8px;background:var(--panel);
   color:var(--muted2);font-size:13px;white-space:nowrap;transition:.2s;
 }
-.header-link:hover{border-color:var(--primary);background:#f0f0f0;color:var(--primary-d)}
+.header-link:hover{border-color:var(--primary);background:var(--hover);color:var(--primary-d)}
 .header-link.accent{
   border-color:rgba(26,26,26,0.3);
   background:rgba(26,26,26,0.05);
@@ -561,7 +561,7 @@ tr.iq-unread td{font-weight:600}
         <button class="user-btn" id="userBtn" onclick="toggleUserMenu()">
           <div class="user-avatar" id="userAvatar">T</div>
           <span id="userNameDisplay">TPKELE</span>
-          <span class="role-badge" id="userRoleBadge" style="display:none;font-size:10px;padding:1px 6px;border-radius:999px;margin-left:6px;background:rgba(26,26,26,.18);color:#1a1a1a;border:1px solid rgba(26,26,26,.35);font-weight:600;letter-spacing:.5px">ADMIN</span>
+          <span class="role-badge" id="userRoleBadge" style="display:none;font-size:10px;padding:1px 6px;border-radius:999px;margin-left:6px;background:var(--border);color:var(--text);border:1px solid var(--border);font-weight:600;letter-spacing:.5px">ADMIN</span>
           <span style="color:var(--muted)">▾</span>
         </button>
         <div class="user-dropdown" id="userDropdown">
