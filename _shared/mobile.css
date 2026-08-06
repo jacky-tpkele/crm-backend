@@ -90,8 +90,8 @@
     display:none !important;
   }
   /* 用户按钮只显示头像和角色，省掉名字 */
-  .header .user-btn #userNameDisplay { display:none !important; }
-  .header .user-btn { padding:4px 8px !important; gap:4px !important; }
+  .header .user-menu-btn #userNameDisplay { display:none !important; }
+  .header .user-menu-btn { padding:4px 8px !important; gap:4px !important; }
 }
 
 /* ── workspace 边距 ── */

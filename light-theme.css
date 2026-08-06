@@ -232,12 +232,12 @@ tr:hover td{background:var(--hover) !important;}
 }
 
 /* User dropdown */
-.user-btn{
+.user-menu-btn{
   background:var(--panel) !important;
   border:1px solid var(--border) !important;
   color:var(--text) !important;
 }
-.user-btn:hover{
+.user-menu-btn:hover{
   border-color:var(--text) !important;
   background:var(--hover) !important;
 }
