@@ -38,12 +38,12 @@ html,body{height:100%;font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,"M
 .brand-panel{
   flex-shrink:0;
   width:420px;
-  padding:60px 50px;
+  padding:40px;
   position:relative;
   background:linear-gradient(135deg,#10b981 0%,#059669 100%);
   display:flex;
   flex-direction:column;
-  justify-content:center;
+  justify-content:flex-start;
   overflow:hidden;
 }
 
@@ -77,26 +77,26 @@ html,body{height:100%;font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,"M
 }
 
 .brand-logo{
-  margin-bottom:32px;
+  margin-bottom:24px;
 }
 
 .brand-logo svg{
-  width:64px;
-  height:64px;
+  width:56px;
+  height:56px;
   filter:drop-shadow(0 4px 12px rgba(0,0,0,.15));
 }
 
 .brand-title{
-  font-size:42px;
+  font-size:38px;
   font-weight:700;
   color:#ffffff;
-  line-height:1.2;
-  margin-bottom:16px;
+  line-height:1.3;
+  margin-bottom:12px;
   letter-spacing:-0.5px;
 }
 
 .brand-subtitle{
-  font-size:16px;
+  font-size:15px;
   font-weight:400;
   color:rgba(255,255,255,.85);
   line-height:1.6;
@@ -319,8 +319,8 @@ html,body{height:100%;font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,"M
             <line x1="32" y1="23" x2="32" y2="45" stroke="#ffffff" stroke-width="3.6" stroke-linecap="round"/>
           </svg>
         </div>
-        <h1 class="brand-title" id="lbl-brand">TPKELE<br>CRM</h1>
-        <p class="brand-subtitle" id="lbl-tagline">Customer Relationship Management — manage customers, suppliers, products and orders in one place.</p>
+        <h1 class="brand-title" id="lbl-brand">TPK CRM</h1>
+        <p class="brand-subtitle" id="lbl-tagline">让AI来搭建万物互联</p>
       </div>
     </div>
 
@@ -381,16 +381,16 @@ const T = {
     ef:'Please enter credentials', er:'Invalid account or password',
     signin:'Sign In to CRM', signdesc:'Enter your credentials to access your workspace',
     remember:'Remember me', forgot:'Forgot password?',
-    brand:'TPKELE<br>CRM',
-    tagline:'Customer Relationship Management — manage customers, suppliers, products and orders in one place.'
+    brand:'TPK CRM',
+    tagline:'让AI来搭建万物互联'
   },
   zh: {
     a:'账号', p:'密码', btn:'登 录', loading:'登录中...',
     ef:'请填写账号和密码', er:'账号或密码错误',
     signin:'登录 CRM 系统', signdesc:'请输入账号和密码以进入工作台',
     remember:'记住我', forgot:'忘记密码？',
-    brand:'TPKELE<br>CRM',
-    tagline:'客户关系管理系统 — 客户、供应商、产品和订单，全部一站式管理。'
+    brand:'TPK CRM',
+    tagline:'让AI来搭建万物互联'
   }
 };
 let cl = localStorage.getItem('crm_lang') || 'en';
@@ -406,7 +406,7 @@ function setLang(l) {
   document.getElementById('lbl-signin-desc').textContent = T[l].signdesc;
   document.getElementById('lbl-remember').textContent = T[l].remember;
   document.getElementById('lbl-forgot').textContent = T[l].forgot;
-  document.getElementById('lbl-brand').innerHTML = T[l].brand;
+  document.getElementById('lbl-brand').textContent = T[l].brand;
   document.getElementById('lbl-tagline').textContent = T[l].tagline;
   document.getElementById('inp-account').placeholder = l === 'zh' ? '请输入账号' : 'Enter your username';
   document.getElementById('inp-pw').placeholder = l === 'zh' ? '请输入密码' : 'Enter your password';
