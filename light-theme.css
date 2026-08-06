@@ -246,7 +246,7 @@ tr:hover td{background:var(--hover) !important;}
   color:var(--on-solid) !important;
 }
 .role-badge{
-  background:var(--panel-2) !important;
+  background:var(--hover) !important;
   color:var(--text) !important;
   border:1px solid var(--border) !important;
 }
