@@ -1911,17 +1911,20 @@ function loadSettings() {
   try { user = JSON.parse(localStorage.getItem('crm_user')||'null'); } catch(_){}
   const display = user?.display_name || user?.username || un;
   document.getElementById('setUsername').textContent = display;
-  document.getElementById('userNameDisplay').textContent = display;
+  const userNameEl = document.getElementById('userNameDisplay');
+  userNameEl.textContent = display;
+  // 强制设置用户名颜色
+  userNameEl.style.color = 'var(--text)';
   document.getElementById('userAvatar').textContent = (display||'A')[0].toUpperCase();
   // 角色徽章
   const roleBadge = document.getElementById('userRoleBadge');
   if (roleBadge && user?.role) {
     roleBadge.style.display = '';
     roleBadge.textContent = user.role.toUpperCase();
-    // 灰阶：全部用相同的中性样式
-    roleBadge.style.background = '';
-    roleBadge.style.color = '';
-    roleBadge.style.borderColor = '';
+    // 强制设置徽章颜色（覆盖内联样式）
+    roleBadge.style.background = 'var(--hover)';
+    roleBadge.style.color = 'var(--text)';
+    roleBadge.style.borderColor = 'var(--border)';
   }
   // 异步刷一次后端，更新到最新（如果 admin 改过 display_name 或角色）
   fetch('/api/users/me', { headers: { Authorization: 'Bearer ' + (localStorage.getItem('crm_token')||'') }})
