@@ -558,10 +558,10 @@ tr.iq-unread td{font-weight:600}
       <button class="lang-btn" id="langBtn" onclick="toggleLang()">中/EN</button>
       <button id="themeToggle" title="切换主题 Light/Dark" onclick="toggleTheme()">◐</button>
       <div style="position:relative">
-        <button class="user-btn" id="userBtn" onclick="toggleUserMenu()">
+        <button class="user-btn" id="userBtn" onclick="toggleUserMenu()" style="color:var(--text) !important">
           <div class="user-avatar" id="userAvatar">T</div>
-          <span id="userNameDisplay" style="color:var(--text)">TPKELE</span>
-          <span class="role-badge" id="userRoleBadge" style="display:none;font-size:10px;padding:1px 6px;border-radius:999px;margin-left:6px;background:var(--border);color:var(--text);border:1px solid var(--border);font-weight:600;letter-spacing:.5px">ADMIN</span>
+          <span id="userNameDisplay" style="color:inherit !important">TPKELE</span>
+          <span class="role-badge" id="userRoleBadge" style="display:none;font-size:10px;padding:1px 6px;border-radius:999px;margin-left:6px;background:var(--hover);color:var(--text);border:1px solid var(--border);font-weight:600;letter-spacing:.5px">ADMIN</span>
           <span style="color:var(--muted)">▾</span>
         </button>
         <div class="user-dropdown" id="userDropdown">
