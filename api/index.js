@@ -814,8 +814,31 @@ async function getAccountCfg(accountId) {
 // 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // EMAIL ACCOUNTS CRUD
 // 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
+// 首次访问时，若表为空且环境变量已配置，自动写入默认账号
+async function ensureDefaultAccount() {
+  if (!EMAIL_IMAP_HOST || !EMAIL_USER || !EMAIL_PASS) return;
+  const rows = await sb('email_accounts?select=id&limit=1');
+  if (rows.length) return;
+  await sb('email_accounts', {
+    method: 'POST',
+    body: JSON.stringify({
+      display_name: EMAIL_FROM_NAME,
+      email:        EMAIL_USER,
+      from_name:    EMAIL_FROM_NAME,
+      imap_host:    EMAIL_IMAP_HOST,
+      imap_port:    EMAIL_IMAP_PORT,
+      smtp_host:    EMAIL_SMTP_HOST,
+      smtp_port:    EMAIL_SMTP_PORT,
+      username:     EMAIL_USER,
+      password:     EMAIL_PASS,
+      is_active:    true,
+    }),
+  });
+}
+
 app.get('/api/email-accounts', auth, async (req, res) => {
   try {
+    await ensureDefaultAccount();
     const data = await sb('email_accounts?select=id,display_name,email,imap_host,imap_port,smtp_host,smtp_port,username,from_name,is_active,created_at&order=created_at.asc');
     res.json(data);
   } catch (e) { res.status(500).json({ message: e.message }); }
