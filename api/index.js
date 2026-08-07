@@ -13,6 +13,12 @@ app.use(express.json({ limit: '20mb' }));
 
 const SB_URL  = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SB_KEY  = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// 后端必须用 service_role key 绕过 RLS（schema_rls_fix.sql 的设计前提）。
+// anon key 在开了 RLS 且无 policy 的表上：SELECT 静默返回空，INSERT 直接被拒。
+const SB_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!SB_SERVICE_KEY) {
+  console.warn('[SECURITY-WARN] SUPABASE_SERVICE_ROLE_KEY 未设置，后端回退到 anon key；开启 RLS 的表将无法读写。');
+}
 
 // ──────────────────────────────────────────
 // 安全启动校验：环境变量必须存在，否则拒绝运行
@@ -81,7 +87,7 @@ async function sb(path, opts = {}) {
     headers: {
       'Content-Type': 'application/json',
       'apikey': SB_KEY,
-      'Authorization': `Bearer ${SB_KEY}`,
+      'Authorization': `Bearer ${SB_SERVICE_KEY || SB_KEY}`,
       ...(opts.headers || {}),
     },
   });
