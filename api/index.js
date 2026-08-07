@@ -949,6 +949,8 @@ app.post('/api/emails/sync', auth, async (req, res) => {
 
   const client = imapClient(cfg);
   let synced = 0;
+  let fetchedCount = 0;
+  const errors = [];
   try {
     await client.connect();
     const lock = await client.getMailboxLock('INBOX');
@@ -970,6 +972,7 @@ app.post('/api/emails/sync', auth, async (req, res) => {
       } catch (fetchErr) {
         if (!fetchErr.message?.includes('No messages')) throw fetchErr;
       }
+      fetchedCount = messages.length;
 
       for (const { uid, source } of messages) {
         try {
@@ -1003,6 +1006,7 @@ app.post('/api/emails/sync', auth, async (req, res) => {
           });
           synced++;
         } catch (parseErr) {
+          errors.push({ uid, error: parseErr.message });
           console.error('瑙ｆ瀽閭欢澶辫触 uid=' + uid, parseErr.message);
         }
       }
@@ -1010,7 +1014,7 @@ app.post('/api/emails/sync', auth, async (req, res) => {
       lock.release();
     }
     await client.logout();
-    res.json({ success: true, synced });
+    res.json({ success: true, synced, fetched: fetchedCount, errors });
   } catch (e) {
     try { await client.logout(); } catch {}
     res.status(500).json({ message: e.message, detail: e.responseText || e.code || String(e) });

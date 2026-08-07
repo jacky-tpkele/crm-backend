@@ -1138,7 +1138,15 @@ async function syncEmails() {
   try {
     const res  = await apiFetch('/api/emails/sync', { method:'POST', body: JSON.stringify({ account_id: currentAccountId }) });
     const data = await res.json();
-    if (data.success) { showToast(`同步完成，新增 ${data.synced} 封`); loadEmails(currentFolder); }
+    if (data.success) {
+      if (data.errors && data.errors.length) {
+        console.error('[sync] 入库失败明细：', data.errors);
+        showToast(`取到 ${data.fetched} 封，入库失败 ${data.errors.length} 封：${data.errors[0].error}`, 'err');
+      } else {
+        showToast(`同步完成，新增 ${data.synced} 封`);
+      }
+      loadEmails(currentFolder);
+    }
     else showToast(data.message||'同步失败','err');
   } catch (e) { showToast('同步失败：'+e.message,'err'); }
   finally {
