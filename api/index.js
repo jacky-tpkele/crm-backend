@@ -464,6 +464,57 @@ app.delete('/api/inquiries/:id', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
+// 询盘转客户：检查邮箱是否已存在
+app.post('/api/inquiries/:id/convert', auth, async (req, res) => {
+  try {
+    const inquiry = await sb(`inquiries?id=eq.${req.params.id}&select=*`);
+    if (!inquiry || !inquiry.length) {
+      return res.status(404).json({ message: 'Inquiry not found' });
+    }
+    const i = inquiry[0];
+    if (!i.email) {
+      return res.status(400).json({ message: 'Inquiry has no email address' });
+    }
+
+    // 查找该邮箱是否已存在客户
+    const existing = await sb(`customers?email=eq.${encodeURIComponent(i.email)}&is_deleted=eq.false&select=id,customer_name`);
+
+    if (existing && existing.length > 0) {
+      // 已存在
+      res.json({ exists: true, customerId: existing[0].id, customerName: existing[0].customer_name });
+    } else {
+      // 不存在，返回预填数据
+      res.json({
+        exists: false,
+        data: {
+          name: i.customer_name || '',
+          email: i.email || '',
+          notes: i.subject ? `来自网站询盘：${i.subject}` : '来自网站询盘'
+        }
+      });
+    }
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 询盘关联到客户
+app.put('/api/inquiries/:id/link-customer', auth, async (req, res) => {
+  try {
+    const { customerId } = req.body;
+    if (!customerId) {
+      return res.status(400).json({ message: 'customerId is required' });
+    }
+    await sb(`inquiries?id=eq.${req.params.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        customer_id: customerId,
+        status: 'converted',
+        updated_at: new Date().toISOString()
+      })
+    });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
 // 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // ORDERS
 // 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲

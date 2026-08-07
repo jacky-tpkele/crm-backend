@@ -2276,11 +2276,39 @@ async function saveCustomer(e) {
     delivery_term:    document.getElementById('cm-delivery-term').value,
     shipping_address: addrs.length ? JSON.stringify(addrs) : '',
   };
+  const notesField = document.getElementById('cm-notes');
+  if (notesField && notesField.value.trim()) payload.notes = notesField.value.trim();
+
   try {
-    if (id) await api(`/api/customers/${id}`, { method:'PUT', body:JSON.stringify(payload) });
-    else    await api('/api/customers',         { method:'POST', body:JSON.stringify(payload) });
+    let result;
+    if (id) {
+      await api(`/api/customers/${id}`, { method:'PUT', body:JSON.stringify(payload) });
+    } else {
+      result = await api('/api/customers', { method:'POST', body:JSON.stringify(payload) });
+    }
+
+    // 如果是从询盘转过来的，自动关联
+    if (window._convertingInquiryId && result && result.data && result.data.id) {
+      try {
+        await api(`/api/inquiries/${window._convertingInquiryId}/link-customer`, {
+          method:'PUT',
+          body:JSON.stringify({customerId: result.data.id})
+        });
+        const inquiry = S.inquiries.find(x => x.id === window._convertingInquiryId);
+        if (inquiry) {
+          inquiry.status = 'converted';
+          inquiry.customer_id = result.data.id;
+        }
+        toast('客户已创建并关联到询盘');
+      } catch(err) {
+        toast('客户已创建，但关联失败：' + err.message, 'err');
+      }
+      window._convertingInquiryId = null;
+    } else {
+      toast(id ? 'Customer updated' : 'Customer saved');
+    }
+
     closeModal('customerModal');
-    toast(id ? 'Customer updated' : 'Customer saved');
     await loadCustomers();
   } catch(err) { toast(err.message,'err'); }
 }
@@ -3738,6 +3766,9 @@ function renderInquiries() {
       <td data-label=""><div class="actions-cell">
         <button class="btn btn-sm btn-primary" onclick="viewInquiry('${i.id}')">查看</button>
         <button class="btn btn-sm btn-cyan" onclick="replyInquiryByEmail('${i.id}')">✉ 回复</button>
+        ${(i.status||'new')==='converted'
+          ?'<button class="btn btn-sm" disabled style="opacity:0.5;cursor:not-allowed">✓ 已转化</button>'
+          :'<button class="btn btn-sm btn-success" onclick="convertInquiryToCustomer(\''+i.id+'\')">→ 转为客户</button>'}
         <button class="btn btn-sm btn-danger" onclick="deleteInquiry('${i.id}')">删除</button>
       </div>${msgPreview?`<div class="iq-card-msg">${esc(msgPreview)}</div>`:''}</td>
     </tr>`;
@@ -3818,6 +3849,44 @@ function convertInquiryToOrder(id) {
     document.getElementById('om-customer').value = i.customer_name||'';
     document.getElementById('om-date').value = today();
   }, 200);
+}
+
+// 询盘转为客户
+async function convertInquiryToCustomer(id) {
+  const i = S.inquiries.find(x=>x.id===id);
+  if (!i) return;
+
+  try {
+    const result = await api(`/api/inquiries/${id}/convert`, {method:'POST'});
+
+    if (result.exists) {
+      // 邮箱已存在于客户表
+      if (!confirm(`该邮箱（${i.email}）已是客户「${result.customerName}」，是否直接关联？`)) return;
+      await api(`/api/inquiries/${id}/link-customer`, {
+        method:'PUT',
+        body:JSON.stringify({customerId: result.customerId})
+      });
+      i.status = 'converted';
+      i.customer_id = result.customerId;
+      renderInquiries();
+      toast('已关联到现有客户');
+    } else {
+      // 需要新建客户
+      navigate('customers');
+      setTimeout(() => {
+        openCustomerModal();
+        document.getElementById('cm-name').value = result.data.name;
+        document.getElementById('cm-email').value = result.data.email;
+        const notesField = document.getElementById('cm-notes');
+        if (notesField) notesField.value = result.data.notes;
+        // 标记当前正在转换的询盘 ID
+        window._convertingInquiryId = id;
+        toast('请完善客户信息并保存');
+      }, 300);
+    }
+  } catch(e) {
+    toast(e.message, 'err');
+  }
 }
 
 // ══════════════════════════════
