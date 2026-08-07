@@ -838,7 +838,9 @@ async function ensureDefaultAccount() {
 
 app.get('/api/email-accounts', auth, async (req, res) => {
   try {
-    await ensureDefaultAccount();
+    // 自动建默认账号失败不应该导致整个列表 500
+    try { await ensureDefaultAccount(); }
+    catch (e) { console.error('[email] ensureDefaultAccount failed:', e.message); }
     const data = await sb('email_accounts?select=id,display_name,email,imap_host,imap_port,smtp_host,smtp_port,username,from_name,is_active,created_at&order=created_at.asc');
     res.json(data);
   } catch (e) { res.status(500).json({ message: e.message }); }
@@ -868,7 +870,74 @@ app.delete('/api/email-accounts/:id', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// 鍚屾鏀朵欢绠卞埌 Supabase
+// 邮件系统自检：定位同步失败的确切环节（不返回任何密码/密钥的值）
+app.get('/api/emails/diagnose', auth, async (req, res) => {
+  const out = { env: {}, db: {}, imap: {} };
+
+  // 1. 环境变量是否存在（只报是否存在，不报值）
+  out.env = {
+    imap_host: EMAIL_IMAP_HOST || null,
+    imap_port: EMAIL_IMAP_PORT,
+    smtp_host: EMAIL_SMTP_HOST || null,
+    smtp_port: EMAIL_SMTP_PORT,
+    user:      EMAIL_USER || null,
+    pass_set:  !!EMAIL_PASS,
+    pass_len:  EMAIL_PASS ? EMAIL_PASS.length : 0,
+  };
+
+  // 2. email_accounts 表是否可访问
+  try {
+    const rows = await sb('email_accounts?select=id,email,is_active');
+    out.db.email_accounts = { ok: true, count: rows.length, rows };
+  } catch (e) {
+    out.db.email_accounts = { ok: false, error: e.message };
+  }
+
+  // 3. emails.account_id 列是否存在
+  try {
+    await sb('emails?select=id,account_id&limit=1');
+    out.db.account_id_column = { ok: true };
+  } catch (e) {
+    out.db.account_id_column = { ok: false, error: e.message };
+  }
+
+  // 4. 当前已同步的最大 UID
+  try {
+    const rows = await sb('emails?select=uid&folder=eq.INBOX&account_id=is.null&order=uid.desc&limit=1');
+    out.db.last_uid = rows.length ? rows[0].uid : 0;
+  } catch (e) {
+    out.db.last_uid = { error: e.message };
+  }
+
+  // 5. 真实连一次 IMAP
+  if (!EMAIL_IMAP_HOST || !EMAIL_USER || !EMAIL_PASS) {
+    out.imap = { ok: false, error: '环境变量不完整，跳过连接测试' };
+  } else {
+    const client = imapClient({});
+    try {
+      await client.connect();
+      out.imap.connected = true;
+      const lock = await client.getMailboxLock('INBOX');
+      try {
+        out.imap.mailbox = {
+          exists:   client.mailbox.exists,
+          uidNext:  client.mailbox.uidNext,
+          uidValidity: String(client.mailbox.uidValidity),
+        };
+      } finally { lock.release(); }
+      await client.logout();
+      out.imap.ok = true;
+    } catch (e) {
+      out.imap.ok = false;
+      out.imap.error = e.message;
+      out.imap.detail = e.responseText || e.code || String(e);
+      try { await client.logout(); } catch {}
+    }
+  }
+
+  res.json(out);
+});
+
 app.post('/api/emails/sync', auth, async (req, res) => {
   const { account_id } = req.body || {};
   const cfg = await getAccountCfg(account_id);
