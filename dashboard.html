@@ -3871,17 +3871,27 @@ async function convertInquiryToCustomer(id) {
       renderInquiries();
       toast('已关联到现有客户');
     } else {
-      // 需要新建客户
+      // 需要新建客户：把询盘里已有的信息全部预填，用户只补缺的部分
       navigate('customers');
       setTimeout(() => {
         openCustomerModal();
-        document.getElementById('cm-name').value = result.data.name;
-        document.getElementById('cm-email').value = result.data.email;
-        const notesField = document.getElementById('cm-notes');
-        if (notesField) notesField.value = result.data.notes;
+        const d = result.data || {};
+        const set = (elId, val) => {
+          const el = document.getElementById(elId);
+          if (el && val) el.value = val;
+        };
+        set('cm-name',     d.name);
+        set('cm-email',    d.email);
+        set('cm-contact',  d.contact || d.name);
+        set('cm-country',  d.country);
+        set('cm-whatsapp', d.whatsapp);
+        set('cm-notes',    d.notes);
         // 标记当前正在转换的询盘 ID
         window._convertingInquiryId = id;
-        toast('请完善客户信息并保存');
+        // 焦点放到第一个需要人工确认的字段
+        const nameEl = document.getElementById('cm-name');
+        if (nameEl) nameEl.focus();
+        toast('已带入询盘信息，请补全后保存');
       }, 300);
     }
   } catch(e) {

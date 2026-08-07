@@ -320,22 +320,54 @@ app.get('/api/customers', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
+// PostgREST 报「Could not find the 'x' column of 'y' in the schema cache」时，
+// 说明数据库缺这列（迁移没跑）。与其整条保存失败，不如剔掉这列重试，
+// 让用户填的其他信息先存下来，再提示去补迁移。
+function missingColumnFrom(errMsg) {
+  const m = /Could not find the '([^']+)' column/.exec(String(errMsg || ''));
+  return m ? m[1] : null;
+}
+
+async function sbWithColumnFallback(path, opts, payload) {
+  const body = { ...payload };
+  const dropped = [];
+  // 最多重试 6 次，避免缺很多列时无限循环
+  for (let attempt = 0; attempt < 6; attempt++) {
+    try {
+      const data = await sb(path, { ...opts, body: JSON.stringify(body) });
+      return { data, dropped };
+    } catch (e) {
+      const col = missingColumnFrom(e.message);
+      if (!col || !(col in body)) throw e;
+      delete body[col];
+      dropped.push(col);
+      console.warn(`[schema] ${path} 缺列 ${col}，已跳过该字段。请执行对应的 schema 迁移 SQL。`);
+    }
+  }
+  throw new Error('数据库缺少过多字段，请先执行 schema 迁移 SQL');
+}
+
 app.post('/api/customers', auth, async (req, res) => {
   try {
     const payload = { ...req.body };
     if (req.user.user_id && !payload.created_by) payload.created_by = req.user.user_id;
-    const data = await sb('customers?select=*', {
-      method: 'POST', headers: { 'Prefer': 'return=representation' },
-      body: JSON.stringify(payload),
-    });
-    res.json({ success: true, data: data[0] });
+    const { data, dropped } = await sbWithColumnFallback(
+      'customers?select=*',
+      { method: 'POST', headers: { 'Prefer': 'return=representation' } },
+      payload,
+    );
+    res.json({ success: true, data: data[0], skipped_fields: dropped });
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
 app.put('/api/customers/:id', auth, async (req, res) => {
   try {
-    await sb(`customers?id=eq.${req.params.id}`, { method: 'PATCH', body: JSON.stringify(req.body) });
-    res.json({ success: true });
+    const { dropped } = await sbWithColumnFallback(
+      `customers?id=eq.${req.params.id}`,
+      { method: 'PATCH' },
+      req.body,
+    );
+    res.json({ success: true, skipped_fields: dropped });
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
@@ -482,20 +514,34 @@ app.post('/api/inquiries/:id/convert', auth, async (req, res) => {
       return res.status(400).json({ message: 'Inquiry has no email address' });
     }
 
-    // 查找该邮箱是否已存在客户
-    const existing = await sb(`customers?email=eq.${encodeURIComponent(i.email)}&is_deleted=eq.false&select=id,customer_name`);
+    // 查找该邮箱是否已存在客户。先精确匹配，没命中再用 ilike 兜住大小写不同的情况，
+    // 避免同一个客户因为 Gmail 大小写差异被建成两条。
+    let existing = await sb(`customers?email=eq.${encodeURIComponent(i.email)}&is_deleted=eq.false&select=id,customer_name`);
+    if (!existing || !existing.length) {
+      existing = await sb(`customers?email=ilike.${encodeURIComponent(i.email)}&is_deleted=eq.false&select=id,customer_name`);
+    }
 
     if (existing && existing.length > 0) {
       // 已存在
       res.json({ exists: true, customerId: existing[0].id, customerName: existing[0].customer_name });
     } else {
-      // 不存在，返回预填数据
+      // 不存在，返回预填数据。把询盘里已有的信息尽量带过去，减少手工重填。
+      const notesParts = [];
+      if (i.subject)          notesParts.push(`询盘主题：${i.subject}`);
+      if (i.product_interest) notesParts.push(`关注产品：${i.product_interest}`);
+      if (i.message)          notesParts.push(`询盘内容：${i.message}`);
+      notesParts.push(`来源：${i.source === 'website' ? '网站询盘' : (i.source || '手工录入')}`);
+      if (i.inquiry_date)     notesParts.push(`询盘日期：${i.inquiry_date}`);
+
       res.json({
         exists: false,
         data: {
-          name: i.customer_name || '',
-          email: i.email || '',
-          notes: i.subject ? `来自网站询盘：${i.subject}` : '来自网站询盘'
+          name:    i.customer_name || '',
+          email:   i.email || '',
+          contact: i.contact_person || '',
+          country: i.country || '',
+          whatsapp: i.whatsapp || i.phone || '',
+          notes:   notesParts.join('\n'),
         }
       });
     }
