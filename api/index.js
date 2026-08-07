@@ -817,6 +817,23 @@ async function getAccountCfg(accountId) {
   } catch { return {}; }
 }
 
+// 收发邮件时解析出「实际使用哪个账号」。
+// 前端选「全部」时不传 account_id，这里回落到第一个启用的账号，
+// 保证入库的邮件始终带 account_id，不会产生查不到的孤儿数据。
+async function resolveAccount(accountId) {
+  if (accountId) {
+    const cfg = await getAccountCfg(accountId);
+    if (cfg.id) return cfg;
+  }
+  try {
+    const rows = await sb('email_accounts?is_active=eq.true&select=*&order=created_at.asc&limit=1');
+    if (rows[0]) return rows[0];
+  } catch (e) {
+    console.error('[email] resolveAccount failed:', e.message);
+  }
+  return {};
+}
+
 // 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
 // EMAIL ACCOUNTS CRUD
 // 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲
@@ -945,8 +962,9 @@ app.get('/api/emails/diagnose', auth, async (req, res) => {
 });
 
 app.post('/api/emails/sync', auth, async (req, res) => {
-  const { account_id } = req.body || {};
-  const cfg = await getAccountCfg(account_id);
+  const cfg = await resolveAccount((req.body || {}).account_id);
+  // 用解析后的 id：前端选「全部」时也会落到某个具体账号，避免写出 account_id 为空的邮件
+  const account_id = cfg.id || null;
   const imapHost = cfg.imap_host || EMAIL_IMAP_HOST;
   const imapUser = cfg.username  || EMAIL_USER;
   const imapPass = cfg.password  || EMAIL_PASS;
@@ -963,7 +981,7 @@ app.post('/api/emails/sync', auth, async (req, res) => {
     try {
       let lastUid = 0;
       try {
-        const acctFilter = account_id ? `&account_id=eq.${account_id}` : '&account_id=is.null';
+        const acctFilter = account_id ? `&account_id=eq.${account_id}` : '';
         const rows = await sb(`emails?select=uid&folder=eq.INBOX${acctFilter}&order=uid.desc&limit=1`);
         if (rows.length) lastUid = rows[0].uid || 0;
       } catch {}
@@ -1005,7 +1023,9 @@ app.post('/api/emails/sync', auth, async (req, res) => {
           };
           if (account_id) emailData.account_id = account_id;
 
-          await sb('emails?on_conflict=message_id', {
+          // on_conflict 用复合键 (account_id,message_id)，与 schema_v2_17 的唯一索引对应。
+          // 同一 account_id + message_id 的邮件只保留一条，跨账号重复（CC/群发）正常各存一条。
+          await sb('emails?on_conflict=account_id,message_id', {
             method: 'POST',
             headers: { 'Prefer': 'resolution=ignore-duplicates' },
             body: JSON.stringify(emailData),
@@ -1039,10 +1059,11 @@ app.get('/api/emails', auth, async (req, res) => {
     const folderFilter = folder === 'SENT'
       ? 'folder=eq.SENT'
       : `folder=eq.${encodeURIComponent(folder)}`;
-    // INQUIRY 是网站询盘虚拟文件夹，不绑定邮箱账号，跨账号统一显示
+    // INQUIRY 是网站询盘虚拟文件夹，不绑定邮箱账号，跨账号统一显示。
+    // account_id 不传时显示全部账号邮件（"全部"视图），传了则只显示该账号。
     const acctFilter = folder === 'INQUIRY'
       ? ''
-      : (account_id ? `&account_id=eq.${account_id}` : '&account_id=is.null');
+      : (account_id ? `&account_id=eq.${account_id}` : '');
     const data = await sb(
       `emails?${folderFilter}${acctFilter}&is_deleted=eq.false&order=received_at.desc&limit=${limit}&offset=${offset}&select=id,message_id,folder,account_id,from_address,from_name,to_addresses,subject,is_read,received_at`
     );
@@ -1102,10 +1123,11 @@ app.delete('/api/emails/:id', auth, async (req, res) => {
 
 // 鍙戦€侀偖浠?
 app.post('/api/emails/send', auth, async (req, res) => {
-  const { to, cc, subject, body_html, body_text, attachments, account_id } = req.body;
+  const { to, cc, subject, body_html, body_text, attachments } = req.body;
   if (!to || !subject) return res.status(400).json({ message: '鏀朵欢浜哄拰涓婚涓嶈兘涓虹┖' });
 
-  const cfg      = await getAccountCfg(account_id);
+  const cfg        = await resolveAccount(req.body.account_id);
+  const account_id = cfg.id || null;
   const fromUser = cfg.username  || EMAIL_USER;
   const fromName = cfg.from_name || EMAIL_FROM_NAME;
 
