@@ -504,6 +504,162 @@
     .section-card button:hover { background: var(--panel-2); }
     .section-card button.danger { color: var(--text); border-color: var(--border); }
 
+    /* ── 手动插图 manual image picker (mip-*) ── */
+    .mip-add-btn {
+      width: 100%;
+      margin-top: 10px;
+      padding: 9px 12px;
+      border: 1px dashed var(--border-h);
+      background: var(--panel);
+      color: var(--muted2);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+    .mip-add-btn:hover {
+      background: var(--panel-2);
+      border-color: var(--text);
+      color: var(--text);
+    }
+    .mip-add-btn.is-active {
+      background: var(--text);
+      color: var(--on-solid);
+      border-style: solid;
+      border-color: var(--text);
+    }
+    /* MIP_CSS_CHUNK_2 */
+    .mip-card {
+      border: 1px solid var(--text);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+      background: var(--panel-2);
+    }
+    .mip-card .mip-heading {
+      font-size: 12.5px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+    .mip-card .mip-hint {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      padding: 6px 10px;
+      background: var(--panel);
+      border-left: 2px solid var(--text);
+      border-radius: 0 6px 6px 0;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+    .mip-card .mip-anchor {
+      width: 100%;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 11px;
+      color: var(--text);
+      background: var(--panel);
+      margin-bottom: 6px;
+    }
+    .mip-card .mip-anchor-help {
+      font-size: 10px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      line-height: 1.45;
+    }
+    .mip-card .mip-image {
+      width: 100%;
+      max-height: 110px;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      display: block;
+      border: 1px solid var(--border);
+    }
+    .mip-card button {
+      padding: 5px 11px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--muted2);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 11px;
+      margin-right: 4px;
+      transition: all 0.15s ease;
+    }
+    .mip-card button:hover { background: var(--panel-2); }
+    .mip-card input[type="file"] { display: none; }
+    /* MIP_CSS_CHUNK_3 */
+    .mip-pickbar {
+      display: none;
+      padding: 10px 18px;
+      background: var(--text);
+      color: var(--on-solid);
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      align-items: center;
+      gap: 10px;
+    }
+    .mip-pickbar.is-on { display: flex; }
+    .mip-pickbar .mip-pickbar-text { flex: 1; }
+    .mip-pickbar button {
+      padding: 4px 12px;
+      border: 1px solid var(--on-solid);
+      background: transparent;
+      color: var(--on-solid);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .mip-pickbar button:hover { background: rgba(255,255,255,.15); }
+    html[data-theme="dark"] .mip-pickbar button:hover { background: rgba(0,0,0,.2); }
+
+    .mip-slot {
+      height: 22px;
+      margin: 4px 0;
+      position: relative;
+      cursor: pointer;
+    }
+    .mip-slot::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 0;
+      border-top: 1px dashed var(--border-h);
+      transition: all 0.15s ease;
+    }
+    .mip-slot:hover::before {
+      border-top: 2px solid var(--text);
+    }
+    .mip-slot::after {
+      content: '＋ 插图到这里';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--panel);
+      color: var(--muted);
+      padding: 2px 12px;
+      border-radius: 999px;
+      font-size: 10.5px;
+      white-space: nowrap;
+      border: 1px solid var(--border-h);
+      transition: all 0.15s ease;
+    }
+    .mip-slot:hover::after {
+      background: var(--text);
+      color: var(--on-solid);
+      border-color: var(--text);
+      font-weight: 600;
+    }
+    .mip-para { position: relative; }
+
     /* chip */
     .chip {
       display: inline-block;
@@ -790,6 +946,10 @@
         💡 已选中：<strong id="selectionText" style="color:var(--text);"></strong>
         <span style="color:var(--muted);margin-left:8px;">→ 在右侧"链接管理"里给它加链接，点"插入到正文"会自动替换</span>
       </div>
+      <div class="mip-pickbar" id="mipPickbar">
+        <span class="mip-pickbar-text">📍 选位模式：点击段落之间的虚线，把插图位置加到右侧。可连续点多个位置。</span>
+        <button onclick="exitManualImageMode(true)">完成，回到编辑</button>
+      </div>
       <div class="editor-area">
         <textarea id="contentEditor" class="markdown-edit" placeholder="文章内容..." oninput="onContentChange()" onmouseup="onEditorSelectionChange()" onkeyup="onEditorSelectionChange()" onblur="onEditorBlur()"></textarea>
         <div id="contentPreview" class="markdown-preview" style="display:none;"></div>
@@ -876,6 +1036,7 @@
               点"AI 推荐位置"扫文章 H2 章节，每节给配图建议
             </div>
           </div>
+          <button class="mip-add-btn" onclick="enterManualImageMode()">＋ 手动添加插图</button>
         </div>
       </div>
 
@@ -1654,6 +1815,158 @@
         showToast('错误：' + e.message);
       }
     }
+
+    // ─── 手动插图选位功能 ───────────────────────────────────────────
+    let mipCounter = 0;
+    let mipCards = []; // [{cardId, anchorText, imageId}]
+
+    function enterManualImageMode() {
+      const pickbar = document.getElementById('mipPickbar');
+      const addBtn = document.querySelector('.mip-add-btn');
+      // 如果已在选位模式，点按钮直接退出
+      if (pickbar.classList.contains('is-on')) {
+        exitManualImageMode(false);
+        return;
+      }
+      // 强制进入简易预览
+      setMode('preview');
+      // 渲染带分隔线的预览
+      renderPreviewWithSlots();
+      // 显示提示条，按钮变激活态
+      pickbar.classList.add('is-on');
+      if (addBtn) addBtn.classList.add('is-active');
+    }
+
+    function exitManualImageMode(goEdit) {
+      const pickbar = document.getElementById('mipPickbar');
+      const addBtn = document.querySelector('.mip-add-btn');
+      pickbar.classList.remove('is-on');
+      if (addBtn) addBtn.classList.remove('is-active');
+      // 还原为普通预览（去掉分隔线）
+      const editor = document.getElementById('contentEditor');
+      const preview = document.getElementById('contentPreview');
+      if (goEdit) {
+        setMode('edit');
+      } else {
+        preview.innerHTML = renderMarkdown(editor.value);
+      }
+    }
+
+    function renderPreviewWithSlots() {
+      const editor = document.getElementById('contentEditor');
+      const preview = document.getElementById('contentPreview');
+      const md = editor.value;
+      // 按空行分段
+      const rawParas = md.split(/\n{2,}/);
+      const paragraphs = rawParas.filter(p => p.trim() !== '');
+      let html = '';
+      paragraphs.forEach((para, i) => {
+        // 取锚点文本：去除 Markdown 标记符，取前 40 字
+        const anchor = para.replace(/^#+\s+/, '').replace(/[*_`\[\]()!#>]/g, '').trim().slice(0, 40);
+        const safeAnchor = anchor.replace(/'/g, '&apos;').replace(/"/g, '&quot;');
+        html += `<div class="mip-para">${renderMarkdown(para)}</div>`;
+        html += `<div class="mip-slot" onclick="selectMipPosition(${i}, '${safeAnchor}')"></div>`;
+      });
+      preview.innerHTML = html;
+    }
+
+    function selectMipPosition(paraIndex, anchorText) {
+      mipCounter++;
+      const cardId = 'mip-card-' + mipCounter;
+      const hint = anchorText.slice(0, 30) + (anchorText.length > 30 ? '…' : '');
+
+      const card = document.createElement('div');
+      card.className = 'mip-card';
+      card.id = cardId;
+      card.innerHTML =
+        '<div class="mip-heading">📍 手动插图 #' + mipCounter + '</div>' +
+        '<div class="mip-hint">插在「' + escapeHtml(hint) + '」之后</div>' +
+        '<input class="mip-anchor" id="anchor-' + cardId + '" type="text"' +
+          ' placeholder="定位锚点（可修改）" value="' + escapeHtml(anchorText) + '">' +
+        '<div class="mip-anchor-help">图片会插在包含这段文字的段落之后</div>' +
+        '<input type="file" accept="image/*" id="file-' + cardId + '"' +
+          ' onchange="uploadMipImage(event, \'' + cardId + '\')">' +
+        '<button onclick="document.getElementById(\'file-' + cardId + '\').click()">📤 上传插图</button>' +
+        '<button onclick="deleteMipCard(\'' + cardId + '\')">删除</button>';
+
+      // 追加到 sectionsBox 下方的手动卡片区
+      let mipZone = document.getElementById('mipZone');
+      if (!mipZone) {
+        mipZone = document.createElement('div');
+        mipZone.id = 'mipZone';
+        const addBtn = document.querySelector('.mip-add-btn');
+        addBtn.parentNode.insertBefore(mipZone, addBtn);
+      }
+      mipZone.appendChild(card);
+
+      mipCards.push({ cardId, anchorText, imageId: null });
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      showToast('✓ 已标记位置 #' + mipCounter + '，请上传图片');
+    }
+
+    async function uploadMipImage(e, cardId) {
+      const file = e.target.files[0];
+      if (!file) return;
+      showToast('上传中...');
+      try {
+        const b64 = await fileToBase64(file);
+        const anchorInput = document.getElementById('anchor-' + cardId);
+        const manualAnchorText = anchorInput ? anchorInput.value.trim() : '';
+        const meta = mipCards.find(m => m.cardId === cardId);
+        const r = await fetch('/api/blog/post/' + postId + '/content-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            imageBase64: b64,
+            altText: '',
+            sectionIndex: null,
+            manualAnchorText,
+            replaceImageId: meta && meta.imageId ? meta.imageId : null,
+          }),
+        });
+        const d = await parseApiResponse(r);
+        if (d.success) {
+          showToast(d.placementMode === 'manual' ? '✓ 已按选定位置插入图片' : '✓ 锚点未匹配，已追加到文末');
+          if (meta) meta.imageId = d.image.id;
+          // 在卡片里显示预览图
+          const card = document.getElementById(cardId);
+          let img = card.querySelector('.mip-image');
+          if (!img) {
+            img = document.createElement('img');
+            img.className = 'mip-image';
+            card.insertBefore(img, card.querySelector('input[type="file"]'));
+          }
+          img.src = d.image.url;
+          await loadPost();
+        } else {
+          showToast('上传失败：' + d.error);
+        }
+      } catch (err) {
+        showToast('错误：' + err.message);
+      } finally {
+        e.target.value = '';
+      }
+    }
+
+    async function deleteMipCard(cardId) {
+      const meta = mipCards.find(m => m.cardId === cardId);
+      if (meta && meta.imageId) {
+        if (!confirm('同时删除已上传的图片？')) return;
+        try {
+          const r = await fetch('/api/blog/post/' + postId + '/content-image/' + meta.imageId, { method: 'DELETE' });
+          await parseUploadApiResponse(r);
+          showToast('已删除');
+          await loadPost();
+        } catch (e) {
+          showToast('删除失败：' + e.message);
+          return;
+        }
+      }
+      const card = document.getElementById(cardId);
+      if (card) card.remove();
+      mipCards = mipCards.filter(m => m.cardId !== cardId);
+    }
+    // ─────────────────────────────────────────────────────────────────
 
     async function runSeoCheck() {
       const box = document.getElementById('seoResult');
