@@ -1252,7 +1252,7 @@ function openCompose(opts = {}) {
 
 const EMAIL_SIGNATURE = `
 <br><br>
-<div data-crm-signature="tpkele" style="border-top:1px solid #e5e7eb; padding-top:14px; margin-top:20px;">
+<div data-crm-signature="tpkele" class="crm-signature-block" contenteditable="false" style="border-top:1px solid #e5e7eb; padding-top:14px; margin-top:20px;">
 <table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,Helvetica,sans-serif; color:#1f2937; width:680px; max-width:680px;">
   <tr>
     <td style="padding:0 0 10px 0;">
@@ -1382,7 +1382,7 @@ function initMailEditor(initialHtml = '') {
     branding: false,
     promotion: false,
     statusbar: false,
-    plugins: 'lists link image table code autoresize paste',
+    plugins: 'lists link image table code autoresize paste noneditable',
     toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | forecolor backcolor | bullist numlist | alignleft aligncenter alignright | link image table | removeformat code',
     content_style: `
       body { background:#fff; color:#111; font-size:14px; line-height:1.75; font-family:Arial,"Microsoft YaHei",sans-serif; padding:4px 10px 10px; }
@@ -1394,7 +1394,10 @@ function initMailEditor(initialHtml = '') {
       td { background:#fff; color:#111; }
       a { color:#0b63ce; }
       table.is-striped tbody tr:nth-child(even) td { background:#f7f7f7; }
+      [data-crm-signature] table, [data-crm-signature] td, [data-crm-signature] th { border:none !important; background:transparent !important; padding:0 !important; min-width:0 !important; }
+      [data-crm-signature] { cursor:default; opacity:0.9; }
     `,
+    noneditable_noneditable_class: 'crm-signature-block',
     table_default_styles: { 'border-collapse': 'collapse', border: '1px solid #000' },
     table_default_attributes: { border: '1' },
     table_toolbar: 'tableprops tabledelete | tableinsertrowbefore tableinsertrowafter tabledeleterow | tableinsertcolbefore tableinsertcolafter tabledeletecol | tablecellprops tablemergecells tablesplitcells',
