@@ -485,7 +485,7 @@ tr.iq-unread td{font-weight:600}
       <i class="nav-icon" data-lucide="shopping-cart"></i><span class="nav-label" data-i18n="navOrders">订单管理</span>
     </div>
     <div class="nav-item" data-sec="purchase-orders">
-      <i class="nav-icon" data-lucide="clipboard-list"></i><span class="nav-label">采购单</span>
+      <i class="nav-icon" data-lucide="clipboard-list"></i><span class="nav-label" data-i18n="navPO">采购单</span>
     </div>
     <div class="nav-item" data-sec="analytics">
       <i class="nav-icon" data-lucide="bar-chart-3"></i><span class="nav-label" data-i18n="navAnalytics">数据分析</span>
@@ -506,7 +506,7 @@ tr.iq-unread td{font-weight:600}
         <i class="nav-icon" data-lucide="sparkles"></i><span class="nav-label" data-i18n="navAI">AI 助手</span>
       </div>
       <div class="nav-item" onclick="location.href='blog-automation.html'">
-        <i class="nav-icon" data-lucide="pencil-line"></i><span class="nav-label">BLOG 自动化</span>
+        <i class="nav-icon" data-lucide="pencil-line"></i><span class="nav-label" data-i18n="navBlog">BLOG 自动化</span>
       </div>
       <div class="nav-item" onclick="openRecycleBin()">
         <i class="nav-icon" data-lucide="trash-2"></i><span class="nav-label" data-i18n="navRecycleBin">回收站</span>
@@ -1281,6 +1281,7 @@ const I18N = {
     phSelectOrderDoc:'— 选择订单 —', phSelectOrderQE:'选择订单...',
     // 新增功能 (T1~T4)
     navRecycleBin:'回收站', navAI2:'AI 助手', navEmail:'邮件',
+    navPO:'采购单', navBlog:'BLOG 自动化',
     btnDocMaker:'📝 手动制作文件', btnLogistics:'📦 物流管理', btnVault:'密码保险柜',
     btnExportExcel:'📥 导出', btnImportExcel:'📤 导入',
     btnLoadMore:'＋ 加载更多',
@@ -1409,6 +1410,7 @@ const I18N = {
     phSelectOrderDoc:'— Select an order —', phSelectOrderQE:'Select order...',
     // New (T1~T4)
     navRecycleBin:'Recycle Bin', navAI2:'AI Assistant', navEmail:'Email',
+    navPO:'Purchase Orders', navBlog:'BLOG Automation',
     btnDocMaker:'📝 Doc Maker', btnLogistics:'📦 Logistics', btnVault:'Password Vault',
     btnExportExcel:'📥 Export', btnImportExcel:'📤 Import',
     btnLoadMore:'＋ Load more',
