@@ -33,47 +33,48 @@ button,input,select,textarea{font:inherit}
 
 .app{display:flex;height:100vh;overflow:hidden}
 
-/* ── CRM Sidebar ── */
-.sidebar{width:var(--sb);flex-shrink:0;height:100%;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;z-index:20}
-.sb-logo{display:flex;align-items:center;gap:12px;padding:18px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
-.logo-icon{width:36px;height:36px;flex-shrink:0;display:grid;place-items:center}
-.logo-text{font-size:15px;font-weight:700;white-space:nowrap;letter-spacing:1px}
-.logo-text span{color:var(--primary)}
-.sb-nav{flex:1;overflow-y:auto;padding:10px 0}
-.nav-item{display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;transition:.15s;white-space:nowrap;color:var(--muted2);font-size:13.5px;font-weight:500;border-left:3px solid transparent}
-.nav-item:hover{background:var(--hover);color:var(--text)}
-.nav-item.active{background:var(--selected);color:var(--text);border-left-color:var(--text)}
-.nav-icon{font-size:17px;flex-shrink:0;width:22px;text-align:center}
-.nav-group{padding:8px 16px 4px;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
-
 /* ── Email layout ── */
 .email-shell{flex:1;display:flex;overflow:hidden}
 
 /* ── Folder panel ── */
-.folder-panel{width:185px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;background:var(--panel)}
+.folder-panel{width:238px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;background:var(--panel)}
 .folder-header{padding:14px;border-bottom:1px solid var(--border);flex-shrink:0}
+
+/* ── Account tree ── */
+.acct-tree{flex:1;overflow-y:auto;padding:6px 0;min-height:0}
+.acct-node{margin-bottom:1px}
+.acct-head{display:flex;align-items:center;gap:7px;padding:8px 10px 8px 11px;margin:1px 6px;border-radius:6px;cursor:pointer;transition:.15s;color:var(--text);font-size:12.5px;font-weight:600}
+.acct-head:hover{background:var(--hover)}
+.acct-head.is-current{background:var(--selected)}
+.acct-caret{flex-shrink:0;width:11px;font-size:9px;color:var(--muted);transition:transform .18s;line-height:1}
+.acct-node.open .acct-caret{transform:rotate(90deg)}
+.acct-mail{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct-tag{flex-shrink:0;font-size:9px;font-weight:600;color:var(--muted);border:1px solid var(--border);border-radius:4px;padding:0 4px;line-height:15px}
+.acct-edit{flex-shrink:0;width:19px;height:19px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:11px;border-radius:4px;display:none;place-items:center;line-height:1}
+.acct-head:hover .acct-edit{display:grid}
+.acct-edit:hover{background:var(--border);color:var(--text)}
+.acct-sub{display:none;padding:1px 0 5px}
+.acct-node.open .acct-sub{display:block}
+.sub-item{display:flex;align-items:center;gap:8px;padding:6px 10px 6px 30px;margin:1px 6px;border-radius:6px;cursor:pointer;font-size:12.5px;color:var(--muted2);transition:.15s;border-left:3px solid transparent}
+.sub-item:hover{background:var(--hover);color:var(--text)}
+.sub-item.active{background:var(--selected);color:var(--text);border-left-color:var(--text);font-weight:600}
+.sub-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sub-badge{flex-shrink:0;background:var(--text);color:var(--panel);font-size:9.5px;font-weight:700;border-radius:9px;padding:1px 5px;min-width:17px;text-align:center}
+.sub-sync{flex-shrink:0;width:19px;height:19px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:11px;border-radius:4px;display:none;place-items:center;line-height:1}
+.sub-item:hover .sub-sync{display:grid}
+.sub-sync:hover{background:var(--border);color:var(--text)}
+.sub-sync.spin{display:grid;animation:subspin .9s linear infinite}
+@keyframes subspin{to{transform:rotate(360deg)}}
+.acct-tree-empty{padding:18px 14px;font-size:12px;color:var(--muted);text-align:center;line-height:1.7}
+.tree-sep{height:1px;background:var(--border);margin:6px 12px}
+.btn-add-acct{display:flex;align-items:center;gap:7px;width:calc(100% - 12px);margin:2px 6px;padding:7px 11px;border-radius:6px;border:1px dashed var(--border-h);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;transition:.15s;text-align:left}
+.btn-add-acct:hover{border-color:var(--text);color:var(--text)}
+.folder-foot{padding:9px 8px;border-top:1px solid var(--border);flex-shrink:0}
+.btn-back-crm{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:7px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:12px;cursor:pointer;transition:.15s}
+.btn-back-crm:hover{border-color:var(--text);color:var(--text)}
 .btn-compose{width:100%;padding:9px 14px;border-radius:8px;border:none;background:var(--text);color:var(--panel);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:.15s}
 .btn-compose:hover{opacity:.85}
 
-.folder-list{padding:8px 0;border-bottom:1px solid var(--border);flex-shrink:0}
-.folder-item{display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:pointer;font-size:13px;color:var(--muted2);transition:.15s;border-radius:6px;margin:1px 6px;border-left:3px solid transparent}
-.folder-item:hover{background:var(--hover);color:var(--text)}
-.folder-item.active{background:var(--selected);color:var(--text);border-left-color:var(--text)}
-.folder-item .badge{margin-left:auto;background:var(--text);color:var(--panel);font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;min-width:18px;text-align:center}
-
-/* ── Account switcher ── */
-.acct-bar{padding:10px 8px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;gap:5px}
-.acct-select{flex:1;min-width:0;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--panel);color:var(--text);font-size:12.5px;cursor:pointer;outline:none;transition:.15s}
-.acct-select:hover,.acct-select:focus{border-color:var(--text)}
-.btn-acct{width:26px;height:28px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);cursor:pointer;font-size:13px;display:grid;place-items:center;line-height:1;transition:.15s;flex-shrink:0}
-.btn-acct:hover{border-color:var(--text);color:var(--text)}
-.btn-acct:disabled{opacity:.35;pointer-events:none}
-.acct-spacer{flex:1;min-height:0}
-
-.folder-sync{padding:10px 8px;border-top:1px solid var(--border);flex-shrink:0}
-.btn-sync{width:100%;padding:7px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:.2s}
-.btn-sync:hover{border-color:var(--text);color:var(--text)}
-.btn-sync.syncing{opacity:.6;pointer-events:none}
 
 /* ── Email list ── */
 .list-panel{width:300px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;background:var(--panel)}
@@ -477,9 +478,6 @@ html body .tox .tox-edit-area iframe{background:#ffffff !important}
   .email-mobile-topbar .mobile-menu-btn {
     display:flex !important;
   }
-  /* email 页 sidebar 在移动端走抽屉，但不依赖 mobile.js 自动注入 */
-  .sidebar { width:240px; }
-
   /* email 页的 .app 默认是横向 flex，移动端改纵向，让顶栏置顶 */
   .app { flex-direction:column !important; }
   .email-shell { flex:1; min-height:0; }
@@ -494,33 +492,10 @@ html body .tox .tox-edit-area iframe{background:#ffffff !important}
 <body>
 <div class="app">
 
-  <!-- 移动端顶栏（汉堡 + 标题，仅在 ≤768 显示） -->
+  <!-- 移动端顶栏（返回 CRM + 标题，仅在 ≤768 显示） -->
   <div class="email-mobile-topbar">
-    <button class="mobile-menu-btn" onclick="window.toggleMobileSidebar && window.toggleMobileSidebar()">☰</button>
+    <button class="mobile-menu-btn" onclick="location.href='dashboard.html'" title="返回 CRM">←</button>
     <span class="em-title">邮件</span>
-  </div>
-
-  <!-- CRM Sidebar -->
-  <div class="sidebar">
-    <div class="sb-logo">
-      <div class="logo-icon">
-        <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
-          <rect width="36" height="36" rx="9" fill="rgba(11,155,63,0.12)"/>
-          <path d="M8 18h20M18 8v20" stroke="#0b9b3f" stroke-width="2.5" stroke-linecap="round"/>
-          <circle cx="18" cy="18" r="4" fill="#0b9b3f"/>
-        </svg>
-      </div>
-      <div class="logo-text">TP<span>KELE</span></div>
-    </div>
-    <div class="sb-nav">
-      <div class="nav-group">主菜单</div>
-      <div class="nav-item" onclick="location.href='dashboard.html'"><span class="nav-icon">📊</span><span>仪表盘</span></div>
-      <div class="nav-item" onclick="location.href='dashboard.html'"><span class="nav-icon">📦</span><span>订单管理</span></div>
-      <div class="nav-item" onclick="location.href='dashboard.html#customers'"><span class="nav-icon">👥</span><span>客户管理</span></div>
-      <div class="nav-item" onclick="location.href='dashboard.html#inquiries'"><span class="nav-icon">📋</span><span>网站询盘</span></div>
-      <div class="nav-group">工具</div>
-      <div class="nav-item active"><span class="nav-icon">✉️</span><span>邮件</span></div>
-    </div>
   </div>
 
   <!-- Email Shell -->
@@ -533,34 +508,12 @@ html body .tox .tox-edit-area iframe{background:#ffffff !important}
         <button class="folder-panel-close" onclick="document.body.classList.remove('email-view-folders')" title="关闭">✕</button>
       </div>
 
-      <div class="acct-bar">
-        <select class="acct-select" id="acctSelect" onchange="onAccountChange()" title="切换邮箱账号">
-          <option value="">加载中…</option>
-        </select>
-        <button class="btn-acct" id="btnEditAcct" onclick="editCurrentAccount()" title="编辑当前账号" disabled>✎</button>
-        <button class="btn-acct" onclick="openAccountModal()" title="添加邮箱账号">＋</button>
+      <div class="acct-tree" id="acctTree">
+        <div class="acct-tree-empty">加载中…</div>
       </div>
 
-      <div class="folder-list">
-        <div class="folder-item active" onclick="selectFolder('INBOX',this)">
-          <span>收件箱</span>
-          <span class="badge" id="badge-inbox" style="display:none"></span>
-        </div>
-        <div class="folder-item" onclick="selectFolder('SENT',this)">
-          <span>已发送</span>
-        </div>
-        <div class="folder-item" onclick="selectFolder('INQUIRY',this)">
-          <span>网站询盘</span>
-          <span class="badge" id="badge-inquiry" style="display:none"></span>
-        </div>
-      </div>
-
-      <div class="acct-spacer"></div>
-
-      <div class="folder-sync">
-        <button class="btn-sync" id="btnSync" onclick="syncEmails()">
-          同步收件箱
-        </button>
+      <div class="folder-foot">
+        <button class="btn-back-crm" onclick="location.href='dashboard.html'">← 返回 CRM</button>
       </div>
     </div>
 
@@ -730,54 +683,136 @@ function esc(s) {
 // ── Accounts ──
 let accountList = [];  // 已加载的账号，供编辑弹窗复用
 
+// 展开状态：Set<accountId>；'__all__' 代表「全部账号」节点
+let openAccts = new Set();
+
 async function loadAccounts() {
-  const sel = document.getElementById('acctSelect');
+  const tree = document.getElementById('acctTree');
   try {
     const res  = await apiFetch('/api/email-accounts');
     const list = await res.json();
     if (!res.ok || !Array.isArray(list)) {
       const msg = (list && list.message) || `HTTP ${res.status}`;
-      sel.innerHTML = '<option value="">加载失败</option>';
+      tree.innerHTML = `<div class="acct-tree-empty">账号加载失败<br>${esc(msg)}</div>`;
       showToast('账号加载失败：' + msg, 'err');
       return;
     }
     accountList = list;
-    renderAccounts(list);
+    // 首次加载：默认展开当前账号，没有则展开第一个
+    if (!openAccts.size) {
+      if (currentAccountId) openAccts.add(currentAccountId);
+      else if (list.length) openAccts.add(list[0].id);
+    }
+    renderAcctTree();
   } catch (e) {
-    sel.innerHTML = '<option value="">加载失败</option>';
+    tree.innerHTML = `<div class="acct-tree-empty">账号加载失败<br>${esc(e.message)}</div>`;
     showToast('账号加载失败：' + e.message, 'err');
   }
 }
 
-function renderAccounts(accounts) {
-  const sel = document.getElementById('acctSelect');
-  if (!accounts.length) {
-    sel.innerHTML = '<option value="">暂无账号，点 ＋ 添加</option>';
-    document.getElementById('btnEditAcct').disabled = true;
-    return;
-  }
+const SUB_FOLDERS = [
+  { key:'INBOX', label:'收件箱', sync:true },
+  { key:'SENT',  label:'已发送' },
+  { key:'DRAFT', label:'草稿'   },
+];
+
+function renderAcctTree() {
+  const tree = document.getElementById('acctTree');
   // 当前选中的账号如果已被删除，回落到「全部」
-  if (currentAccountId && !accounts.some(a => a.id === currentAccountId)) currentAccountId = null;
+  if (currentAccountId && !accountList.some(a => a.id === currentAccountId)) currentAccountId = null;
 
-  const opts = accounts.map((a, i) => {
-    const label = (a.display_name || a.email) + (i === 0 ? ' · 默认' : '');
-    return `<option value="${a.id}" ${a.id === currentAccountId ? 'selected' : ''}>${esc(label)}</option>`;
-  }).join('');
-  sel.innerHTML = `<option value="" ${!currentAccountId ? 'selected' : ''}>全部账号</option>` + opts;
-  document.getElementById('btnEditAcct').disabled = !currentAccountId;
+  const nodeHtml = (id, mailLabel, tag, editIdx) => {
+    const isOpen    = openAccts.has(id ?? '__all__');
+    const isCurrent = (id ?? null) === currentAccountId;
+    const subs = SUB_FOLDERS.map(f => {
+      const active = isCurrent && currentFolder === f.key;
+      const badge  = f.key === 'INBOX'
+        ? `<span class="sub-badge" id="badge-inbox-${id ?? 'all'}" style="display:none"></span>` : '';
+      const sync   = f.sync
+        ? `<button class="sub-sync" title="同步收件箱" onclick="event.stopPropagation();syncAccount(${id ? `'${id}'` : 'null'},this)">⟳</button>` : '';
+      return `<div class="sub-item ${active ? 'active' : ''}" onclick="selectAcctFolder(${id ? `'${id}'` : 'null'},'${f.key}')">
+        <span class="sub-label">${f.label}</span>${badge}${sync}</div>`;
+    }).join('');
+    const editBtn = editIdx !== null
+      ? `<button class="acct-edit" title="编辑账号" onclick="event.stopPropagation();editAcct(${editIdx})">✎</button>` : '';
+    return `<div class="acct-node ${isOpen ? 'open' : ''}" data-acct="${id ?? '__all__'}">
+      <div class="acct-head ${isCurrent ? 'is-current' : ''}" onclick="toggleAcct('${id ?? '__all__'}')">
+        <span class="acct-caret">▶</span>
+        <span class="acct-mail" title="${esc(mailLabel)}">${esc(mailLabel)}</span>
+        ${tag ? `<span class="acct-tag">${tag}</span>` : ''}${editBtn}
+      </div>
+      <div class="acct-sub">${subs}</div>
+    </div>`;
+  };
+
+  let html = '';
+  accountList.forEach((a, i) => {
+    html += nodeHtml(a.id, a.email || a.display_name || '未命名', i === 0 ? '默认' : '', i);
+  });
+  if (accountList.length > 1) html += nodeHtml(null, '全部账号', '', null);
+  if (!accountList.length) html = '<div class="acct-tree-empty">暂无邮箱账号<br>点下面「添加邮箱账号」</div>';
+
+  html += `<div class="tree-sep"></div>
+    <div class="sub-item ${currentFolder === 'INQUIRY' ? 'active' : ''}" style="padding-left:16px" onclick="selectInquiry(this)">
+      <span class="sub-label">网站询盘</span>
+      <span class="sub-badge" id="badge-inquiry" style="display:none"></span>
+    </div>
+    <div class="tree-sep"></div>
+    <button class="btn-add-acct" onclick="openAccountModal()">＋ 添加邮箱账号</button>`;
+
+  tree.innerHTML = html;
+  refreshInquiryBadge();
 }
 
-function onAccountChange() {
-  currentAccountId = document.getElementById('acctSelect').value || null;
-  document.getElementById('btnEditAcct').disabled = !currentAccountId;
-  if (window.innerWidth <= 768) document.body.classList.remove('email-view-folders');
-  loadEmails(currentFolder);
-}
-
-// ✎ 按钮：编辑当前选中的账号（「全部」时按钮是禁用的）
-function editCurrentAccount() {
-  const a = accountList.find(x => x.id === currentAccountId);
+function editAcct(idx) {
+  const a = accountList[idx];
   if (a) openAccountModal(JSON.stringify(a));
+}
+
+// 点账号标题：展开/收起（不切换当前文件夹）
+function toggleAcct(id) {
+  if (openAccts.has(id)) openAccts.delete(id); else openAccts.add(id);
+  const node = document.querySelector(`.acct-node[data-acct="${id}"]`);
+  if (node) node.classList.toggle('open', openAccts.has(id));
+}
+
+// 点子文件夹：同时切账号 + 切文件夹
+function selectAcctFolder(acctId, folder) {
+  currentAccountId = acctId || null;
+  currentFolder    = folder;
+  currentEmailId   = null;
+  openAccts.add(acctId ?? '__all__');
+
+  document.querySelectorAll('.sub-item').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.acct-head').forEach(x => x.classList.remove('is-current'));
+  const node = document.querySelector(`.acct-node[data-acct="${acctId ?? '__all__'}"]`);
+  if (node) {
+    node.classList.add('open');
+    node.querySelector('.acct-head')?.classList.add('is-current');
+    const idx = SUB_FOLDERS.findIndex(f => f.key === folder);
+    node.querySelectorAll('.sub-item')[idx]?.classList.add('active');
+  }
+
+  const acct = accountList.find(a => a.id === acctId);
+  const fLabel = SUB_FOLDERS.find(f => f.key === folder)?.label || folder;
+  document.getElementById('listTitle').textContent =
+    acct ? `${fLabel}` : `${fLabel} · 全部账号`;
+
+  if (window.innerWidth <= 768) document.body.classList.remove('email-view-folders', 'email-view-detail');
+  showPlaceholder();
+  loadEmails(folder);
+}
+
+function selectInquiry(el) {
+  currentFolder  = 'INQUIRY';
+  currentEmailId = null;
+  document.querySelectorAll('.sub-item').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.acct-head').forEach(x => x.classList.remove('is-current'));
+  if (el) el.classList.add('active');
+  document.getElementById('listTitle').textContent = '网站询盘';
+  if (window.innerWidth <= 768) document.body.classList.remove('email-view-folders', 'email-view-detail');
+  showPlaceholder();
+  loadEmails('INQUIRY');
 }
 
 // ── Account Modal ──
@@ -846,8 +881,8 @@ async function saveAccount() {
       const newId = result.data?.id || null;
       showToast(isNew ? '邮箱已添加' : '邮箱已更新');
       closeModal();
-      // 新增后自动切到这个账号，省一步手动切换
-      if (isNew && newId) currentAccountId = newId;
+      // 新增后自动切到这个账号并展开，省一步手动切换
+      if (isNew && newId) { currentAccountId = newId; openAccts.add(newId); }
       await loadAccounts();
       if (isNew && newId) loadEmails(currentFolder);
     } else {
@@ -863,9 +898,12 @@ async function confirmDeleteAccount() {
   try {
     await apiFetch(`/api/email-accounts/${editingAccountId}`, { method: 'DELETE' });
     showToast('账号已删除');
-    if (currentAccountId === editingAccountId) { currentAccountId = null; loadEmails(currentFolder); }
+    const wasCurrent = currentAccountId === editingAccountId;
+    if (wasCurrent) currentAccountId = null;
+    openAccts.delete(editingAccountId);
     closeModal();
-    loadAccounts();
+    await loadAccounts();
+    if (wasCurrent) loadEmails(currentFolder);
   } catch (e) { showToast('删除失败：' + e.message, 'err'); }
 }
 
@@ -907,8 +945,8 @@ async function loadEmails(folder) {
 
 function updateBadge(emails) {
   const unread = emails.filter(e => !e.is_read).length;
-  const b = document.getElementById('badge-inbox');
-  b.textContent = unread; b.style.display = unread ? '' : 'none';
+  const b = document.getElementById(`badge-inbox-${currentAccountId || 'all'}`);
+  if (b) { b.textContent = unread; b.style.display = unread ? '' : 'none'; }
 }
 
 // 后台拉取询盘未读数（用于侧边栏徽标，独立于当前列表）
@@ -1106,20 +1144,10 @@ window.toggleReaderFullscreen = function() {
   }
 }
 
-// ── Folder switch ──
-function selectFolder(folder, el) {
-  currentFolder = folder;
-  currentEmailId = null;
-  document.querySelectorAll('.folder-item').forEach(x => x.classList.remove('active'));
-  if (el) el.classList.add('active');
-  // 移动端：选完文件夹关闭文件夹视图，切回邮件列表
-  if (window.innerWidth <= 768) {
-    document.body.classList.remove('email-view-folders', 'email-view-detail');
-  }
-  const titleMap = { INBOX:'收件箱', SENT:'已发送', INQUIRY:'网站询盘' };
-  document.getElementById('listTitle').textContent = titleMap[folder] || folder;
-  showPlaceholder();
-  loadEmails(folder);
+// ── Folder switch（兼容旧调用：保持当前账号，只切文件夹）──
+function selectFolder(folder) {
+  if (folder === 'INQUIRY') { selectInquiry(); return; }
+  selectAcctFolder(currentAccountId, folder);
 }
 
 function showPlaceholder() {
@@ -1133,29 +1161,30 @@ function showPlaceholder() {
 }
 
 // ── Sync ──
-async function syncEmails() {
-  const btn = document.getElementById('btnSync');
-  const originalText = btn.textContent;
-  btn.classList.add('syncing');
-  btn.textContent = '同步中...';
+async function syncAccount(acctId, btn) {
+  // acctId: string | null（null = 当前账号）
+  const targetId = acctId !== undefined ? acctId : currentAccountId;
+  const orig = btn.textContent;
+  btn.classList.add('spin');
   try {
-    const res  = await apiFetch('/api/emails/sync', { method:'POST', body: JSON.stringify({ account_id: currentAccountId }) });
+    const res  = await apiFetch('/api/emails/sync', { method:'POST', body: JSON.stringify({ account_id: targetId }) });
     const data = await res.json();
     if (data.success) {
       if (data.errors && data.errors.length) {
-        console.error('[sync] 入库失败明细：', data.errors);
         showToast(`取到 ${data.fetched} 封，入库失败 ${data.errors.length} 封：${data.errors[0].error}`, 'err');
       } else {
         showToast(`同步完成，新增 ${data.synced} 封`);
       }
-      loadEmails(currentFolder);
-    }
-    else showToast(data.message||'同步失败','err');
-  } catch (e) { showToast('同步失败：'+e.message,'err'); }
-  finally {
-    btn.classList.remove('syncing');
-    btn.textContent = originalText;
-  }
+      if (currentFolder === 'INBOX') loadEmails(currentFolder);
+    } else showToast(data.message || '同步失败', 'err');
+  } catch (e) { showToast('同步失败：' + e.message, 'err'); }
+  finally { btn.classList.remove('spin'); btn.textContent = orig; }
+}
+
+// 旧 syncEmails() 兼容（其它页面/URL 参数可能引用）
+async function syncEmails() {
+  const dummy = document.createElement('button');
+  await syncAccount(currentAccountId, dummy);
 }
 
 // ── Compose ──
@@ -1524,16 +1553,11 @@ const _qp = new URLSearchParams(location.search);
 const _initialFolder = _qp.get('folder') === 'INQUIRY' ? 'INQUIRY' : 'INBOX';
 if (_initialFolder === 'INQUIRY') {
   currentFolder = 'INQUIRY';
-  // 切换激活态
-  document.querySelectorAll('.folder-item').forEach((x, idx) => {
-    x.classList.toggle('active', idx === 2); // 第 3 个是 INQUIRY
-  });
   document.getElementById('listTitle').textContent = '网站询盘';
 }
 
 loadEmails(_initialFolder);
-loadAccounts();
-refreshInquiryBadge();
+loadAccounts();   // 渲染树时会顺带刷新询盘徽标
 
 // 如果带 compose 参数，自动打开写信界面（延迟一下让 CSS 就位）
 if (_qp.get('compose') === '1') {
