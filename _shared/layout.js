@@ -70,12 +70,6 @@
     { id: 'po',                icon: 'clipboard-list', label: '采购单',    href: 'dashboard.html#po' },
     { id: 'analytics',         icon: 'bar-chart-2', label: '数据分析',    href: 'dashboard.html#analytics' },
 
-    { group: '亚马逊运营' },
-    { id: 'amazon-margin',     icon: 'dollar-sign', label: '产品毛利',    href: 'amazon-margin.html' },
-    { id: 'amazon-inventory',  icon: 'package-check', label: '库存补货',    href: 'amazon-inventory.html' },
-    { id: 'amazon-research',   icon: 'search', label: '竞品调研',    href: 'amazon-research.html' },
-    { id: 'amazon-ads',        icon: 'megaphone', label: '广告管理',    href: 'amazon-ads.html' },
-
     { group: '工具' },
     { id: 'documents',         icon: 'file-text', label: '文档制作',    href: 'documents.html' },
     { id: 'email',             icon: 'mail',  label: '邮件',        href: 'email.html' },
