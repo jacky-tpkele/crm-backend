@@ -1167,7 +1167,52 @@ app.delete('/api/emails/:id', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// 鍙戦€侀偖浠?
+// 保存/更新草稿
+app.post('/api/emails/draft', auth, async (req, res) => {
+  try {
+    const { id, to, cc, subject, body_html, body_text, account_id } = req.body;
+    const cfg = await resolveAccount(account_id);
+    const acctId = cfg.id || null;
+
+    if (id) {
+      // 更新已有草稿
+      await sb(`emails?id=eq.${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          to_addresses: to   || '',
+          cc:           cc   || '',
+          subject:      subject   || '（无主题）',
+          body_text:    body_text || '',
+          body_html:    body_html || '',
+          received_at:  new Date().toISOString(),
+        }),
+      });
+      res.json({ success: true, id });
+    } else {
+      // 新建草稿
+      const draftData = {
+        message_id:   `draft-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
+        folder:       'DRAFT',
+        from_address: cfg.username || '',
+        from_name:    cfg.from_name || '',
+        to_addresses: to      || '',
+        cc:           cc      || '',
+        subject:      subject || '（无主题）',
+        body_text:    body_text || '',
+        body_html:    body_html || '',
+        is_read:      true,
+        is_deleted:   false,
+        received_at:  new Date().toISOString(),
+      };
+      if (acctId) draftData.account_id = acctId;
+      const rows = await sb('emails', { method: 'POST', body: JSON.stringify(draftData) });
+      const newId = Array.isArray(rows) && rows[0] ? rows[0].id : null;
+      res.json({ success: true, id: newId });
+    }
+  } catch (e) { res.status(500).json({ message: e.message }); }
+});
+
+// 发送邮件
 app.post('/api/emails/send', auth, async (req, res) => {
   const { to, cc, subject, body_html, body_text, attachments } = req.body;
   if (!to || !subject) return res.status(400).json({ message: '鏀朵欢浜哄拰涓婚涓嶈兘涓虹┖' });
@@ -1210,6 +1255,16 @@ app.post('/api/emails/send', auth, async (req, res) => {
     if (account_id) sentData.account_id = account_id;
 
     await sb('emails', { method: 'POST', body: JSON.stringify(sentData) });
+
+    // 如果是从草稿发出的，发送成功后把草稿软删除（避免草稿箱里留一份重复）
+    if (req.body.draft_id) {
+      try {
+        await sb(`emails?id=eq.${req.body.draft_id}&folder=eq.DRAFT`, {
+          method: 'PATCH', body: JSON.stringify({ is_deleted: true }),
+        });
+      } catch (dErr) { console.error('[email] clear draft failed:', dErr.message); }
+    }
+
     res.json({ success: true, messageId: info.messageId });
   } catch (e) { res.status(500).json({ message: e.message }); }
 });

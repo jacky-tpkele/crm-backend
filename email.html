@@ -131,6 +131,9 @@ button,input,select,textarea{font:inherit}
 .btn-send{padding:8px 22px;border-radius:7px;border:none;background:var(--text);color:var(--panel);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.15s}
 .btn-send:hover{opacity:.85}
 .btn-send:disabled{opacity:.5;pointer-events:none}
+.btn-draft{padding:8px 16px;border-radius:7px;border:1px solid var(--border-h);background:transparent;color:var(--muted2);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.15s}
+.btn-draft:hover{border-color:var(--text);color:var(--text)}
+.btn-draft:disabled{opacity:.45;pointer-events:none}
 .send-status{font-size:12px;color:var(--muted)}
 .send-status.ok{color:var(--text)}
 .send-status.err{color:var(--text)}
@@ -282,6 +285,9 @@ button,input,select,textarea{font:inherit}
 .compose-footer{padding:12px 22px !important;background:#ffffff !important;border-top:1px solid #e5e7eb !important;justify-content:flex-start !important}
 .btn-send{padding:8px 22px !important;border-radius:8px !important;background:#2563eb !important;color:#ffffff !important;font-size:13.5px !important;font-weight:600 !important;border:none !important}
 .btn-send:hover{background:#1d4ed8 !important}
+.btn-draft{padding:8px 16px !important;border-radius:8px !important;background:transparent !important;color:#4b5563 !important;font-size:13px !important;border:1px solid #d1d5db !important}
+.btn-draft:hover{border-color:#1f2937 !important;color:#1f2937 !important}
+.btn-draft:disabled{opacity:.45 !important;pointer-events:none !important}
 .send-status{font-size:13px !important;color:#6b7280 !important}
 .send-status.ok{color:#16a34a !important}
 .send-status.err{color:#dc2626 !important}
@@ -643,6 +649,7 @@ let currentAccountId = null; // null = 使用环境变量默认账号
 let mailEditor       = null;
 let attachments      = [];
 let editingAccountId = null;
+let editingDraftId   = null; // 当前写信界面对应的草稿 id（新写信为 null）
 // URL 参数 ?customer_id=xxx 时按客户过滤
 let filterCustomerId = (new URLSearchParams(location.search)).get('customer_id') || null;
 let filterCustomerName = (new URLSearchParams(location.search)).get('customer_name') || '';
@@ -1050,7 +1057,6 @@ async function openEmail(id, el) {
   currentEmailId = id;
   document.querySelectorAll('.email-item').forEach(x => x.classList.remove('active'));
   if (el) el.classList.add('active');
-  // 移动端：切到详情视图
   if (window.innerWidth <= 768) {
     document.body.classList.add('email-view-detail');
     document.body.classList.remove('email-view-folders');
@@ -1061,6 +1067,20 @@ async function openEmail(id, el) {
     const res   = await apiFetch(`/api/emails/${id}`);
     const email = await res.json();
     currentEmailData = email;
+
+    // 草稿：直接回到编辑界面
+    if (email.folder === 'DRAFT') {
+      openCompose({
+        draftId: email.id,
+        to:      email.to_addresses || '',
+        cc:      email.cc           || '',
+        subject: email.subject      || '',
+        body:    email.body_html    || email.body_text || '',
+        title:   '编辑草稿',
+      });
+      return;
+    }
+
     if (!email.is_read) {
       apiFetch(`/api/emails/${id}/read`, { method:'PATCH', body: JSON.stringify({ is_read:true }) });
       el?.classList.remove('unread');
@@ -1189,7 +1209,8 @@ async function syncEmails() {
 
 // ── Compose ──
 function openCompose(opts = {}) {
-  attachments = [];
+  attachments    = [];
+  editingDraftId = opts.draftId || null;
   if (window.innerWidth <= 768) {
     document.body.classList.add('email-view-detail');
     document.body.classList.remove('email-view-folders');
@@ -1205,7 +1226,7 @@ function openCompose(opts = {}) {
       </div>
       <div class="compose-form">
         <div class="field-row"><span class="field-label">收件人</span><input class="field-input" id="cTo" placeholder="example@domain.com" value="${esc(opts.to||'')}"></div>
-        <div class="field-row"><span class="field-label">抄送</span><input class="field-input" id="cCc" placeholder="可选"></div>
+        <div class="field-row"><span class="field-label">抄送</span><input class="field-input" id="cCc" placeholder="可选" value="${esc(opts.cc||'')}"></div>
         <div class="field-row"><span class="field-label">主题</span><input class="field-input" id="cSubject" placeholder="邮件主题" value="${esc(opts.subject||'')}"></div>
         <div class="compose-editor"><textarea id="richEditor"></textarea></div>
         <div class="table-tools">
@@ -1222,6 +1243,7 @@ function openCompose(opts = {}) {
       </div>
       <div class="compose-footer">
         <button class="btn-send" id="btnSend" onclick="sendEmail()">📨 发送</button>
+        <button class="btn-draft" id="btnDraft" onclick="saveDraft()">💾 保存草稿</button>
         <span class="send-status" id="sendStatus"></span>
       </div>
     </div>`;
@@ -1430,6 +1452,39 @@ function deleteCurrent() {
   deleteEmail(currentEmailData.id);
 }
 
+async function saveDraft() {
+  const to       = document.getElementById('cTo')?.value?.trim()    || '';
+  const cc       = document.getElementById('cCc')?.value?.trim()    || '';
+  const subject  = document.getElementById('cSubject')?.value?.trim() || '';
+  const body_html = mailEditor ? mailEditor.getContent() : '';
+  const body_text = mailEditor ? mailEditor.getContent({ format:'text' }).trim() : '';
+  const statusEl  = document.getElementById('sendStatus');
+  const btn       = document.getElementById('btnDraft');
+
+  btn.disabled = true;
+  statusEl.textContent = '保存中…'; statusEl.className = 'send-status';
+
+  try {
+    const res  = await apiFetch('/api/emails/draft', {
+      method: 'POST',
+      body: JSON.stringify({ id: editingDraftId, to, cc, subject, body_html, body_text, account_id: currentAccountId }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      editingDraftId = data.id || editingDraftId; // 记住 id，下次保存时更新同一条
+      statusEl.textContent = '✓ 草稿已保存'; statusEl.className = 'send-status ok';
+      // 更新草稿数量徽标
+      if (currentFolder === 'DRAFT') loadEmails('DRAFT');
+    } else {
+      statusEl.textContent = data.message || '保存失败'; statusEl.className = 'send-status err';
+    }
+  } catch (e) {
+    statusEl.textContent = '保存失败：' + e.message; statusEl.className = 'send-status err';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 async function sendEmail() {
   const to       = document.getElementById('cTo')?.value?.trim();
   const cc       = document.getElementById('cCc')?.value?.trim();
@@ -1443,7 +1498,7 @@ async function sendEmail() {
   btn.disabled = true; statusEl.textContent='发送中…'; statusEl.className='send-status';
 
   try {
-    const res  = await apiFetch('/api/emails/send', { method:'POST', body: JSON.stringify({ to, cc, subject, body_html, body_text, attachments, account_id: currentAccountId }) });
+    const res  = await apiFetch('/api/emails/send', { method:'POST', body: JSON.stringify({ to, cc, subject, body_html, body_text, attachments, account_id: currentAccountId, draft_id: editingDraftId }) });
     const data = await res.json();
     if (data.success) {
       statusEl.textContent='✓ 发送成功'; statusEl.className='send-status ok';
