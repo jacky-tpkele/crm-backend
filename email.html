@@ -130,6 +130,7 @@ button,input,select,textarea{font:inherit}
 .compose-footer{padding:12px 24px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
 .btn-send{padding:8px 22px;border-radius:7px;border:none;background:var(--text);color:var(--panel);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.15s}
 .btn-send:hover{opacity:.85}
+.sig-hint{margin-left:auto;font-size:11.5px;color:var(--muted);flex-shrink:0}
 .btn-send:disabled{opacity:.5;pointer-events:none}
 .btn-draft{padding:8px 16px;border-radius:7px;border:1px solid var(--border-h);background:transparent;color:var(--muted2);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.15s}
 .btn-draft:hover{border-color:var(--text);color:var(--text)}
@@ -285,6 +286,7 @@ button,input,select,textarea{font:inherit}
 .compose-footer{padding:12px 22px !important;background:#ffffff !important;border-top:1px solid #e5e7eb !important;justify-content:flex-start !important}
 .btn-send{padding:8px 22px !important;border-radius:8px !important;background:#2563eb !important;color:#ffffff !important;font-size:13.5px !important;font-weight:600 !important;border:none !important}
 .btn-send:hover{background:#1d4ed8 !important}
+.sig-hint{margin-left:auto !important;font-size:11.5px !important;color:#9ca3af !important}
 .btn-draft{padding:8px 16px !important;border-radius:8px !important;background:transparent !important;color:#4b5563 !important;font-size:13px !important;border:1px solid #d1d5db !important}
 .btn-draft:hover{border-color:#1f2937 !important;color:#1f2937 !important}
 .btn-draft:disabled{opacity:.45 !important;pointer-events:none !important}
@@ -1245,6 +1247,7 @@ function openCompose(opts = {}) {
         <button class="btn-send" id="btnSend" onclick="sendEmail()">📨 发送</button>
         <button class="btn-draft" id="btnDraft" onclick="saveDraft()">💾 保存草稿</button>
         <span class="send-status" id="sendStatus"></span>
+        <span class="sig-hint">✍ 签名已自动附加</span>
       </div>
     </div>`;
   initMailEditor(opts.body || '');
@@ -1382,7 +1385,7 @@ function initMailEditor(initialHtml = '') {
     branding: false,
     promotion: false,
     statusbar: false,
-    plugins: 'lists link image table code autoresize paste noneditable',
+    plugins: 'lists link image table code autoresize paste',
     toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | forecolor backcolor | bullist numlist | alignleft aligncenter alignright | link image table | removeformat code',
     content_style: `
       body { background:#fff; color:#111; font-size:14px; line-height:1.75; font-family:Arial,"Microsoft YaHei",sans-serif; padding:4px 10px 10px; }
@@ -1395,23 +1398,32 @@ function initMailEditor(initialHtml = '') {
       a { color:#0b63ce; }
       table.is-striped tbody tr:nth-child(even) td { background:#f7f7f7; }
       [data-crm-signature] table, [data-crm-signature] td, [data-crm-signature] th { border:none !important; background:transparent !important; padding:0 !important; min-width:0 !important; }
-      [data-crm-signature] { cursor:default; opacity:0.9; }
+      [data-crm-signature] { cursor:default; user-select:none; }
     `,
-    noneditable_noneditable_class: 'crm-signature-block',
     table_default_styles: { 'border-collapse': 'collapse', border: '1px solid #000' },
     table_default_attributes: { border: '1' },
     table_toolbar: 'tableprops tabledelete | tableinsertrowbefore tableinsertrowafter tabledeleterow | tableinsertcolbefore tableinsertcolafter tabledeletecol | tablecellprops tablemergecells tablesplitcells',
     setup: (editor) => {
       mailEditor = editor;
-      editor.on('init', () => editor.setContent(buildEditorInitialHtml(initialHtml)));
+      editor.on('init', () => {
+        editor.setContent(buildEditorInitialHtml(initialHtml));
+        // 光标定位到正文第一行
+        const firstP = editor.getBody().querySelector('p');
+        if (firstP) {
+          editor.selection.setCursorLocation(firstP, 0);
+          editor.focus();
+        }
+      });
     }
   });
 }
 
 function buildEditorInitialHtml(initialHtml = '') {
-  const html = String(initialHtml || '').trim() || '<p><br></p>';
-  if (html.includes('data-crm-signature="tpkele"')) return html;
-  return html + EMAIL_SIGNATURE;
+  // 签名不放入编辑区，发送时自动附加——编辑区保持干净
+  let html = String(initialHtml || '').trim();
+  // 如果是回复/转发带过来的旧内容含签名，先剥离
+  html = html.replace(/<div[^>]*data-crm-signature="tpkele"[^>]*>[\s\S]*?<\/div>\s*/gi, '').trim();
+  return html || '<p><br></p>';
 }
 
 function addFiles(input) {
@@ -1438,7 +1450,7 @@ function replyEmail(to, subject) {
 }
 
 function forwardEmail(subject, body) {
-  openCompose({ title:'转发', subject: subject.startsWith('Fwd:')?subject:`Fwd: ${subject}`, body:`<p><br></p>${EMAIL_SIGNATURE}<br><br><hr><p><b>--- 转发邮件 ---</b></p>${body}` });
+  openCompose({ title:'转发', subject: subject.startsWith('Fwd:')?subject:`Fwd: ${subject}`, body:`<p><br></p><br><hr><p><b>--- 转发邮件 ---</b></p>${body}` });
 }
 
 // 简化版：回复/转发/删除当前查看的邮件（避免 inline onclick 转义问题）
@@ -1492,7 +1504,9 @@ async function sendEmail() {
   const to       = document.getElementById('cTo')?.value?.trim();
   const cc       = document.getElementById('cCc')?.value?.trim();
   const subject  = document.getElementById('cSubject')?.value?.trim();
-  const body_html = mailEditor ? mailEditor.getContent() : '';
+  const rawHtml   = mailEditor ? mailEditor.getContent() : '';
+  // 发送时自动附加签名（编辑区不显示签名）
+  const body_html = rawHtml.includes('data-crm-signature="tpkele"') ? rawHtml : rawHtml + EMAIL_SIGNATURE;
   const body_text = mailEditor ? mailEditor.getContent({ format:'text' }).trim() : '';
   const statusEl  = document.getElementById('sendStatus');
   const btn       = document.getElementById('btnSend');
