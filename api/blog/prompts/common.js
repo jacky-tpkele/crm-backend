@@ -8,6 +8,20 @@ COMPANY CONTEXT (do not invent other brands):
 - Target audience: international procurement managers, solar EPC engineers, electrical contractors, distributors
 - Voice: professional, technical, helpful, concrete (concrete current ratings, IEC standards, real-world scenarios). NEVER salesy or hype-laden.
 - Audience reads English; everything (title, content, meta, FAQ) must be in English.
+- Brand mention policy: mention TPKele only when it helps identify a relevant product family. Do not repeat the brand for SEO and do not make unsupported superiority claims.
+`;
+
+const SEO_GEO_BLOCK = `
+SEO + GEO CONTENT PRINCIPLES:
+- Satisfy one primary search intent. State the direct answer or decision in the first 2-3 sentences, then explain the reasoning.
+- Make each H2 section independently understandable and quotable by search engines and AI answer systems. Open each section with a concise answer sentence before details.
+- Use explicit entities and units instead of vague pronouns: name the device, AC/DC context, voltage class, current rating, pole count, environment, and applicable standard where relevant.
+- Separate verified facts from engineering examples. Label calculated or illustrative values as examples and state the assumptions used. Never present a generic example as a TPKele product specification.
+- When citing a standard, explain what decision it informs. Do not claim that a product is certified unless certification data was supplied in the input.
+- Cover the main intent plus adjacent decision questions without repeating the same answer. Use natural synonyms and related entities; do not force exact-match keywords.
+- Prefer short paragraphs, descriptive H2 headings, lists for steps/checks, and tables only when comparison is genuinely clearer.
+- Include at least one concise definition, decision rule, or checklist that could stand alone as a featured snippet.
+- FAQ answers must be consistent with the visible article. Do not add claims in FAQ schema that are absent from the body.
 `;
 
 // 产品族严格对应表 —— 让 AI 提到的具体产品和文章主题匹配，避免"AC MCB 文章"里乱提 DC SPD
@@ -52,11 +66,11 @@ OUTPUT FORMAT — return ONE single valid JSON object. No markdown fences, no pr
 }
 
 CRITICAL RULES (apply to every article type):
-1. Main keyword frequency: appear EXACTLY 3-4 times in the body content (not counting title, meta, H2 headings — those are separate).
+1. Main keyword frequency: appear EXACTLY 3-4 times in body paragraphs/list items (not counting title, meta, H2 headings, tables, or FAQ JSON). Use close variants elsewhere when natural.
 2. Main keyword MUST appear in: title, first paragraph (within first 100 words), at least one H2 heading, meta_title, meta_description.
-3. NEVER invent product specifications, certifications, or test data. Only reference IEC standards that actually exist (IEC 60898, IEC 60947-2, IEC 61643, IEC 60364, IEC 62109, IEEE C62.41, etc.).
+3. NEVER invent product specifications, certifications, or test data. Only reference a standard when its scope is relevant. Prefer official standard landing pages and avoid inventing clause numbers or edition years.
 4. NEVER invent internal URLs. The url_hint should describe the type of page (e.g. "/products/ac-mcb-1p", "/blog/spd-installation"). The CRM operator will replace with real URLs during review.
-5. External links must be authoritative: IEC.ch, IEEE.org, NEMA.org, EU/IEC/national standards bodies, or major industry associations. Do NOT link to competitor manufacturers or random blogs.
+5. External links must be authoritative: IEC.ch, IEEE.org, NEMA.org, official government/regulator sites, national standards bodies, or major industry associations. Do NOT link to competitor manufacturers or random blogs. Every suggestion needs a reason tied to a factual claim or engineering decision in the article.
 6. Avoid first-person plural ("we", "our company", "we offer", "contact us") in body text — keep it informational. The website renders a separate CTA component below the article, so body content should be pure knowledge content.
 7. End the body content with a knowledge-focused closing paragraph (1-3 sentences). Examples: "These principles ensure reliable protection across most installations." or "Selecting components that meet these specifications protects both equipment and personnel." DO NOT write "contact us for a quote" or similar sales language.
 `;
@@ -72,6 +86,7 @@ ${subs.length > 0 ? `- Sub keywords (use 1-2 of these in H2 headings or naturall
 
 module.exports = {
   BRAND_BLOCK,
+  SEO_GEO_BLOCK,
   PRODUCT_FAMILY_BLOCK,
   JSON_OUTPUT_BLOCK,
   buildKeywordBlock,

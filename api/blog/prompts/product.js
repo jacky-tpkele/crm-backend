@@ -1,6 +1,6 @@
 // 文件位置：d:/新CRM/api/blog/prompts/product.js
 // 产品知识文章：教育型，建立专业权威
-const { BRAND_BLOCK, PRODUCT_FAMILY_BLOCK, JSON_OUTPUT_BLOCK, buildKeywordBlock } = require('./common');
+const { BRAND_BLOCK, PRODUCT_FAMILY_BLOCK, SEO_GEO_BLOCK, JSON_OUTPUT_BLOCK, buildKeywordBlock } = require('./common');
 
 function buildProductPrompt({ keyword, title, subKeywords }) {
   return `You are a senior B2B SEO editor for an electrical protection manufacturer.
@@ -10,6 +10,7 @@ READER PROFILE: A procurement manager or junior electrical engineer who searched
 
 ${BRAND_BLOCK}
 ${PRODUCT_FAMILY_BLOCK}
+${SEO_GEO_BLOCK}
 ${buildKeywordBlock(keyword, subKeywords)}
 
 ARTICLE-TYPE-SPECIFIC RULES:
@@ -24,6 +25,7 @@ ARTICLE-TYPE-SPECIFIC RULES:
   7) Closing knowledge paragraph
 - H2 heading style: use noun phrases or "What is / How / Why" question forms. DO NOT use sales-y H2s like "Why Choose TPKele".
 - Tone: textbook-like clarity, technical accuracy, no fluff
+- Definition block: give a 40-60 word plain-English definition near the beginning that can stand alone in a search result or AI answer.
 - Bullet lists: at least 1 (for parameters or checkpoints)
 - Tables: NOT required (only if a parameter comparison genuinely needs it)
 - FAQ: 5-6 entries focused on "What is / Why / How does / Which standard"

@@ -1,6 +1,6 @@
 // 文件位置：d:/新CRM/api/blog/prompts/faq.js
 // FAQ 综合文章：长尾问答聚合
-const { BRAND_BLOCK, PRODUCT_FAMILY_BLOCK, JSON_OUTPUT_BLOCK, buildKeywordBlock } = require('./common');
+const { BRAND_BLOCK, PRODUCT_FAMILY_BLOCK, SEO_GEO_BLOCK, JSON_OUTPUT_BLOCK, buildKeywordBlock } = require('./common');
 
 function buildFaqPrompt({ keyword, title, subKeywords }) {
   return `You are a senior B2B SEO editor for an electrical protection manufacturer.
@@ -10,6 +10,7 @@ READER PROFILE: A user who searched a long-tail question (e.g. "can I use X with
 
 ${BRAND_BLOCK}
 ${PRODUCT_FAMILY_BLOCK}
+${SEO_GEO_BLOCK}
 ${buildKeywordBlock(keyword, subKeywords)}
 
 ARTICLE-TYPE-SPECIFIC RULES:
@@ -21,6 +22,7 @@ ARTICLE-TYPE-SPECIFIC RULES:
 - H2 heading style: phrased as full questions ending with "?". Mix question types: "What", "Why", "How", "When", "Can I", "Is X compatible with Y"
 - Question coverage variety: specifications, certifications, installation, troubleshooting, comparison, cost, lifecycle, edge cases. AVOID redundant questions (don't write 3 H2s asking similar things).
 - Tone: direct, answer-first. Each answer's first sentence IS the conclusion. Following sentences explain.
+- Keep each answer self-contained: repeat the relevant device/entity name rather than relying on "it" or context from the previous question.
 - Bullet lists: optional (only inside answers when listing steps or items)
 - Tables: NOT required
 - FAQ field: this article body IS already FAQ-formatted. Still populate the json "faq" field with 4-5 of the MOST-IMPORTANT questions for FAQ schema markup. They CAN repeat the H2 questions — that's expected because the H2s are visible content while the json faq is for structured data.

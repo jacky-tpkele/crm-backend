@@ -1,6 +1,6 @@
 // 文件位置：d:/新CRM/api/blog/prompts/buying.js
 // 选型指南：转化导向，但 CTA 由网站组件渲染
-const { BRAND_BLOCK, PRODUCT_FAMILY_BLOCK, JSON_OUTPUT_BLOCK, buildKeywordBlock } = require('./common');
+const { BRAND_BLOCK, PRODUCT_FAMILY_BLOCK, SEO_GEO_BLOCK, JSON_OUTPUT_BLOCK, buildKeywordBlock } = require('./common');
 
 function buildBuyingPrompt({ keyword, title, subKeywords }) {
   return `You are a senior B2B SEO editor for an electrical protection manufacturer.
@@ -10,6 +10,7 @@ READER PROFILE: A procurement manager or installer who searched "how to choose X
 
 ${BRAND_BLOCK}
 ${PRODUCT_FAMILY_BLOCK}
+${SEO_GEO_BLOCK}
 ${buildKeywordBlock(keyword, subKeywords)}
 
 ARTICLE-TYPE-SPECIFIC RULES:
@@ -23,6 +24,7 @@ ARTICLE-TYPE-SPECIFIC RULES:
   6) Closing knowledge paragraph
 - H2 heading style: action-oriented, e.g. "How to Match X to Your Load", "What to Check Before Ordering", "Common Pitfalls to Avoid"
 - Tone: practical, decision-oriented, like a senior engineer advising a junior buyer
+- Decision rule: include one concise "Choose X when..." summary that maps project conditions to selection criteria without naming a specific SKU.
 - Bullet lists: REQUIRED — at least 2 (selection dimensions + pitfalls)
 - Tables: optional, only if a comparison is unavoidable. Prefer bullet lists.
 - FAQ: 3-4 entries focused on "Which / How many amps / Compatible with / Cost-effective"
