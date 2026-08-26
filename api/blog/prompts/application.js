@@ -1,6 +1,6 @@
 // 文件位置：d:/新CRM/api/blog/prompts/application.js
 // 应用场景文章：解决方案型，工程师视角
-const { BRAND_BLOCK, PRODUCT_FAMILY_BLOCK, SEO_GEO_BLOCK, JSON_OUTPUT_BLOCK, buildKeywordBlock } = require('./common');
+const { BRAND_BLOCK, PRODUCT_FAMILY_BLOCK, JSON_OUTPUT_BLOCK, buildKeywordBlock } = require('./common');
 
 function buildApplicationPrompt({ keyword, title, subKeywords }) {
   return `You are a senior B2B SEO editor for an electrical protection manufacturer.
@@ -10,7 +10,6 @@ READER PROFILE: A project engineer or system designer who searched "X for solar 
 
 ${BRAND_BLOCK}
 ${PRODUCT_FAMILY_BLOCK}
-${SEO_GEO_BLOCK}
 ${buildKeywordBlock(keyword, subKeywords)}
 
 ARTICLE-TYPE-SPECIFIC RULES:
@@ -25,7 +24,6 @@ ARTICLE-TYPE-SPECIFIC RULES:
   7) Closing knowledge paragraph
 - H2 heading style: scenario-driven, e.g. "Sizing the Breaker for a 5 kW PV Array", "Wiring Considerations for Outdoor Installation"
 - Tone: technical project-engineer voice. Concrete numbers (currents, voltages, distances). Cite IEC standards where relevant (MANDATORY at least 1 reference for application articles).
-- Numerical examples: show assumptions and simple calculation logic. Clearly label every value that is illustrative rather than a verified product rating.
 - Bullet lists: REQUIRED — at least 2 (challenges + installation checklist)
 - Tables: NOT required (only if a sizing parameter table is genuinely needed)
 - FAQ: 3-4 entries: "How do I install / What size for X kW / Can I use this in [environment] / What if [edge case]"

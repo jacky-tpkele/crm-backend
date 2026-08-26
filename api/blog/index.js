@@ -29,6 +29,34 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// AI 模型配置
+const AI_MODELS = {
+  deepseek: {
+    name: 'DeepSeek',
+    apiKey: process.env.DEEPSEEK_API_KEY,
+    endpoint: 'https://api.deepseek.com/chat/completions',
+    model: 'deepseek-chat',
+  },
+  claude: {
+    name: 'Claude',
+    apiKey: process.env.CLAUDE_API_KEY,
+    endpoint: 'https://api.anthropic.com/v1/messages',
+    model: 'claude-3-5-sonnet-20241022',
+  },
+  gpt: {
+    name: 'GPT-4',
+    apiKey: process.env.OPENAI_API_KEY,
+    endpoint: 'https://api.openai.com/v1/chat/completions',
+    model: 'gpt-4-turbo',
+  },
+  gemini: {
+    name: 'Gemini',
+    apiKey: process.env.GEMINI_API_KEY,
+    endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',
+    model: 'gemini-pro',
+  },
+};
+
 // 图片压缩配置
 const IMAGE_CONFIG = {
   maxWidth: parseInt(process.env.IMAGE_MAX_WIDTH || '1200'),
@@ -87,43 +115,6 @@ async function sb(path, opts = {}) {
   }
   if (!res.ok) throw new Error(data?.message || data?.error || JSON.stringify(data));
   return data;
-}
-
-function apiSettingsKey() {
-  const secret = process.env.API_SETTINGS_ENCRYPTION_KEY || SB_SERVICE_KEY || SB_KEY;
-  if (!secret) throw new Error('API_SETTINGS_ENCRYPTION_KEY 未配置，无法安全保存 API Key');
-  return crypto.createHash('sha256').update(secret).digest();
-}
-
-function encryptApiSettings(value) {
-  const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv('aes-256-gcm', apiSettingsKey(), iv);
-  const encrypted = Buffer.concat([cipher.update(JSON.stringify(value), 'utf8'), cipher.final()]);
-  return `v1:${iv.toString('base64')}:${cipher.getAuthTag().toString('base64')}:${encrypted.toString('base64')}`;
-}
-
-function decryptApiSettings(value) {
-  try {
-    const [version, ivRaw, tagRaw, dataRaw] = String(value || '').split(':');
-    if (version !== 'v1' || !ivRaw || !tagRaw || !dataRaw) return {};
-    const decipher = crypto.createDecipheriv('aes-256-gcm', apiSettingsKey(), Buffer.from(ivRaw, 'base64'));
-    decipher.setAuthTag(Buffer.from(tagRaw, 'base64'));
-    return JSON.parse(Buffer.concat([decipher.update(Buffer.from(dataRaw, 'base64')), decipher.final()]).toString('utf8')) || {};
-  } catch { return {}; }
-}
-
-async function getApiSettings() {
-  const rows = await sb('blog_config?config_key=eq.api_integrations_v1&select=config_value');
-  return rows && rows[0] ? decryptApiSettings(rows[0].config_value) : {};
-}
-
-async function resolveConfiguredModel(purpose = 'article') {
-  const settings = await getApiSettings();
-  const configured = settings[purpose];
-  if (configured && configured.enabled && configured.endpoint && configured.apiKey) {
-    return { name: configured.model || 'deepseek-chat', apiKey: configured.apiKey, endpoint: configured.endpoint, model: configured.model || 'deepseek-chat' };
-  }
-  throw new Error(`${purpose} API 未配置，请到“API 设置”填写并启用连接`);
 }
 
 function buildBlogUrl(slug) {
@@ -622,8 +613,8 @@ function extractBalanced(text, start, open, close) {
 // AI 模型适配器
 // ──────────────────────────────────────────
 
-async function generateContentWithAI(keyword, title, modelType = 'deepseek') {
-  const model = await resolveConfiguredModel('article');
+async function generateContentWithAI(keyword, title, modelType = 'claude') {
+  const model = AI_MODELS[modelType];
   if (!model || !model.apiKey) {
     throw new Error(`Model ${modelType} not configured or API key missing`);
   }
@@ -649,7 +640,17 @@ Requirements:
 Return ONLY the Markdown article. Do not add any preamble or explanation.
   `;
 
-  return await generateWithDeepSeek(prompt, model);
+  if (modelType === 'claude') {
+    return await generateWithClaude(prompt, model);
+  } else if (modelType === 'gpt') {
+    return await generateWithGPT(prompt, model);
+  } else if (modelType === 'gemini') {
+    return await generateWithGemini(prompt, model);
+  } else if (modelType === 'deepseek') {
+    return await generateWithDeepSeek(prompt, model);
+  } else {
+    throw new Error(`Unsupported model type: ${modelType}`);
+  }
 }
 
 async function generateWithDeepSeek(prompt, model) {
@@ -773,52 +774,21 @@ async function generateWithGemini(prompt, model) {
 // 结构化生成：调用对应 article_type 的 Prompt，返回 JSON 对象
 // 包含 content + meta_title + meta_description + faq + 内/外链建议等
 // ──────────────────────────────────────────
-async function generateStructuredArticle({ keyword, title, articleType, subKeywords, modelType, productFamily, productSubfamily }) {
+async function generateStructuredArticle({ keyword, title, articleType, subKeywords, modelType }) {
   if (!VALID_TYPES.includes(articleType)) articleType = 'product';
-  const model = await resolveConfiguredModel('article');
-
-  let resolvedSubKeywords = Array.isArray(subKeywords) ? subKeywords.filter(Boolean) : [];
-  let keywordRecord = null;
-  if (resolvedSubKeywords.length === 0 && keyword) {
-    try {
-      const library = await sb('blog_keywords?select=*&order=used_count.asc,priority.asc');
-      const main = (library || []).find(k => String(k.keyword || '').toLowerCase() === String(keyword).toLowerCase());
-      keywordRecord = main || null;
-      if (main) {
-        resolvedSubKeywords = (library || [])
-          .filter(k => k.id !== main.id && k.product_family === main.product_family && (!main.subfamily || !k.subfamily || k.subfamily === main.subfamily))
-          .sort((a, b) => (Number(b.search_volume) || 0) - (Number(a.search_volume) || 0) || (Number(a.used_count) || 0) - (Number(b.used_count) || 0))
-          .slice(0, 4)
-          .map(k => k.keyword);
-      }
-    } catch (error) {
-      console.warn('Keyword library lookup failed; continuing without library sub-keywords:', error.message);
-    }
-  }
-  if (!keywordRecord && keyword) {
-    try {
-      const matches = await sb(`blog_keywords?keyword=eq.${encodeURIComponent(keyword)}&select=product_family,subfamily&limit=1`);
-      keywordRecord = matches && matches[0] ? matches[0] : null;
-    } catch (error) {
-      console.warn('Keyword family lookup failed:', error.message);
-    }
+  const model = AI_MODELS[modelType];
+  if (!model || !model.apiKey) {
+    throw new Error(`Model ${modelType} not configured or API key missing`);
   }
 
-  let prompt = buildPromptByType(articleType, { keyword, title, subKeywords: resolvedSubKeywords });
-  try {
-    const family = productFamily || keywordRecord?.product_family;
-    if (!family) throw new Error('无法确定文章产品分类，请先选择产品项目或把关键词加入对应产品关键词库');
-    const knowledge = await sb(`blog_knowledge_items?product_family=eq.${encodeURIComponent(family)}&status=eq.verified&allowed_for_ai=eq.true&select=section,title,content,source_url&order=updated_at.desc&limit=40`);
-    if (knowledge && knowledge.length) {
-      const knowledgeBlock = knowledge.map(item => `- [${item.section}] ${item.title}: ${String(item.content || '').slice(0, 900)}${item.source_url ? ` (Source: ${item.source_url})` : ''}`).join('\n');
-      prompt += `\n\nAPPROVED PRODUCT KNOWLEDGE (use only when relevant; never extend beyond these facts):\n${knowledgeBlock}\n`;
-    }
-  } catch (error) {
-    console.warn('Knowledge lookup failed; continuing with prompt-only generation:', error.message);
-  }
+  const prompt = buildPromptByType(articleType, { keyword, title, subKeywords });
 
   let raw;
-  raw = await generateWithDeepSeek(prompt, model);
+  if (modelType === 'claude') raw = await generateWithClaude(prompt, model);
+  else if (modelType === 'gpt') raw = await generateWithGPT(prompt, model);
+  else if (modelType === 'gemini') raw = await generateWithGemini(prompt, model);
+  else if (modelType === 'deepseek') raw = await generateWithDeepSeek(prompt, model);
+  else throw new Error(`Unsupported model type: ${modelType}`);
 
   const parsed = parseAIJson(raw);
 
@@ -837,22 +807,20 @@ async function generateStructuredArticle({ keyword, title, articleType, subKeywo
     meta_title: (parsed.meta_title || '').trim(),
     meta_description: (parsed.meta_description || '').trim(),
     main_keyword: (parsed.main_keyword || keyword || '').trim(),
-    sub_keywords: resolvedSubKeywords.length > 0 ? resolvedSubKeywords : (Array.isArray(parsed.sub_keywords) ? parsed.sub_keywords.filter(s => typeof s === 'string') : []),
+    sub_keywords: Array.isArray(parsed.sub_keywords) ? parsed.sub_keywords.filter(s => typeof s === 'string') : [],
     faq: Array.isArray(parsed.faq) ? parsed.faq.filter(f => f && f.question && f.answer).map(f => ({
       question: String(f.question).trim(),
       answer: String(f.answer).trim(),
     })) : [],
     internal_link_suggestions: Array.isArray(parsed.internal_link_suggestions) ? parsed.internal_link_suggestions : [],
     external_link_suggestions: Array.isArray(parsed.external_link_suggestions) ? parsed.external_link_suggestions : [],
-    product_family: productFamily || keywordRecord?.product_family || null,
-    product_subfamily: productSubfamily || keywordRecord?.subfamily || null,
   };
 }
 
 // ──────────────────────────────────────────
 // 把 structured 结果转成 blog_posts 行（不含 plan_id / status，由调用方填）
 // ──────────────────────────────────────────
-function structuredToPostRow(structured, { keyword, articleType, productFamily, productSubfamily }) {
+function structuredToPostRow(structured, { keyword, articleType }) {
   const wc = (structured.content || '').split(/\s+/).filter(Boolean).length;
   return {
     title: structured.title,
@@ -863,8 +831,6 @@ function structuredToPostRow(structured, { keyword, articleType, productFamily, 
     meta_title: structured.meta_title || '',
     meta_description: structured.meta_description || '',
     article_type: articleType || null,
-    product_family: productFamily || structured.product_family || null,
-    product_subfamily: productSubfamily || structured.product_subfamily || null,
     faq: structured.faq || [],
     // AI 给的链接建议先存到 internal_links / external_links 字段
     // 操作员审核时可以采纳/修改/删除
@@ -1056,8 +1022,6 @@ router.post('/generate-plan-v2', async (req, res) => {
         plan_month: month,
         plan_order: orderNum++,
         keyword: kw,
-        product_family: keyword && keyword.product_family ? keyword.product_family : null,
-        product_subfamily: keyword && keyword.subfamily ? keyword.subfamily : null,
         title,
         article_type: type,
         daily_count: dailyCount,
@@ -1165,7 +1129,7 @@ router.post('/generate-plan', async (req, res) => {
 // 2. 生成文案（支持多模型）
 router.post('/generate-content', async (req, res) => {
   try {
-    const { planId, keyword, title, model = 'deepseek' } = req.body;
+    const { planId, keyword, title, model = 'claude' } = req.body;
 
     if (!planId || !keyword || !title) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -1439,8 +1403,6 @@ router.get('/cron', async (req, res) => {
           title: plan.title,
           articleType,
           modelType: 'deepseek',
-          productFamily: plan.product_family,
-          productSubfamily: plan.product_subfamily,
         });
 
         const postRow = structuredToPostRow(structured, { keyword: plan.keyword, articleType });
@@ -1492,14 +1454,19 @@ router.get('/cron', async (req, res) => {
 });
 
 // 8. 获取可用模型列表
-router.get('/models', async (req, res) => {
-  try {
-    const settings = await getApiSettings();
-    const models = Object.entries(settings).filter(([, item]) => item && item.enabled && item.apiKey).map(([purpose, item]) => ({ id: purpose, name: purpose, model: item.model }));
-    res.json({ success: true, models });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+router.get('/models', (req, res) => {
+  const availableModels = Object.entries(AI_MODELS)
+    .filter(([key, model]) => model.apiKey)
+    .map(([key, model]) => ({
+      id: key,
+      name: model.name,
+      model: model.model,
+    }));
+
+  res.json({
+    success: true,
+    models: availableModels,
+  });
 });
 
 // ──────────────────────────────────────────
@@ -1522,7 +1489,7 @@ router.post('/generate-seo', async (req, res) => {
     }
 
     const post = posts[0];
-    const model = await resolveConfiguredModel('article');
+    const model = AI_MODELS[modelType];
     if (!model || !model.apiKey) {
       return res.status(400).json({ error: `Model ${modelType} not configured` });
     }
@@ -1630,7 +1597,7 @@ router.post('/generate-links', async (req, res) => {
     }
 
     const post = posts[0];
-    const model = await resolveConfiguredModel('article');
+    const model = AI_MODELS[modelType];
     if (!model || !model.apiKey) {
       return res.status(400).json({ error: `Model ${modelType} not configured` });
     }
@@ -1736,7 +1703,7 @@ router.post('/generate-faq', async (req, res) => {
     }
 
     const post = posts[0];
-    const model = await resolveConfiguredModel('article');
+    const model = AI_MODELS[modelType];
     if (!model || !model.apiKey) {
       return res.status(400).json({ error: `Model ${modelType} not configured` });
     }
@@ -1830,10 +1797,8 @@ router.get('/dashboard', async (req, res) => {
       console.warn('SEO due checks failed in dashboard:', seoError.message);
     }
 
-    const productFamily = req.query.productFamily;
-    const scope = productFamily ? `&product_family=eq.${encodeURIComponent(productFamily)}` : '';
-    const plans = await sb(`blog_plans?select=*${scope}`);
-    const posts = await sb(`blog_posts?select=*${scope}`);
+    const plans = await sb('blog_plans?select=*');
+    const posts = await sb('blog_posts?select=*');
     const seoOverview = await getSeoOverviewStats();
 
     // 文章状态：draft/pending_review = 待审核, approved = 已批准, published = 已发布, generation_failed/failed = 失败
@@ -1872,17 +1837,17 @@ router.get('/dashboard', async (req, res) => {
 // 2. 立即生成今天的文章
 router.post('/generate-now', async (req, res) => {
   try {
-    const { modelType = 'deepseek', productFamily } = req.body;
+    const { modelType = 'deepseek' } = req.body;
 
     // 先尝试从计划中找
     const today = new Date().toISOString().split('T')[0];
     let plans = await sb(
-      `blog_plans?status=eq.pending&plan_month=eq.${today.slice(0, 7)}${productFamily ? `&product_family=eq.${encodeURIComponent(productFamily)}` : ''}&select=*&limit=4`
+      `blog_plans?status=eq.pending&plan_month=eq.${today.slice(0, 7)}&select=*&limit=4`
     );
 
     // 如果没有计划，从关键词库直接生成
     if (!plans || plans.length === 0) {
-      const keywords = await sb(`blog_keywords?select=*&order=created_at.desc${productFamily ? `&product_family=eq.${encodeURIComponent(productFamily)}` : ''}&limit=4`);
+      const keywords = await sb('blog_keywords?select=*&order=created_at.desc&limit=4');
 
       if (!keywords || keywords.length === 0) {
         return res.status(400).json({
@@ -1896,8 +1861,6 @@ router.post('/generate-now', async (req, res) => {
         keyword: kw.keyword,
         title: null, // 让 Prompt 自己生成标题
         article_type: kw.category && kw.category !== 'general' ? kw.category : 'product',
-        product_family: kw.product_family || null,
-        product_subfamily: kw.subfamily || null,
       }));
     }
 
@@ -1911,8 +1874,6 @@ router.post('/generate-now', async (req, res) => {
           title: plan.title,
           articleType,
           modelType,
-          productFamily: plan.product_family,
-          productSubfamily: plan.product_subfamily,
         });
 
         const postRow = structuredToPostRow(structured, { keyword: plan.keyword, articleType });
@@ -2316,172 +2277,16 @@ router.post('/toggle-auto', async (req, res) => {
   }
 });
 
-// 10z. 外部 API 接入设置（密钥加密后保存，读取时仅返回掩码）
-router.get('/integration-settings', async (req, res) => {
-  try {
-    const settings = await getApiSettings();
-    const safe = {};
-    for (const purpose of ['article', 'keyword', 'image', 'knowledge']) {
-      const item = settings[purpose] || {};
-      safe[purpose] = { enabled: !!item.enabled, endpoint: item.endpoint || '', model: item.model || '', hasKey: !!item.apiKey };
-    }
-    res.json({ success: true, settings: safe });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-router.put('/integration-settings', async (req, res) => {
-  try {
-    const current = await getApiSettings();
-    const next = {};
-    for (const purpose of ['article', 'keyword', 'image', 'knowledge']) {
-      const incoming = req.body && req.body[purpose] ? req.body[purpose] : {};
-      next[purpose] = {
-        enabled: !!incoming.enabled,
-        endpoint: String(incoming.endpoint || '').trim(),
-        model: String(incoming.model || '').trim(),
-        apiKey: String(incoming.apiKey || '').trim() || (current[purpose] && current[purpose].apiKey) || '',
-      };
-      if (next[purpose].enabled && (!next[purpose].endpoint || !next[purpose].model || !next[purpose].apiKey)) {
-        return res.status(400).json({ error: `${purpose} API 启用时必须填写 Endpoint、模型和 API Key` });
-      }
-    }
-    const configValue = encryptApiSettings(next);
-    const existing = await sb('blog_config?config_key=eq.api_integrations_v1&select=id');
-    if (existing && existing[0]) {
-      await sb(`blog_config?id=eq.${existing[0].id}`, { method: 'PATCH', body: JSON.stringify({ config_value: configValue, updated_at: new Date().toISOString() }) });
-    } else {
-      await sb('blog_config', { method: 'POST', body: JSON.stringify({ config_key: 'api_integrations_v1', config_value: configValue, updated_at: new Date().toISOString() }) });
-    }
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-router.post('/images/generate', async (req, res) => {
-  try {
-    const { prompt, size = '1536x1024', quality = 'medium' } = req.body || {};
-    if (!prompt || !String(prompt).trim()) return res.status(400).json({ error:'图片提示词不能为空' });
-    const model = await resolveConfiguredModel('image');
-    const response = await fetch(model.endpoint, {
-      method:'POST',
-      headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${model.apiKey}` },
-      body:JSON.stringify({ model:model.model, prompt:String(prompt).trim(), size, quality, n:1 }),
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data?.error?.message || data?.message || `Image API HTTP ${response.status}`);
-    const image = data?.data?.[0] || data?.images?.[0] || data?.output?.[0] || null;
-    if (!image) throw new Error('图片 API 返回格式无法识别；需要 OpenAI-compatible images 响应');
-    res.json({ success:true, image:{ url:image.url || null, base64:image.b64_json || image.base64 || null, revised_prompt:image.revised_prompt || null } });
-  } catch (error) { res.status(500).json({ error:error.message }); }
-});
-
 // 11. 关键词管理
-
-// 10y. 产品项目知识库
-router.get('/knowledge', async (req, res) => {
-  try {
-    const { product_family, section } = req.query;
-    let path = 'blog_knowledge_items?select=*&order=updated_at.desc';
-    if (product_family) path += `&product_family=eq.${encodeURIComponent(product_family)}`;
-    if (section) path += `&section=eq.${encodeURIComponent(section)}`;
-    const items = await sb(path);
-    res.json({ success: true, items: items || [] });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-router.post('/knowledge', async (req, res) => {
-  try {
-    const { product_family, section, title, content, source_url = null, source_file = null, status = 'draft', allowed_for_ai = false, metadata = {} } = req.body || {};
-    if (!product_family || !section || !title || !content) return res.status(400).json({ error: '产品、知识类型、标题和内容不能为空' });
-    const result = await sb('blog_knowledge_items', { method:'POST', headers:{ Prefer:'return=representation' }, body:JSON.stringify({ product_family, section, title, content, source_url, source_file, status, allowed_for_ai:!!allowed_for_ai, metadata, updated_at:new Date().toISOString() }) });
-    res.json({ success:true, item:result[0] });
-  } catch (error) { res.status(500).json({ error:error.message }); }
-});
-
-router.put('/knowledge/:id', async (req, res) => {
-  try {
-    const updates = {};
-    ['section','title','content','source_url','source_file','status','allowed_for_ai','metadata'].forEach(key => { if (req.body[key] !== undefined) updates[key] = req.body[key]; });
-    updates.updated_at = new Date().toISOString();
-    await sb(`blog_knowledge_items?id=eq.${req.params.id}`, { method:'PATCH', body:JSON.stringify(updates) });
-    res.json({ success:true });
-  } catch (error) { res.status(500).json({ error:error.message }); }
-});
-
-// Parse catalog/table/image content into reviewable knowledge records.
-router.post('/knowledge/extract', async (req, res) => {
-  try {
-    const { product_family, source_file = null, text = '', image_base64 = null, mime_type = null } = req.body || {};
-    if (!product_family || (!String(text).trim() && !image_base64)) return res.status(400).json({ error: '缺少产品、文本或图片内容' });
-    const model = await resolveConfiguredModel('knowledge');
-    const system = `你是工业电气产品知识整理器。将资料拆分为可审核的知识条目，只能摘录输入内容，禁止补充或猜测任何规格。产品族：${product_family}。每条返回 JSON 对象，section 只能是 products、specifications、applications、standards、sources、memory。规格参数必须保留型号、数值、单位和适用条件。标题简短明确。只返回 JSON 数组。`;
-    const userContent = [{ type:'text', text: `${system}\n资料文本：\n${String(text).slice(0, 50000)}` }];
-    if (image_base64) userContent.push({ type:'image_url', image_url:{ url:`data:${mime_type || 'image/png'};base64,${image_base64}` } });
-    const response = await fetch(model.endpoint, { method:'POST', headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${model.apiKey}` }, body:JSON.stringify({ model:model.model, temperature:0, messages:[{ role:'user', content:userContent }] }) });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data?.error?.message || data?.message || `Knowledge API HTTP ${response.status}`);
-    const raw = data?.choices?.[0]?.message?.content || data?.output_text || '';
-    const match = String(raw).match(/\[[\s\S]*\]/);
-    let items = match ? JSON.parse(match[0]) : [];
-    if (!Array.isArray(items)) items = [];
-    items = items.filter(item => item && item.title && item.content).map(item => ({ product_family, section:['products','specifications','applications','standards','sources','memory'].includes(item.section) ? item.section : 'products', title:String(item.title).slice(0,200), content:String(item.content).slice(0,12000), source_file, status:'draft', allowed_for_ai:false, metadata:{ extracted:true, reviewed:false } }));
-    res.json({ success:true, items });
-  } catch (error) { res.status(500).json({ error:error.message }); }
-});
-
-router.delete('/knowledge/:id', async (req, res) => {
-  try {
-    await sb(`blog_knowledge_items?id=eq.${req.params.id}`, { method:'DELETE' });
-    res.json({ success:true });
-  } catch (error) { res.status(500).json({ error:error.message }); }
-});
-
 
 // 11a. 获取关键词列表
 router.get('/keywords', async (req, res) => {
   try {
     const keywords = await sb('blog_keywords?select=*&order=created_at.desc');
-    const posts = await sb('blog_posts?select=id,title,product_family,main_keyword,sub_keywords,content,status,published_at,created_at');
-    const normalizedPosts = Array.isArray(posts) ? posts : [];
-    const enriched = (keywords || []).map(kw => {
-      const needle = String(kw.keyword || '').trim().toLowerCase();
-      const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const re = needle ? new RegExp(escaped, 'gi') : null;
-      const matched = normalizedPosts.filter(post => {
-        const main = String(post.main_keyword || '').toLowerCase();
-        const subs = Array.isArray(post.sub_keywords) ? post.sub_keywords.map(s => String(s).toLowerCase()) : [];
-        const sameFamily = !kw.product_family || !post.product_family || post.product_family === kw.product_family;
-        return sameFamily && (main === needle || subs.includes(needle));
-      });
-      const mentionCount = re ? matched.reduce((sum, post) => sum + ((String(post.content || '').match(re) || []).length), 0) : 0;
-      const lastUsed = matched.map(p => p.published_at || p.created_at).filter(Boolean).sort().pop() || kw.last_used_date || null;
-      return { ...kw, article_count: matched.length, mention_count: mentionCount, last_used_at: lastUsed };
-    });
-
-    const { product_family, subfamily, category, priority, country, search } = req.query;
-    const filtered = enriched.filter(kw =>
-      (!product_family || kw.product_family === product_family) &&
-      (!subfamily || kw.subfamily === subfamily) &&
-      (!category || kw.category === category) &&
-      (!priority || kw.priority === priority) &&
-      (!country || kw.country === country) &&
-      (!search || String(kw.keyword || '').toLowerCase().includes(String(search).toLowerCase()))
-    );
 
     res.json({
       success: true,
-      keywords: filtered,
-      summary: {
-        total: filtered.length,
-        used: filtered.filter(k => k.article_count > 0).length,
-        unused: filtered.filter(k => !k.article_count).length,
-        withMetrics: filtered.filter(k => Number.isFinite(Number(k.search_volume))).length,
-      },
+      keywords,
     });
   } catch (error) {
     console.error('Error fetching keywords:', error);
@@ -2492,8 +2297,7 @@ router.get('/keywords', async (req, res) => {
 // 11b. 添加关键词
 router.post('/keywords', async (req, res) => {
   try {
-    const { keyword, category = 'general', difficulty = 3, priority = 'medium', product_family = 'mcb', subfamily = null,
-      search_intent = null, country = 'GLOBAL', search_volume = null, metric_source = 'manual', source_type = 'manual', parent_keyword = null } = req.body;
+    const { keyword, category = 'general', difficulty = 'medium' } = req.body;
 
     if (!keyword) {
       return res.status(400).json({ error: 'Missing keyword' });
@@ -2505,16 +2309,6 @@ router.post('/keywords', async (req, res) => {
         keyword,
         category,
         difficulty,
-        priority,
-        product_family,
-        subfamily,
-        search_intent,
-        country,
-        search_volume: search_volume === '' || search_volume == null ? null : Number(search_volume),
-        metric_source,
-        metric_updated_at: search_volume === '' || search_volume == null ? null : new Date().toISOString(),
-        source_type,
-        parent_keyword,
         created_at: new Date().toISOString(),
       }),
     });
@@ -2532,23 +2326,25 @@ router.post('/keywords', async (req, res) => {
 // 11c. AI 推荐关键词
 router.get('/keywords/ai-recommend', async (req, res) => {
   try {
-    const { seed, product_family = 'mcb', subfamily = '', country = 'GLOBAL' } = req.query;
+    const { seed } = req.query;
 
     if (!seed) {
       return res.status(400).json({ error: 'Missing seed keyword' });
     }
 
     const prompt = `You are an SEO keyword research expert for a B2B electrical products manufacturer.
-Based on the seed keyword "${seed}", generate 30 highly relevant English long-tail keywords for product family "${product_family}"${subfamily ? ` and subfamily "${subfamily}"` : ''}.
+Based on the seed keyword "${seed}", generate 40-50 highly relevant English long-tail keywords.
 
 Focus on: product specifications, technical applications, buying guides, comparisons, and FAQ-style queries.
 Target audience: international procurement managers and electrical engineers.
 
-Do not invent Google search volume, CPC, trend, or ranking data. Suggested country is a targeting label, not measured traffic.
-Return ONLY valid JSON in this exact format:
-{"keywords":[{"keyword":"...","category":"product|buying|comparison|application|faq","search_intent":"informational|commercial|comparison|application|question","country":"${country}"}]}`;
+Return ONLY valid JSON in this exact format (no markdown, no code fences, no explanations):
+{"keywords": ["keyword 1", "keyword 2", "..."]}`;
 
-    const model = await resolveConfiguredModel('keyword');
+    const model = AI_MODELS['deepseek'];
+    if (!model || !model.apiKey) {
+      return res.status(400).json({ error: 'DeepSeek not configured' });
+    }
 
     const response = await fetch(model.endpoint, {
       method: 'POST',
@@ -2580,9 +2376,7 @@ Return ONLY valid JSON in this exact format:
     res.json({
       success: true,
       seed,
-      product_family,
-      subfamily: subfamily || null,
-      keywords: keywords.slice(0, 30).map(item => typeof item === 'string' ? { keyword: item, category: 'product', search_intent: 'informational', country } : item),
+      keywords: keywords.slice(0, 50),
     });
   } catch (error) {
     console.error('Error recommending keywords:', error);
@@ -2606,37 +2400,18 @@ router.post('/keywords/batch', async (req, res) => {
         const newKeyword = {
           keyword: kw.keyword || kw,
           category: kw.category || 'general',
-          difficulty: Number(kw.difficulty) || 3,
-          priority: kw.priority || 'medium',
-          product_family: kw.product_family || 'mcb',
-          subfamily: kw.subfamily || null,
-          search_intent: kw.search_intent || null,
-          country: kw.country || 'GLOBAL',
-          search_volume: kw.search_volume === '' || kw.search_volume == null ? null : Number(kw.search_volume),
-          metric_source: kw.metric_source || (kw.search_volume == null ? 'ai_unverified' : 'import'),
-          metric_updated_at: kw.search_volume == null ? null : new Date().toISOString(),
-          source_type: kw.source_type || 'import',
-          parent_keyword: kw.parent_keyword || null,
+          difficulty: kw.difficulty || 'medium',
           created_at: new Date().toISOString(),
         };
 
-        const subfamilyFilter = newKeyword.subfamily ? `subfamily=eq.${encodeURIComponent(newKeyword.subfamily)}` : 'subfamily=is.null';
-        const existing = await sb(`blog_keywords?keyword=eq.${encodeURIComponent(newKeyword.keyword)}&product_family=eq.${encodeURIComponent(newKeyword.product_family)}&country=eq.${encodeURIComponent(newKeyword.country)}&${subfamilyFilter}&select=id`);
-        let result;
-        let status = 'success';
-        if (existing && existing[0]) {
-          const updates = { ...newKeyword };
-          delete updates.created_at;
-          await sb(`blog_keywords?id=eq.${existing[0].id}`, { method: 'PATCH', body: JSON.stringify(updates) });
-          result = [{ id: existing[0].id }];
-          status = 'updated';
-        } else {
-          result = await sb('blog_keywords', { method: 'POST', body: JSON.stringify(newKeyword) });
-        }
+        const result = await sb('blog_keywords', {
+          method: 'POST',
+          body: JSON.stringify(newKeyword),
+        });
 
         results.push({
           keyword: kw.keyword || kw,
-          status,
+          status: 'success',
           id: result[0].id,
         });
       } catch (error) {
@@ -2651,7 +2426,6 @@ router.post('/keywords/batch', async (req, res) => {
     res.json({
       success: true,
       addedCount: results.filter(r => r.status === 'success').length,
-      updatedCount: results.filter(r => r.status === 'updated').length,
       results,
     });
   } catch (error) {
@@ -2703,11 +2477,8 @@ router.get('/post/:postId', async (req, res) => {
 // 12b. 待审核文章列表
 router.get('/pending-review', async (req, res) => {
   try {
-    const productFamily = req.query.productFamily;
-    let path = 'blog_posts?status=eq.pending_review&select=id,title,product_family,product_subfamily,keywords,main_keyword,word_count,reading_time,cover_image_url,created_at,updated_at&order=created_at.desc';
-    if (productFamily) path += `&product_family=eq.${encodeURIComponent(productFamily)}`;
     const posts = await sb(
-      path
+      'blog_posts?status=eq.pending_review&select=id,title,keywords,main_keyword,word_count,reading_time,cover_image_url,created_at,updated_at&order=created_at.desc'
     );
     res.json({ success: true, posts });
   } catch (error) {
@@ -3018,7 +2789,7 @@ Return format:
   }
 });
 
-// 12i. SEO + GEO 质检（确定性规则，不消耗 AI token）
+// 12i. SEO 质检（纯前端规则，不烧 token）
 router.get('/seo-check/:postId', async (req, res) => {
   try {
     const posts = await sb(`blog_posts?id=eq.${req.params.postId}`);
@@ -3026,7 +2797,7 @@ router.get('/seo-check/:postId', async (req, res) => {
 
     const p = posts[0];
     const content = p.content || '';
-    const text = markdownToPlainText(content);
+    const text = content.replace(/[#*_`>\[\]\(\)]/g, ' ');
     const words = text.split(/\s+/).filter(Boolean);
     const wordCount = words.length;
     const mainKw = (p.main_keyword || (p.keywords && p.keywords[0]) || '').toLowerCase();
@@ -3036,33 +2807,19 @@ router.get('/seo-check/:postId', async (req, res) => {
 
     const h2List = (content.match(/^##\s+.+$/gm) || []);
     const h3List = (content.match(/^###\s+.+$/gm) || []);
-    const storedInternalLinks = Array.isArray(p.internal_links) ? p.internal_links : [];
-    const storedExternalLinks = Array.isArray(p.external_links) ? p.external_links : [];
-    const internalLinks = Math.max((content.match(/\]\((\/[^)]+)\)/g) || []).length, storedInternalLinks.length);
-    const externalLinks = Math.max((content.match(/\]\((https?:\/\/[^)]+)\)/g) || []).length, storedExternalLinks.length);
+    const internalLinks = (content.match(/\]\((\/[^)]+)\)/g) || []).length;
+    const externalLinks = (content.match(/\]\((https?:\/\/[^)]+)\)/g) || []).length;
     const imagesInBody = (content.match(/!\[[^\]]*\]\([^)]+\)/g) || []);
     const altMissing = imagesInBody.filter(m => /!\[\s*\]\(/.test(m)).length;
 
     let kwCount = 0;
     if (mainKw) {
       const re = new RegExp(mainKw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-      kwCount = (bodyTextWithoutHeadingsOrTables(content).match(re) || []).length;
+      kwCount = (text.match(re) || []).length;
     }
     const kwDensity = wordCount > 0 ? (kwCount / wordCount) * 100 : 0;
-    const articleType = VALID_TYPES.includes(p.article_type) ? p.article_type : 'product';
-    const typeRule = getArticleTypeQualityRule(articleType);
-    const first100Words = words.slice(0, 100).join(' ').toLowerCase();
-    const h2HasKeyword = !!mainKw && h2List.some(h => h.toLowerCase().includes(mainKw));
-    const authoritativeExternal = storedExternalLinks.some(link => isAuthoritativeUrl(link && link.url)) || extractMarkdownUrls(content).some(isAuthoritativeUrl);
-    const hasStandard = /\b(?:IEC|IEEE|NEMA|EN|UL)\s*\d{3,}(?:-\d+)?\b/i.test(content);
-    const hasTable = /^\|.+\|\s*$/m.test(content) && /^\|?\s*:?-{3,}/m.test(content);
-    const numberedItems = (content.match(/^\s*\d+[.)]\s+.+$/gm) || []).length;
-    const questionH2Count = h2List.filter(h => /\?\s*$/.test(h)).length;
-    const firstPersonOrCta = /\b(?:we|our company|we offer|contact us|get a quote|request a quote|buy now)\b/i.test(text);
-    const answerFirstSections = countAnswerFirstSections(content);
-    const faqCount = Array.isArray(p.faq) ? p.faq.length : 0;
 
-    const seoChecks = [
+    const checks = [
       mkCheck('title', '标题长度', p.title && p.title.length >= 30 && p.title.length <= 70,
         `当前 ${p.title?.length || 0} 字符（建议 30-70）`),
       mkCheck('title-kw', '标题包含主关键词', !!mainKw && lcTitle.includes(mainKw),
@@ -3071,47 +2828,33 @@ router.get('/seo-check/:postId', async (req, res) => {
         `当前 ${p.meta_title?.length || 0} 字符（建议 30-60）`),
       mkCheck('meta-desc', 'Meta Description 长度', p.meta_description && p.meta_description.length >= 120 && p.meta_description.length <= 160,
         `当前 ${p.meta_description?.length || 0} 字符（建议 120-160）`),
-      mkCheck('meta-kw', 'Meta Title 与描述均包含主关键词', !!mainKw && lcMetaTitle.includes(mainKw) && lcMetaDesc.includes(mainKw),
-        mainKw ? '两个字段都必须包含精确主关键词' : '请先设置主关键词'),
+      mkCheck('meta-kw', 'Meta 包含主关键词', !!mainKw && (lcMetaTitle.includes(mainKw) || lcMetaDesc.includes(mainKw)),
+        mainKw ? '' : '请先设置主关键词'),
       mkCheck('slug', 'Slug 已生成', !!p.slug_url, p.slug_url ? `/${p.slug_url}` : '尚未生成'),
-      mkCheck('h2', `H2 数量 (${typeRule.h2Min}-${typeRule.h2Max})`, h2List.length >= typeRule.h2Min && h2List.length <= typeRule.h2Max,
-        `当前 ${h2List.length} 个；按 ${articleType} 类型检查`),
-      mkCheck('h2-kw', '至少一个 H2 包含主关键词', h2HasKeyword, '其他 H2 可使用自然变体'),
-      mkCheck('words', `字数 (${typeRule.wordsMin}-${typeRule.wordsMax})`, wordCount >= typeRule.wordsMin && wordCount <= typeRule.wordsMax,
-        `当前 ${wordCount} 词；按 ${articleType} 类型检查`),
-      mkCheck('keyword-count', '正文主关键词精确出现 3-4 次', kwCount >= 3 && kwCount <= 4,
-        `当前 ${kwCount} 次（不统计标题、H2 和表格），密度 ${kwDensity.toFixed(2)}%`),
-      mkCheck('first-100', '前 100 词包含主关键词', !!mainKw && first100Words.includes(mainKw),
-        mainKw ? '检查正文开头前 100 个英文词' : '请先设置主关键词'),
+      mkCheck('h2', 'H2 数量 (3-8)', h2List.length >= 3 && h2List.length <= 8,
+        `当前 ${h2List.length} 个`),
+      mkCheck('words', '字数 (800-1500)', wordCount >= 800 && wordCount <= 1800,
+        `当前 ${wordCount} 字`),
+      mkCheck('density', `关键词密度 (1-3%)`, kwDensity >= 0.8 && kwDensity <= 3,
+        `当前 ${kwDensity.toFixed(2)}%（出现 ${kwCount} 次）`),
+      mkCheck('first-para', '首段包含主关键词', !!mainKw && firstParagraphHasKeyword(content, mainKw),
+        mainKw ? '' : '请先设置主关键词'),
       mkCheck('cover', '已上传封面图', !!p.cover_image_url, p.cover_image_url ? '已上传' : '建议 1200×675 (16:9)'),
       mkCheck('cover-alt', '封面图 Alt 文本', !!p.cover_image_alt, p.cover_image_alt ? '已填写' : 'Alt 缺失'),
-      mkCheck('img-alt', '正文图片 Alt 完整', altMissing === 0, altMissing > 0 ? `${altMissing} 张缺 alt` : '正文无图或 alt 完整'),
-      mkCheck('internal', '内链建议 (≥2)', internalLinks >= 2, `正文或建议字段共 ${internalLinks} 条`),
-      mkCheck('external', '权威外链 (≥1)', externalLinks >= 1 && authoritativeExternal, `共 ${externalLinks} 条；需来自标准机构、监管机构或行业协会`),
-      mkCheck('faq', '包含 FAQ Schema 内容', faqCount >= 3, `当前 ${faqCount} 条`),
+      mkCheck('body-img', '正文配图', imagesInBody.length >= 1, `当前 ${imagesInBody.length} 张`),
+      mkCheck('img-alt', '正文图片 Alt 完整', altMissing === 0, altMissing > 0 ? `${altMissing} 张缺 alt` : '全部已填'),
+      mkCheck('internal', '内链 (≥2)', internalLinks >= 2, `当前 ${internalLinks} 条`),
+      mkCheck('external', '外链 (≥1)', externalLinks >= 1, `当前 ${externalLinks} 条`),
+      mkCheck('faq', '包含 FAQ', Array.isArray(p.faq) && p.faq.length >= 3, `当前 ${(p.faq || []).length} 条`),
     ];
 
-    const geoChecks = [
-      mkCheck('answer-first', '开头直接回答搜索意图', openingIsAnswerFirst(content), '前 2-3 句应先给定义、结论或选择建议'),
-      mkCheck('section-answer-first', 'H2 章节答案优先', answerFirstSections.passed >= Math.max(2, Math.ceil(answerFirstSections.total * 0.6)), `${answerFirstSections.passed}/${answerFirstSections.total} 个章节以清晰结论句开头`),
-      mkCheck('entities', '包含明确技术实体与单位', hasTechnicalEntities(text), '建议出现 AC/DC、设备名、V/A/kA/IP 等明确上下文'),
-      mkCheck('evidence', '标准或权威来源可核验', authoritativeExternal && (!typeRule.standardRequired || hasStandard), typeRule.standardRequired ? '此类型必须有相关标准编号和权威来源' : '至少提供一个权威来源'),
-      mkCheck('neutral', '无第一人称销售话术', !firstPersonOrCta, firstPersonOrCta ? '检测到 we/our/contact us/quote 等表达' : '保持知识型表达'),
-      mkCheck('type-structure', typeRule.specialLabel, typeRule.specialTest({ hasTable, numberedItems, questionH2Count, h2List }), typeRule.specialDetail({ hasTable, numberedItems, questionH2Count, h2List })),
-      mkCheck('faq-visible', 'FAQ 与正文主题一致', faqCount === 0 || faqQuestionsSupported(p.faq, content), 'FAQ 核心实体应在正文可见内容中出现'),
-    ];
-
-    const seoScore = calculateCheckScore(seoChecks);
-    const geoScore = calculateCheckScore(geoChecks);
-    const checks = [...seoChecks.map(c => ({ ...c, group: 'SEO' })), ...geoChecks.map(c => ({ ...c, group: 'GEO' }))];
-    const score = Math.round(seoScore * 0.65 + geoScore * 0.35);
+    const passed = checks.filter(c => c.passed).length;
+    const score = Math.round((passed / checks.length) * 100);
 
     res.json({
       success: true,
       score,
-      seoScore,
-      geoScore,
-      passedCount: checks.filter(c => c.passed).length,
+      passedCount: passed,
       totalCount: checks.length,
       checks,
       stats: { wordCount, h2Count: h2List.length, h3Count: h3List.length, internalLinks, externalLinks, kwDensity: +kwDensity.toFixed(2), kwCount, imagesInBody: imagesInBody.length },
@@ -3126,64 +2869,14 @@ function mkCheck(key, name, passed, detail) {
   return { key, name, passed: !!passed, detail: detail || '' };
 }
 
-function calculateCheckScore(checks) {
-  return checks.length ? Math.round((checks.filter(c => c.passed).length / checks.length) * 100) : 0;
-}
-
-function markdownToPlainText(content) {
-  return String(content || '').replace(/!\[[^\]]*\]\([^)]+\)/g, ' ').replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/[#*_`>|]/g, ' ');
-}
-
-function bodyTextWithoutHeadingsOrTables(content) {
-  return String(content || '').split('\n').filter(line => { const t = line.trim(); return t && !t.startsWith('#') && !t.startsWith('|') && !/^[-:|\s]+$/.test(t); }).join(' ');
-}
-
-function extractMarkdownUrls(content) {
-  return [...String(content || '').matchAll(/\]\((https?:\/\/[^)\s]+)\)/gi)].map(m => m[1]);
-}
-
-function isAuthoritativeUrl(url) {
-  try {
-    const host = new URL(String(url || '')).hostname.toLowerCase();
-    return ['iec.ch', 'ieee.org', 'nema.org', 'iso.org', 'ul.com', 'europa.eu'].some(d => host === d || host.endsWith(`.${d}`)) || /\.(gov|gov\.uk|gov\.au)$/.test(host);
-  } catch { return false; }
-}
-
-function openingIsAnswerFirst(content) {
-  const intro = String(content || '').split('\n').map(s => s.trim()).find(s => s && !s.startsWith('#')) || '';
-  const firstSentences = intro.split(/(?<=[.!?])\s+/).slice(0, 3).join(' ');
-  return firstSentences.length >= 45 && !/^(in this article|this article will|welcome to|when it comes to)\b/i.test(firstSentences);
-}
-
-function countAnswerFirstSections(content) {
-  const sections = String(content || '').split(/^##\s+.+$/gm).slice(1);
-  let passed = 0;
-  for (const section of sections) {
-    const first = section.split('\n').map(s => s.trim()).find(s => s && !s.startsWith('#') && !s.startsWith('|')) || '';
-    if (first.length >= 35 && first.length <= 320) passed += 1;
+function firstParagraphHasKeyword(content, kw) {
+  const lines = content.split('\n');
+  for (const line of lines) {
+    const t = line.trim();
+    if (!t || t.startsWith('#')) continue;
+    return t.toLowerCase().includes(kw);
   }
-  return { passed, total: sections.length };
-}
-
-function hasTechnicalEntities(text) {
-  const units = (String(text).match(/\b\d+(?:\.\d+)?\s?(?:A|V|kA|kV|W|kW|mm2|mm²|°C)\b/gi) || []).length;
-  return units >= 2 && /\b(?:AC|DC|MCB|SPD|ATS|PV|IP\d{2}|circuit breaker|surge protective device)\b/i.test(text);
-}
-
-function faqQuestionsSupported(faq, content) {
-  const lc = markdownToPlainText(content).toLowerCase();
-  return (faq || []).every(item => String(item.question || '').toLowerCase().split(/\W+/).filter(w => w.length >= 5).some(w => lc.includes(w)));
-}
-
-function getArticleTypeQualityRule(type) {
-  const rules = {
-    product: { wordsMin: 1200, wordsMax: 1500, h2Min: 5, h2Max: 7, standardRequired: true, specialLabel: '产品知识结构完整', specialTest: ({ h2List }) => h2List.length >= 5, specialDetail: () => '定义、原理、参数、标准、应用和选型应形成完整解释链' },
-    buying: { wordsMin: 1000, wordsMax: 1300, h2Min: 4, h2Max: 6, standardRequired: false, specialLabel: '包含可执行选型流程', specialTest: ({ numberedItems }) => numberedItems >= 4, specialDetail: ({ numberedItems }) => `当前编号步骤 ${numberedItems} 条，建议至少 4 条` },
-    comparison: { wordsMin: 1000, wordsMax: 1300, h2Min: 4, h2Max: 5, standardRequired: false, specialLabel: '包含对比表', specialTest: ({ hasTable }) => hasTable, specialDetail: ({ hasTable }) => hasTable ? '已检测到 Markdown 表格' : '未检测到有效 Markdown 对比表' },
-    application: { wordsMin: 1200, wordsMax: 1500, h2Min: 5, h2Max: 7, standardRequired: true, specialLabel: '包含安装检查清单', specialTest: ({ numberedItems }) => numberedItems >= 4, specialDetail: ({ numberedItems }) => `当前编号步骤 ${numberedItems} 条，建议至少 4 条` },
-    faq: { wordsMin: 1500, wordsMax: 2000, h2Min: 8, h2Max: 10, standardRequired: true, specialLabel: 'H2 均为真实问题', specialTest: ({ questionH2Count, h2List }) => h2List.length >= 8 && questionH2Count === h2List.length, specialDetail: ({ questionH2Count, h2List }) => `${questionH2Count}/${h2List.length} 个 H2 以 ? 结尾` },
-  };
-  return rules[type] || rules.product;
+  return false;
 }
 
 function extractH2Sections(content) {
@@ -3463,8 +3156,6 @@ router.post('/plans/:planId/generate-now', async (req, res) => {
       title: plan.title,
       articleType,
       modelType,
-      productFamily: plan.product_family,
-      productSubfamily: plan.product_subfamily,
     });
 
     const postRow = structuredToPostRow(structured, { keyword: plan.keyword, articleType });
@@ -3516,7 +3207,7 @@ router.post('/plans/:planId/generate-now', async (req, res) => {
 // ──────────────────────────────────────────
 router.post('/generate-manual', async (req, res) => {
   try {
-    const { keyword, articleType = 'product', model = 'deepseek', title, subKeywords, product_family, product_subfamily } = req.body;
+    const { keyword, articleType = 'product', model = 'deepseek', title, subKeywords } = req.body;
 
     if (!keyword || !keyword.trim()) {
       return res.status(400).json({ error: '关键词不能为空' });
@@ -3531,11 +3222,9 @@ router.post('/generate-manual', async (req, res) => {
       articleType,
       subKeywords,
       modelType: model,
-      productFamily: product_family,
-      productSubfamily: product_subfamily,
     });
 
-    const postRow = structuredToPostRow(structured, { keyword: keyword.trim(), articleType, productFamily: product_family, productSubfamily: product_subfamily });
+    const postRow = structuredToPostRow(structured, { keyword: keyword.trim(), articleType });
     const post = {
       ...postRow,
       plan_id: null,
@@ -3610,8 +3299,6 @@ router.post('/post/:postId/regenerate', async (req, res) => {
       articleType,
       subKeywords: post.sub_keywords,
       modelType,
-      productFamily: post.product_family,
-      productSubfamily: post.product_subfamily,
     });
 
     const postRow = structuredToPostRow(structured, { keyword, articleType });
@@ -3712,13 +3399,12 @@ async function writeAuditLog(postId, action, detail, meta) {
 // 16a. 已发布文章列表（支持类型/月份/标题搜索 + 也含 archived 用于切换 tab）
 router.get('/published', async (req, res) => {
   try {
-    const { status = 'published', articleType, month, search, productFamily, limit = 100 } = req.query;
+    const { status = 'published', articleType, month, search, limit = 100 } = req.query;
 
     const safeStatus = ['published', 'archived'].includes(status) ? status : 'published';
     const orderField = safeStatus === 'archived' ? 'archived_at.desc' : 'published_at.desc';
 
-    let query = `blog_posts?status=eq.${safeStatus}&select=id,title,slug,slug_url,article_type,product_family,product_subfamily,main_keyword,word_count,reading_time,cover_image_url,published_at,archived_at,updated_at&order=${orderField}&limit=${limit}`;
-    if (productFamily) query += `&product_family=eq.${encodeURIComponent(productFamily)}`;
+    let query = `blog_posts?status=eq.${safeStatus}&select=id,title,slug,slug_url,article_type,main_keyword,word_count,reading_time,cover_image_url,published_at,archived_at,updated_at&order=${orderField}&limit=${limit}`;
 
     if (articleType && articleType !== 'all') {
       query += `&article_type=eq.${encodeURIComponent(articleType)}`;
@@ -3764,9 +3450,8 @@ router.get('/published', async (req, res) => {
     }));
 
     // 同时返回未筛选的总数（统计卡片用）
-    const countScope = productFamily ? `&product_family=eq.${encodeURIComponent(productFamily)}` : '';
-    const allPublished = await sb(`blog_posts?status=eq.published${countScope}&select=id`);
-    const allArchived = await sb(`blog_posts?status=eq.archived${countScope}&select=id`);
+    const allPublished = await sb('blog_posts?status=eq.published&select=id');
+    const allArchived = await sb('blog_posts?status=eq.archived&select=id');
 
     res.json({
       success: true,

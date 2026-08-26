@@ -7,14 +7,11 @@
   <link rel="icon" type="image/png" href="/icons/icon-192.png?v=2026-05-24b">
   <link rel="shortcut icon" href="/icons/icon-192.png?v=2026-05-24b">
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png?v=2026-05-24b">
-  <link rel="stylesheet" href="./light-theme.css">
-  <link rel="stylesheet" href="./_shared/mobile.css">
-  <script src="./_shared/theme.js"></script>
-  <script src="./_shared/mobile.js" defer></script>
+  <link rel="stylesheet" href="/light-theme.css">
+  <link rel="stylesheet" href="/_shared/mobile.css">
+  <script src="/_shared/theme.js"></script>
+  <script src="/_shared/mobile.js" defer></script>
   <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
   <style>
     /* 全局重置 */
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -25,9 +22,9 @@
       background: var(--bg);
       color: var(--text);
       font-size: 14px;
+      overflow-y: auto;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      overflow-y: auto;
     }
 
     /* 页面专属变量：只补 light-theme.css 里没有的，其余全部继承主题 */
@@ -44,7 +41,7 @@
     /* 主布局：左 sidebar + 右 main */
     .blog-container {
       display: flex;
-      min-height: 100vh;
+      height: 100vh;
       max-width: none;
       margin: 0;
       padding: 0;
@@ -111,7 +108,7 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      overflow-y: auto;
+      overflow: hidden;
       background: var(--bg);
     }
 
@@ -2156,83 +2153,6 @@
         padding-right: 14px;
       }
     }
-
-    /* Codex workspace shell: dark navigation + quiet document canvas */
-    .blog-sidebar { width:252px; background:#0d0d0d; border-right:1px solid #292929; color:#f5f5f5; }
-    .blog-sidebar-header { padding:24px 18px 16px; border-color:#292929; }
-    .blog-sidebar-header h2 { color:#fff !important; font-size:14px; letter-spacing:.01em; }
-    .blog-sidebar-nav { padding:8px; }
-    .tab-btn { color:#aaa !important; border:0 !important; border-radius:8px !important; padding:10px 12px; margin:1px 0; }
-    .tab-btn .lucide { color:#8c8c8c !important; }
-    .tab-btn:hover { background:#1a1a1a !important; color:#fff !important; }
-    .tab-btn.active { background:#262626 !important; color:#fff !important; box-shadow:inset 0 0 0 1px #333; }
-    .tab-btn.active .lucide { color:#fff !important; }
-    .blog-sidebar-footer { border-color:#292929; }
-    .btn-back-crm { background:#161616 !important; color:#d8d8d8 !important; border-color:#303030 !important; }
-    .blog-main { background:#f7f7f5; }
-    html[data-theme="dark"] .blog-main { background:#0f0f0f; }
-    .blog-main-content { padding:36px 42px 60px; }
-    .keywords-section, .settings-page { max-width:1440px; margin:0 auto; }
-    .keywords-header { padding:0 2px 18px; border-bottom:1px solid var(--border); margin-bottom:18px; }
-    .keywords-header h2 { font-size:22px; letter-spacing:-.025em; }
-    .keyword-add-form, .ai-recommend-section, .keyword-table-wrap, .settings-card {
-      background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:18px; box-shadow:0 1px 2px rgba(0,0,0,.03);
-    }
-    .keyword-input-row { gap:10px; align-items:center; }
-    .keyword-input-row input, .keyword-input-row select, .keywords-filter input, .keywords-filter select { min-height:38px; }
-    .ai-recommend-section { margin:14px 0; }
-    .keywords-filter { background:transparent; padding:2px 0 12px; }
-    .keyword-table-wrap { padding:0; overflow:auto; }
-    .keyword-table th { background:var(--panel-2); font-size:11px; letter-spacing:.045em; text-transform:uppercase; white-space:nowrap; }
-    .keyword-table td { vertical-align:top; line-height:1.45; }
-    .settings-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
-    .settings-card { display:flex; flex-direction:column; gap:14px; }
-    .settings-card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding-bottom:12px; border-bottom:1px solid var(--border); }
-    .settings-card h3 { margin:0; font-size:15px; }
-    .settings-card p { margin:4px 0 0; color:var(--muted) !important; font-size:12px; line-height:1.5; }
-    .settings-field label { display:block; font-size:12px; color:var(--muted) !important; margin-bottom:6px; }
-    .settings-field input, .settings-field select { width:100%; padding:9px 10px; border:1px solid var(--border); border-radius:7px; background:var(--panel); color:var(--text); }
-    .settings-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:18px; }
-    .settings-status { font-size:11px; padding:3px 8px; border:1px solid var(--border); border-radius:999px; white-space:nowrap; }
-    .project-switcher { margin:8px 0 12px; padding:0 0 12px; background:transparent; border:0; border-bottom:1px solid #292929; border-radius:0; }
-    .project-switcher label { display:block; color:#777 !important; font-size:10px; letter-spacing:.04em; margin:0 10px 7px; }
-    .project-switcher select { width:100%; background:#0d0d0d; color:#f5f5f5; border:1px solid #3a3a3a; border-radius:6px; padding:8px; }
-    .project-list { display:flex; flex-direction:column; gap:1px; }
-    .project-list button { position:relative; width:100%; min-height:34px; display:flex; align-items:center; gap:9px; padding:8px 10px; border:0 !important; border-radius:6px !important; background:transparent !important; color:#aaa !important; cursor:pointer; text-align:left; font-size:12.5px !important; font-weight:500 !important; }
-    .project-list button:hover { background:#1a1a1a !important; color:#fff !important; }
-    .project-list button.active { background:#262626 !important; color:#fff !important; box-shadow:inset 2px 0 0 #f2f2f2 !important; }
-    .project-list button.active::after { content:'当前'; margin-left:auto; color:#777; font-size:9px; }
-    .project-dot { width:7px; height:7px; border:1px solid currentColor; border-radius:50%; flex:0 0 auto; opacity:.7; }
-    .project-list button.active .project-dot { background:#f2f2f2; border-color:#f2f2f2; opacity:1; }
-    .project-subnav { margin:0 0 12px; padding-bottom:12px; border-bottom:1px solid #292929; }
-    .project-subnav-title { color:#777 !important; font-size:10px; letter-spacing:.04em; padding:0 10px 7px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .project-subnav button { display:block; width:100%; min-height:32px; text-align:left; padding:7px 10px; border:0 !important; background:transparent !important; color:#aaa !important; border-radius:6px !important; cursor:pointer; font-size:12px !important; }
-    .project-subnav button:hover { background:#1a1a1a !important; color:#fff !important; }
-    .project-subnav button.active { background:#202020 !important; color:#fff !important; }
-    .tabs .tab-btn { border-bottom:0 !important; box-shadow:none; }
-    .tabs .tab-btn.active { border-bottom:0 !important; box-shadow:inset 2px 0 0 #f2f2f2 !important; }
-    html[data-theme="dark"] .blog-mobile-topbar { background:rgba(15,15,15,.96); }
-    html[data-theme="dark"] #manualGenModal > div { background:var(--panel) !important; }
-    .knowledge-layout { display:grid; grid-template-columns:190px minmax(0,1fr); gap:18px; max-width:1440px; margin:0 auto; }
-    .knowledge-nav, .knowledge-editor, .knowledge-list { background:var(--panel); border:1px solid var(--border); border-radius:12px; }
-    .knowledge-nav { padding:8px; height:max-content; }
-    .knowledge-nav button { width:100%; text-align:left; border:0; background:transparent; padding:10px; color:var(--muted); border-radius:7px; cursor:pointer; }
-    .knowledge-nav button.active, .knowledge-nav button:hover { background:var(--selected); color:var(--text); }
-    .knowledge-workspace { display:grid; grid-template-columns:minmax(0,1fr) 280px; gap:14px; }
-    .knowledge-editor, .knowledge-list { padding:18px; }
-    .knowledge-editor h2 { margin:0 0 5px; font-size:18px; }
-    .knowledge-editor .hint { color:var(--muted) !important; font-size:12px; margin-bottom:16px; }
-    .knowledge-field { margin-bottom:12px; }
-    .knowledge-field label { display:block; color:var(--muted) !important; font-size:12px; margin-bottom:6px; }
-    .knowledge-field input, .knowledge-field textarea, .knowledge-field select { width:100%; border:1px solid var(--border); border-radius:7px; background:var(--panel); color:var(--text); padding:9px 10px; font:inherit; }
-    .knowledge-field textarea { min-height:190px; resize:vertical; }
-    .knowledge-list h3 { font-size:13px; margin:0 0 10px; }
-    .knowledge-item { padding:10px 0; border-bottom:1px solid var(--border); cursor:pointer; }
-    .knowledge-item:last-child { border-bottom:0; }
-    .knowledge-item strong { display:block; font-size:13px; }
-    .knowledge-item small { color:var(--muted) !important; display:block; margin-top:4px; line-height:1.4; }
-    @media(max-width:900px){ .knowledge-layout,.knowledge-workspace{grid-template-columns:1fr;} }
-    @media(max-width:1050px){ .settings-grid{grid-template-columns:1fr;} .blog-main-content{padding:24px 20px 50px;} }
   </style>
 </head>
 <body>
@@ -2250,36 +2170,12 @@
 
       <!-- 主导航：原 tabs -->
       <div class="blog-sidebar-nav">
-        <div class="project-switcher">
-          <label>产品项目</label>
-          <select id="projectFamilySelect" onchange="switchProductProject(this.value)" style="display:none;">
-            <option value="mcb">MCB</option><option value="spd">SPD</option><option value="ats">ATS</option><option value="pv-combiner-box">PV Combiner Box</option><option value="voltage-protector">Voltage Protector</option><option value="energy-meter">Energy Meter</option>
-          </select>
-          <div class="project-list">
-            <button class="active" data-project-family="mcb" onclick="switchProductProject('mcb')"><span class="project-dot"></span>MCB</button>
-            <button data-project-family="spd" onclick="switchProductProject('spd')"><span class="project-dot"></span>SPD</button>
-            <button data-project-family="ats" onclick="switchProductProject('ats')"><span class="project-dot"></span>ATS</button>
-            <button data-project-family="pv-combiner-box" onclick="switchProductProject('pv-combiner-box')"><span class="project-dot"></span>PV Combiner Box</button>
-            <button data-project-family="voltage-protector" onclick="switchProductProject('voltage-protector')"><span class="project-dot"></span>Voltage Protector</button>
-            <button data-project-family="energy-meter" onclick="switchProductProject('energy-meter')"><span class="project-dot"></span>Energy Meter</button>
-          </div>
-        </div>
-        <div class="project-subnav">
-          <div class="project-subnav-title" id="currentProjectLabel">当前工作产品：MCB</div>
-          <button data-project-tab="overview" onclick="openProjectTab('overview')">项目概览</button>
-          <button data-project-tab="knowledge" onclick="openProjectTab('knowledge')">产品知识库</button>
-          <button data-project-tab="keywords" onclick="openProjectTab('keywords')">项目关键词</button>
-          <button data-project-tab="articles" onclick="openProjectTab('articles')">项目文章</button>
-        </div>
         <div class="tabs">
           <button class="tab-btn active" data-tab="control">
             <i data-lucide="layout-dashboard"></i> 控制面板
           </button>
           <button class="tab-btn" data-tab="keywords">
-            <i data-lucide="key"></i> 全部关键词库
-          </button>
-          <button class="tab-btn" data-tab="knowledge">
-            <i data-lucide="database"></i> 全部知识库
+            <i data-lucide="key"></i> 关键词库
           </button>
           <button class="tab-btn" data-tab="plan">
             <i data-lucide="calendar-check"></i> 生成规划
@@ -2292,9 +2188,6 @@
           </button>
           <button class="tab-btn" data-tab="published">
             <i data-lucide="book-open"></i> 已发布 <span id="tabPublishedBadge" style="display:none;background:var(--success);color:#fff;border-radius:999px;padding:1px 8px;font-size:11px;margin-left:4px;font-weight:500;">0</span>
-          </button>
-          <button class="tab-btn" data-tab="settings">
-            <i data-lucide="settings-2"></i> API 设置
           </button>
         </div>
       </div>
@@ -2412,63 +2305,12 @@
       </div>
     </div>
 
-    <div class="tab-content" id="knowledge-tab">
-      <div class="knowledge-layout">
-        <aside class="knowledge-nav" id="knowledgeSectionNav">
-          <button class="active" data-section="products" onclick="switchKnowledgeSection('products')">产品信息</button>
-          <button data-section="specifications" onclick="switchKnowledgeSection('specifications')">规格参数</button>
-          <button data-section="applications" onclick="switchKnowledgeSection('applications')">应用场景</button>
-          <button data-section="standards" onclick="switchKnowledgeSection('standards')">标准与认证</button>
-          <button data-section="sources" onclick="switchKnowledgeSection('sources')">资料来源</button>
-          <button data-section="memory" onclick="switchKnowledgeSection('memory')">长期记忆</button>
-        </aside>
-        <div class="knowledge-workspace">
-          <section class="knowledge-editor">
-            <h2 id="knowledgePageTitle">MCB · 产品信息</h2>
-            <div class="hint">只有勾选“允许 AI 调用”的已确认知识，才会进入文章生成上下文。</div>
-            <input type="hidden" id="knowledgeEditId">
-            <div class="knowledge-field"><label>知识标题</label><input id="knowledgeTitle" placeholder="例如：DC MCB 产品范围"></div>
-            <div class="knowledge-field"><label>知识内容</label><textarea id="knowledgeContent" placeholder="输入产品事实、参数边界、应用说明或长期规则"></textarea></div>
-            <div class="knowledge-field"><label>来源 URL</label><input id="knowledgeSourceUrl" placeholder="https://..."></div>
-            <div class="knowledge-field"><label>本地来源文件</label><input id="knowledgeSourceFile" placeholder="例如：catalogs/DC_MCB_2026.pdf"></div>
-            <div class="knowledge-field"><label>导入目录、表格或图片</label><input type="file" id="knowledgeFileInput" accept=".txt,.md,.csv,.xlsx,.xls,.pdf,.docx,.png,.jpg,.jpeg,.webp" onchange="importKnowledgeFile(event)"><div class="hint" style="margin:6px 0 0;">支持 TXT、Markdown、CSV、Excel、PDF、DOCX、PNG、JPG、WebP。提取后的文本或图片会发送到你配置的知识库解析 API，自动拆分和归类，并先保存为待审核草稿。</div></div>
-            <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
-              <label><input type="checkbox" id="knowledgeAllowedForAi"> 允许 AI 调用</label>
-              <select id="knowledgeStatus" style="padding:7px 9px;border:1px solid var(--border);border-radius:7px;background:var(--panel);color:var(--text);"><option value="draft">草稿</option><option value="verified">已核验</option><option value="blocked">禁止使用</option></select>
-            </div>
-            <div class="settings-actions"><button class="btn-secondary" onclick="resetKnowledgeForm()">清空</button><button class="btn-primary" onclick="saveKnowledgeItem()">保存知识</button></div>
-          </section>
-          <aside class="knowledge-list"><h3>当前分类知识</h3><div id="knowledgeItems"><div style="color:var(--muted);font-size:12px;">加载中...</div></div></aside>
-        </div>
-      </div>
-    </div>
-
     <!-- 标签页 1：关键词库 -->
     <div class="tab-content" id="keywords-tab">
       <div class="keywords-section">
         <div class="keywords-header">
           <h2>关键词库管理</h2>
           <div class="keywords-stats" id="keywordsStats">加载中...</div>
-        </div>
-
-        <div class="keyword-add-form" style="margin-bottom:14px;">
-          <div class="keyword-input-row">
-            <select id="keywordProductFamily" aria-label="产品族" onchange="loadKeywords()">
-              <option value="mcb">MCB</option>
-              <option value="spd">SPD</option>
-              <option value="ats">ATS</option>
-              <option value="pv-combiner-box">PV Combiner Box</option>
-              <option value="voltage-protector">Voltage Protector</option>
-              <option value="energy-meter">Energy Meter</option>
-            </select>
-            <input type="text" id="keywordSubfamily" placeholder="子分类，如 AC MCB / DC MCB">
-            <input type="text" id="keywordCountry" value="GLOBAL" placeholder="国家/市场，如 US">
-            <label class="btn-secondary" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:9px 12px;">
-              导入表格<input type="file" id="keywordImportFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="importKeywordFile(event)">
-            </label>
-            <button class="btn-secondary" onclick="downloadKeywordTemplate()">下载模板</button>
-          </div>
-          <div style="font-size:12px;color:var(--muted);margin-top:8px;">Google 流量、国家、难度只接受表格或数据接口的真实值；AI 扩充词不会伪造这些指标。</div>
         </div>
 
         <!-- 添加关键词 -->
@@ -2505,7 +2347,7 @@
             <p>输入一个种子关键词，AI 帮你推荐 40-50 个相关关键词</p>
           </div>
           <div class="ai-recommend-input">
-            <input type="text" id="seedKeyword" placeholder="输入种子关键词，例如：DC MCB">
+            <input type="text" id="seedKeyword" placeholder="输入种子关键词，例如：MCB">
             <button onclick="getAIRecommendations()" id="aiRecommendBtn">🤖 AI 推荐</button>
           </div>
           <div id="aiRecommendResult" style="display: none;">
@@ -2540,7 +2382,6 @@
             <option value="medium">中优先级</option>
             <option value="low">低优先级</option>
           </select>
-          <input id="filterKeywordSearch" type="search" placeholder="搜索关键词" oninput="loadKeywords()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--text);">
         </div>
 
         <!-- 关键词列表 -->
@@ -2549,61 +2390,18 @@
             <thead>
               <tr>
                 <th>关键词</th>
-                <th>产品 / 市场</th>
                 <th>分类</th>
                 <th>难度</th>
                 <th>优先级</th>
-                <th>Google 月流量</th>
-                <th>文章 / 正文次数</th>
-                <th>最后使用</th>
+                <th>使用次数</th>
                 <th>操作</th>
               </tr>
             </thead>
             <tbody id="keywordTableBody">
-              <tr><td colspan="9" style="text-align:center;color:var(--muted);">加载中...</td></tr>
+              <tr><td colspan="6" style="text-align:center;color:var(--muted);">加载中...</td></tr>
             </tbody>
           </table>
         </div>
-      </div>
-    </div>
-
-    <div class="tab-content" id="settings-tab">
-      <div class="settings-page">
-        <div class="keywords-header">
-          <div><h2>API 接入设置</h2><p style="margin:6px 0 0;color:var(--muted);">密钥由你配置，服务端加密保存；功能模块只读取已启用的连接。</p></div>
-          <button id="themeToggle" type="button" onclick="toggleCodexTheme()" title="切换黑白模式">◐</button>
-        </div>
-        <div class="settings-grid">
-          <section class="settings-card" data-api-section="article">
-            <div class="settings-card-head"><div><h3>文章文案 API</h3><p>文章规划、正文、SEO、FAQ 与审核。</p></div><span class="settings-status" id="articleApiStatus">未配置</span></div>
-            <div class="settings-field"><label>API Endpoint</label><input id="articleApiEndpoint" placeholder="https://api.deepseek.com/chat/completions"></div>
-            <div class="settings-field"><label>模型名称</label><input id="articleApiModel" placeholder="deepseek-chat"></div>
-            <div class="settings-field"><label>API Key</label><input id="articleApiKey" type="password" placeholder="留空表示保留现有 Key"></div>
-            <label><input id="articleApiEnabled" type="checkbox"> 启用文章 API</label>
-          </section>
-          <section class="settings-card" data-api-section="keyword">
-            <div class="settings-card-head"><div><h3>关键词推荐 API</h3><p>种子词扩充和搜索意图分类，可与文章 API 共用。</p></div><span class="settings-status" id="keywordApiStatus">未配置</span></div>
-            <div class="settings-field"><label>API Endpoint</label><input id="keywordApiEndpoint" placeholder="https://api.deepseek.com/chat/completions"></div>
-            <div class="settings-field"><label>模型名称</label><input id="keywordApiModel" placeholder="deepseek-chat"></div>
-            <div class="settings-field"><label>API Key</label><input id="keywordApiKey" type="password" placeholder="留空表示保留现有 Key"></div>
-            <label><input id="keywordApiEnabled" type="checkbox"> 启用关键词 API</label>
-          </section>
-          <section class="settings-card" data-api-section="image">
-            <div class="settings-card-head"><div><h3>图片生成 API</h3><p>可接 OpenAI、Cloud 或兼容中转站，只用于低风险图片。</p></div><span class="settings-status" id="imageApiStatus">未配置</span></div>
-            <div class="settings-field"><label>API Endpoint</label><input id="imageApiEndpoint" placeholder="供应商的图片生成 Endpoint"></div>
-            <div class="settings-field"><label>模型名称</label><input id="imageApiModel" placeholder="图片模型名称"></div>
-            <div class="settings-field"><label>API Key</label><input id="imageApiKey" type="password" placeholder="留空表示保留现有 Key"></div>
-            <label><input id="imageApiEnabled" type="checkbox"> 启用图片 API</label>
-          </section>
-          <section class="settings-card" data-api-section="knowledge">
-            <div class="settings-card-head"><div><h3>知识库解析 API</h3><p>用于目录、表格和图片 OCR，自动拆分并归类知识；结果先保存为待审核草稿。</p></div><span class="settings-status" id="knowledgeApiStatus">未配置</span></div>
-            <div class="settings-field"><label>API Endpoint</label><input id="knowledgeApiEndpoint" placeholder="支持视觉输入的 OpenAI-compatible Endpoint"></div>
-            <div class="settings-field"><label>模型名称</label><input id="knowledgeApiModel" placeholder="例如 gpt-4.1-mini 或视觉模型"></div>
-            <div class="settings-field"><label>API Key</label><input id="knowledgeApiKey" type="password" placeholder="留空表示保留现有 Key"></div>
-            <label><input id="knowledgeApiEnabled" type="checkbox"> 启用知识库解析 API</label>
-          </section>
-        </div>
-        <div class="settings-actions"><button class="btn-secondary" onclick="loadApiSettings()">重新加载</button><button class="btn-primary" onclick="saveApiSettings()">保存 API 设置</button></div>
       </div>
     </div>
 
@@ -2811,13 +2609,6 @@
       <p style="font-size:12.5px;color:var(--muted);margin:0 0 18px 0;">手动模式：选关键词、文章类型和 AI 模型，立即生成一篇</p>
 
       <div style="margin-bottom:14px;">
-        <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500;">产品项目</label>
-        <select id="manualProductFamily" onchange="loadKeywordsForManual()" style="width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--panel);color:var(--text);">
-          <option value="mcb">MCB</option><option value="spd">SPD</option><option value="ats">ATS</option><option value="pv-combiner-box">PV Combiner Box</option><option value="voltage-protector">Voltage Protector</option><option value="energy-meter">Energy Meter</option>
-        </select>
-      </div>
-
-      <div style="margin-bottom:14px;">
         <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500;">关键词来源</label>
         <div style="display:flex;gap:14px;font-size:13px;margin-bottom:6px;">
           <label><input type="radio" name="kwSource" value="lib" checked onchange="onKwSourceChange()"> 从关键词库选</label>
@@ -2848,7 +2639,10 @@
       <div style="margin-bottom:18px;">
         <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500;">AI 模型</label>
         <select id="manualModel" style="width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--panel);color:var(--text);">
-          <option value="deepseek">DeepSeek（文案模型）</option>
+          <option value="deepseek">DeepSeek（便宜、推荐）</option>
+          <option value="claude">Claude 3.5 Sonnet</option>
+          <option value="gpt">GPT-4 Turbo</option>
+          <option value="gemini">Gemini Pro</option>
         </select>
       </div>
 
@@ -3099,9 +2893,6 @@
     let keywords = [];
     let plans = [];
     let selectedPlanIds = new Set();
-    let currentProductFamily = 'mcb';
-    let currentKnowledgeSection = 'products';
-    let knowledgeItemsCache = [];
 
     // 标签页切换
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -3118,16 +2909,11 @@
           loadDashboard();
         } else if (tabName === 'keywords') {
           loadKeywords();
-        } else if (tabName === 'knowledge') {
-          loadKnowledgeItems();
         } else if (tabName === 'review') {
           loadReviewList();
         } else if (tabName === 'published') {
           loadPublishedList();
-        } else if (tabName === 'settings') {
-          loadApiSettings();
         }
-        if (['control','knowledge','keywords','published'].includes(tabName)) updateProjectRoute();
       });
     });
 
@@ -3135,198 +2921,6 @@
     function switchToReviewTab() {
       const btn = document.querySelector('.tab-btn[data-tab="review"]');
       if (btn) btn.click();
-    }
-
-    const productLabels = { mcb:'MCB', spd:'SPD', ats:'ATS', 'pv-combiner-box':'PV Combiner Box', 'voltage-protector':'Voltage Protector', 'energy-meter':'Energy Meter' };
-    const knowledgeSectionLabels = { products:'产品信息', specifications:'规格参数', applications:'应用场景', standards:'标准与认证', sources:'资料来源', memory:'长期记忆' };
-
-    function switchProductProject(family) {
-      currentProductFamily = family || 'mcb';
-      const currentLabel = document.getElementById('currentProjectLabel');
-      if (currentLabel) currentLabel.textContent = `当前工作产品：${productLabels[currentProductFamily] || currentProductFamily}`;
-      const keywordFamily = document.getElementById('keywordProductFamily');
-      if (keywordFamily) keywordFamily.value = currentProductFamily;
-      const manualFamily = document.getElementById('manualProductFamily');
-      if (manualFamily) manualFamily.value = currentProductFamily;
-      document.querySelectorAll('[data-project-family]').forEach(button => button.classList.toggle('active', button.dataset.projectFamily === currentProductFamily));
-      updateProjectRoute();
-      const active = document.querySelector('.tab-btn.active')?.dataset.tab;
-      if (active === 'knowledge') loadKnowledgeItems();
-      if (active === 'keywords') loadKeywords();
-      document.querySelectorAll('[data-project-tab]').forEach(b => b.classList.toggle('active', b.dataset.projectTab === active));
-    }
-
-    function openProjectTab(name) {
-      const map = { overview:'control', knowledge:'knowledge', keywords:'keywords', articles:'published' };
-      const tab = map[name] || 'control';
-      const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
-      if (btn) btn.click();
-      document.querySelectorAll('[data-project-tab]').forEach(b => b.classList.toggle('active', b.dataset.projectTab === name));
-      updateProjectRoute(name);
-    }
-
-    function updateProjectRoute(section) {
-      const active = section || ({control:'overview',knowledge:'knowledge',keywords:'keywords',published:'articles'}[document.querySelector('.tab-btn.active')?.dataset.tab] || 'overview');
-      history.replaceState(null, '', `#/projects/${currentProductFamily}/${active}${active === 'knowledge' ? '/' + currentKnowledgeSection : ''}`);
-    }
-
-    function switchKnowledgeSection(section) {
-      currentKnowledgeSection = section;
-      document.querySelectorAll('#knowledgeSectionNav button').forEach(b => b.classList.toggle('active', b.dataset.section === section));
-      resetKnowledgeForm();
-      loadKnowledgeItems();
-      updateProjectRoute('knowledge');
-    }
-
-    async function loadKnowledgeItems() {
-      document.getElementById('knowledgePageTitle').textContent = `${productLabels[currentProductFamily] || currentProductFamily} · ${knowledgeSectionLabels[currentKnowledgeSection] || currentKnowledgeSection}`;
-      try {
-        const response = await fetch(`/api/blog/knowledge?product_family=${encodeURIComponent(currentProductFamily)}&section=${encodeURIComponent(currentKnowledgeSection)}`, { headers:getHeaders() });
-        const data = await response.json();
-        if (!data.success) throw new Error(data.error || '加载失败');
-        knowledgeItemsCache = data.items || [];
-        const box = document.getElementById('knowledgeItems');
-        box.innerHTML = knowledgeItemsCache.length ? knowledgeItemsCache.map(item => `<div class="knowledge-item" onclick="editKnowledgeItem('${item.id}')"><div style="display:flex;justify-content:space-between;gap:8px;"><strong>${escapeHtml(item.title)}</strong><button title="删除知识" onclick="event.stopPropagation();deleteKnowledgeItem('${item.id}')" style="border:0;background:transparent;color:var(--muted);cursor:pointer;padding:0 3px;">×</button></div><small>${item.status === 'verified' ? '已核验' : item.status === 'blocked' ? '禁止使用' : '草稿'} · ${item.allowed_for_ai ? 'AI 可调用' : 'AI 不调用'}<br>${escapeHtml(String(item.content || '').slice(0,80))}</small></div>`).join('') : '<div style="color:var(--muted);font-size:12px;padding:10px 0;">此产品分类暂无知识</div>';
-      } catch (error) { showToast('知识库加载失败：' + error.message); }
-    }
-
-    function editKnowledgeItem(id) {
-      const item = knowledgeItemsCache.find(entry => entry.id === id);
-      if (!item) return;
-      document.getElementById('knowledgeEditId').value = item.id || '';
-      document.getElementById('knowledgeTitle').value = item.title || '';
-      document.getElementById('knowledgeContent').value = item.content || '';
-      document.getElementById('knowledgeSourceUrl').value = item.source_url || '';
-      document.getElementById('knowledgeSourceFile').value = item.source_file || '';
-      document.getElementById('knowledgeAllowedForAi').checked = !!item.allowed_for_ai;
-      document.getElementById('knowledgeStatus').value = item.status || 'draft';
-    }
-
-    async function deleteKnowledgeItem(id) {
-      if (!confirm('删除这条知识？')) return;
-      try {
-        const response = await fetch(`/api/blog/knowledge/${id}`, { method:'DELETE', headers:getHeaders() });
-        const data = await response.json();
-        if (!response.ok || !data.success) throw new Error(data.error || '删除失败');
-        resetKnowledgeForm(); await loadKnowledgeItems(); showToast('知识已删除');
-      } catch (error) { showToast('知识删除失败：' + error.message); }
-    }
-
-    function resetKnowledgeForm() {
-      ['knowledgeEditId','knowledgeTitle','knowledgeContent','knowledgeSourceUrl','knowledgeSourceFile'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
-      document.getElementById('knowledgeAllowedForAi').checked = false;
-      document.getElementById('knowledgeStatus').value = 'draft';
-      const fileInput = document.getElementById('knowledgeFileInput');
-      if (fileInput) fileInput.value = '';
-    }
-
-    async function importKnowledgeFile(event) {
-      const file = event.target.files && event.target.files[0];
-      if (!file) return;
-      try {
-        const ext = file.name.split('.').pop().toLowerCase();
-        const buffer = await file.arrayBuffer();
-        let extracted = '';
-        if (['txt','md','csv'].includes(ext)) {
-          extracted = new TextDecoder('utf-8').decode(buffer);
-        } else if (['xlsx','xls'].includes(ext)) {
-          if (typeof XLSX === 'undefined') throw new Error('Excel 解析组件未加载');
-          const workbook = XLSX.read(buffer, { type:'array' });
-          extracted = workbook.SheetNames.map(name => `## ${name}\n${XLSX.utils.sheet_to_csv(workbook.Sheets[name])}`).join('\n\n');
-        } else if (ext === 'pdf') {
-          if (typeof pdfjsLib === 'undefined') throw new Error('PDF 解析组件未加载');
-          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-          const pdf = await pdfjsLib.getDocument({ data:new Uint8Array(buffer) }).promise;
-          const pages = [];
-          for (let pageNo = 1; pageNo <= pdf.numPages; pageNo++) {
-            const page = await pdf.getPage(pageNo);
-            const text = await page.getTextContent();
-            pages.push(`## Page ${pageNo}\n${text.items.map(item => item.str).join(' ')}`);
-          }
-          extracted = pages.join('\n\n');
-        } else if (ext === 'docx') {
-          if (typeof mammoth === 'undefined') throw new Error('DOCX 解析组件未加载');
-          extracted = (await mammoth.extractRawText({ arrayBuffer:buffer })).value;
-        } else if (['png','jpg','jpeg','webp'].includes(ext)) {
-          extracted = '';
-        } else {
-          throw new Error('暂不支持该文件格式');
-        }
-        if (!extracted.trim() && !['png','jpg','jpeg','webp'].includes(ext)) throw new Error('文件中没有提取到可用文字');
-        document.getElementById('knowledgeSourceFile').value = file.name;
-        document.getElementById('knowledgeTitle').value ||= file.name.replace(/\.[^.]+$/, '');
-        document.getElementById('knowledgeContent').value = extracted.trim();
-        const base64 = ['png','jpg','jpeg','webp'].includes(ext) ? (await readAsDataUrl(file)).split(',')[1] : null;
-        const response = await fetch('/api/blog/knowledge/extract', { method:'POST', headers:getHeaders(), body:JSON.stringify({ product_family:currentProductFamily, source_file:file.name, text:extracted, image_base64:base64, mime_type:file.type }) });
-        const result = await response.json();
-        if (!response.ok || !result.success) throw new Error(result.error || '自动归类失败');
-        const items = result.items || [];
-        if (!items.length) throw new Error('未识别出可归类的知识内容');
-        for (const item of items) {
-          await fetch('/api/blog/knowledge', { method:'POST', headers:getHeaders(), body:JSON.stringify(item) });
-        }
-        resetKnowledgeForm();
-        await loadKnowledgeItems();
-        showToast(`已从 ${file.name} 提取并归类 ${items.length} 条草稿，请逐条核验`);
-      } catch (error) {
-        showToast('资料导入失败：' + error.message);
-      }
-    }
-
-    async function saveKnowledgeItem() {
-      const id = document.getElementById('knowledgeEditId').value;
-      const payload = { product_family:currentProductFamily, section:currentKnowledgeSection, title:document.getElementById('knowledgeTitle').value.trim(), content:document.getElementById('knowledgeContent').value.trim(), source_url:document.getElementById('knowledgeSourceUrl').value.trim() || null, source_file:document.getElementById('knowledgeSourceFile').value.trim() || null, allowed_for_ai:document.getElementById('knowledgeAllowedForAi').checked, status:document.getElementById('knowledgeStatus').value };
-      if (!payload.title || !payload.content) { showToast('请填写知识标题和内容'); return; }
-      try {
-        const response = await fetch(id ? `/api/blog/knowledge/${id}` : '/api/blog/knowledge', { method:id?'PUT':'POST', headers:getHeaders(), body:JSON.stringify(payload) });
-        const data = await response.json();
-        if (!response.ok || !data.success) throw new Error(data.error || '保存失败');
-        showToast('知识已保存'); resetKnowledgeForm(); await loadKnowledgeItems();
-      } catch (error) { showToast('知识保存失败：' + error.message); }
-    }
-
-    function toggleCodexTheme() {
-      if (typeof window.toggleTheme === 'function') { window.toggleTheme(); return; }
-      const html = document.documentElement;
-      const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-      html.setAttribute('data-theme', next);
-      localStorage.setItem('crm_theme', next);
-    }
-
-    async function loadApiSettings() {
-      try {
-        const response = await fetch('/api/blog/integration-settings', { headers: getHeaders() });
-        const data = await response.json();
-        if (!data.success) throw new Error(data.error || '加载失败');
-        ['article', 'keyword', 'image', 'knowledge'].forEach(purpose => {
-          const item = data.settings[purpose] || {};
-          document.getElementById(`${purpose}ApiEndpoint`).value = item.endpoint || '';
-          document.getElementById(`${purpose}ApiModel`).value = item.model || '';
-          document.getElementById(`${purpose}ApiKey`).value = '';
-          document.getElementById(`${purpose}ApiEnabled`).checked = !!item.enabled;
-          const status = document.getElementById(`${purpose}ApiStatus`);
-          status.textContent = item.enabled && item.hasKey ? '已启用' : item.hasKey ? '已保存，未启用' : '未配置';
-        });
-      } catch (error) { showToast('API 设置加载失败：' + error.message); }
-    }
-
-    async function saveApiSettings() {
-      const payload = {};
-      ['article', 'keyword', 'image', 'knowledge'].forEach(purpose => {
-        payload[purpose] = {
-          endpoint: document.getElementById(`${purpose}ApiEndpoint`).value.trim(),
-          model: document.getElementById(`${purpose}ApiModel`).value.trim(),
-          apiKey: document.getElementById(`${purpose}ApiKey`).value.trim(),
-          enabled: document.getElementById(`${purpose}ApiEnabled`).checked,
-        };
-      });
-      try {
-        const response = await fetch('/api/blog/integration-settings', { method:'PUT', headers:getHeaders(), body:JSON.stringify(payload) });
-        const data = await response.json();
-        if (!response.ok || !data.success) throw new Error(data.error || '保存失败');
-        showToast('API 设置已安全保存');
-        await loadApiSettings();
-      } catch (error) { showToast('API 设置保存失败：' + error.message); }
     }
 
     // 控制面板"已发布"卡片点击 → 切到 published tab
@@ -3340,7 +2934,7 @@
       const container = document.getElementById('reviewListContainer');
       container.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px;">加载中...</div>';
       try {
-        const response = await fetch(`/api/blog/pending-review?productFamily=${encodeURIComponent(currentProductFamily || '')}`);
+        const response = await fetch('/api/blog/pending-review');
         const data = await response.json();
         if (!data.success) {
           container.innerHTML = `<div style="text-align:center;color:var(--text);padding:40px;">加载失败：${data.error || ''}</div>`;
@@ -3462,7 +3056,6 @@
       const search = document.getElementById('publishedFilterSearch').value.trim();
 
       const params = new URLSearchParams({ status: currentPubStatus });
-      if (currentProductFamily) params.set('productFamily', currentProductFamily);
       if (articleType && articleType !== 'all') params.set('articleType', articleType);
       if (month) params.set('month', month);
       if (search) params.set('search', search);
@@ -3735,7 +3328,7 @@
     // 加载控制面板数据
     async function loadDashboard() {
       try {
-        const response = await fetch(`/api/blog/dashboard${currentProductFamily ? `?productFamily=${encodeURIComponent(currentProductFamily)}` : ''}`);
+        const response = await fetch('/api/blog/dashboard');
         const data = await response.json();
 
         if (data.success) {
@@ -3823,8 +3416,7 @@
 
     async function loadKeywordsForManual() {
       try {
-        const family = document.getElementById('manualProductFamily')?.value || 'mcb';
-        const r = await fetch(`/api/blog/keywords?product_family=${encodeURIComponent(family)}`);
+        const r = await fetch('/api/blog/keywords');
         const d = await r.json();
         const sel = document.getElementById('manualKwSelect');
         if (d.success && d.keywords && d.keywords.length > 0) {
@@ -3837,7 +3429,7 @@
           const labels = { product:'产品词', buying:'采购词', comparison:'对比词', application:'应用词', faq:'FAQ词', general:'其他' };
           sel.innerHTML = Object.entries(groups).map(([cat, list]) =>
             `<optgroup label="${labels[cat] || cat}">` +
-            list.map(k => `<option value="${escapeHtml(k.keyword)}" data-cat="${cat}">${escapeHtml(k.keyword)} · ${k.article_count || 0}篇 · ${k.search_volume == null ? '流量待导入' : Number(k.search_volume).toLocaleString()}</option>`).join('') +
+            list.map(k => `<option value="${k.keyword}" data-cat="${cat}">${k.keyword}</option>`).join('') +
             `</optgroup>`
           ).join('');
           // 选中后自动设置类型
@@ -3879,7 +3471,7 @@
         const r = await fetch('/api/blog/generate-manual', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ keyword, articleType, title, model, product_family: document.getElementById('manualProductFamily').value, product_subfamily: document.getElementById('keywordSubfamily')?.value.trim() || null }),
+          body: JSON.stringify({ keyword, articleType, title, model }),
         });
         const d = await r.json();
         if (d.success) {
@@ -3909,7 +3501,7 @@
         const r = await fetch(`/api/blog/plans/${planId}/generate-now`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ modelType: 'deepseek', productFamily: currentProductFamily }),
+          body: JSON.stringify({ modelType: 'deepseek' }),
         });
         const d = await r.json();
         if (d.success) {
@@ -4371,13 +3963,13 @@
           if (seoData.success) {
             const seoHtml = `
               <div class="seo-check-result">
-                <h4>内容质量 ${seoData.score}/100 · SEO ${seoData.seoScore ?? seoData.score}/100 · GEO ${seoData.geoScore ?? '-'}/100</h4>
+                <h4>SEO 检查结果 (${seoData.score}/100)</h4>
                 <div class="seo-checks">
                   ${seoData.checks.map(check => `
                     <div class="seo-check-item ${check.passed ? 'passed' : 'failed'}">
                       <span class="check-icon">${check.passed ? '✓' : '✗'}</span>
-                      <span class="check-name">${check.group ? `[${check.group}] ` : ''}${check.name}</span>
-                      <span class="check-weight">${check.detail ? escapeHtml(check.detail) : ''}</span>
+                      <span class="check-name">${check.name}</span>
+                      <span class="check-weight">(${check.weight}分)</span>
                     </div>
                   `).join('')}
                 </div>
@@ -4515,13 +4107,13 @@
           if (seoData.success) {
             const seoHtml = `
               <div class="seo-check-result">
-                <h4>内容质量 ${seoData.score}/100 · SEO ${seoData.seoScore ?? seoData.score}/100 · GEO ${seoData.geoScore ?? '-'}/100</h4>
+                <h4>SEO 检查结果 (${seoData.score}/100)</h4>
                 <div class="seo-checks">
                   ${seoData.checks.map(check => `
                     <div class="seo-check-item ${check.passed ? 'passed' : 'failed'}">
                       <span class="check-icon">${check.passed ? '✓' : '✗'}</span>
-                      <span class="check-name">${check.group ? `[${check.group}] ` : ''}${check.name}</span>
-                      <span class="check-weight">${check.detail ? escapeHtml(check.detail) : ''}</span>
+                      <span class="check-name">${check.name}</span>
+                      <span class="check-weight">(${check.weight}分)</span>
                     </div>
                   `).join('')}
                 </div>
@@ -4711,16 +4303,10 @@
       try {
         const category = document.getElementById('filterCategory')?.value || '';
         const priority = document.getElementById('filterPriority')?.value || '';
-        const productFamily = document.getElementById('keywordProductFamily')?.value || '';
-        const country = document.getElementById('keywordCountry')?.value.trim() || '';
-        const search = document.getElementById('filterKeywordSearch')?.value.trim() || '';
         let url = '/api/blog/keywords';
         const params = [];
         if (category) params.push(`category=${category}`);
         if (priority) params.push(`priority=${priority}`);
-        if (productFamily) params.push(`product_family=${encodeURIComponent(productFamily)}`);
-        if (country && country !== 'GLOBAL') params.push(`country=${encodeURIComponent(country)}`);
-        if (search) params.push(`search=${encodeURIComponent(search)}`);
         if (params.length) url += '?' + params.join('&');
 
         const response = await fetch(url);
@@ -4728,8 +4314,8 @@
 
         if (data.success) {
           renderKeywordTable(data.keywords);
-          const s = data.summary || {};
-          document.getElementById('keywordsStats').textContent = `共 ${s.total ?? data.keywords.length} 个 · 已用 ${s.used || 0} · 未用 ${s.unused || 0} · 有真实指标 ${s.withMetrics || 0}`;
+          document.getElementById('keywordsStats').textContent =
+            `共 ${data.keywords.length} 个关键词`;
         }
       } catch (error) {
         console.error('加载关键词失败:', error);
@@ -4742,7 +4328,7 @@
       if (!keywords || keywords.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="9" style="text-align:center;padding:30px;color:var(--muted);">
+            <td colspan="6" style="text-align:center;padding:30px;color:var(--muted);">
               <div>暂无关键词</div>
               <div style="margin-top:8px;font-size:12px;">请添加关键词或使用 AI 推荐功能</div>
             </td>
@@ -4755,14 +4341,11 @@
 
       tbody.innerHTML = keywords.map(kw => `
         <tr>
-          <td><strong>${escapeHtml(kw.keyword)}</strong><div style="font-size:11px;color:var(--muted);margin-top:3px;">${kw.source_type === 'ai_expand' ? 'AI 扩充' : kw.source_type === 'import' ? '表格导入' : '手动'}</div></td>
-          <td>${escapeHtml(kw.product_family || '未分类')}<div style="font-size:11px;color:var(--muted);">${escapeHtml(kw.subfamily || '')}${kw.subfamily ? ' · ' : ''}${escapeHtml(kw.country || 'GLOBAL')}</div></td>
+          <td><strong>${kw.keyword}</strong></td>
           <td><span class="category-badge category-${kw.category}">${categoryLabels[kw.category] || kw.category}</span></td>
           <td><span class="difficulty-stars">${'★'.repeat(kw.difficulty || 3)}${'☆'.repeat(5 - (kw.difficulty || 3))}</span></td>
           <td><span class="priority-badge priority-${kw.priority}">${priorityLabels[kw.priority] || kw.priority}</span></td>
-          <td>${kw.search_volume == null ? '<span style="color:var(--muted);">未接数据</span>' : Number(kw.search_volume).toLocaleString()}<div style="font-size:11px;color:var(--muted);">${escapeHtml(kw.metric_source || '')}</div></td>
-          <td>${kw.article_count || 0} 篇 / ${kw.mention_count || 0} 次</td>
-          <td>${kw.last_used_at ? new Date(kw.last_used_at).toLocaleDateString('zh-CN') : '—'}</td>
+          <td>${kw.used_count || 0} 次</td>
           <td>
             <button onclick="deleteKeyword('${kw.id}')" style="padding:3px 10px;border:1px solid var(--border);background:var(--panel);border-radius:6px;cursor:pointer;font-size:12px;color:var(--text);">删除</button>
           </td>
@@ -4779,15 +4362,12 @@
       const category = document.getElementById('keywordCategory').value;
       const difficulty = parseInt(document.getElementById('keywordDifficulty').value);
       const priority = document.getElementById('keywordPriority').value;
-      const product_family = document.getElementById('keywordProductFamily').value;
-      const subfamily = document.getElementById('keywordSubfamily').value.trim() || null;
-      const country = document.getElementById('keywordCountry').value.trim() || 'GLOBAL';
 
       try {
         const response = await fetch('/api/blog/keywords', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ keyword, category, difficulty, priority, product_family, subfamily, country, source_type: 'manual', metric_source: 'manual' })
+          body: JSON.stringify({ keyword, category, difficulty, priority })
         });
         const data = await response.json();
 
@@ -4836,10 +4416,7 @@
       btn.textContent = '推荐中...';
 
       try {
-        const productFamily = document.getElementById('keywordProductFamily').value;
-        const subfamily = document.getElementById('keywordSubfamily').value.trim();
-        const country = document.getElementById('keywordCountry').value.trim() || 'GLOBAL';
-        const response = await fetch(`/api/blog/keywords/ai-recommend?seed=${encodeURIComponent(seedKeyword)}&product_family=${encodeURIComponent(productFamily)}&subfamily=${encodeURIComponent(subfamily)}&country=${encodeURIComponent(country)}`, {
+        const response = await fetch(`/api/blog/keywords/ai-recommend?seed=${encodeURIComponent(seedKeyword)}`, {
           method: 'GET',
           headers: getHeaders()
         });
@@ -4875,10 +4452,10 @@
         return;
       }
 
-      list.innerHTML = `<div class="recommend-list">` + recommendData.map(item => `
-        <label style="display:flex;align-items:center;padding:10px;border:1px solid var(--border);border-radius:7px;margin-bottom:8px;cursor:pointer;background:var(--panel);">
-          <input type="checkbox" value="${escapeHtml(item.keyword)}" data-category="${item.category || 'product'}" data-intent="${item.search_intent || ''}" data-country="${item.country || 'GLOBAL'}" style="margin-right:10px;cursor:pointer;">
-          <span style="flex:1;">${escapeHtml(item.keyword)}<small style="display:block;color:var(--muted);margin-top:2px;">${item.search_intent || '未分类'} · 流量待导入</small></span>
+      list.innerHTML = `<div class="recommend-list">` + recommendData.map(kw => `
+        <label style="display: flex; align-items: center; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 8px; cursor: pointer; background: white;">
+          <input type="checkbox" value="${kw}" data-category="general" style="margin-right: 10px; cursor: pointer;">
+          <span style="flex: 1;">${kw}</span>
         </label>
       `).join('') + `</div>`;
     }
@@ -4893,12 +4470,12 @@
         }
       });
 
-      const items = Array.isArray(recommendData) ? recommendData.filter(item => (item.category || 'product') === tab) : (recommendData[tab] || []);
+      const items = recommendData[tab] || [];
       const listEl = document.getElementById('recommendList');
       listEl.innerHTML = `<div class="recommend-list">` + items.map(item => `
         <label class="recommend-item ${item.exists ? 'exists' : ''}">
-          <input type="checkbox" value="${escapeHtml(item.keyword || item)}" data-category="${item.category || tab}" data-intent="${item.search_intent || ''}" data-country="${item.country || 'GLOBAL'}" ${item.exists ? 'disabled' : ''}>
-          ${escapeHtml(item.keyword || item)}
+          <input type="checkbox" value="${item.keyword}" data-category="${item.category}" ${item.exists ? 'disabled' : ''}>
+          ${item.keyword}
         </label>
       `).join('') + `</div>`;
     }
@@ -4921,14 +4498,7 @@
           keyword: cb.value,
           category: cb.dataset.category || 'general',
           difficulty: 3,
-          priority: 'medium',
-          product_family: document.getElementById('keywordProductFamily').value,
-          subfamily: document.getElementById('keywordSubfamily').value.trim() || null,
-          country: cb.dataset.country || document.getElementById('keywordCountry').value.trim() || 'GLOBAL',
-          search_intent: cb.dataset.intent || null,
-          source_type: 'ai_expand',
-          metric_source: 'ai_unverified',
-          parent_keyword: document.getElementById('seedKeyword').value.trim()
+          priority: 'medium'
         });
       });
 
@@ -4956,60 +4526,6 @@
       } catch (error) {
         showToast('❌ 添加失败：' + error.message);
       }
-    }
-
-    function normalizeImportedKeywordRow(row) {
-      const get = (...names) => {
-        for (const name of names) {
-          if (row[name] !== undefined && row[name] !== null && String(row[name]).trim() !== '') return row[name];
-        }
-        return null;
-      };
-      const keyword = get('keyword', 'Keyword', '关键词');
-      if (!keyword) return null;
-      const volumeRaw = get('search_volume', 'Search Volume', 'Volume', '月搜索量', '搜索量');
-      return {
-        keyword: String(keyword).trim(),
-        product_family: String(get('product_family', 'Product Family', '产品分类') || document.getElementById('keywordProductFamily').value).trim(),
-        subfamily: String(get('subfamily', 'Subfamily', '子分类') || document.getElementById('keywordSubfamily').value || '').trim() || null,
-        category: String(get('category', 'Article Type', '文章类型') || 'product').trim().toLowerCase(),
-        search_intent: String(get('search_intent', 'Search Intent', '搜索意图') || '').trim() || null,
-        country: String(get('country', 'Country', '国家') || document.getElementById('keywordCountry').value || 'GLOBAL').trim().toUpperCase(),
-        search_volume: volumeRaw === null ? null : Number(String(volumeRaw).replace(/,/g, '')),
-        difficulty: Math.min(5, Math.max(1, Number(get('difficulty', 'Difficulty', '难度')) || 3)),
-        priority: String(get('priority', 'Priority', '优先级') || 'medium').trim().toLowerCase(),
-        metric_source: String(get('metric_source', 'Metric Source', '数据来源') || 'import').trim(),
-        source_type: 'import'
-      };
-    }
-
-    async function importKeywordFile(event) {
-      const file = event.target.files && event.target.files[0];
-      if (!file) return;
-      try {
-        if (typeof XLSX === 'undefined') throw new Error('表格解析组件未加载，请刷新页面后重试');
-        const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array' });
-        const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: '' });
-        const imported = rows.map(normalizeImportedKeywordRow).filter(Boolean).filter(k => k.search_volume == null || Number.isFinite(k.search_volume));
-        if (!imported.length) throw new Error('没有识别到关键词，请使用模板字段');
-        const response = await fetch('/api/blog/keywords/batch', { method: 'POST', headers: getHeaders(), body: JSON.stringify({ keywords: imported }) });
-        const result = await response.json();
-        if (!response.ok || !result.success) throw new Error(result.error || '导入失败');
-        showToast(`导入完成：新增 ${result.addedCount} 个，更新 ${result.updatedCount || 0} 个`);
-        await loadKeywords();
-      } catch (error) {
-        showToast('导入失败：' + error.message);
-      } finally {
-        event.target.value = '';
-      }
-    }
-
-    function downloadKeywordTemplate() {
-      if (typeof XLSX === 'undefined') { showToast('表格组件未加载'); return; }
-      const rows = [{ keyword: 'DC MCB for solar', product_family: 'mcb', subfamily: 'dc-mcb', category: 'application', search_intent: 'application', country: 'US', search_volume: 0, difficulty: 3, priority: 'medium', metric_source: 'Google Ads' }];
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(rows), 'Keywords');
-      XLSX.writeFile(workbook, 'blog-keyword-import-template.xlsx');
     }
 
     // ════════════════════════════════════════════════════════════════════
@@ -5139,7 +4655,7 @@
         const response = await fetch('/api/blog/generate-seo', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ postId: currentPostId, modelType: 'deepseek' })
+          body: JSON.stringify({ postId: currentPostId, modelType: 'claude' })
         });
 
         const data = await response.json();
@@ -5200,7 +4716,7 @@
         const response = await fetch('/api/blog/generate-links', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ postId: currentPostId, modelType: 'deepseek' })
+          body: JSON.stringify({ postId: currentPostId, modelType: 'claude' })
         });
 
         const data = await response.json();
@@ -5273,7 +4789,7 @@
         const response = await fetch('/api/blog/generate-faq', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ postId: currentPostId, modelType: 'deepseek' })
+          body: JSON.stringify({ postId: currentPostId, modelType: 'claude' })
         });
 
         const data = await response.json();
@@ -5312,19 +4828,6 @@
 
     // 初始化 Lucide 图标
     document.addEventListener('DOMContentLoaded', () => {
-      const routeMatch = location.hash.match(/^#\/projects\/([^/]+)\/(overview|knowledge|keywords|articles)(?:\/([^/]+))?/);
-      if (routeMatch) {
-        currentProductFamily = routeMatch[1];
-        currentKnowledgeSection = routeMatch[3] || 'products';
-        const projectSelect = document.getElementById('projectFamilySelect');
-        if (projectSelect && [...projectSelect.options].some(o => o.value === currentProductFamily)) projectSelect.value = currentProductFamily;
-        document.querySelectorAll('[data-project-family]').forEach(button => button.classList.toggle('active', button.dataset.projectFamily === currentProductFamily));
-        const currentLabel = document.getElementById('currentProjectLabel');
-        if (currentLabel) currentLabel.textContent = `当前工作产品：${productLabels[currentProductFamily] || currentProductFamily}`;
-        const keywordSelect = document.getElementById('keywordProductFamily');
-        if (keywordSelect && [...keywordSelect.options].some(o => o.value === currentProductFamily)) keywordSelect.value = currentProductFamily;
-        setTimeout(() => openProjectTab(routeMatch[2]), 0);
-      }
       if (typeof lucide !== 'undefined') {
         lucide.createIcons();
       }
