@@ -2953,34 +2953,51 @@
         const response = await fetch('/api/blog/pending-review');
         const data = await response.json();
         if (!data.success) {
-          container.innerHTML = `<div style="text-align:center;color:var(--text);padding:40px;">加载失败：${data.error || ''}</div>`;
+          container.innerHTML = `<div style="text-align:center;color:var(--error);padding:40px;">${data.error || '加载失败'}</div>`;
           return;
         }
 
         const posts = data.posts || [];
         document.getElementById('reviewTotalCount').textContent = posts.length;
-        const badge = document.getElementById('tabPendingBadge');
-        if (badge) {
-          badge.textContent = posts.length;
-          badge.style.display = posts.length > 0 ? 'inline-block' : 'none';
-        }
 
         if (posts.length === 0) {
           container.innerHTML = `
-            <div style="text-align:center;color:var(--muted);padding:60px;border:1px dashed var(--border);border-radius:12px;background:var(--panel-2);">
-              <div style="font-size:42px;margin-bottom:8px;">✅</div>
-              <div>暂无待审核文章</div>
-              <div style="margin-top:8px;font-size:12px;">到「控制面板」点"立即生成今日文章"，或等定时任务运行</div>
-            </div>`;
+            <div style="text-align:center;padding:60px 20px;">
+              <div style="font-size:48px;margin-bottom:16px;">✅</div>
+              <div style="font-size:16px;color:var(--muted);">暂无待审核文章</div>
+            </div>
+          `;
           return;
         }
 
-        container.innerHTML = `
-          <div style="display:grid;gap:12px;">
-            ${posts.map(p => renderReviewCard(p)).join('')}
-          </div>`;
+        // 按文章类型分组
+        const typeLabels = { product:'产品知识', buying:'选型指南', comparison:'对比文章', application:'应用场景', faq:'FAQ' };
+        const grouped = {};
+        posts.forEach(p => {
+          const type = p.article_type || 'other';
+          if (!grouped[type]) grouped[type] = [];
+          grouped[type].push(p);
+        });
+
+        // 渲染分类视图
+        let html = '';
+        for (const [type, list] of Object.entries(grouped)) {
+          const label = typeLabels[type] || type || '未分类';
+          html += `
+            <div style="margin-bottom:30px;">
+              <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:12px;padding:8px 12px;background:var(--panel-2);border-radius:6px;display:inline-flex;align-items:center;gap:8px;">
+                ${label} <span style="background:var(--text);color:var(--on-solid);padding:2px 8px;border-radius:12px;font-size:12px;">${list.length}</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                ${list.map(p => renderReviewCard(p)).join('')}
+              </div>
+            </div>
+          `;
+        }
+        container.innerHTML = html;
       } catch (error) {
-        container.innerHTML = `<div style="text-align:center;color:var(--text);padding:40px;">错误：${error.message}</div>`;
+        console.error('加载待审核列表失败:', error);
+        container.innerHTML = `<div style="text-align:center;color:var(--error);padding:40px;">加载失败：${error.message}</div>`;
       }
     }
 
@@ -3009,7 +3026,7 @@
           </div>
           <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
             <button onclick="openReviewWorkspace('${p.id}')" style="padding:8px 18px;background:var(--text);color:var(--on-solid);border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">📝 进入审核</button>
-            <button onclick="quickReject('${p.id}')" style="padding:6px 18px;background:var(--panel);color:var(--muted);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;">拒绝</button>
+            <button onclick="deletePostFromReview('${p.id}', document.querySelector('[onclick*=\"${p.id}\"]').closest('div').querySelector('div').textContent.trim())" style="padding:6px 14px;border:1px solid var(--error);background:transparent;color:var(--error);border-radius:8px;cursor:pointer;font-size:12px;">🗑️ 删除</button>
           </div>
         </div>`;
     }
@@ -3022,21 +3039,17 @@
       window.location.href = `blog-review.html?postId=${encodeURIComponent(postId)}`;
     }
 
-    async function quickReject(postId) {
-      const reason = prompt('拒绝原因（可选）：');
-      if (reason === null) return;
+    async function deletePostFromReview(postId, title) {
+      if (!confirm(`⚠️ 确认删除「${title || '此文章'}」？\n\n删除后将从待审核列表和数据库中移除，此操作不可撤销。`)) return;
       try {
-        const r = await fetch('/api/blog/reject', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ postId, reason: reason || '不符合要求' }),
-        });
+        const r = await fetch(`/api/blog/post/${postId}`, { method: 'DELETE' });
         const d = await r.json();
         if (d.success) {
-          showToast('已拒绝');
+          showToast('✓ 已删除');
           loadReviewList();
+          loadDashboard(); // 刷新仪表盘统计
         } else {
-          showToast('拒绝失败：' + (d.error || ''));
+          showToast('删除失败：' + (d.error || ''));
         }
       } catch (e) {
         showToast('错误：' + e.message);
