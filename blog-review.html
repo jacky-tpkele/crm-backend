@@ -2176,6 +2176,40 @@
         return;
       }
 
+      // 获取内链和外链（用于在预览中显示）
+      const internalLinks = post?.internal_links || [];
+      const externalLinks = post?.external_links || [];
+
+      // 生成链接列表 HTML
+      let linksHTML = '';
+      if (internalLinks.length > 0 || externalLinks.length > 0) {
+        linksHTML = '<div style="margin-top:40px;padding-top:30px;border-top:2px solid #eee;"><h3 style="font-size:18px;margin-bottom:15px;color:#2c3e50;">📎 相关链接</h3>';
+
+        if (internalLinks.length > 0) {
+          linksHTML += '<div style="margin-bottom:20px;"><strong style="color:#0066cc;">内链：</strong><ul style="margin:10px 0 0 25px;">';
+          internalLinks.forEach(link => {
+            const url = link.url || '#';
+            const anchor = escapeHtml(link.anchor || link.title || 'Link');
+            const reason = link.reason ? ` <span style="color:#666;font-size:14px;">— ${escapeHtml(link.reason)}</span>` : '';
+            linksHTML += `<li style="margin:6px 0;"><a href="${escapeHtml(url)}" style="color:#0066cc;text-decoration:none;border-bottom:1px solid transparent;">${anchor}</a>${reason}</li>`;
+          });
+          linksHTML += '</ul></div>';
+        }
+
+        if (externalLinks.length > 0) {
+          linksHTML += '<div><strong style="color:#0066cc;">外链：</strong><ul style="margin:10px 0 0 25px;">';
+          externalLinks.forEach(link => {
+            const url = link.url || '#';
+            const anchor = escapeHtml(link.anchor || link.title || 'Link');
+            const reason = link.reason ? ` <span style="color:#666;font-size:14px;">— ${escapeHtml(link.reason)}</span>` : '';
+            linksHTML += `<li style="margin:6px 0;"><a href="${escapeHtml(url)}" target="_blank" rel="noopener" style="color:#0066cc;text-decoration:none;border-bottom:1px solid transparent;">${anchor}</a>${reason}</li>`;
+          });
+          linksHTML += '</ul></div>';
+        }
+
+        linksHTML += '</div>';
+      }
+
       // 创建预览 HTML
       const previewHTML = `
 <!DOCTYPE html>
@@ -2216,6 +2250,7 @@
     <div class="content">
       ${renderMarkdown(content)}
     </div>
+    ${linksHTML}
   </div>
 </body>
 </html>`;

@@ -3070,8 +3070,15 @@ router.get('/seo-check/:postId', async (req, res) => {
 
     const h2List = (content.match(/^##\s+.+$/gm) || []);
     const h3List = (content.match(/^###\s+.+$/gm) || []);
-    const internalLinks = (content.match(/\]\((\/[^)]+)\)/g) || []).length;
-    const externalLinks = (content.match(/\]\((https?:\/\/[^)]+)\)/g) || []).length;
+    // 内/外链检测：正文 markdown 链接 + 字段里记录的内外链接
+    const markdownInternalLinks = (content.match(/\]\((\/[^)]+)\)/g) || []);
+    const markdownExternalLinks = (content.match(/\]\((https?:\/\/[^)]+)\)/g) || []);
+    // 从字段里统计（AI 生成时已自动内嵌到 internal_links / external_links）
+    const fieldInternalLinks = Array.isArray(p.internal_links) ? p.internal_links.filter(l => l && (l.url || l.url_hint)).length : 0;
+    const fieldExternalLinks = Array.isArray(p.external_links) ? p.external_links.filter(l => l && l.url).length : 0;
+    // 合并统计：正文里的链接 + 字段里的链接
+    const internalLinks = markdownInternalLinks.length + fieldInternalLinks;
+    const externalLinks = markdownExternalLinks.length + fieldExternalLinks;
     const imagesInBody = (content.match(/!\[[^\]]*\]\([^)]+\)/g) || []);
     const altMissing = imagesInBody.filter(m => /!\[\s*\]\(/.test(m)).length;
 
