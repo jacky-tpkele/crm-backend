@@ -2167,9 +2167,14 @@
       if (dirty) await saveAll();
 
       // 获取当前内容
-      const title = document.getElementById('titleInput').value;
-      const content = document.getElementById('contentEditor').value;
-      const metaDesc = document.getElementById('metaDescInput').value;
+      const title = document.getElementById('fTitle').value || 'Untitled Article';
+      const content = document.getElementById('contentEditor').value || '';
+      const metaDesc = document.getElementById('fMetaDesc').value || '';
+
+      if (!content.trim()) {
+        showToast('⚠️ 文章内容为空，无法预览');
+        return;
+      }
 
       // 创建预览 HTML
       const previewHTML = `
@@ -2216,10 +2221,18 @@
 </html>`;
 
       // 在新窗口打开
-      const previewWindow = window.open('', '_blank');
-      previewWindow.document.write(previewHTML);
-      previewWindow.document.close();
-      showToast('✓ 已在新窗口打开预览');
+      try {
+        const previewWindow = window.open('', '_blank');
+        if (!previewWindow) {
+          showToast('⚠️ 浏览器拦截了弹窗，请允许弹窗后重试');
+          return;
+        }
+        previewWindow.document.write(previewHTML);
+        previewWindow.document.close();
+        showToast('✓ 已在新窗口打开预览');
+      } catch (e) {
+        showToast('预览失败：' + e.message);
+      }
     }
 
     function openRegenerateMenu() {
