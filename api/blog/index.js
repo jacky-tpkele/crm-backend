@@ -1742,10 +1742,30 @@ router.get('/cron', async (req, res) => {
       }
     }
 
+    // 写入生成日志
+    const successCount = results.filter(r => r.status === 'success').length;
+    const failureCount = results.filter(r => r.status === 'error').length;
+    try {
+      await sb('blog_generation_log', {
+        method: 'POST',
+        body: JSON.stringify({
+          generation_time: new Date().toISOString(),
+          trigger_type: 'auto',
+          total_count: results.length,
+          success_count: successCount,
+          failure_count: failureCount,
+          error_message: failureCount > 0 ? results.find(r => r.status === 'error')?.error : null,
+          details: { results },
+        }),
+      });
+    } catch (logError) {
+      console.warn('Failed to write cron generation log:', logError.message);
+    }
+
     res.json({
       success: true,
       timestamp: new Date().toISOString(),
-      generatedCount: results.filter(r => r.status === 'success').length,
+      generatedCount: successCount,
       seoDueChecks,
       results,
     });
@@ -2103,15 +2123,42 @@ router.get('/dashboard', async (req, res) => {
     const posts = await sb('blog_posts?select=*');
     const seoOverview = await getSeoOverviewStats();
 
-    // 文章状态：draft/pending_review = 待审核, approved = 已批准, published = 已发布, generation_failed/failed = 失败
+    // 获取今天的日期范围（北京时间）
+    const now = new Date();
+    const beijingOffset = 8 * 60; // UTC+8
+    const localOffset = now.getTimezoneOffset();
+    const beijingTime = new Date(now.getTime() + (beijingOffset + localOffset) * 60000);
+    const todayStart = new Date(beijingTime.getFullYear(), beijingTime.getMonth(), beijingTime.getDate());
+    const todayStartUTC = new Date(todayStart.getTime() - beijingOffset * 60000).toISOString();
+
+    // 今日任务统计（今天创建的文章）
+    const todayPosts = posts.filter(p => p.created_at >= todayStartUTC);
     const todayStats = {
-      total: plans.length,
-      generated: posts.filter(p => ['draft', 'pending_review', 'approved', 'published'].includes(p.status)).length,
-      pending_review: posts.filter(p => ['draft', 'pending_review'].includes(p.status)).length,
-      approved: posts.filter(p => p.status === 'approved').length,
-      published: posts.filter(p => p.status === 'published').length,
-      failed: posts.filter(p => ['failed', 'generation_failed'].includes(p.status)).length,
+      plannedCount: 4, // 每日计划生成 4 篇
+      generatedCount: todayPosts.length,
+      pendingCount: todayPosts.filter(p => ['draft', 'pending_review'].includes(p.status)).length,
     };
+
+    // 累计统计（所有文章）
+    const allTimeStats = {
+      totalGenerated: posts.filter(p => ['draft', 'pending_review', 'approved', 'published'].includes(p.status)).length,
+      pendingReview: posts.filter(p => ['draft', 'pending_review'].includes(p.status)).length,
+      published: posts.filter(p => p.status === 'published').length,
+    };
+
+    // 最近一次生成记录（只显示成功的）
+    let lastGenerationLog = null;
+    try {
+      const logs = await sb('blog_generation_log?select=*&order=generation_time.desc&limit=1');
+      if (logs && logs.length > 0 && logs[0].success_count > 0) {
+        lastGenerationLog = {
+          generationTime: logs[0].generation_time,
+          successCount: logs[0].success_count,
+        };
+      }
+    } catch (logError) {
+      console.warn('Failed to fetch generation log:', logError.message);
+    }
 
     // 下次执行时间：明天上午 8:00
     const next = getNextBeijingEight();
@@ -2124,6 +2171,8 @@ router.get('/dashboard', async (req, res) => {
     res.json({
       success: true,
       todayStats,
+      allTimeStats,
+      lastGenerationLog,
       nextExecutionTime: next.toISOString(),
       nextExecutionTimeDisplay: formatBeijingDateTime(next),
       hoursUntilNextExecution: hoursUntil,
@@ -2228,10 +2277,30 @@ router.post('/generate-now', async (req, res) => {
       }
     }
 
+    // 写入生成日志
+    const successCount = results.filter(r => r.status === 'success').length;
+    const failureCount = results.filter(r => r.status === 'error').length;
+    try {
+      await sb('blog_generation_log', {
+        method: 'POST',
+        body: JSON.stringify({
+          generation_time: new Date().toISOString(),
+          trigger_type: 'manual',
+          total_count: results.length,
+          success_count: successCount,
+          failure_count: failureCount,
+          error_message: failureCount > 0 ? results.find(r => r.status === 'error')?.error : null,
+          details: { results },
+        }),
+      });
+    } catch (logError) {
+      console.warn('Failed to write generation log:', logError.message);
+    }
+
     res.json({
       success: true,
       timestamp: new Date().toISOString(),
-      generatedCount: results.filter(r => r.status === 'success').length,
+      generatedCount: successCount,
       results,
     });
   } catch (error) {

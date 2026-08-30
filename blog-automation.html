@@ -2225,32 +2225,51 @@
           </div>
         </div>
 
-        <!-- 今日任务统计（卡片式） -->
-        <div class="stats-cards">
-          <div class="stat-card">
-            <div class="stat-label">今日计划文章</div>
-            <div class="stat-value" id="statTotal">0</div>
-            <div class="stat-unit">篇</div>
+        <!-- 今日任务统计 -->
+        <div style="margin-bottom:20px;">
+          <h3 style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+            <i data-lucide="calendar-clock" style="width:18px;height:18px;"></i> 今日任务
+          </h3>
+          <div class="stats-cards">
+            <div class="stat-card">
+              <div class="stat-label">计划生成</div>
+              <div class="stat-value" id="statTodayPlanned">4</div>
+              <div class="stat-unit">篇</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">已生成</div>
+              <div class="stat-value" id="statTodayGenerated">0</div>
+              <div class="stat-unit">篇</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">待审核</div>
+              <div class="stat-value" id="statTodayPending">0</div>
+              <div class="stat-unit">篇</div>
+            </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-label">已生成</div>
-            <div class="stat-value" id="statGenerated">0</div>
-            <div class="stat-unit">篇</div>
-          </div>
-          <div class="stat-card" style="cursor:pointer;" onclick="switchToReviewTab()" title="点击查看待审核列表">
-            <div class="stat-label">待审核</div>
-            <div class="stat-value" id="statPending">0</div>
-            <div class="stat-unit">篇</div>
-          </div>
-          <div class="stat-card" style="cursor:pointer;" onclick="switchToPublishedTab()" title="点击查看已发布文章">
-            <div class="stat-label">已发布</div>
-            <div class="stat-value" id="statPublished">0</div>
-            <div class="stat-unit">篇</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">生成失败</div>
-            <div class="stat-value" id="statFailed">0</div>
-            <div class="stat-unit">篇</div>
+        </div>
+
+        <!-- 累计统计 -->
+        <div style="margin-bottom:20px;">
+          <h3 style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+            <i data-lucide="database" style="width:18px;height:18px;"></i> 累计统计
+          </h3>
+          <div class="stats-cards">
+            <div class="stat-card">
+              <div class="stat-label">累计已生成</div>
+              <div class="stat-value" id="statTotalGenerated">0</div>
+              <div class="stat-unit">篇</div>
+            </div>
+            <div class="stat-card" style="cursor:pointer;" onclick="switchToReviewTab()" title="点击查看待审核列表">
+              <div class="stat-label">待审核</div>
+              <div class="stat-value" id="statTotalPending">0</div>
+              <div class="stat-unit">篇</div>
+            </div>
+            <div class="stat-card" style="cursor:pointer;" onclick="switchToPublishedTab()" title="点击查看已发布文章">
+              <div class="stat-label">已发布</div>
+              <div class="stat-value" id="statTotalPublished">0</div>
+              <div class="stat-unit">篇</div>
+            </div>
           </div>
         </div>
 
@@ -2267,11 +2286,11 @@
             </div>
             <div class="seo-index-mini">
               <div class="seo-index-mini-value" id="seoStatWaiting">0</div>
-              <div class="seo-index-mini-label">等待刷新</div>
+              <div class="seo-index-mini-label" title="已发布，等待搜索引擎爬取">待索引 ⓘ</div>
             </div>
             <div class="seo-index-mini">
               <div class="seo-index-mini-value" id="seoStatMissing24h">0</div>
-              <div class="seo-index-mini-label">24小时未发现</div>
+              <div class="seo-index-mini-label" title="超过24小时仍未出现在Sitemap">索引延迟 ⚠️</div>
             </div>
             <div class="seo-index-mini">
               <div class="seo-index-mini-value" id="seoStatPageError">0</div>
@@ -2285,7 +2304,7 @@
           <div>
             <div class="control-item-label">最近一次运行记录</div>
             <div class="control-item-value">
-              <div id="lastRunRecord">加载中...</div>
+              <div id="lastRunRecord">暂无生成记录</div>
             </div>
           </div>
         </div>
@@ -2294,9 +2313,6 @@
         <div class="control-buttons">
           <button class="btn-generate-now" id="generateNowBtn" onclick="generateNow()">
             <i data-lucide="file-plus"></i> 立即生成今日文章
-          </button>
-          <button class="btn-retry" id="retryFailedBtn" onclick="retryFailed()">
-            <i data-lucide="rotate-cw"></i> 重新生成失败文章
           </button>
           <button class="btn-sync" id="syncBtn" onclick="syncToWebsite()">
             <i data-lucide="cloud-upload"></i> 同步已审核文章到网站
@@ -3346,12 +3362,15 @@
             ${data.nextExecutionTimeDisplay || new Date(data.nextExecutionTime).toLocaleString('zh-CN')} (还有 ${hoursUntil} 小时)
           `;
 
-          // 更新统计卡片
-          document.getElementById('statTotal').textContent = data.todayStats.total;
-          document.getElementById('statGenerated').textContent = data.todayStats.generated;
-          document.getElementById('statPending').textContent = data.todayStats.pending_review;
-          document.getElementById('statPublished').textContent = data.todayStats.published;
-          document.getElementById('statFailed').textContent = data.todayStats.failed;
+          // 更新今日任务统计
+          document.getElementById('statTodayPlanned').textContent = data.todayStats.plannedCount;
+          document.getElementById('statTodayGenerated').textContent = data.todayStats.generatedCount;
+          document.getElementById('statTodayPending').textContent = data.todayStats.pendingCount;
+
+          // 更新累计统计
+          document.getElementById('statTotalGenerated').textContent = data.allTimeStats.totalGenerated;
+          document.getElementById('statTotalPending').textContent = data.allTimeStats.pendingReview;
+          document.getElementById('statTotalPublished').textContent = data.allTimeStats.published;
 
           const seo = data.seoOverview || {};
           document.getElementById('seoStatPublished').textContent = seo.publishedCount || 0;
@@ -3363,33 +3382,30 @@
           // 同步顶部 tab 的待审核 badge
           const badge = document.getElementById('tabPendingBadge');
           if (badge) {
-            const n = data.todayStats.pending_review || 0;
+            const n = data.allTimeStats.pendingReview || 0;
             badge.textContent = n;
             badge.style.display = n > 0 ? 'inline-block' : 'none';
           }
 
-          // 更新最近运行记录
-          if (data.lastGenerationLog) {
+          // 更新最近运行记录（只显示成功的）
+          if (data.lastGenerationLog && data.lastGenerationLog.successCount > 0) {
             const log = data.lastGenerationLog;
             const logTime = new Date(log.generationTime).toLocaleString('zh-CN');
-            let errorHtml = '';
-            if (log.failureCount > 0 && log.errorMessage) {
-              errorHtml = `<div style="color: var(--text); margin-top: 8px;">❌ ${log.errorMessage}</div>`;
-            }
             document.getElementById('lastRunRecord').innerHTML = `
-              <div>最后生成时间：${logTime}</div>
-              <div>本次生成数量：${log.totalCount} 篇</div>
-              <div>成功数量：${log.successCount} 篇</div>
-              <div>失败数量：${log.failureCount} 篇</div>
-              ${errorHtml}
+              <div style="color:var(--success);font-weight:500;">${logTime}</div>
+              <div style="font-size:13px;color:var(--muted);margin-top:4px;">成功生成 ${log.successCount} 篇文章</div>
             `;
           } else {
             document.getElementById('lastRunRecord').innerHTML = '<div style="color: var(--muted);">暂无生成记录</div>';
           }
 
           // 更新快速操作按钮状态
-          document.getElementById('retryFailedBtn').disabled = data.todayStats.failed === 0;
-          document.getElementById('syncBtn').disabled = data.todayStats.pending_review === 0;
+          document.getElementById('syncBtn').disabled = data.allTimeStats.pendingReview === 0;
+
+          // 刷新 lucide 图标
+          if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+          }
         }
       } catch (error) {
         console.error('加载控制面板失败:', error);
