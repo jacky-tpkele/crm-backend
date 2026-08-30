@@ -2578,6 +2578,15 @@
         <button onclick="loadReviewList()" style="padding:8px 14px;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">🔄 刷新</button>
       </div>
 
+      <!-- 批量操作栏 -->
+      <div class="plan-batch-bar" id="reviewBatchBar" style="display:none;">
+        <div class="plan-batch-meta" id="reviewSelectionInfo">已选 0 篇</div>
+        <div class="plan-batch-actions">
+          <button class="btn-secondary" onclick="batchDeleteReview()">🗑️ 批量删除</button>
+          <button class="btn-secondary" onclick="clearReviewSelection()">取消选择</button>
+        </div>
+      </div>
+
       <div id="reviewListContainer">
         <div style="text-align:center;color:var(--muted);padding:40px;">加载中...</div>
       </div>
@@ -2909,6 +2918,9 @@
     let keywords = [];
     let plans = [];
     let selectedPlanIds = new Set();
+    // 待审核列表的多选状态
+    let selectedReviewIds = new Set();
+    let reviewPostsCache = [];
 
     // 标签页切换
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -2958,6 +2970,7 @@
         }
 
         const posts = data.posts || [];
+        reviewPostsCache = posts; // 缓存数据供批量操作使用
         document.getElementById('reviewTotalCount').textContent = posts.length;
 
         if (posts.length === 0) {
@@ -2967,6 +2980,7 @@
               <div style="font-size:16px;color:var(--muted);">暂无待审核文章</div>
             </div>
           `;
+          document.getElementById('reviewBatchBar').style.display = 'none';
           return;
         }
 
@@ -2986,6 +3000,12 @@
           html += `
             <div style="margin-bottom:30px;">
               <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:12px;padding:8px 12px;background:var(--panel-2);border-radius:6px;display:inline-flex;align-items:center;gap:8px;">
+                <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-weight:500;font-size:13px;">
+                  <input type="checkbox" class="plan-checkbox" data-review-group="${escapeHtml(type)}"
+                         onchange="toggleReviewGroup('${escapeHtml(type)}', this.checked)">
+                  全选
+                </label>
+                <span style="width:1px;height:14px;background:var(--border);"></span>
                 ${label} <span style="background:var(--text);color:var(--on-solid);padding:2px 8px;border-radius:12px;font-size:12px;">${list.length}</span>
               </div>
               <div style="display:flex;flex-direction:column;gap:12px;">
@@ -2995,6 +3015,7 @@
           `;
         }
         container.innerHTML = html;
+        updateReviewSelectionUI(); // 更新批量操作栏
       } catch (error) {
         console.error('加载待审核列表失败:', error);
         container.innerHTML = `<div style="text-align:center;color:var(--error);padding:40px;">加载失败：${error.message}</div>`;
@@ -3009,8 +3030,13 @@
       const kw = p.main_keyword || (p.keywords && p.keywords[0]) || '—';
       const wc = p.word_count || 0;
       const rt = p.reading_time || 0;
+      const checked = selectedReviewIds.has(p.id) ? 'checked' : '';
       return `
         <div style="display:flex;gap:14px;padding:16px;border:1px solid var(--border);border-radius:12px;background:var(--panel);transition:all 0.15s ease;" onmouseover="this.style.borderColor='var(--border-h)';this.style.boxShadow='0 4px 14px rgba(0,0,0,0.04)'" onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow='none'">
+          <div style="display:flex;align-items:flex-start;padding-top:2px;flex-shrink:0;">
+            <input type="checkbox" class="plan-checkbox" data-review-id="${p.id}" ${checked}
+                   onchange="toggleReviewSelection('${p.id}', this.checked)">
+          </div>
           ${cover}
           <div style="flex:1;min-width:0;">
             <div style="font-weight:600;font-size:15px;margin-bottom:6px;color:var(--text);letter-spacing:-0.01em;">${escapeHtml(p.title || '(无标题)')}</div>
@@ -3050,6 +3076,108 @@
           loadDashboard(); // 刷新仪表盘统计
         } else {
           showToast('删除失败：' + (d.error || ''));
+        }
+      } catch (e) {
+        showToast('错误：' + e.message);
+      }
+    }
+
+    // 待审核批量选择功能
+    function toggleReviewSelection(postId, checked) {
+      if (checked) {
+        selectedReviewIds.add(postId);
+      } else {
+        selectedReviewIds.delete(postId);
+      }
+      updateReviewSelectionUI();
+    }
+
+    function toggleReviewGroup(type, checked) {
+      const postsInGroup = reviewPostsCache.filter(p => (p.article_type || 'other') === type);
+      postsInGroup.forEach(p => {
+        if (checked) {
+          selectedReviewIds.add(p.id);
+        } else {
+          selectedReviewIds.delete(p.id);
+        }
+      });
+      // 更新所有复选框状态
+      document.querySelectorAll(`[data-review-id]`).forEach(checkbox => {
+        const postId = checkbox.dataset.reviewId;
+        checkbox.checked = selectedReviewIds.has(postId);
+      });
+      updateReviewSelectionUI();
+    }
+
+    function updateReviewSelectionUI() {
+      const bar = document.getElementById('reviewBatchBar');
+      const info = document.getElementById('reviewSelectionInfo');
+      const count = selectedReviewIds.size;
+
+      if (count > 0) {
+        bar.style.display = 'flex';
+        info.textContent = `已选 ${count} 篇`;
+      } else {
+        bar.style.display = 'none';
+      }
+
+      // 更新组复选框状态
+      document.querySelectorAll('[data-review-group]').forEach(groupCheckbox => {
+        const type = groupCheckbox.dataset.reviewGroup;
+        const postsInGroup = reviewPostsCache.filter(p => (p.article_type || 'other') === type);
+        const selectedInGroup = postsInGroup.filter(p => selectedReviewIds.has(p.id));
+
+        groupCheckbox.checked = postsInGroup.length > 0 && selectedInGroup.length === postsInGroup.length;
+        groupCheckbox.indeterminate = selectedInGroup.length > 0 && selectedInGroup.length < postsInGroup.length;
+      });
+    }
+
+    function clearReviewSelection() {
+      selectedReviewIds.clear();
+      document.querySelectorAll('[data-review-id]').forEach(cb => cb.checked = false);
+      document.querySelectorAll('[data-review-group]').forEach(cb => {
+        cb.checked = false;
+        cb.indeterminate = false;
+      });
+      updateReviewSelectionUI();
+    }
+
+    async function batchDeleteReview() {
+      const count = selectedReviewIds.size;
+      if (count === 0) {
+        showToast('请至少选择一篇文章');
+        return;
+      }
+
+      if (!confirm(`⚠️ 确认批量删除 ${count} 篇文章？\n\n删除后将从待审核列表和数据库中移除，此操作不可撤销。`)) return;
+
+      const postIds = Array.from(selectedReviewIds);
+      let successCount = 0;
+      let failCount = 0;
+
+      try {
+        // 逐个删除（复用现有的DELETE接口）
+        for (const postId of postIds) {
+          try {
+            const r = await fetch(`/api/blog/post/${postId}`, { method: 'DELETE' });
+            const d = await r.json();
+            if (d.success) {
+              successCount++;
+              selectedReviewIds.delete(postId);
+            } else {
+              failCount++;
+            }
+          } catch (e) {
+            failCount++;
+          }
+        }
+
+        if (successCount > 0) {
+          showToast(`✓ 已删除 ${successCount} 篇${failCount > 0 ? `，失败 ${failCount} 篇` : ''}`);
+          loadReviewList();
+          loadDashboard();
+        } else {
+          showToast('❌ 批量删除失败');
         }
       } catch (e) {
         showToast('错误：' + e.message);
