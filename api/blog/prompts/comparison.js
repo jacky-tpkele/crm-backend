@@ -13,7 +13,7 @@ ${PRODUCT_FAMILY_BLOCK}
 ${buildKeywordBlock(keyword, subKeywords)}
 
 ARTICLE-TYPE-SPECIFIC RULES:
-- Length: 1000-1300 words
+- Length: STRICTLY 1000-1300 English words. Count before finishing. If under 1000 words, expand the comparison details or add more use cases.
 - Structure: 4-5 H2 sections
   1) Quick verdict in opening 2-3 sentences ("Use X when..., use Y when...")
   2) Side-by-side comparison TABLE (markdown table, MANDATORY for this article type) — at least 5 rows covering: Parameter / X / Y. Keep table cells short (max 5-7 words each) so manual editing stays simple.

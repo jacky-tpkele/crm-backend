@@ -13,7 +13,7 @@ ${PRODUCT_FAMILY_BLOCK}
 ${buildKeywordBlock(keyword, subKeywords)}
 
 ARTICLE-TYPE-SPECIFIC RULES:
-- Length: 1500-2000 words total
+- Length: STRICTLY 1500-2000 English words total. Count before finishing. If under 1500 words, add more Q&A blocks or expand answers with technical detail.
 - Structure: 8-10 H2 sections, each H2 IS a real question users would type into Google
   - Opening: 80-120 word intro paragraph (with keyword in first sentence)
   - Then 8-10 Q&A blocks: H2 = question, body = 100-150 word answer

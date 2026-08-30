@@ -13,7 +13,7 @@ ${PRODUCT_FAMILY_BLOCK}
 ${buildKeywordBlock(keyword, subKeywords)}
 
 ARTICLE-TYPE-SPECIFIC RULES:
-- Length: 1200-1500 words
+- Length: STRICTLY 1200-1500 English words. Count before finishing. If under 1200 words, add more examples, expand sections, or add technical details.
 - Structure: 5-7 H2 sections in this logical order
   1) Definition / what it is (with first-paragraph keyword mention)
   2) Key technical parameters or specifications

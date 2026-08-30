@@ -34,31 +34,45 @@ const JSON_OUTPUT_BLOCK = `
 OUTPUT FORMAT — return ONE single valid JSON object. No markdown fences, no preamble, no trailing prose.
 
 {
-  "title": "string — 30-70 chars, MUST contain the main keyword",
+  "title": "string — 30-70 chars. MUST include the main keyword. For long keywords (4+ words), include at least the first 2-3 core words. Example: for 'iec 60898 circuit breaker standards' use 'IEC 60898 Circuit Breaker Standards Guide'",
   "content": "string — Markdown body. Starts with intro paragraph (no H1, the title above is the H1). Then ## H2 sections, paragraphs, bullet lists where useful. NO image markdown (![](...)). NO HTML. NO call-to-action sales language at the end (the website renders a CTA component automatically — your last paragraph should end on a knowledge note or next-step suggestion).",
   "meta_title": "string — 30-60 chars, MUST contain main keyword, click-worthy",
-  "meta_description": "string — 120-160 chars, MUST contain main keyword, value proposition",
+  "meta_description": "string — 120-155 chars (leave 5-char buffer for safety), MUST contain main keyword, value proposition",
   "main_keyword": "string — same as the input keyword",
   "sub_keywords": ["string", "string", "string", "string"],
   "faq": [
     {"question": "string", "answer": "string — 2-4 sentences"}
   ],
   "internal_link_suggestions": [
-    {"anchor": "string — short anchor text from the article", "url_hint": "/blog/related-topic OR /products/some-slug", "reason": "string — 1 sentence why"}
+    {"anchor": "string — exact phrase from article body (2-5 words, naturally appearing in text)", "url_hint": "keyword description: 'AC MCB products' or 'DC circuit breaker category' or 'installation guide blog'", "reason": "string — 1 sentence why"}
   ],
   "external_link_suggestions": [
-    {"anchor": "string", "url": "string — full https://", "reason": "string"}
+    {"anchor": "string — exact phrase from article body (e.g. 'IEC 60898', 'IEEE standards')", "url": "string — full https:// (only use: IEC.ch, IEEE.org, NEMA.org, EN/IEC official sites)", "reason": "string"}
   ]
 }
 
 CRITICAL RULES (apply to every article type):
-1. Main keyword frequency: appear EXACTLY 3-4 times in the body content (not counting title, meta, H2 headings — those are separate).
-2. Main keyword MUST appear in: title, first paragraph (within first 100 words), at least one H2 heading, meta_title, meta_description.
+1. Main keyword frequency:
+   - For SHORT keywords (1-2 words): use EXACTLY 4-6 times naturally in body paragraphs
+   - For LONG keywords (3+ words): use the FULL phrase 2-3 times, plus use core words/variations 3-5 more times
+   - FIRST mention MUST be in the opening paragraph (within first 100 words)
+2. Main keyword placement: MUST appear in title (full or core words), first paragraph (within first 100 words), at least one H2 heading, meta_title, meta_description.
 3. NEVER invent product specifications, certifications, or test data. Only reference IEC standards that actually exist (IEC 60898, IEC 60947-2, IEC 61643, IEC 60364, IEC 62109, IEEE C62.41, etc.).
-4. NEVER invent internal URLs. The url_hint should describe the type of page (e.g. "/products/ac-mcb-1p", "/blog/spd-installation"). The CRM operator will replace with real URLs during review.
-5. External links must be authoritative: IEC.ch, IEEE.org, NEMA.org, EU/IEC/national standards bodies, or major industry associations. Do NOT link to competitor manufacturers or random blogs.
+4. Internal links:
+   - anchor: MUST be exact 2-5 word phrases that ALREADY APPEAR in your article body (e.g. if you write "AC MCB products", use that as anchor)
+   - url_hint: describe what page type to link (use keywords like: "AC MCB products", "DC circuit breaker category", "SPD installation guide", "voltage protector selection")
+   - REQUIRED: 2-3 internal link suggestions
+5. External links:
+   - anchor: MUST be exact phrases from your article (e.g. "IEC 60898", "IEEE C62.41")
+   - url: ONLY use official sources: https://webstore.iec.ch, https://standards.ieee.org, https://www.nema.org, https://webstore.ansi.org
+   - REQUIRED: 1-2 external link suggestions
 6. Avoid first-person plural ("we", "our company", "we offer", "contact us") in body text — keep it informational. The website renders a separate CTA component below the article, so body content should be pure knowledge content.
 7. End the body content with a knowledge-focused closing paragraph (1-3 sentences). Examples: "These principles ensure reliable protection across most installations." or "Selecting components that meet these specifications protects both equipment and personnel." DO NOT write "contact us for a quote" or similar sales language.
+8. CONTENT UNIQUENESS: If this keyword has been covered before, approach it from a DIFFERENT ANGLE:
+   - Use different examples, different application scenarios, different technical details
+   - Vary your H2 structure and section focus
+   - Reference different IEC standards or technical aspects
+   - This ensures each article on the same topic provides unique value
 `;
 
 function buildKeywordBlock(keyword, subKeywords) {

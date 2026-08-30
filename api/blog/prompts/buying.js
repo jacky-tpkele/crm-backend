@@ -13,7 +13,7 @@ ${PRODUCT_FAMILY_BLOCK}
 ${buildKeywordBlock(keyword, subKeywords)}
 
 ARTICLE-TYPE-SPECIFIC RULES:
-- Length: 1000-1300 words
+- Length: STRICTLY 1000-1300 English words. Count before finishing. If under 1000 words, expand the selection dimensions or add more pitfalls.
 - Structure: 4-6 H2 sections
   1) Scenario introduction (with first-paragraph keyword mention)
   2) Key selection dimensions — list 4-6 parameters as a bulleted list (NOT a table, to keep editing simple): current rating, breaking capacity, curve type, poles, certifications, environment rating

@@ -13,7 +13,7 @@ ${PRODUCT_FAMILY_BLOCK}
 ${buildKeywordBlock(keyword, subKeywords)}
 
 ARTICLE-TYPE-SPECIFIC RULES:
-- Length: 1200-1500 words
+- Length: STRICTLY 1200-1500 English words. Count before finishing. If under 1200 words, add more installation steps, safety considerations, or real-world examples.
 - Structure: 5-7 H2 sections
   1) Use-case overview / project context (with keyword in first paragraph)
   2) Specific challenges of this application (electrical, environmental, code-compliance)

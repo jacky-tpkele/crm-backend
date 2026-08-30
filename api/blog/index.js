@@ -68,6 +68,8 @@ const IMAGE_CONFIG = {
 const BLOG_SITE_BASE_URL = (process.env.BLOG_SITE_BASE_URL || 'https://www.tpkele.com').replace(/\/$/, '');
 const BLOG_SITEMAP_URL = process.env.BLOG_SITEMAP_URL || `${BLOG_SITE_BASE_URL}/sitemap.xml`;
 const BLOG_DASHBOARD_TIMEZONE = 'Asia/Shanghai';
+const INDEXNOW_KEY = process.env.INDEXNOW_KEY || 'ddcef329118402e99fb5cecaf95d5047';
+const INDEXNOW_ENDPOINT = 'https://api.indexnow.org/indexnow';
 const BLOG_CATEGORY_ROUTE_MAP = {
   product: 'product-knowledge',
   buying: 'selection-guides',
@@ -119,6 +121,23 @@ async function sb(path, opts = {}) {
 
 function buildBlogUrl(slug) {
   return `${BLOG_SITE_BASE_URL}/blog/${encodeURIComponent(String(slug || '').replace(/^\/+/, ''))}`;
+}
+
+// 通知 Bing / Yandex 立即抓取新发布的文章（失败不影响发布主流程）
+async function notifyIndexNow(url) {
+  try {
+    const host = new URL(BLOG_SITE_BASE_URL).host;
+    const res = await fetch(INDEXNOW_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      body: JSON.stringify({ host, key: INDEXNOW_KEY, urlList: [url] }),
+    });
+    if (![200, 202].includes(res.status)) {
+      console.warn(`IndexNow submit non-OK status ${res.status} for ${url}`);
+    }
+  } catch (error) {
+    console.warn('IndexNow submit failed:', error.message);
+  }
 }
 
 function buildBlogCategoryPath(slug) {
@@ -818,13 +837,154 @@ async function generateStructuredArticle({ keyword, title, articleType, subKeywo
 }
 
 // ──────────────────────────────────────────
-// 把 structured 结果转成 blog_posts 行（不含 plan_id / status，由调用方填）
+// 智能内链匹配：将 AI 的 url_hint 映射到真实网站页面
 // ──────────────────────────────────────────
-function structuredToPostRow(structured, { keyword, articleType }) {
+function matchInternalUrl(urlHint, allBlogs) {
+  if (!urlHint) return null;
+  const hint = String(urlHint).toLowerCase().trim();
+
+  // 1. 产品页面匹配规则
+  const productMap = {
+    'ac-mcb': '/products/ac-mcb-1p',
+    'dc-mcb': '/products/dc-mcb-1p',
+    'ac spd': '/products/ac-spd',
+    'dc spd': '/products/dc-spd',
+    'ats': '/products/ats',
+    'combiner': '/products/pv-combiner-box',
+    'voltage protector': '/products/voltage-protector',
+    'energy meter': '/products/din-rail-energy-meter',
+  };
+
+  for (const [key, url] of Object.entries(productMap)) {
+    if (hint.includes(key)) return url;
+  }
+
+  // 2. 产品分类页面
+  if (hint.includes('category') || hint.includes('mcb') || hint.includes('spd')) {
+    if (hint.includes('ac') && hint.includes('mcb')) return '/products/category/mcb/ac-mcb';
+    if (hint.includes('dc') && hint.includes('mcb')) return '/products/category/mcb/dc-mcb';
+    if (hint.includes('ac') && hint.includes('spd')) return '/products/category/spd/ac-spd';
+    if (hint.includes('dc') && hint.includes('spd')) return '/products/category/spd/dc-spd';
+  }
+
+  // 3. 博客分类页面
+  const blogCategoryMap = {
+    'product': '/blog/product-knowledge',
+    'buying': '/blog/selection-guides',
+    'selection': '/blog/selection-guides',
+    'comparison': '/blog/comparisons',
+    'application': '/blog/application-scenarios',
+    'faq': '/blog/faqs',
+  };
+
+  for (const [key, url] of Object.entries(blogCategoryMap)) {
+    if (hint.includes(key)) return url;
+  }
+
+  // 4. 匹配已发布的博客文章（模糊匹配标题关键词）
+  if (hint.includes('/blog/') && allBlogs && allBlogs.length > 0) {
+    // 提取 hint 中的关键词
+    const hintWords = hint.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length > 3);
+
+    for (const blog of allBlogs) {
+      const titleWords = (blog.title || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/);
+      const matched = hintWords.filter(hw => titleWords.some(tw => tw.includes(hw) || hw.includes(tw)));
+
+      // 如果匹配到2个以上关键词，认为是相关文章
+      if (matched.length >= 2 && blog.slug_url) {
+        return `/blog/${blog.slug_url}`;
+      }
+    }
+  }
+
+  // 5. 兜底：返回 null，不插入无效链接
+  return null;
+}
+
+// ──────────────────────────────────────────
+// 智能插入链接到正文：找到锚文本第一次出现的位置，替换为 markdown 链接
+// ──────────────────────────────────────────
+function insertLinksIntoContent(content, internalLinks, externalLinks) {
+  let result = String(content || '');
+  const inserted = new Set(); // 避免重复插入同一锚文本
+
+  // 插入内链
+  for (const link of internalLinks || []) {
+    if (!link.url || !link.title || inserted.has(link.title.toLowerCase())) continue;
+
+    // 找到锚文本第一次出现的位置（忽略已有的 markdown 链接）
+    const anchorRegex = new RegExp(`(?<!\\[)\\b${escapeRegex(link.title)}\\b(?!\\])`, 'i');
+    if (anchorRegex.test(result)) {
+      result = result.replace(anchorRegex, `[${link.title}](${link.url})`);
+      inserted.add(link.title.toLowerCase());
+    }
+  }
+
+  // 插入外链
+  for (const link of externalLinks || []) {
+    if (!link.url || !link.title || inserted.has(link.title.toLowerCase())) continue;
+
+    const anchorRegex = new RegExp(`(?<!\\[)\\b${escapeRegex(link.title)}\\b(?!\\])`, 'i');
+    if (anchorRegex.test(result)) {
+      result = result.replace(anchorRegex, `[${link.title}](${link.url})`);
+      inserted.add(link.title.toLowerCase());
+    }
+  }
+
+  return result;
+}
+
+function escapeRegex(str) {
+  return String(str || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// ──────────────────────────────────────────
+// 把 structured 结果转成 blog_posts 行（自动插入链接到正文）
+// ──────────────────────────────────────────
+async function structuredToPostRow(structured, { keyword, articleType }) {
   const wc = (structured.content || '').split(/\s+/).filter(Boolean).length;
+
+  // 获取所有已发布博客（用于内链匹配）
+  let allBlogs = [];
+  try {
+    allBlogs = await sb('blog_posts?status=eq.published&select=title,slug_url');
+  } catch (err) {
+    console.warn('Failed to fetch published blogs for link matching:', err.message);
+  }
+
+  // 映射 AI 的 url_hint 到真实 URL
+  const internalLinks = (structured.internal_link_suggestions || [])
+    .map(l => {
+      const realUrl = matchInternalUrl(l.url_hint, allBlogs);
+      return realUrl ? {
+        title: l.anchor || '',
+        url: realUrl,
+        reason: l.reason || '',
+        ai_suggestion: true,
+        original_hint: l.url_hint,
+      } : null;
+    })
+    .filter(Boolean);
+
+  const externalLinks = (structured.external_link_suggestions || [])
+    .map(l => ({
+      title: l.anchor || '',
+      url: l.url || '',
+      reason: l.reason || '',
+      ai_suggestion: true,
+    }))
+    .filter(l => l.url);
+
+  // 自动插入链接到正文
+  const contentWithLinks = insertLinksIntoContent(
+    structured.content,
+    internalLinks,
+    externalLinks
+  );
+
   return {
     title: structured.title,
-    content: structured.content,
+    content: contentWithLinks,
     keywords: [keyword],
     main_keyword: structured.main_keyword || keyword,
     sub_keywords: structured.sub_keywords || [],
@@ -832,20 +992,8 @@ function structuredToPostRow(structured, { keyword, articleType }) {
     meta_description: structured.meta_description || '',
     article_type: articleType || null,
     faq: structured.faq || [],
-    // AI 给的链接建议先存到 internal_links / external_links 字段
-    // 操作员审核时可以采纳/修改/删除
-    internal_links: (structured.internal_link_suggestions || []).map(l => ({
-      title: l.anchor || '',
-      url: l.url_hint || '',
-      reason: l.reason || '',
-      ai_suggestion: true,
-    })),
-    external_links: (structured.external_link_suggestions || []).map(l => ({
-      title: l.anchor || '',
-      url: l.url || '',
-      reason: l.reason || '',
-      ai_suggestion: true,
-    })),
+    internal_links: internalLinks,
+    external_links: externalLinks,
     word_count: wc,
     reading_time: Math.max(1, Math.ceil(wc / 200)),
   };
@@ -992,24 +1140,131 @@ router.post('/generate-plan-v2', async (req, res) => {
     }
 
     const titleTemplates = {
-      product: ['What Is {keyword}?', 'Complete Guide to {keyword}', '{keyword}: Everything You Need to Know'],
-      comparison: ['{keyword}: Key Differences Explained', 'Comparing {keyword}: Which Is Better?'],
-      application: ['How to Use {keyword} in Your Project', '{keyword} for Solar Systems'],
-      buying: ['How to Choose the Right {keyword}', 'Best {keyword} for Your Needs'],
-      faq: ['10 Common Questions About {keyword}', '{keyword} FAQ: Expert Answers'],
+      product: [
+        'What Is {keyword}?',
+        'Complete Guide to {keyword}',
+        '{keyword}: Everything You Need to Know',
+        'Understanding {keyword} in Depth',
+        '{keyword} Explained for Engineers',
+        '{keyword}: Technical Overview',
+        'The Essential {keyword} Reference',
+      ],
+      comparison: [
+        '{keyword}: Key Differences Explained',
+        'Comparing {keyword}: Which Is Better?',
+        '{keyword} vs Alternatives: Complete Analysis',
+        'How to Choose Between {keyword} Options',
+        '{keyword}: Detailed Comparison Guide',
+      ],
+      application: [
+        'How to Use {keyword} in Your Project',
+        '{keyword} for Solar Systems',
+        '{keyword} Installation Best Practices',
+        'Implementing {keyword} in Real-World Applications',
+        '{keyword} Application Guide for Engineers',
+      ],
+      buying: [
+        'How to Choose the Right {keyword}',
+        'Best {keyword} for Your Needs',
+        '{keyword} Selection Guide',
+        'What to Look for When Buying {keyword}',
+        '{keyword} Purchasing Checklist',
+      ],
+      faq: [
+        '10 Common Questions About {keyword}',
+        '{keyword} FAQ: Expert Answers',
+        '{keyword}: Your Questions Answered',
+        'Everything You Asked About {keyword}',
+        '{keyword} Q&A: Common Concerns',
+      ],
     };
+
+    // 获取所有已存在的标题（避免重复）
+    const existingTitles = new Set();
+    try {
+      const allPosts = await sb('blog_posts?select=title');
+      (allPosts || []).forEach(p => {
+        if (p.title) existingTitles.add(p.title.toLowerCase().trim());
+      });
+      const allPlans = await sb('blog_plans?select=title');
+      (allPlans || []).forEach(p => {
+        if (p.title) existingTitles.add(p.title.toLowerCase().trim());
+      });
+    } catch (err) {
+      console.warn('Failed to fetch existing titles:', err.message);
+    }
+
+    // 获取已使用的关键词+类型组合（避免同一关键词生成相同类型文章）
+    const usedKeywordTypeCombo = new Set();
+    try {
+      const allPosts = await sb('blog_posts?select=main_keyword,article_type');
+      (allPosts || []).forEach(p => {
+        if (p.main_keyword && p.article_type) {
+          usedKeywordTypeCombo.add(`${p.main_keyword.toLowerCase()}:${p.article_type}`);
+        }
+      });
+    } catch (err) {
+      console.warn('Failed to fetch existing keyword-type combos:', err.message);
+    }
 
     const plans = [];
     let orderNum = 1;
+    const usedTitlesInThisPlan = new Set();
+    let skippedDuplicates = 0; // 统计跳过的重复项
+
     for (let i = 0; i < allTypedPosts.length; i++) {
       const { type, keyword } = allTypedPosts[i];
       const kw = keyword ? keyword.keyword : 'electrical protection';
+      const kwLower = kw.toLowerCase();
+      const combo = `${kwLower}:${type}`;
+
+      // 跳过已生成过的关键词+类型组合
+      if (usedKeywordTypeCombo.has(combo)) {
+        console.log(`Skipping duplicate combo: ${combo}`);
+        skippedDuplicates++;
+        continue;
+      }
 
       let title;
       if (titleTemplate === 'auto') {
         const templates = titleTemplates[type] || titleTemplates.product;
-        const tmpl = templates[i % templates.length];
-        title = tmpl.replace('{keyword}', kw);
+
+        // 尝试找到一个不重复的标题（最多尝试 templates.length 次）
+        let foundUniqueTitle = false;
+        for (let attempt = 0; attempt < templates.length; attempt++) {
+          const tmplIndex = (i + attempt) % templates.length;
+          const tmpl = templates[tmplIndex];
+          const candidateTitle = tmpl.replace('{keyword}', kw);
+          const candidateLower = candidateTitle.toLowerCase().trim();
+
+          if (!existingTitles.has(candidateLower) && !usedTitlesInThisPlan.has(candidateLower)) {
+            title = candidateTitle;
+            usedTitlesInThisPlan.add(candidateLower);
+            foundUniqueTitle = true;
+            break;
+          }
+        }
+
+        // 如果所有模板都重复了，添加序号后缀
+        if (!foundUniqueTitle) {
+          const baseTitle = templates[0].replace('{keyword}', kw);
+          let counter = 2;
+          while (true) {
+            const candidateTitle = `${baseTitle} (Part ${counter})`;
+            const candidateLower = candidateTitle.toLowerCase().trim();
+            if (!existingTitles.has(candidateLower) && !usedTitlesInThisPlan.has(candidateLower)) {
+              title = candidateTitle;
+              usedTitlesInThisPlan.add(candidateLower);
+              break;
+            }
+            counter++;
+            if (counter > 10) {
+              // 兜底：直接用时间戳
+              title = `${baseTitle} ${Date.now()}`;
+              break;
+            }
+          }
+        }
       } else if (customTitles.length > 0) {
         title = customTitles[i % customTitles.length].replace('{keyword}', kw);
       } else {
@@ -1071,6 +1326,8 @@ router.post('/generate-plan-v2', async (req, res) => {
       success: true,
       planMonth: month,
       totalPlans: plans.length,
+      skippedDuplicates, // 新增：跳过的重复项统计
+      requestedTotal: allTypedPosts.length, // 新增：原本应生成的总数
       protectedPlans: occupiedOrders.size,
       updatedPendingPlans: updatedPlans,
       insertedPlans,
@@ -1340,6 +1597,8 @@ router.post('/publish', async (req, res) => {
       console.warn('SEO status init failed after publish:', seoError.message);
     }
 
+    notifyIndexNow(buildBlogUrl(slug));
+
     res.json({
       success: true,
       slug,
@@ -1405,7 +1664,7 @@ router.get('/cron', async (req, res) => {
           modelType: 'deepseek',
         });
 
-        const postRow = structuredToPostRow(structured, { keyword: plan.keyword, articleType });
+        const postRow = await structuredToPostRow(structured, { keyword: plan.keyword, articleType });
         const post = {
           ...postRow,
           plan_id: plan.id,
@@ -1876,7 +2135,7 @@ router.post('/generate-now', async (req, res) => {
           modelType,
         });
 
-        const postRow = structuredToPostRow(structured, { keyword: plan.keyword, articleType });
+        const postRow = await structuredToPostRow(structured, { keyword: plan.keyword, articleType });
         const post = {
           ...postRow,
           plan_id: plan.id,
@@ -2023,6 +2282,8 @@ router.post('/sync-approved', async (req, res) => {
             body: JSON.stringify({ status: 'published' }),
           });
         }
+
+        notifyIndexNow(buildBlogUrl(slug));
 
         results.push({
           postId: post.id,
@@ -2177,6 +2438,8 @@ router.post('/approve', async (req, res) => {
     } catch (seoError) {
       console.warn('SEO status init failed after approve:', seoError.message);
     }
+
+    notifyIndexNow(buildBlogUrl(slug));
 
     res.json({
       success: true,
@@ -2812,30 +3075,45 @@ router.get('/seo-check/:postId', async (req, res) => {
     const imagesInBody = (content.match(/!\[[^\]]*\]\([^)]+\)/g) || []);
     const altMissing = imagesInBody.filter(m => /!\[\s*\]\(/.test(m)).length;
 
+    // 优化：支持长关键词的部分匹配（长关键词通常包含3个以上单词）
     let kwCount = 0;
     if (mainKw) {
-      const re = new RegExp(mainKw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-      kwCount = (text.match(re) || []).length;
+      const kwParts = mainKw.split(/\s+/).filter(Boolean);
+      if (kwParts.length >= 3) {
+        // 长关键词（如 "iec 60898 circuit breaker standards"）：匹配核心词组合
+        // 统计包含至少一半核心词的出现次数
+        const coreWords = kwParts.slice(0, Math.ceil(kwParts.length / 2));
+        const pattern = coreWords.join('\\s+');
+        const re = new RegExp(pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+        kwCount = (text.match(re) || []).length;
+      } else {
+        // 短关键词：完整匹配
+        const re = new RegExp(mainKw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+        kwCount = (text.match(re) || []).length;
+      }
     }
     const kwDensity = wordCount > 0 ? (kwCount / wordCount) * 100 : 0;
+
+    // 优化：标题关键词智能检测（支持长关键词部分匹配）
+    const titleContainsKw = mainKw ? titleContainsKeyword(p.title || '', mainKw) : false;
+    const titleKwDetail = mainKw ? `主关键词「${mainKw}」${titleContainsKw ? '已' : '未'}出现在标题` : '请先设置主关键词';
 
     const checks = [
       mkCheck('title', '标题长度', p.title && p.title.length >= 30 && p.title.length <= 70,
         `当前 ${p.title?.length || 0} 字符（建议 30-70）`),
-      mkCheck('title-kw', '标题包含主关键词', !!mainKw && lcTitle.includes(mainKw),
-        mainKw ? `主关键词「${mainKw}」${lcTitle.includes(mainKw) ? '已' : '未'}出现在标题` : '请先设置主关键词'),
+      mkCheck('title-kw', '标题包含主关键词', !!mainKw && titleContainsKw, titleKwDetail),
       mkCheck('meta-title', 'Meta Title 长度', p.meta_title && p.meta_title.length >= 30 && p.meta_title.length <= 60,
         `当前 ${p.meta_title?.length || 0} 字符（建议 30-60）`),
-      mkCheck('meta-desc', 'Meta Description 长度', p.meta_description && p.meta_description.length >= 120 && p.meta_description.length <= 160,
+      mkCheck('meta-desc', 'Meta Description 长度', p.meta_description && p.meta_description.length >= 120 && p.meta_description.length <= 165,
         `当前 ${p.meta_description?.length || 0} 字符（建议 120-160）`),
-      mkCheck('meta-kw', 'Meta 包含主关键词', !!mainKw && (lcMetaTitle.includes(mainKw) || lcMetaDesc.includes(mainKw)),
+      mkCheck('meta-kw', 'Meta 包含主关键词', !!mainKw && metaContainsKeyword(p.meta_title || '', p.meta_description || '', mainKw),
         mainKw ? '' : '请先设置主关键词'),
       mkCheck('slug', 'Slug 已生成', !!p.slug_url, p.slug_url ? `/${p.slug_url}` : '尚未生成'),
-      mkCheck('h2', 'H2 数量 (3-8)', h2List.length >= 3 && h2List.length <= 8,
+      mkCheck('h2', 'H2 数量 (3-10)', h2List.length >= 3 && h2List.length <= 10,
         `当前 ${h2List.length} 个`),
       mkCheck('words', '字数 (800-1500)', wordCount >= 800 && wordCount <= 1800,
         `当前 ${wordCount} 字`),
-      mkCheck('density', `关键词密度 (1-3%)`, kwDensity >= 0.8 && kwDensity <= 3,
+      mkCheck('density', `关键词密度 (0.5-3%)`, kwDensity >= 0.5 && kwDensity <= 3,
         `当前 ${kwDensity.toFixed(2)}%（出现 ${kwCount} 次）`),
       mkCheck('first-para', '首段包含主关键词', !!mainKw && firstParagraphHasKeyword(content, mainKw),
         mainKw ? '' : '请先设置主关键词'),
@@ -2869,12 +3147,62 @@ function mkCheck(key, name, passed, detail) {
   return { key, name, passed: !!passed, detail: detail || '' };
 }
 
+// 判断标题是否包含主关键词（支持长关键词部分匹配）
+function titleContainsKeyword(title, keyword) {
+  if (!title || !keyword) return false;
+  const lcTitle = String(title).toLowerCase();
+  const kwParts = String(keyword).toLowerCase().split(/\s+/).filter(Boolean);
+
+  if (kwParts.length >= 4) {
+    // 长关键词（4+个单词）：至少包含2个核心词
+    const matched = kwParts.filter(w => lcTitle.includes(w));
+    return matched.length >= 2;
+  } else if (kwParts.length >= 2) {
+    // 中等关键词（2-3个单词）：至少包含1个核心词
+    const matched = kwParts.filter(w => lcTitle.includes(w));
+    return matched.length >= 1;
+  } else {
+    // 短关键词：完整包含
+    return lcTitle.includes(String(keyword).toLowerCase());
+  }
+}
+
+// 判断 Meta Title / Description 是否包含主关键词（长关键词部分匹配）
+function metaContainsKeyword(metaTitle, metaDesc, keyword) {
+  if (!keyword) return false;
+  const kwParts = String(keyword).toLowerCase().split(/\s+/).filter(Boolean);
+  const lcTitle = String(metaTitle || '').toLowerCase();
+  const lcDesc = String(metaDesc || '').toLowerCase();
+
+  if (kwParts.length >= 4) {
+    // 长关键词：Meta中任一包含至少2个核心词即算通过
+    const titleMatched = kwParts.filter(w => lcTitle.includes(w)).length;
+    const descMatched = kwParts.filter(w => lcDesc.includes(w)).length;
+    return titleMatched >= 2 || descMatched >= 2;
+  } else if (kwParts.length >= 2) {
+    const titleMatched = kwParts.filter(w => lcTitle.includes(w)).length;
+    const descMatched = kwParts.filter(w => lcDesc.includes(w)).length;
+    return titleMatched >= 1 || descMatched >= 1;
+  } else {
+    return lcTitle.includes(String(keyword).toLowerCase()) || lcDesc.includes(String(keyword).toLowerCase());
+  }
+}
+
+// 判断首段是否包含主关键词（支持长关键词部分匹配）
 function firstParagraphHasKeyword(content, kw) {
-  const lines = content.split('\n');
+  if (!content || !kw) return false;
+  const lines = String(content).split('\n');
   for (const line of lines) {
     const t = line.trim();
     if (!t || t.startsWith('#')) continue;
-    return t.toLowerCase().includes(kw);
+    // 首段允许长关键词的部分匹配：至少包含2个核心词
+    const lcLine = t.toLowerCase();
+    const kwParts = String(kw).toLowerCase().split(/\s+/).filter(Boolean);
+    if (kwParts.length >= 3) {
+      const matched = kwParts.filter(w => lcLine.includes(w)).length;
+      return matched >= 2;
+    }
+    return lcLine.includes(String(kw).toLowerCase());
   }
   return false;
 }
@@ -3158,7 +3486,7 @@ router.post('/plans/:planId/generate-now', async (req, res) => {
       modelType,
     });
 
-    const postRow = structuredToPostRow(structured, { keyword: plan.keyword, articleType });
+    const postRow = await structuredToPostRow(structured, { keyword: plan.keyword, articleType });
     const post = {
       ...postRow,
       plan_id: plan.id,
@@ -3224,7 +3552,7 @@ router.post('/generate-manual', async (req, res) => {
       modelType: model,
     });
 
-    const postRow = structuredToPostRow(structured, { keyword: keyword.trim(), articleType });
+    const postRow = await structuredToPostRow(structured, { keyword: keyword.trim(), articleType });
     const post = {
       ...postRow,
       plan_id: null,
@@ -3301,7 +3629,7 @@ router.post('/post/:postId/regenerate', async (req, res) => {
       modelType,
     });
 
-    const postRow = structuredToPostRow(structured, { keyword, articleType });
+    const postRow = await structuredToPostRow(structured, { keyword, articleType });
 
     // 重生成时保留原本人工已加的资源（封面、正文插图、slug）
     const updates = {
