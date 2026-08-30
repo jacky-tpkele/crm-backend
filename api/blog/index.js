@@ -1261,11 +1261,12 @@ router.post('/generate-plan-v2', async (req, res) => {
       const kwLower = kw.toLowerCase();
       const combo = `${kwLower}:${type}`;
 
-      // 跳过已生成过的关键词+类型组合
-      if (usedKeywordTypeCombo.has(combo)) {
-        console.log(`Skipping duplicate combo: ${combo}`);
-        skippedDuplicates++;
-        continue;
+      // 优先使用未重复的组合，但如果关键词库较小，允许重复组合只要标题不同
+      // 这样可以让小关键词库也能生成足够的计划
+      const isComboUsed = usedKeywordTypeCombo.has(combo);
+      if (isComboUsed) {
+        // 仅作为调试信息记录，不再跳过
+        console.log(`Reusing combo (title will be unique): ${combo}`);
       }
 
       let title;

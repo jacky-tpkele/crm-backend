@@ -3026,7 +3026,7 @@
           </div>
           <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
             <button onclick="openReviewWorkspace('${p.id}')" style="padding:8px 18px;background:var(--text);color:var(--on-solid);border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">📝 进入审核</button>
-            <button onclick="deletePostFromReview('${p.id}', document.querySelector('[onclick*=\"${p.id}\"]').closest('div').querySelector('div').textContent.trim())" style="padding:6px 14px;border:1px solid var(--error);background:transparent;color:var(--error);border-radius:8px;cursor:pointer;font-size:12px;">🗑️ 删除</button>
+            <button onclick="deletePostFromReview('${p.id}', '${escapeHtml(p.title || '(无标题)').replace(/'/g, "\\'")}' )" style="padding:6px 14px;border:1px solid var(--error);background:transparent;color:var(--error);border-radius:8px;cursor:pointer;font-size:12px;">🗑️ 删除</button>
           </div>
         </div>`;
     }
