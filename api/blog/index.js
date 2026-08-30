@@ -837,9 +837,28 @@ async function generateStructuredArticle({ keyword, title, articleType, subKeywo
 }
 
 // ──────────────────────────────────────────
+// 验证 URL 是否有效（避免生成 404 链接）
+// ──────────────────────────────────────────
+async function validateUrl(url) {
+  try {
+    // 相对路径转为绝对 URL
+    const fullUrl = url.startsWith('http') ? url : `${BLOG_SITE_BASE_URL}${url}`;
+    const response = await fetch(fullUrl, {
+      method: 'HEAD',
+      redirect: 'follow',
+      signal: AbortSignal.timeout(5000)
+    });
+    return response.ok; // 返回 true 如果状态码是 200-299
+  } catch (error) {
+    console.warn(`URL validation failed for ${url}:`, error.message);
+    return false;
+  }
+}
+
+// ──────────────────────────────────────────
 // 智能内链匹配：将 AI 的 url_hint 映射到真实网站页面
 // ──────────────────────────────────────────
-function matchInternalUrl(urlHint, allBlogs) {
+async function matchInternalUrl(urlHint, allBlogs) {
   if (!urlHint) return null;
   const hint = String(urlHint).toLowerCase().trim();
 
@@ -856,15 +875,31 @@ function matchInternalUrl(urlHint, allBlogs) {
   };
 
   for (const [key, url] of Object.entries(productMap)) {
-    if (hint.includes(key)) return url;
+    if (hint.includes(key)) {
+      // 验证 URL 是否有效
+      const isValid = await validateUrl(url);
+      if (isValid) {
+        return url;
+      } else {
+        console.warn(`⚠️ Invalid product URL skipped: ${url}`);
+        // 继续尝试其他匹配
+      }
+    }
   }
 
   // 2. 产品分类页面
   if (hint.includes('category') || hint.includes('mcb') || hint.includes('spd')) {
-    if (hint.includes('ac') && hint.includes('mcb')) return '/products/category/mcb/ac-mcb';
-    if (hint.includes('dc') && hint.includes('mcb')) return '/products/category/mcb/dc-mcb';
-    if (hint.includes('ac') && hint.includes('spd')) return '/products/category/spd/ac-spd';
-    if (hint.includes('dc') && hint.includes('spd')) return '/products/category/spd/dc-spd';
+    let candidateUrl = null;
+    if (hint.includes('ac') && hint.includes('mcb')) candidateUrl = '/products/category/mcb/ac-mcb';
+    if (hint.includes('dc') && hint.includes('mcb')) candidateUrl = '/products/category/mcb/dc-mcb';
+    if (hint.includes('ac') && hint.includes('spd')) candidateUrl = '/products/category/spd/ac-spd';
+    if (hint.includes('dc') && hint.includes('spd')) candidateUrl = '/products/category/spd/dc-spd';
+
+    if (candidateUrl) {
+      const isValid = await validateUrl(candidateUrl);
+      if (isValid) return candidateUrl;
+      console.warn(`⚠️ Invalid category URL skipped: ${candidateUrl}`);
+    }
   }
 
   // 3. 博客分类页面
@@ -878,7 +913,11 @@ function matchInternalUrl(urlHint, allBlogs) {
   };
 
   for (const [key, url] of Object.entries(blogCategoryMap)) {
-    if (hint.includes(key)) return url;
+    if (hint.includes(key)) {
+      const isValid = await validateUrl(url);
+      if (isValid) return url;
+      console.warn(`⚠️ Invalid blog category URL skipped: ${url}`);
+    }
   }
 
   // 4. 匹配已发布的博客文章（模糊匹配标题关键词）
@@ -892,7 +931,10 @@ function matchInternalUrl(urlHint, allBlogs) {
 
       // 如果匹配到2个以上关键词，认为是相关文章
       if (matched.length >= 2 && blog.slug_url) {
-        return `/blog/${blog.slug_url}`;
+        const blogUrl = `/blog/${blog.slug_url}`;
+        const isValid = await validateUrl(blogUrl);
+        if (isValid) return blogUrl;
+        console.warn(`⚠️ Invalid blog URL skipped: ${blogUrl}`);
       }
     }
   }
@@ -953,18 +995,19 @@ async function structuredToPostRow(structured, { keyword, articleType }) {
   }
 
   // 映射 AI 的 url_hint 到真实 URL
-  const internalLinks = (structured.internal_link_suggestions || [])
-    .map(l => {
-      const realUrl = matchInternalUrl(l.url_hint, allBlogs);
-      return realUrl ? {
+  const internalLinks = [];
+  for (const l of (structured.internal_link_suggestions || [])) {
+    const realUrl = await matchInternalUrl(l.url_hint, allBlogs);
+    if (realUrl) {
+      internalLinks.push({
         title: l.anchor || '',
         url: realUrl,
         reason: l.reason || '',
         ai_suggestion: true,
         original_hint: l.url_hint,
-      } : null;
-    })
-    .filter(Boolean);
+      });
+    }
+  }
 
   const externalLinks = (structured.external_link_suggestions || [])
     .map(l => ({
