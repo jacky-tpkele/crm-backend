@@ -2636,6 +2636,21 @@
         </h3>
       </div>
 
+      <!-- 子标签：博客文章 / 任意 URL -->
+      <div style="display:flex;gap:6px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:0;">
+        <button class="innow-subtab innow-subtab-active" data-innow-pane="posts" onclick="switchIndexNowPane('posts')"
+          style="padding:9px 16px;border:none;background:none;color:var(--text);border-bottom:2px solid var(--primary);cursor:pointer;font-size:13.5px;font-weight:600;">
+          博客文章
+        </button>
+        <button class="innow-subtab" data-innow-pane="urls" onclick="switchIndexNowPane('urls')"
+          style="padding:9px 16px;border:none;background:none;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;font-size:13.5px;font-weight:500;">
+          任意 URL 提交
+        </button>
+      </div>
+
+      <!-- 面板一：博客文章 -->
+      <div id="indexnowPane-posts">
+
       <!-- 统计卡片 -->
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px;">
         <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;">
@@ -2686,6 +2701,39 @@
       <!-- 文章列表 -->
       <div id="indexnowPostsContainer">
         <div style="text-align:center;color:var(--muted);padding:40px;">加载中...</div>
+      </div>
+
+      </div><!-- /#indexnowPane-posts -->
+
+      <!-- 面板二：任意 URL 提交 -->
+      <div id="indexnowPane-urls" style="display:none;">
+        <p style="font-size:13px;color:var(--muted);margin:0 0 14px 0;line-height:1.6;">
+          网站新增或更新的任意页面（产品页、分类页、落地页等）都可以在这里提交，和博客无关。<br>
+          一行一个 URL。可以只填路径（例如 <code style="background:var(--panel-2);padding:1px 5px;border-radius:4px;">/products/ac-mcb-1p</code>），会自动补全成完整网址。
+        </p>
+
+        <textarea id="indexnowUrlInput" rows="9" placeholder="https://www.tpkele.com/products/ac-mcb-1p&#10;/products/category/spd/dc-spd&#10;/contact"
+          style="width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--panel);color:var(--text);resize:vertical;line-height:1.7;"></textarea>
+
+        <div style="display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap;">
+          <button onclick="submitCustomUrlsToIndexNow()" id="btnSubmitUrls"
+            style="padding:9px 16px;border:1px solid var(--primary);background:var(--primary);color:white;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px;">
+            <i data-lucide="send" style="width:14px;height:14px;"></i>
+            提交这些 URL
+          </button>
+          <button onclick="loadSitemapUrlsIntoTextarea()" id="btnLoadSitemap"
+            style="padding:9px 16px;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px;">
+            <i data-lucide="download" style="width:14px;height:14px;"></i>
+            从 Sitemap 载入全站 URL
+          </button>
+          <button onclick="document.getElementById('indexnowUrlInput').value='';updateUrlInputCount();"
+            style="padding:9px 16px;border:1px solid var(--border);background:var(--panel);color:var(--muted2);border-radius:8px;cursor:pointer;font-size:13px;">
+            清空
+          </button>
+          <span style="font-size:12px;color:var(--muted);" id="indexnowUrlCount">0 行</span>
+        </div>
+
+        <div id="indexnowUrlResult" style="margin-top:16px;"></div>
       </div>
 
       <!-- 提交历史 -->
@@ -5397,15 +5445,125 @@
     }
 
     // 当切换到 IndexNow 标签页时自动加载数据
-    const originalSwitchTab = window.switchTab;
-    window.switchTab = function(tabName) {
-      originalSwitchTab(tabName);
-      if (tabName === 'indexnow') {
-        loadIndexNowStats();
-        loadIndexNowPosts();
-        loadIndexNowHistory();
+    // 页面顶部的 tab 切换是直接绑在 .tab-btn 上的监听器，这里再挂一个监听即可
+    document.querySelector('.tab-btn[data-tab="indexnow"]')?.addEventListener('click', () => {
+      loadIndexNowStats();
+      loadIndexNowPosts();
+      loadIndexNowHistory();
+    });
+
+    // 子面板切换：博客文章 / 任意 URL
+    function switchIndexNowPane(pane) {
+      document.querySelectorAll('.innow-subtab').forEach(btn => {
+        const isActive = btn.dataset.innowPane === pane;
+        btn.classList.toggle('innow-subtab-active', isActive);
+        btn.style.color = isActive ? 'var(--text)' : 'var(--muted)';
+        btn.style.borderBottomColor = isActive ? 'var(--primary)' : 'transparent';
+        btn.style.fontWeight = isActive ? '600' : '500';
+      });
+      document.getElementById('indexnowPane-posts').style.display = pane === 'posts' ? '' : 'none';
+      document.getElementById('indexnowPane-urls').style.display = pane === 'urls' ? '' : 'none';
+    }
+
+    // 统计输入框里的 URL 行数
+    function updateUrlInputCount() {
+      const lines = parseUrlInputLines();
+      document.getElementById('indexnowUrlCount').textContent = `${lines.length} 行`;
+    }
+
+    function parseUrlInputLines() {
+      return document.getElementById('indexnowUrlInput').value
+        .split(/[\r\n,]+/)
+        .map(s => s.trim())
+        .filter(Boolean);
+    }
+
+    document.getElementById('indexnowUrlInput')?.addEventListener('input', updateUrlInputCount);
+
+    // 提交任意 URL
+    async function submitCustomUrlsToIndexNow() {
+      const urls = parseUrlInputLines();
+      if (urls.length === 0) {
+        showToast('请先填入至少一个 URL');
+        return;
       }
-    };
+
+      const btn = document.getElementById('btnSubmitUrls');
+      const originalHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.textContent = '提交中...';
+      const resultBox = document.getElementById('indexnowUrlResult');
+      resultBox.innerHTML = '';
+
+      try {
+        const response = await fetch('/api/blog/indexnow-submit-urls', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ urls })
+        });
+        const data = await response.json();
+
+        let html = '';
+        if (data.success) {
+          showToast(`✓ 成功提交 ${data.submittedCount} 个 URL`);
+          html += `<div style="background:var(--panel);border:1px solid var(--success);border-left-width:3px;border-radius:8px;padding:12px 14px;font-size:13px;color:var(--text);">
+            ✓ 已提交 ${data.submittedCount} 个 URL 到 IndexNow（HTTP ${data.httpStatus}）
+          </div>`;
+          document.getElementById('indexnowUrlInput').value = '';
+          updateUrlInputCount();
+          loadIndexNowHistory();
+        } else {
+          showToast('提交失败：' + (data.error || '未知错误'));
+          html += `<div style="background:var(--panel);border:1px solid var(--danger);border-left-width:3px;border-radius:8px;padding:12px 14px;font-size:13px;color:var(--text);">
+            ✗ ${escapeHtml(data.error || '提交失败')}
+          </div>`;
+        }
+
+        // 被跳过的非法 URL
+        if (data.invalid && data.invalid.length > 0) {
+          html += `<div style="margin-top:10px;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:12.5px;">
+            <div style="font-weight:600;margin-bottom:6px;color:var(--warning);">已跳过 ${data.invalid.length} 个 URL：</div>
+            ${data.invalid.map(i => `<div style="color:var(--muted);margin-bottom:3px;">${escapeHtml(i.url)} — ${escapeHtml(i.reason)}</div>`).join('')}
+          </div>`;
+        }
+
+        resultBox.innerHTML = html;
+      } catch (error) {
+        showToast('提交失败：' + error.message);
+        resultBox.innerHTML = `<div style="color:var(--danger);font-size:13px;">${escapeHtml(error.message)}</div>`;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+        lucide.createIcons();
+      }
+    }
+
+    // 从 sitemap 载入全站 URL，方便挑选
+    async function loadSitemapUrlsIntoTextarea() {
+      const btn = document.getElementById('btnLoadSitemap');
+      const originalHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.textContent = '载入中...';
+
+      try {
+        const response = await fetch('/api/blog/indexnow-sitemap-urls');
+        const data = await response.json();
+
+        if (data.success && data.urls.length > 0) {
+          document.getElementById('indexnowUrlInput').value = data.urls.join('\n');
+          updateUrlInputCount();
+          showToast(`已载入 ${data.count} 个 URL，删掉不需要的再提交`);
+        } else {
+          showToast('Sitemap 没有返回 URL：' + (data.error || ''));
+        }
+      } catch (error) {
+        showToast('载入失败：' + error.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+        lucide.createIcons();
+      }
+    }
 
   </script>
 </body>

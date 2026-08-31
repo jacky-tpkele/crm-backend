@@ -4321,4 +4321,154 @@ router.get('/published-posts-for-indexnow', async (req, res) => {
   }
 });
 
+// 21. 提交任意 URL 到 IndexNow（与博客文章无关，用于产品页/分类页/落地页等）
+//     校验：必须是 http(s)，且 host 必须与 BLOG_SITE_BASE_URL 一致
+//     （IndexNow 协议要求 urlList 里所有 URL 都属于声明的 host，混入外站会被整批拒绝）
+function normalizeAndValidateUrls(rawUrls) {
+  const expectedHost = new URL(BLOG_SITE_BASE_URL).host;
+  const valid = [];
+  const invalid = [];
+  const seen = new Set();
+
+  for (const raw of rawUrls) {
+    const text = String(raw || '').trim();
+    if (!text) continue;
+
+    // 允许只填路径（/products/ac-mcb-1p），自动补全为完整 URL
+    const candidate = /^https?:\/\//i.test(text)
+      ? text
+      : `${BLOG_SITE_BASE_URL}/${text.replace(/^\/+/, '')}`;
+
+    let parsed;
+    try {
+      parsed = new URL(candidate);
+    } catch {
+      invalid.push({ url: text, reason: '不是合法的 URL' });
+      continue;
+    }
+
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+      invalid.push({ url: text, reason: '只支持 http / https' });
+      continue;
+    }
+
+    if (parsed.host !== expectedHost) {
+      invalid.push({ url: text, reason: `域名必须是 ${expectedHost}` });
+      continue;
+    }
+
+    const normalized = parsed.toString();
+    if (seen.has(normalized)) continue;
+    seen.add(normalized);
+    valid.push(normalized);
+  }
+
+  return { valid, invalid };
+}
+
+async function submitUrlsToIndexNow(urls, submissionType = 'url') {
+  try {
+    const host = new URL(BLOG_SITE_BASE_URL).host;
+    const res = await fetch(INDEXNOW_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      body: JSON.stringify({ host, key: INDEXNOW_KEY, urlList: urls }),
+    });
+
+    const httpStatus = res.status;
+    const isSuccess = [200, 202].includes(httpStatus);
+
+    await sb('indexnow_submissions', {
+      method: 'POST',
+      body: JSON.stringify({
+        blog_ids: [],
+        urls,
+        url_count: urls.length,
+        submission_type: submissionType,
+        status: isSuccess ? 'success' : 'failed',
+        http_status: httpStatus,
+        error_message: isSuccess ? null : `HTTP ${httpStatus}`,
+        submitted_at: new Date().toISOString(),
+      }),
+    }).catch(err => console.warn('Failed to log indexnow url submission:', err.message));
+
+    return { success: isSuccess, httpStatus, urlCount: urls.length };
+  } catch (error) {
+    await sb('indexnow_submissions', {
+      method: 'POST',
+      body: JSON.stringify({
+        blog_ids: [],
+        urls,
+        url_count: urls.length,
+        submission_type: submissionType,
+        status: 'failed',
+        http_status: null,
+        error_message: error.message,
+        submitted_at: new Date().toISOString(),
+      }),
+    }).catch(() => {});
+
+    return { success: false, error: error.message, urlCount: urls.length };
+  }
+}
+
+router.post('/indexnow-submit-urls', async (req, res) => {
+  try {
+    const { urls } = req.body;
+
+    if (!urls || (!Array.isArray(urls) && typeof urls !== 'string')) {
+      return res.status(400).json({ error: 'Missing urls (array or newline-separated string)' });
+    }
+
+    // 支持前端直接传多行文本
+    const rawList = Array.isArray(urls) ? urls : String(urls).split(/[\r\n,]+/);
+
+    if (rawList.length > 10000) {
+      return res.status(400).json({ error: 'Too many URLs. Max 10,000 per request.' });
+    }
+
+    const { valid, invalid } = normalizeAndValidateUrls(rawList);
+
+    if (valid.length === 0) {
+      return res.status(400).json({
+        error: '没有可提交的合法 URL',
+        invalid,
+      });
+    }
+
+    const result = await submitUrlsToIndexNow(valid, 'url');
+
+    res.json({
+      success: result.success,
+      message: result.success
+        ? `成功提交 ${result.urlCount} 个 URL 到 IndexNow`
+        : '提交失败',
+      submittedCount: result.urlCount,
+      httpStatus: result.httpStatus,
+      error: result.error,
+      urls: valid,
+      invalid,
+    });
+  } catch (error) {
+    console.error('Error in indexnow-submit-urls:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 22. 从 sitemap 拉取全站 URL（方便挑选新增页面提交）
+router.get('/indexnow-sitemap-urls', async (req, res) => {
+  try {
+    const urls = await fetchSitemapUrlList(BLOG_SITEMAP_URL);
+    res.json({
+      success: true,
+      sitemapUrl: BLOG_SITEMAP_URL,
+      count: urls.length,
+      urls,
+    });
+  } catch (error) {
+    console.error('Error fetching sitemap urls:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
