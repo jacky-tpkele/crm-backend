@@ -2689,13 +2689,20 @@
         </button>
       </div>
 
-      <!-- 筛选器 -->
+      <!-- 筛选按钮 -->
       <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
-        <select id="indexnowFilterStatus" onchange="loadIndexNowPosts()" style="padding:7px 9px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--panel);color:var(--text);">
-          <option value="all">全部文章</option>
-          <option value="not-submitted">未提交</option>
-          <option value="submitted">已提交</option>
-        </select>
+        <button class="indexnow-filter-btn indexnow-filter-active" data-filter="all" onclick="setIndexNowFilter('all')"
+          style="padding:8px 18px;border:1px solid var(--primary);background:var(--primary);color:white;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;transition:all 0.2s;">
+          全部
+        </button>
+        <button class="indexnow-filter-btn" data-filter="submitted" onclick="setIndexNowFilter('submitted')"
+          style="padding:8px 18px;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;transition:all 0.2s;">
+          已提交
+        </button>
+        <button class="indexnow-filter-btn" data-filter="not-submitted" onclick="setIndexNowFilter('not-submitted')"
+          style="padding:8px 18px;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;transition:all 0.2s;">
+          未提交
+        </button>
       </div>
 
       <!-- 文章列表 -->
@@ -5263,18 +5270,42 @@
       }
     }
 
+    // IndexNow 当前筛选状态
+    let indexnowCurrentFilter = 'all';
+
+    // 设置 IndexNow 筛选
+    function setIndexNowFilter(filter) {
+      indexnowCurrentFilter = filter;
+
+      // 更新按钮样式
+      document.querySelectorAll('.indexnow-filter-btn').forEach(btn => {
+        if (btn.getAttribute('data-filter') === filter) {
+          btn.style.border = '1px solid var(--primary)';
+          btn.style.background = 'var(--primary)';
+          btn.style.color = 'white';
+          btn.classList.add('indexnow-filter-active');
+        } else {
+          btn.style.border = '1px solid var(--border)';
+          btn.style.background = 'var(--panel)';
+          btn.style.color = 'var(--text)';
+          btn.classList.remove('indexnow-filter-active');
+        }
+      });
+
+      loadIndexNowPosts();
+    }
+
     // 加载已发布文章列表
     async function loadIndexNowPosts() {
       const container = document.getElementById('indexnowPostsContainer');
       container.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px;">加载中...</div>';
 
       try {
-        const filterStatus = document.getElementById('indexnowFilterStatus').value;
         let url = '/api/blog/published-posts-for-indexnow?limit=200';
 
-        if (filterStatus === 'not-submitted') {
+        if (indexnowCurrentFilter === 'not-submitted') {
           url += '&submitted=false';
-        } else if (filterStatus === 'submitted') {
+        } else if (indexnowCurrentFilter === 'submitted') {
           url += '&submitted=true';
         }
 
