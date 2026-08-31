@@ -2189,6 +2189,9 @@
           <button class="tab-btn" data-tab="published">
             <i data-lucide="book-open"></i> 已发布 <span id="tabPublishedBadge" style="display:none;background:var(--success);color:#fff;border-radius:999px;padding:1px 8px;font-size:11px;margin-left:4px;font-weight:500;">0</span>
           </button>
+          <button class="tab-btn" data-tab="indexnow">
+            <i data-lucide="send"></i> IndexNow 提交
+          </button>
         </div>
       </div>
 
@@ -2623,6 +2626,80 @@
         <div style="text-align:center;color:var(--muted);padding:40px;">加载中...</div>
       </div>
     </div>
+
+    <!-- 标签页：IndexNow 提交 -->
+    <div class="tab-content" id="indexnow-tab">
+      <div class="plan-list-header">
+        <h3 style="margin:0;font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px;">
+          <i data-lucide="send" style="width:18px;height:18px;"></i>
+          IndexNow 提交管理
+        </h3>
+      </div>
+
+      <!-- 统计卡片 -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px;">
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">已发布文章</div>
+          <div style="font-size:24px;font-weight:700;color:var(--text);" id="indexnowTotalPublished">-</div>
+        </div>
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">已提交</div>
+          <div style="font-size:24px;font-weight:700;color:var(--success);" id="indexnowSubmitted">-</div>
+        </div>
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">未提交</div>
+          <div style="font-size:24px;font-weight:700;color:var(--warning);" id="indexnowNotSubmitted">-</div>
+        </div>
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">提交总数</div>
+          <div style="font-size:24px;font-weight:700;color:var(--text);" id="indexnowTotalSubmissions">-</div>
+        </div>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+        <button onclick="loadIndexNowPosts()" style="padding:9px 16px;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px;">
+          <i data-lucide="refresh-cw" style="width:14px;height:14px;"></i>
+          刷新列表
+        </button>
+        <button onclick="submitSelectedToIndexNow()" id="btnSubmitSelected" style="padding:9px 16px;border:1px solid var(--primary);background:var(--primary);color:white;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px;" disabled>
+          <i data-lucide="send" style="width:14px;height:14px;"></i>
+          提交选中 (<span id="selectedCount">0</span>)
+        </button>
+        <button onclick="selectAllIndexNowPosts()" style="padding:9px 16px;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">
+          全选
+        </button>
+        <button onclick="deselectAllIndexNowPosts()" style="padding:9px 16px;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">
+          取消全选
+        </button>
+      </div>
+
+      <!-- 筛选器 -->
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+        <select id="indexnowFilterStatus" onchange="loadIndexNowPosts()" style="padding:7px 9px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--panel);color:var(--text);">
+          <option value="all">全部文章</option>
+          <option value="not-submitted">未提交</option>
+          <option value="submitted">已提交</option>
+        </select>
+      </div>
+
+      <!-- 文章列表 -->
+      <div id="indexnowPostsContainer">
+        <div style="text-align:center;color:var(--muted);padding:40px;">加载中...</div>
+      </div>
+
+      <!-- 提交历史 -->
+      <div style="margin-top:40px;">
+        <h4 style="font-size:15px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+          <i data-lucide="history" style="width:16px;height:16px;"></i>
+          提交历史
+        </h4>
+        <div id="indexnowHistoryContainer">
+          <div style="text-align:center;color:var(--muted);padding:40px;">加载中...</div>
+        </div>
+      </div>
+    </div>
+
       </div><!-- /.blog-main-content -->
     </main><!-- /.blog-main -->
   </div><!-- /.blog-container -->
@@ -5113,6 +5190,223 @@
     window.addEventListener('resize', () => {
       if (window.innerWidth > 768) closeBlogSidebar();
     });
+
+    // ==========================================
+    // IndexNow 提交管理功能
+    // ==========================================
+
+    let indexnowSelectedPosts = new Set();
+
+    // 加载 IndexNow 统计信息
+    async function loadIndexNowStats() {
+      try {
+        const response = await fetch('/api/blog/indexnow-stats');
+        const data = await response.json();
+
+        if (data.success) {
+          const stats = data.stats;
+          document.getElementById('indexnowTotalPublished').textContent = stats.totalPublished || 0;
+          document.getElementById('indexnowSubmitted').textContent = stats.submitted || 0;
+          document.getElementById('indexnowNotSubmitted').textContent = stats.notSubmitted || 0;
+          document.getElementById('indexnowTotalSubmissions').textContent = stats.totalSubmissions || 0;
+        }
+      } catch (error) {
+        console.error('加载 IndexNow 统计失败:', error);
+      }
+    }
+
+    // 加载已发布文章列表
+    async function loadIndexNowPosts() {
+      const container = document.getElementById('indexnowPostsContainer');
+      container.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px;">加载中...</div>';
+
+      try {
+        const filterStatus = document.getElementById('indexnowFilterStatus').value;
+        let url = '/api/blog/published-posts-for-indexnow?limit=200';
+
+        if (filterStatus === 'not-submitted') {
+          url += '&submitted=false';
+        } else if (filterStatus === 'submitted') {
+          url += '&submitted=true';
+        }
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.success && data.posts.length > 0) {
+          let html = '<div style="display:flex;flex-direction:column;gap:8px;">';
+
+          for (const post of data.posts) {
+            const isSubmitted = post.indexnow_submitted_at;
+            const submittedDate = isSubmitted ? new Date(post.indexnow_submitted_at).toLocaleString('zh-CN') : '-';
+            const isChecked = indexnowSelectedPosts.has(post.id);
+
+            html += `
+              <div style="background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;">
+                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleIndexNowPost('${post.id}')" style="width:16px;height:16px;cursor:pointer;">
+                <div style="flex:1;">
+                  <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:2px;">${escapeHtml(post.title)}</div>
+                  <div style="font-size:12px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;">
+                    <span>📅 ${new Date(post.published_at).toLocaleDateString('zh-CN')}</span>
+                    ${isSubmitted ? `<span style="color:var(--success);">✓ 已提交 (${submittedDate})</span>` : `<span style="color:var(--warning);">⏳ 未提交</span>`}
+                  </div>
+                </div>
+                <a href="${post.url}" target="_blank" style="padding:6px 12px;border:1px solid var(--border);background:var(--panel-2);color:var(--text);border-radius:6px;font-size:12px;text-decoration:none;white-space:nowrap;">
+                  查看
+                </a>
+              </div>
+            `;
+          }
+
+          html += '</div>';
+          container.innerHTML = html;
+        } else {
+          container.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px;">暂无文章</div>';
+        }
+
+        updateSelectedCount();
+      } catch (error) {
+        console.error('加载文章列表失败:', error);
+        container.innerHTML = '<div style="text-align:center;color:var(--danger);padding:40px;">加载失败</div>';
+      }
+    }
+
+    // 切换文章选中状态
+    function toggleIndexNowPost(postId) {
+      if (indexnowSelectedPosts.has(postId)) {
+        indexnowSelectedPosts.delete(postId);
+      } else {
+        indexnowSelectedPosts.add(postId);
+      }
+      updateSelectedCount();
+    }
+
+    // 全选
+    function selectAllIndexNowPosts() {
+      const checkboxes = document.querySelectorAll('#indexnowPostsContainer input[type="checkbox"]');
+      checkboxes.forEach(cb => {
+        cb.checked = true;
+        const postId = cb.getAttribute('onchange').match(/'([^']+)'/)[1];
+        indexnowSelectedPosts.add(postId);
+      });
+      updateSelectedCount();
+    }
+
+    // 取消全选
+    function deselectAllIndexNowPosts() {
+      const checkboxes = document.querySelectorAll('#indexnowPostsContainer input[type="checkbox"]');
+      checkboxes.forEach(cb => {
+        cb.checked = false;
+      });
+      indexnowSelectedPosts.clear();
+      updateSelectedCount();
+    }
+
+    // 更新选中计数
+    function updateSelectedCount() {
+      const count = indexnowSelectedPosts.size;
+      document.getElementById('selectedCount').textContent = count;
+      document.getElementById('btnSubmitSelected').disabled = count === 0;
+    }
+
+    // 提交选中的文章到 IndexNow
+    async function submitSelectedToIndexNow() {
+      if (indexnowSelectedPosts.size === 0) {
+        showToast('请先选择要提交的文章');
+        return;
+      }
+
+      const postIds = Array.from(indexnowSelectedPosts);
+      const btn = document.getElementById('btnSubmitSelected');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader" style="width:14px;height:14px;animation:spin 1s linear infinite;"></i> 提交中...';
+
+      try {
+        const response = await fetch('/api/blog/indexnow-submit-batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ postIds })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          showToast(`✓ 成功提交 ${data.submittedCount} 个 URL 到 IndexNow`);
+          indexnowSelectedPosts.clear();
+          await loadIndexNowStats();
+          await loadIndexNowPosts();
+          await loadIndexNowHistory();
+        } else {
+          showToast('提交失败：' + (data.error || '未知错误'));
+        }
+      } catch (error) {
+        console.error('提交失败:', error);
+        showToast('提交失败：' + error.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        lucide.createIcons();
+      }
+    }
+
+    // 加载提交历史
+    async function loadIndexNowHistory() {
+      const container = document.getElementById('indexnowHistoryContainer');
+      container.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;">加载中...</div>';
+
+      try {
+        const response = await fetch('/api/blog/indexnow-history?limit=20');
+        const data = await response.json();
+
+        if (data.success && data.submissions.length > 0) {
+          let html = '<div style="display:flex;flex-direction:column;gap:8px;">';
+
+          for (const sub of data.submissions) {
+            const isSuccess = sub.status === 'success';
+            const statusColor = isSuccess ? 'var(--success)' : 'var(--danger)';
+            const statusIcon = isSuccess ? '✓' : '✗';
+            const submittedDate = new Date(sub.submitted_at).toLocaleString('zh-CN');
+
+            html += `
+              <div style="background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;">
+                <div style="width:24px;height:24px;border-radius:50%;background:${statusColor};color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">${statusIcon}</div>
+                <div style="flex:1;">
+                  <div style="font-size:13px;color:var(--text);margin-bottom:2px;">
+                    ${sub.submission_type === 'manual' ? '手动提交' : '自动提交'} - ${sub.url_count} 个 URL
+                  </div>
+                  <div style="font-size:11px;color:var(--muted);">
+                    ${submittedDate}
+                    ${sub.http_status ? ` · HTTP ${sub.http_status}` : ''}
+                    ${sub.error_message ? ` · ${sub.error_message}` : ''}
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+
+          html += '</div>';
+          container.innerHTML = html;
+        } else {
+          container.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;">暂无提交历史</div>';
+        }
+      } catch (error) {
+        console.error('加载提交历史失败:', error);
+        container.innerHTML = '<div style="text-align:center;color:var(--danger);padding:20px;">加载失败</div>';
+      }
+    }
+
+    // 当切换到 IndexNow 标签页时自动加载数据
+    const originalSwitchTab = window.switchTab;
+    window.switchTab = function(tabName) {
+      originalSwitchTab(tabName);
+      if (tabName === 'indexnow') {
+        loadIndexNowStats();
+        loadIndexNowPosts();
+        loadIndexNowHistory();
+      }
+    };
+
   </script>
 </body>
 </html>

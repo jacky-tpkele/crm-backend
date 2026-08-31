@@ -4100,4 +4100,225 @@ router.get('/post/:postId/audit', async (req, res) => {
   }
 });
 
+// ──────────────────────────────────────────
+// IndexNow 提交管理（Phase 9）
+// ──────────────────────────────────────────
+
+// 增强版 notifyIndexNow：支持批量提交 + 记录历史
+async function notifyIndexNowWithLogging(urls, blogIds, submissionType = 'manual') {
+  const urlArray = Array.isArray(urls) ? urls : [urls];
+  const blogIdArray = Array.isArray(blogIds) ? blogIds : [blogIds];
+
+  try {
+    const host = new URL(BLOG_SITE_BASE_URL).host;
+    const res = await fetch(INDEXNOW_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      body: JSON.stringify({
+        host,
+        key: INDEXNOW_KEY,
+        urlList: urlArray
+      }),
+    });
+
+    const httpStatus = res.status;
+    const isSuccess = [200, 202].includes(httpStatus);
+
+    // 记录到数据库
+    await sb('indexnow_submissions', {
+      method: 'POST',
+      body: JSON.stringify({
+        blog_ids: blogIdArray,
+        urls: urlArray,
+        url_count: urlArray.length,
+        submission_type: submissionType,
+        status: isSuccess ? 'success' : 'failed',
+        http_status: httpStatus,
+        error_message: isSuccess ? null : `HTTP ${httpStatus}`,
+        submitted_at: new Date().toISOString(),
+      }),
+    });
+
+    // 更新文章的 indexnow 提交时间
+    if (isSuccess) {
+      for (const blogId of blogIdArray) {
+        await sb(`blog_posts?id=eq.${blogId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            indexnow_submitted_at: new Date().toISOString(),
+            indexnow_last_status: 'success',
+          }),
+        }).catch(err => console.warn('Failed to update post indexnow status:', err.message));
+      }
+    }
+
+    return { success: isSuccess, httpStatus, urlCount: urlArray.length };
+  } catch (error) {
+    // 记录失败
+    await sb('indexnow_submissions', {
+      method: 'POST',
+      body: JSON.stringify({
+        blog_ids: blogIdArray,
+        urls: urlArray,
+        url_count: urlArray.length,
+        submission_type: submissionType,
+        status: 'failed',
+        http_status: null,
+        error_message: error.message,
+        submitted_at: new Date().toISOString(),
+      }),
+    }).catch(() => {});
+
+    return { success: false, error: error.message, urlCount: urlArray.length };
+  }
+}
+
+// 17. 批量提交到 IndexNow
+router.post('/indexnow-submit-batch', async (req, res) => {
+  try {
+    const { postIds } = req.body;
+
+    if (!postIds || !Array.isArray(postIds) || postIds.length === 0) {
+      return res.status(400).json({ error: 'Missing postIds array' });
+    }
+
+    // IndexNow 建议单次最多 10,000 个 URL
+    if (postIds.length > 10000) {
+      return res.status(400).json({ error: 'Too many URLs. Max 10,000 per request.' });
+    }
+
+    // 获取文章信息
+    const posts = await sb(
+      `blog_posts?id=in.(${postIds.map(encodeURIComponent).join(',')})&status=eq.published&select=id,slug,slug_url,title`
+    );
+
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({ error: 'No published posts found' });
+    }
+
+    // 构建 URL 列表
+    const urls = posts.map(p => {
+      const slug = p.slug_url || p.slug;
+      return buildBlogUrl(slug);
+    }).filter(Boolean);
+
+    const blogIds = posts.map(p => p.id);
+
+    // 提交到 IndexNow
+    const result = await notifyIndexNowWithLogging(urls, blogIds, 'manual');
+
+    res.json({
+      success: result.success,
+      message: result.success
+        ? `成功提交 ${result.urlCount} 个 URL 到 IndexNow`
+        : '提交失败',
+      submittedCount: result.urlCount,
+      httpStatus: result.httpStatus,
+      error: result.error,
+      urls,
+    });
+  } catch (error) {
+    console.error('Error in indexnow-submit-batch:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 18. 获取 IndexNow 提交历史
+router.get('/indexnow-history', async (req, res) => {
+  try {
+    const { limit = 50, offset = 0 } = req.query;
+
+    const submissions = await sb(
+      `indexnow_submissions?select=*&order=submitted_at.desc&limit=${limit}&offset=${offset}`
+    );
+
+    res.json({
+      success: true,
+      submissions: submissions || [],
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+    });
+  } catch (error) {
+    console.error('Error fetching indexnow history:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 19. 获取 IndexNow 统计信息
+router.get('/indexnow-stats', async (req, res) => {
+  try {
+    // 获取所有已发布的文章
+    const publishedPosts = await sb('blog_posts?status=eq.published&select=id,indexnow_submitted_at');
+    const totalPublished = publishedPosts ? publishedPosts.length : 0;
+    const submitted = publishedPosts ? publishedPosts.filter(p => p.indexnow_submitted_at).length : 0;
+    const notSubmitted = totalPublished - submitted;
+
+    // 获取提交历史统计
+    const submissions = await sb('indexnow_submissions?select=status,url_count,submitted_at');
+    const totalSubmissions = submissions ? submissions.length : 0;
+    const successCount = submissions ? submissions.filter(s => s.status === 'success').length : 0;
+    const failedCount = submissions ? submissions.filter(s => s.status === 'failed').length : 0;
+    const totalUrlsSubmitted = submissions ? submissions.reduce((sum, s) => sum + (s.url_count || 0), 0) : 0;
+
+    // 最近一次提交
+    const lastSubmission = submissions && submissions.length > 0
+      ? submissions.sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at))[0]
+      : null;
+
+    res.json({
+      success: true,
+      stats: {
+        totalPublished,
+        submitted,
+        notSubmitted,
+        totalSubmissions,
+        successCount,
+        failedCount,
+        totalUrlsSubmitted,
+        lastSubmission: lastSubmission ? {
+          submittedAt: lastSubmission.submitted_at,
+          status: lastSubmission.status,
+          urlCount: lastSubmission.url_count,
+        } : null,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching indexnow stats:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 20. 获取已发布文章列表（用于 IndexNow 界面）
+router.get('/published-posts-for-indexnow', async (req, res) => {
+  try {
+    const { limit = 100, offset = 0, submitted } = req.query;
+
+    let query = `blog_posts?status=eq.published&select=id,title,slug,slug_url,published_at,indexnow_submitted_at,indexnow_last_status&order=published_at.desc&limit=${limit}&offset=${offset}`;
+
+    // 筛选：已提交 / 未提交
+    if (submitted === 'true') {
+      query += '&indexnow_submitted_at=not.is.null';
+    } else if (submitted === 'false') {
+      query += '&indexnow_submitted_at=is.null';
+    }
+
+    const posts = await sb(query);
+
+    const postsWithUrls = (posts || []).map(p => ({
+      ...p,
+      url: buildBlogUrl(p.slug_url || p.slug),
+    }));
+
+    res.json({
+      success: true,
+      posts: postsWithUrls,
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+    });
+  } catch (error) {
+    console.error('Error fetching published posts for indexnow:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
