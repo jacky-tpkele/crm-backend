@@ -4093,10 +4093,10 @@
             </td>
             <td>
               <div class="action-buttons" style="display:flex;gap:4px;flex-wrap:wrap;">
-                ${isPending ? `<button onclick="generateOnePlan('${plan.id}')" style="background:var(--text);color:var(--on-solid);border-color:var(--text);">▶ 立即生成</button>` : ''}
-                ${isPending ? `<button onclick="editPlan('${plan.id}','${safeKw}','${safeTitle}','${plan.article_type||'product'}')">编辑</button>` : ''}
-                ${isPending ? `<button onclick="deletePlan('${plan.id}')" style="color:var(--text);">删除</button>` : ''}
-                ${!isPending ? `<button onclick="openPreview('${plan.id}')">预览</button>` : ''}
+                ${isPending ? `<button onclick="generateOnePlan('${plan.id}')" style="background:var(--primary);color:white;border:1px solid var(--primary);padding:4px 8px;border-radius:4px;cursor:pointer;font-size:12px;">▶ 立即生成</button>` : ''}
+                ${isPending ? `<button onclick="editPlan('${plan.id}','${safeKw}','${safeTitle}','${plan.article_type||'product'}')" style="background:var(--panel);color:var(--text);border:1px solid var(--border);padding:4px 8px;border-radius:4px;cursor:pointer;font-size:12px;">编辑</button>` : ''}
+                ${isPending ? `<button onclick="deletePlan('${plan.id}')" style="background:var(--panel);color:var(--danger);border:1px solid var(--border);padding:4px 8px;border-radius:4px;cursor:pointer;font-size:12px;">删除</button>` : ''}
+                ${!isPending ? `<button onclick="openPreview('${plan.id}')" style="background:var(--panel);color:var(--text);border:1px solid var(--border);padding:4px 8px;border-radius:4px;cursor:pointer;font-size:12px;">预览</button>` : ''}
               </div>
             </td>
           </tr>
