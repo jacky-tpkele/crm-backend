@@ -4,6 +4,7 @@
 const BRAND_BLOCK = `
 COMPANY CONTEXT (do not invent other brands):
 - Brand: TPKele
+- Website: https://www.tpkele.com (NEVER use crm.tpkele.com or any other subdomain in article content)
 - Industry: B2B manufacturer of solar DC and low-voltage electrical protection products
 - Target audience: international procurement managers, solar EPC engineers, electrical contractors, distributors
 - Voice: professional, technical, helpful, concrete (concrete current ratings, IEC standards, real-world scenarios). NEVER salesy or hype-laden.
@@ -58,6 +59,7 @@ CRITICAL RULES (apply to every article type):
    - FIRST mention MUST be in the opening paragraph (within first 100 words)
 2. Main keyword placement: MUST appear in title (full or core words), first paragraph (within first 100 words), at least one H2 heading, meta_title, meta_description.
 3. NEVER invent product specifications, certifications, or test data. Only reference IEC standards that actually exist (IEC 60898, IEC 60947-2, IEC 61643, IEC 60364, IEC 62109, IEEE C62.41, etc.).
+3a. NEVER write full URLs in article body content (no https://www.tpkele.com/... or https://crm.tpkele.com/... in paragraphs). Links are inserted automatically via internal_link_suggestions and external_link_suggestions.
 4. Internal links:
    - anchor: MUST be exact 2-5 word phrases that ALREADY APPEAR in your article body (e.g. if you write "AC MCB products", use that as anchor)
    - url_hint: describe what page type to link (use keywords like: "AC MCB products", "DC circuit breaker category", "SPD installation guide", "voltage protector selection")

@@ -944,6 +944,25 @@ async function matchInternalUrl(urlHint, allBlogs) {
 }
 
 // ──────────────────────────────────────────
+// 清理内容中的错误域名：移除 crm.tpkele.com 链接，替换为正确的 www.tpkele.com
+// ──────────────────────────────────────────
+function sanitizeContent(content) {
+  if (!content) return content;
+  let result = String(content);
+
+  // 1. 移除 markdown 链接中的 crm.tpkele.com
+  result = result.replace(/\[([^\]]+)\]\(https?:\/\/crm\.tpkele\.com([^\)]*)\)/gi, '[$1](https://www.tpkele.com$2)');
+
+  // 2. 移除纯文本中的完整 crm.tpkele.com URL（转为 www.tpkele.com）
+  result = result.replace(/https?:\/\/crm\.tpkele\.com/gi, 'https://www.tpkele.com');
+
+  // 3. 移除任何残留的裸域名引用
+  result = result.replace(/crm\.tpkele\.com/gi, 'www.tpkele.com');
+
+  return result;
+}
+
+// ──────────────────────────────────────────
 // 智能插入链接到正文：找到锚文本第一次出现的位置，替换为 markdown 链接
 // ──────────────────────────────────────────
 function insertLinksIntoContent(content, internalLinks, externalLinks) {
@@ -984,7 +1003,10 @@ function escapeRegex(str) {
 // 把 structured 结果转成 blog_posts 行（自动插入链接到正文）
 // ──────────────────────────────────────────
 async function structuredToPostRow(structured, { keyword, articleType }) {
-  const wc = (structured.content || '').split(/\s+/).filter(Boolean).length;
+  // 清理 AI 生成内容中可能出现的错误域名
+  const cleanContent = sanitizeContent(structured.content);
+
+  const wc = (cleanContent || '').split(/\s+/).filter(Boolean).length;
 
   // 获取所有已发布博客（用于内链匹配）
   let allBlogs = [];
@@ -1027,7 +1049,7 @@ async function structuredToPostRow(structured, { keyword, articleType }) {
 
   return {
     title: structured.title,
-    content: contentWithLinks,
+    content: sanitizeContent(contentWithLinks), // 最终输出前再次清理
     keywords: [keyword],
     main_keyword: structured.main_keyword || keyword,
     sub_keywords: structured.sub_keywords || [],
