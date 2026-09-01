@@ -2533,7 +2533,8 @@
             <option value="superseded">已替换</option>
           </select>
           <button class="btn-secondary" onclick="resetPlanFilters()">全部月份</button>
-          <button class="btn-secondary" onclick="deleteCurrentMonthPlans()">删除本月待生成计划</button>
+          <button class="btn-secondary" onclick="deleteCurrentMonthPlans()">删除本月待生成</button>
+          <button class="btn-secondary" onclick="deleteVisiblePlans()" style="background:#dc3545;color:white;border-color:#dc3545;">删除当前列表所有计划</button>
         </div>
       </div>
 
@@ -4186,6 +4187,50 @@
         }
       } catch (error) {
         console.error('批量删除出错:', error);
+        showToast('删除出错：' + error.message);
+      }
+    }
+
+    // 删除当前筛选列表中的所有待生成计划
+    async function deleteVisiblePlans() {
+      const visiblePendingPlans = plans.filter(plan => plan.status === 'pending');
+
+      if (visiblePendingPlans.length === 0) {
+        showToast('当前列表中没有待生成的计划');
+        return;
+      }
+
+      const month = document.getElementById('monthFilter')?.value || '当前筛选条件下';
+      if (!confirm(`删除 ${month} 的 ${visiblePendingPlans.length} 条待生成计划？\n\n注意：只会删除"待生成"状态的计划，已生成、待审核、已发布的文章不会被删除。`)) {
+        return;
+      }
+
+      showToast('正在删除...');
+
+      try {
+        const planIds = visiblePendingPlans.map(p => p.id);
+        const response = await fetch('/api/blog/plans/batch', {
+          method: 'DELETE',
+          headers: getHeaders(),
+          body: JSON.stringify({ planIds })
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          showToast(`删除失败 (${response.status}): ${errorText}`);
+          return;
+        }
+
+        const data = await response.json();
+        if (data.success) {
+          planIds.forEach(id => selectedPlanIds.delete(id));
+          showToast(`✓ 已删除 ${data.deletedCount || planIds.length} 条待生成计划`);
+          loadPlans();
+        } else {
+          showToast('删除失败：' + (data.error || '未知错误'));
+        }
+      } catch (error) {
+        console.error('删除当前列表出错:', error);
         showToast('删除出错：' + error.message);
       }
     }
