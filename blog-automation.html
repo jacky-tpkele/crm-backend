@@ -3872,19 +3872,32 @@
 
       if (!confirm(`删除 ${month} 的所有待生成计划？\n已生成、待审核、已发布的文章不会被删除。`)) return;
 
+      showToast('正在删除...');
+
       try {
-        const r = await fetch(`/api/blog/plans/month/${month}`, { method: 'DELETE' });
+        const r = await fetch(`/api/blog/plans/month/${month}`, {
+          method: 'DELETE',
+          headers: getHeaders()
+        });
+
+        if (!r.ok) {
+          const errorText = await r.text();
+          showToast(`删除失败 (${r.status}): ${errorText}`);
+          return;
+        }
+
         const d = await r.json();
         if (d.success) {
-          showToast(`已删除 ${d.deletedCount || 0} 条待生成计划`);
+          showToast(`✓ 已删除 ${d.deletedCount || 0} 条待生成计划`);
           const monthFilter = document.getElementById('monthFilter');
           if (monthFilter) monthFilter.value = month;
           loadPlans();
         } else {
-          showToast('删除失败：' + (d.error || ''));
+          showToast('删除失败：' + (d.error || '未知错误'));
         }
       } catch (e) {
-        showToast('错误：' + e.message);
+        console.error('删除月度计划出错:', e);
+        showToast('删除出错：' + e.message);
       }
     }
 
@@ -4148,22 +4161,32 @@
 
       if (!confirm(`删除选中的 ${pendingPlanIds.length} 条待生成计划？`)) return;
 
+      showToast('正在删除...');
+
       try {
         const response = await fetch('/api/blog/plans/batch', {
           method: 'DELETE',
           headers: getHeaders(),
           body: JSON.stringify({ planIds: pendingPlanIds })
         });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          showToast(`删除失败 (${response.status}): ${errorText}`);
+          return;
+        }
+
         const data = await response.json();
         if (data.success) {
           pendingPlanIds.forEach(id => selectedPlanIds.delete(id));
-          showToast(`已删除 ${data.deletedCount || pendingPlanIds.length} 条待生成计划`);
+          showToast(`✓ 已删除 ${data.deletedCount || pendingPlanIds.length} 条待生成计划`);
           loadPlans();
         } else {
-          showToast('批量删除失败：' + (data.error || ''));
+          showToast('批量删除失败：' + (data.error || '未知错误'));
         }
       } catch (error) {
-        showToast('错误：' + error.message);
+        console.error('批量删除出错:', error);
+        showToast('删除出错：' + error.message);
       }
     }
 
