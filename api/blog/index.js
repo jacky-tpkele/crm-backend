@@ -1040,9 +1040,9 @@ async function structuredToPostRow(structured, { keyword, articleType }) {
     }))
     .filter(l => l.url);
 
-  // 自动插入链接到正文
+  // 自动插入链接到正文（使用清理后的内容）
   const contentWithLinks = insertLinksIntoContent(
-    structured.content,
+    cleanContent,
     internalLinks,
     externalLinks
   );
