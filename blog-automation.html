@@ -2539,11 +2539,11 @@
       </div>
 
       <div class="plan-batch-bar">
-        <div class="plan-batch-meta" id="planSelectionInfo">已选 0 条，仅可批量删除待生成计划</div>
+        <div class="plan-batch-meta" id="planSelectionInfo">已选 0 条</div>
         <div class="plan-batch-actions">
           <button class="btn-secondary" onclick="toggleSelectVisiblePlans(true)">全选当前列表</button>
           <button class="btn-secondary" onclick="toggleSelectVisiblePlans(false)">清空选择</button>
-          <button class="btn-secondary" onclick="deleteSelectedPlans()">删除选中待生成</button>
+          <button class="btn-secondary" onclick="deleteSelectedPlans()">删除选中计划</button>
         </div>
       </div>
 
@@ -4151,64 +4151,18 @@
 
     async function deleteSelectedPlans() {
       const selectedVisiblePlans = plans.filter(plan => selectedPlanIds.has(plan.id));
-      const pendingPlanIds = selectedVisiblePlans
-        .filter(plan => plan.status === 'pending')
-        .map(plan => plan.id);
+      const planIds = selectedVisiblePlans.map(plan => plan.id);
 
-      if (pendingPlanIds.length === 0) {
-        showToast('请选择至少一条待生成计划');
+      if (planIds.length === 0) {
+        showToast('请选择至少一条计划');
         return;
       }
 
-      if (!confirm(`删除选中的 ${pendingPlanIds.length} 条待生成计划？`)) return;
+      if (!confirm(`确定删除选中的 ${planIds.length} 条计划？\n\n注意：这将永久删除选中的计划及其相关内容。`)) return;
 
       showToast('正在删除...');
 
       try {
-        const response = await fetch('/api/blog/plans/batch', {
-          method: 'DELETE',
-          headers: getHeaders(),
-          body: JSON.stringify({ planIds: pendingPlanIds })
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          showToast(`删除失败 (${response.status}): ${errorText}`);
-          return;
-        }
-
-        const data = await response.json();
-        if (data.success) {
-          pendingPlanIds.forEach(id => selectedPlanIds.delete(id));
-          showToast(`✓ 已删除 ${data.deletedCount || pendingPlanIds.length} 条待生成计划`);
-          loadPlans();
-        } else {
-          showToast('批量删除失败：' + (data.error || '未知错误'));
-        }
-      } catch (error) {
-        console.error('批量删除出错:', error);
-        showToast('删除出错：' + error.message);
-      }
-    }
-
-    // 删除当前筛选列表中的所有待生成计划
-    async function deleteVisiblePlans() {
-      const visiblePendingPlans = plans.filter(plan => plan.status === 'pending');
-
-      if (visiblePendingPlans.length === 0) {
-        showToast('当前列表中没有待生成的计划');
-        return;
-      }
-
-      const month = document.getElementById('monthFilter')?.value || '当前筛选条件下';
-      if (!confirm(`删除 ${month} 的 ${visiblePendingPlans.length} 条待生成计划？\n\n注意：只会删除"待生成"状态的计划，已生成、待审核、已发布的文章不会被删除。`)) {
-        return;
-      }
-
-      showToast('正在删除...');
-
-      try {
-        const planIds = visiblePendingPlans.map(p => p.id);
         const response = await fetch('/api/blog/plans/batch', {
           method: 'DELETE',
           headers: getHeaders(),
@@ -4224,7 +4178,49 @@
         const data = await response.json();
         if (data.success) {
           planIds.forEach(id => selectedPlanIds.delete(id));
-          showToast(`✓ 已删除 ${data.deletedCount || planIds.length} 条待生成计划`);
+          showToast(`✓ 已删除 ${data.deletedCount || 0} 条计划`);
+          loadPlans();
+        } else {
+          showToast('批量删除失败：' + (data.error || '未知错误'));
+        }
+      } catch (error) {
+        console.error('批量删除出错:', error);
+        showToast('删除出错：' + error.message);
+      }
+    }
+
+    // 删除当前筛选列表中的所有计划
+    async function deleteVisiblePlans() {
+      if (plans.length === 0) {
+        showToast('当前列表中没有计划');
+        return;
+      }
+
+      const month = document.getElementById('monthFilter')?.value || '当前筛选条件下';
+      if (!confirm(`确定删除 ${month} 的 ${plans.length} 条计划？\n\n注意：这将永久删除当前列表中所有显示的计划及其相关内容。`)) {
+        return;
+      }
+
+      showToast('正在删除...');
+
+      try {
+        const planIds = plans.map(p => p.id);
+        const response = await fetch('/api/blog/plans/batch', {
+          method: 'DELETE',
+          headers: getHeaders(),
+          body: JSON.stringify({ planIds })
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          showToast(`删除失败 (${response.status}): ${errorText}`);
+          return;
+        }
+
+        const data = await response.json();
+        if (data.success) {
+          planIds.forEach(id => selectedPlanIds.delete(id));
+          showToast(`✓ 已删除 ${data.deletedCount || 0} 条计划`);
           loadPlans();
         } else {
           showToast('删除失败：' + (data.error || '未知错误'));

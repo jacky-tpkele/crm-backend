@@ -3535,22 +3535,21 @@ router.delete('/plans/batch', async (req, res) => {
       return res.status(400).json({ error: 'No planIds provided' });
     }
 
-    const plans = await sb(
-      `blog_plans?id=in.(${safePlanIds.map(id => `"${id}"`).join(',')})&select=id,status&limit=${safePlanIds.length}`
-    );
-    const pendingPlanIds = (plans || [])
-      .filter(plan => plan.status === 'pending')
-      .map(plan => plan.id)
-      .filter(Boolean);
-
-    for (const planId of pendingPlanIds) {
-      await sb(`blog_plans?id=eq.${encodeURIComponent(planId)}`, { method: 'DELETE' });
+    // 删除所有提供的计划，不再限制只删除 pending 状态
+    let deletedCount = 0;
+    for (const planId of safePlanIds) {
+      try {
+        await sb(`blog_plans?id=eq.${encodeURIComponent(planId)}`, { method: 'DELETE' });
+        deletedCount++;
+      } catch (err) {
+        console.error(`Failed to delete plan ${planId}:`, err.message);
+      }
     }
 
     res.json({
       success: true,
-      deletedCount: pendingPlanIds.length,
-      ignoredCount: safePlanIds.length - pendingPlanIds.length,
+      deletedCount,
+      ignoredCount: safePlanIds.length - deletedCount,
     });
   } catch (error) {
     console.error('Error batch deleting plans:', error);

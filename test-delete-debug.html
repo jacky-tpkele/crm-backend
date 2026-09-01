@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>删除计划测试</title>
+</head>
+<body>
+  <h2>测试删除计划 API</h2>
+  <button onclick="testDeleteMonth()">测试删除本月计划</button>
+  <button onclick="testDeleteBatch()">测试批量删除</button>
+  <pre id="result"></pre>
+
+  <script>
+    const token = localStorage.getItem('crm_token') || localStorage.getItem('token') || '';
+
+    function log(msg) {
+      document.getElementById('result').textContent += msg + '\n';
+    }
+
+    async function testDeleteMonth() {
+      log('=== 测试删除本月计划 ===');
+      const month = '2026-06';
+
+      try {
+        const response = await fetch(`/api/blog/plans/month/${month}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token ? 'Bearer ' + token : ''
+          }
+        });
+
+        log(`状态码: ${response.status}`);
+        const data = await response.json();
+        log(`响应: ${JSON.stringify(data, null, 2)}`);
+      } catch (error) {
+        log(`错误: ${error.message}`);
+      }
+    }
+
+    async function testDeleteBatch() {
+      log('\n=== 测试批量删除 ===');
+
+      // 先获取几个待生成的计划 ID
+      try {
+        const listResp = await fetch('/api/blog/plans?status=pending&limit=3', {
+          headers: {
+            'Authorization': token ? 'Bearer ' + token : ''
+          }
+        });
+        const plans = await listResp.json();
+        log(`找到 ${plans.length} 条待生成计划`);
+
+        if (plans.length === 0) {
+          log('没有待生成计划可以测试');
+          return;
+        }
+
+        const planIds = plans.map(p => p.id);
+        log(`准备删除: ${planIds.join(', ')}`);
+
+        const response = await fetch('/api/blog/plans/batch', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token ? 'Bearer ' + token : ''
+          },
+          body: JSON.stringify({ planIds })
+        });
+
+        log(`状态码: ${response.status}`);
+        const data = await response.json();
+        log(`响应: ${JSON.stringify(data, null, 2)}`);
+      } catch (error) {
+        log(`错误: ${error.message}`);
+      }
+    }
+  </script>
+</body>
+</html>
