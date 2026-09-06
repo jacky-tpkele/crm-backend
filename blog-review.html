@@ -2477,10 +2477,20 @@
         { label: '产品页', items: sitePagesCache.products || [] },
         { label: '产品分类', items: sitePagesCache.productCategories || [] },
       ];
+
+      // 调试：检查URL格式
+      console.log('[fillInternalUrlSelect] sitePagesCache:', sitePagesCache);
+
       sel.innerHTML = '<option value="">选择目标页面 ▾</option>' +
         groups.filter(g => g.items.length > 0).map(g =>
           `<optgroup label="${g.label}">` +
-          g.items.map(i => `<option value="${i.url}">${escapeHtml(i.title)}</option>`).join('') +
+          g.items.map(i => {
+            const url = i.url || '';
+            // 确保URL是相对路径，去除任何完整域名
+            const cleanUrl = url.replace(/^https?:\/\/[^/]+/, '').replace(/^crm\.tpkele\.com/, '');
+            console.log('[fillInternalUrlSelect] Original:', url, '→ Clean:', cleanUrl);
+            return `<option value="${escapeHtml(cleanUrl)}">${escapeHtml(i.title)}</option>`;
+          }).join('') +
           `</optgroup>`
         ).join('');
     }
