@@ -48,7 +48,7 @@ OUTPUT FORMAT — return ONE single valid JSON object. No markdown fences, no pr
     {"anchor": "string — exact phrase from article body (2-5 words, naturally appearing in text)", "url_hint": "keyword description: 'AC MCB products' or 'DC circuit breaker category' or 'installation guide blog'", "reason": "string — 1 sentence why"}
   ],
   "external_link_suggestions": [
-    {"anchor": "string — exact phrase from article body (e.g. 'IEC 60898', 'IEEE standards')", "url": "string — full https:// (only use: IEC.ch, IEEE.org, NEMA.org, EN/IEC official sites)", "reason": "string"}
+    {"anchor": "string — exact phrase from article body (e.g. 'IEC 60898', 'IEEE standards')", "url": "string — full https:// URL", "reason": "string"}
   ]
 }
 
@@ -66,8 +66,14 @@ CRITICAL RULES (apply to every article type):
    - REQUIRED: 2-3 internal link suggestions
 5. External links:
    - anchor: MUST be exact phrases from your article (e.g. "IEC 60898", "IEEE C62.41")
-   - url: ONLY use official sources: https://webstore.iec.ch, https://standards.ieee.org, https://www.nema.org, https://webstore.ansi.org
+   - url: Use STABLE, OFFICIAL sources only. Prefer:
+     * Standards organizations homepages: https://www.iec.ch, https://www.ieee.org, https://www.nema.org
+     * Wikipedia technical articles (e.g. https://en.wikipedia.org/wiki/Miniature_circuit_breaker)
+     * Government/regulatory sites (e.g. https://www.osha.gov for safety standards)
+     * DO NOT link to specific product pages, webstore purchase URLs, or deep paths that may change
+     * VERIFY the URL pattern is commonly used (e.g. iec.ch homepage, NOT webstore.iec.ch/publication/27173)
    - REQUIRED: 1-2 external link suggestions
+   - QUALITY over quantity: only suggest external links if you are confident the URL exists and is stable
 6. Avoid first-person plural ("we", "our company", "we offer", "contact us") in body text — keep it informational. The website renders a separate CTA component below the article, so body content should be pure knowledge content.
 7. End the body content with a knowledge-focused closing paragraph (1-3 sentences). Examples: "These principles ensure reliable protection across most installations." or "Selecting components that meet these specifications protects both equipment and personnel." DO NOT write "contact us for a quote" or similar sales language.
 8. CONTENT UNIQUENESS: If this keyword has been covered before, approach it from a DIFFERENT ANGLE:
