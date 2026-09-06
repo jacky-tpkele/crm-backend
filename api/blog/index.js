@@ -1000,6 +1000,111 @@ function escapeRegex(str) {
 }
 
 // ──────────────────────────────────────────
+// 链接验证和过滤：确保AI生成的链接符合规则
+// ──────────────────────────────────────────
+
+// 受信任的外链域名白名单
+const TRUSTED_EXTERNAL_DOMAINS = [
+  'iec.ch',
+  'ieee.org',
+  'iso.org',
+  'nfpa.org',
+  'nema.org',
+  'ul.com',
+  'energy.gov',
+  'nrel.gov',
+  'osha.gov',
+  'wikipedia.org',
+  'wikimedia.org',
+];
+
+// 验证外链URL是否来自受信任域名
+function isTrustedExternalUrl(url) {
+  if (!url || typeof url !== 'string') return false;
+  try {
+    const urlObj = new URL(url);
+    const hostname = urlObj.hostname.toLowerCase();
+    // 检查是否匹配白名单（支持子域名）
+    return TRUSTED_EXTERNAL_DOMAINS.some(domain =>
+      hostname === domain || hostname.endsWith('.' + domain)
+    );
+  } catch (e) {
+    return false;
+  }
+}
+
+// 验证内链url_hint是否合理（不包含外部域名，不是完整URL）
+function isValidInternalHint(urlHint) {
+  if (!urlHint || typeof urlHint !== 'string') return false;
+  const hint = urlHint.toLowerCase();
+  // 内链hint不应该包含http://或https://
+  if (hint.includes('http://') || hint.includes('https://')) return false;
+  // 不应该包含外部域名
+  if (hint.includes('.com') || hint.includes('.org') || hint.includes('.net')) return false;
+  return true;
+}
+
+// 验证和过滤链接
+function validateAndFilterLinks(internalLinks, externalLinks) {
+  // 验证内链：限制3-6个
+  let validInternal = (internalLinks || []).filter(link => {
+    if (!link.url) return false;
+    // 内链URL必须是相对路径（以/开头）或者是www.tpkele.com域名
+    const url = link.url.toLowerCase();
+    return url.startsWith('/') || url.includes('www.tpkele.com');
+  }).slice(0, 6); // 最多6个
+
+  // 如果少于3个，保留所有
+  if (validInternal.length < 3 && internalLinks && internalLinks.length > 0) {
+    validInternal = internalLinks.slice(0, 6);
+  }
+
+  // 验证外链：限制2-5个，只保留受信任域名
+  let validExternal = (externalLinks || []).filter(link => {
+    if (!link.url) return false;
+    return isTrustedExternalUrl(link.url);
+  });
+
+  // 限制数量2-5个
+  if (validExternal.length > 5) {
+    validExternal = validExternal.slice(0, 5);
+  }
+
+  // 检查同一域名出现次数（最多1-2次）
+  const domainCounts = {};
+  validExternal = validExternal.filter(link => {
+    try {
+      const hostname = new URL(link.url).hostname.toLowerCase();
+      domainCounts[hostname] = (domainCounts[hostname] || 0) + 1;
+      // 同一域名最多出现2次
+      return domainCounts[hostname] <= 2;
+    } catch (e) {
+      return false;
+    }
+  });
+
+  // 去重（相同URL只保留第一个）
+  const seenUrls = new Set();
+  validInternal = validInternal.filter(link => {
+    if (seenUrls.has(link.url)) return false;
+    seenUrls.add(link.url);
+    return true;
+  });
+
+  const seenExternalUrls = new Set();
+  validExternal = validExternal.filter(link => {
+    if (seenExternalUrls.has(link.url)) return false;
+    seenExternalUrls.add(link.url);
+    return true;
+  });
+
+  return {
+    validInternalLinks: validInternal,
+    validExternalLinks: validExternal,
+  };
+}
+
+// ──────────────────────────────────────────
 // 把 structured 结果转成 blog_posts 行（自动插入链接到正文）
 // ──────────────────────────────────────────
 async function structuredToPostRow(structured, { keyword, articleType }) {
@@ -1016,9 +1121,15 @@ async function structuredToPostRow(structured, { keyword, articleType }) {
     console.warn('Failed to fetch published blogs for link matching:', err.message);
   }
 
-  // 映射 AI 的 url_hint 到真实 URL
+  // 映射 AI 的 url_hint 到真实 URL，并验证hint合理性
   const internalLinks = [];
   for (const l of (structured.internal_link_suggestions || [])) {
+    // 验证url_hint格式
+    if (!isValidInternalHint(l.url_hint)) {
+      console.warn(`[Link Validation] Skipped invalid internal hint: ${l.url_hint}`);
+      continue;
+    }
+
     const realUrl = await matchInternalUrl(l.url_hint, allBlogs);
     if (realUrl) {
       internalLinks.push({
@@ -1028,6 +1139,8 @@ async function structuredToPostRow(structured, { keyword, articleType }) {
         ai_suggestion: true,
         original_hint: l.url_hint,
       });
+    } else {
+      console.warn(`[Link Validation] Could not match internal hint to real URL: ${l.url_hint}`);
     }
   }
 
@@ -1040,12 +1153,21 @@ async function structuredToPostRow(structured, { keyword, articleType }) {
     }))
     .filter(l => l.url);
 
-  // 自动插入链接到正文（使用清理后的内容）
+  // 验证和过滤链接（应用3-6内链，2-5外链规则，受信任域名检查）
+  const { validInternalLinks, validExternalLinks } = validateAndFilterLinks(
+    internalLinks,
+    externalLinks
+  );
+
+  console.log(`[Link Validation] Internal links: ${internalLinks.length} → ${validInternalLinks.length} valid`);
+  console.log(`[Link Validation] External links: ${externalLinks.length} → ${validExternalLinks.length} valid (trusted domains only)`);
+
+  // 自动插入链接到正文（使用清理后的内容和验证后的链接）
   // 链接会插入到正文中，同时保存在 internal_links/external_links 字段供用户在审核界面查看和编辑
   const contentWithLinks = insertLinksIntoContent(
     cleanContent,
-    internalLinks,
-    externalLinks
+    validInternalLinks,
+    validExternalLinks
   );
 
   return {
@@ -1058,10 +1180,11 @@ async function structuredToPostRow(structured, { keyword, articleType }) {
     meta_description: structured.meta_description || '',
     article_type: articleType || null,
     faq: structured.faq || [],
-    internal_links: internalLinks,
-    external_links: externalLinks,
+    internal_links: validInternalLinks,
+    external_links: validExternalLinks,
     word_count: wc,
     reading_time: Math.max(1, Math.ceil(wc / 200)),
+    cta_template_used: structured.cta_template_used || null, // 记录使用的CTA模板
   };
 }
 
@@ -4526,6 +4649,94 @@ router.get('/indexnow-sitemap-urls', async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching sitemap urls:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ──────────────────────────────────────────
+// 获取网站所有页面（用于内链URL验证和下拉选择）
+// ──────────────────────────────────────────
+router.get('/site-pages-cache', async (req, res) => {
+  try {
+    // 获取所有已发布的blog文章
+    const blogs = await sb('blog_posts?status=eq.published&select=id,title,slug_url');
+    const blogPages = (blogs || []).map(b => ({
+      title: b.title || '(无标题)',
+      url: `/blog/${b.slug_url || b.id}`,
+      type: 'blog'
+    }));
+
+    // 获取blog分类（假设有blog_categories表）
+    let blogCategoryPages = [];
+    try {
+      const categories = await sb('blog_categories?select=id,name,slug');
+      blogCategoryPages = (categories || []).map(c => ({
+        title: c.name || '(无名称)',
+        url: `/blog/category/${c.slug || c.id}`,
+        type: 'blog_category'
+      }));
+    } catch (err) {
+      console.warn('Blog categories table not found or error:', err.message);
+    }
+
+    // 硬编码的产品页面（根据TPKELE实际产品结构）
+    const productPages = [
+      { title: 'AC MCB 1P', url: '/products/ac-mcb-1p', type: 'product' },
+      { title: 'AC MCB 2P', url: '/products/ac-mcb-2p', type: 'product' },
+      { title: 'AC MCB 3P', url: '/products/ac-mcb-3p', type: 'product' },
+      { title: 'AC MCB 4P', url: '/products/ac-mcb-4p', type: 'product' },
+      { title: 'DC MCB 1P', url: '/products/dc-mcb-1p', type: 'product' },
+      { title: 'DC MCB 2P', url: '/products/dc-mcb-2p', type: 'product' },
+      { title: 'DC MCB 3P', url: '/products/dc-mcb-3p', type: 'product' },
+      { title: 'DC MCB 4P', url: '/products/dc-mcb-4p', type: 'product' },
+      { title: 'AC SPD', url: '/products/ac-spd', type: 'product' },
+      { title: 'DC SPD', url: '/products/dc-spd', type: 'product' },
+      { title: 'ATS (Automatic Transfer Switch)', url: '/products/ats', type: 'product' },
+      { title: 'Voltage Protector', url: '/products/voltage-protector', type: 'product' },
+      { title: 'DIN Rail Energy Meter', url: '/products/din-rail-energy-meter', type: 'product' },
+      { title: 'PV Combiner Box', url: '/products/pv-combiner-box', type: 'product' },
+      { title: 'DC MCCB', url: '/products/dc-mccb', type: 'product' },
+      { title: 'PV Fuse', url: '/products/pv-fuse', type: 'product' },
+      { title: 'DC Isolator', url: '/products/dc-isolator', type: 'product' },
+    ];
+
+    // 产品分类页面
+    const productCategoryPages = [
+      { title: 'AC MCB Category', url: '/products/category/mcb/ac-mcb', type: 'product_category' },
+      { title: 'DC MCB Category', url: '/products/category/mcb/dc-mcb', type: 'product_category' },
+      { title: 'AC SPD Category', url: '/products/category/spd/ac-spd', type: 'product_category' },
+      { title: 'DC SPD Category', url: '/products/category/spd/dc-spd', type: 'product_category' },
+      { title: 'Circuit Breakers', url: '/products/category/circuit-breakers', type: 'product_category' },
+      { title: 'Surge Protection', url: '/products/category/surge-protection', type: 'product_category' },
+      { title: 'PV Protection Components', url: '/products/category/pv-protection', type: 'product_category' },
+    ];
+
+    // 其他重要页面
+    const otherPages = [
+      { title: 'Products Overview', url: '/products', type: 'other' },
+      { title: 'Blog Home', url: '/blog', type: 'other' },
+      { title: 'Contact Us', url: '/contact', type: 'other' },
+      { title: 'About TPKELE', url: '/about', type: 'other' },
+    ];
+
+    res.json({
+      success: true,
+      cache: {
+        blogs: blogPages,
+        blogCategories: blogCategoryPages,
+        products: productPages,
+        productCategories: productCategoryPages,
+        other: otherPages,
+      },
+      stats: {
+        totalPages: blogPages.length + blogCategoryPages.length + productPages.length + productCategoryPages.length + otherPages.length,
+        blogs: blogPages.length,
+        products: productPages.length,
+        categories: blogCategoryPages.length + productCategoryPages.length,
+      }
+    });
+  } catch (error) {
+    console.error('Error building site pages cache:', error);
     res.status(500).json({ error: error.message });
   }
 });
