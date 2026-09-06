@@ -1041,6 +1041,7 @@ async function structuredToPostRow(structured, { keyword, articleType }) {
     .filter(l => l.url);
 
   // 自动插入链接到正文（使用清理后的内容）
+  // 链接会插入到正文中，同时保存在 internal_links/external_links 字段供用户在审核界面查看和编辑
   const contentWithLinks = insertLinksIntoContent(
     cleanContent,
     internalLinks,
@@ -1049,7 +1050,7 @@ async function structuredToPostRow(structured, { keyword, articleType }) {
 
   return {
     title: structured.title,
-    content: sanitizeContent(contentWithLinks), // 最终输出前再次清理
+    content: sanitizeContent(contentWithLinks), // 插入链接后的内容
     keywords: [keyword],
     main_keyword: structured.main_keyword || keyword,
     sub_keywords: structured.sub_keywords || [],
@@ -3384,7 +3385,11 @@ function insertImageAfterAnchorText(content, anchorText, image) {
   let insertAt = -1;
 
   for (let i = 0; i < lines.length; i++) {
-    const normalizedLine = String(lines[i] || '').replace(/\s+/g, ' ').toLowerCase();
+    const line = lines[i] || '';
+    // 跳过已有的图片行，避免在图片markdown中误匹配
+    if (/^!\[.*\]\(.*\)$/.test(line.trim())) continue;
+
+    const normalizedLine = String(line).replace(/\s+/g, ' ').toLowerCase();
     if (normalizedLine.includes(normalizedTarget)) {
       insertAt = i + 1;
       break;
@@ -3484,6 +3489,39 @@ Return: {"meta_title":"...","meta_description":"..."}`;
       }),
     });
     res.json({ success: true, meta });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 12k-2. AI 生成封面图 Alt 文本
+router.post('/post/:postId/generate-alt', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const { model = 'deepseek' } = req.body;
+    const posts = await sb(`blog_posts?id=eq.${postId}`);
+    if (!posts || posts.length === 0) return res.status(404).json({ error: 'Post not found' });
+
+    const post = posts[0];
+    const prompt = `Generate a concise, descriptive alt text for a cover image based on this article context. Return ONLY JSON.
+
+Article Title: ${post.title || ''}
+Main Keyword: ${post.main_keyword || (post.keywords && post.keywords[0]) || ''}
+Article Type: ${post.article_type || 'product'}
+Content Preview: ${(post.content || '').slice(0, 300)}
+
+Requirements:
+- Keep it under 125 characters
+- Be descriptive and specific
+- Include the main keyword naturally
+- Describe what the image would show (e.g., "AC MCB circuit breaker components diagram showing 4-pole configuration")
+
+Return: {"alt":"..."}`;
+
+    const content = await generateContentWithAI(post.title, prompt, model);
+    const parsed = parseAIJson(content);
+
+    res.json({ success: true, alt: parsed.alt || '' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -1012,6 +1012,7 @@
             <button class="primary" onclick="document.getElementById('coverFile').click()">📤 上传封面</button>
             <button id="coverDeleteBtn" class="danger" onclick="deleteCoverImage()" style="display:none;">删除封面</button>
             <input id="fCoverAlt" type="text" placeholder="封面 Alt 文本（SEO 重要）" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;margin-top:6px;background:var(--panel);color:var(--text);" onchange="saveCoverAlt()">
+            <button onclick="autoGenerateCoverAlt()" style="width:100%;padding:7px 10px;margin-top:6px;font-size:12px;border:1px solid var(--border);background:var(--panel-2);color:var(--text);border-radius:6px;cursor:pointer;">🤖 AI 自动生成 Alt</button>
           </div>
 
           <div class="image-slot">
@@ -1066,8 +1067,8 @@
         </div>
       </div>
 
-      <!-- 5. 链接管理（内链 + 外链）- 已自动插入正文，此区域隐藏 -->
-      <div class="panel" style="display:none;">
+      <!-- 5. 链接管理（内链 + 外链）-->
+      <div class="panel">
         <div class="panel-header">🔗 链接管理</div>
         <div class="panel-body">
           <div style="font-size:11px;color:var(--primary-d);background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:14px;line-height:1.55;">
@@ -1617,6 +1618,32 @@
       return data || {};
     }
 
+    async function autoGenerateCoverAlt() {
+      if (!post.title && !post.main_keyword) {
+        showToast('需要先填写标题或关键词');
+        return;
+      }
+      showToast('AI 生成中...');
+      try {
+        const r = await fetch('/api/blog/post/' + postId + '/generate-alt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: 'deepseek' }),
+        });
+        const d = await parseApiResponse(r);
+        if (d.success && d.alt) {
+          document.getElementById('fCoverAlt').value = d.alt;
+          post.cover_image_alt = d.alt;
+          await saveCoverAlt();
+          showToast('✓ Alt 已生成');
+        } else {
+          showToast('生成失败：' + (d.error || '未知错误'));
+        }
+      } catch (e) {
+        showToast('错误：' + e.message);
+      }
+    }
+
     async function uploadCover(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -1667,12 +1694,12 @@
           post.og_image_url = d.imageUrl;
           post.og_image_cloudinary_id = null;
           renderOg();
-          showToast('✓ OG 图已上传');
+          showToast('✓ OG 图已上传成功');
         } else {
-          showToast('上传失败：' + d.error);
+          showToast('❌ 上传失败：' + d.error);
         }
       } catch (err) {
-        showToast('错误：' + err.message);
+        showToast('❌ 错误：' + err.message);
       } finally {
         e.target.value = '';
       }
