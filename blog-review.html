@@ -2513,7 +2513,8 @@
         <div style="border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:6px;background:var(--panel);font-size:11px;display:flex;align-items:center;gap:6px;">
           <div style="flex:1;min-width:0;">
             <div style="font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(l.title || l.anchor || '(无锚文本)')}</div>
-            <div style="color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">→ ${escapeHtml(l.url || '')}</div>
+            <a href="https://www.tpkele.com${escapeHtml(l.url || '')}" target="_blank" rel="noopener noreferrer" style="color:#38BDF8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none;display:block;">→ ${escapeHtml(l.url || '')}</a>
+            ${l.reason ? `<div style="color:var(--muted);font-size:10px;margin-top:2px;">${escapeHtml(l.reason)}</div>` : ''}
           </div>
           <button onclick="removeInternalLink(${i})" style="border:none;background:none;color:var(--text);cursor:pointer;font-size:16px;flex-shrink:0;">×</button>
         </div>
@@ -2531,7 +2532,8 @@
         <div style="border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:6px;background:var(--panel);font-size:11px;display:flex;align-items:center;gap:6px;">
           <div style="flex:1;min-width:0;">
             <div style="font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(l.title || l.anchor || '(无锚文本)')}</div>
-            <div style="color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">→ ${escapeHtml(l.url || '')}</div>
+            <a href="${escapeHtml(l.url || '')}" target="_blank" rel="noopener noreferrer" style="color:#38BDF8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none;display:block;">→ ${escapeHtml(l.url || '')}</a>
+            ${l.reason ? `<div style="color:var(--muted);font-size:10px;margin-top:2px;">${escapeHtml(l.reason)}</div>` : ''}
           </div>
           <button onclick="removeExternalLink(${i})" style="border:none;background:none;color:var(--text);cursor:pointer;font-size:16px;flex-shrink:0;">×</button>
         </div>
