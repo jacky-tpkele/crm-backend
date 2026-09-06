@@ -1318,7 +1318,14 @@
         let html = escapeHtml(text.trim());
         html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
         html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
-        html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+        // 将markdown链接转换，相对路径自动补全为www.tpkele.com域名
+        html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
+          let fullUrl = url;
+          if (url.startsWith('/')) {
+            fullUrl = 'https://www.tpkele.com' + url;
+          }
+          return `<a href="${fullUrl}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+        });
         html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
         html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
         return html;
