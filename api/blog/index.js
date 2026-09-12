@@ -1963,8 +1963,11 @@ router.post('/generate-seo', async (req, res) => {
 
     const post = posts[0];
     const model = AI_MODELS[modelType];
-    if (!model || !model.apiKey) {
-      return res.status(400).json({ error: `Model ${modelType} not configured` });
+    if (!model) {
+      return res.status(400).json({ error: `Model ${modelType} not found. Available models: ${Object.keys(AI_MODELS).join(', ')}` });
+    }
+    if (!model.apiKey) {
+      return res.status(400).json({ error: `${model.name} API key not configured. Please add ${modelType.toUpperCase()}_API_KEY to environment variables.` });
     }
 
     // 生成 SEO 元数据
@@ -2071,8 +2074,11 @@ router.post('/generate-links', async (req, res) => {
 
     const post = posts[0];
     const model = AI_MODELS[modelType];
-    if (!model || !model.apiKey) {
-      return res.status(400).json({ error: `Model ${modelType} not configured` });
+    if (!model) {
+      return res.status(400).json({ error: `Model ${modelType} not found. Available models: ${Object.keys(AI_MODELS).join(', ')}` });
+    }
+    if (!model.apiKey) {
+      return res.status(400).json({ error: `${model.name} API key not configured. Please add ${modelType.toUpperCase()}_API_KEY to environment variables.` });
     }
 
     // 获取所有已发布的文章用于内部链接推荐
@@ -2177,8 +2183,11 @@ router.post('/generate-faq', async (req, res) => {
 
     const post = posts[0];
     const model = AI_MODELS[modelType];
-    if (!model || !model.apiKey) {
-      return res.status(400).json({ error: `Model ${modelType} not configured` });
+    if (!model) {
+      return res.status(400).json({ error: `Model ${modelType} not found. Available models: ${Object.keys(AI_MODELS).join(', ')}` });
+    }
+    if (!model.apiKey) {
+      return res.status(400).json({ error: `${model.name} API key not configured. Please add ${modelType.toUpperCase()}_API_KEY to environment variables.` });
     }
 
     // 生成 FAQ
@@ -4916,8 +4925,11 @@ router.post('/analyze-material', async (req, res) => {
     }
 
     const model = AI_MODELS[modelType];
-    if (!model || !model.apiKey) {
-      return res.status(400).json({ error: `Model ${modelType} not configured` });
+    if (!model) {
+      return res.status(400).json({ error: `Model ${modelType} not found. Available models: ${Object.keys(AI_MODELS).join(', ')}` });
+    }
+    if (!model.apiKey) {
+      return res.status(400).json({ error: `${model.name} API key not configured. Please add ${modelType.toUpperCase()}_API_KEY to environment variables.` });
     }
 
     // AI分析Prompt
@@ -4986,7 +4998,10 @@ Return ONLY valid JSON (no markdown, no code fences):
     });
   } catch (error) {
     console.error('Error analyzing material:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      error: error.message || 'Unknown error occurred',
+      details: error.toString()
+    });
   }
 });
 
