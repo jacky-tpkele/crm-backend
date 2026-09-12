@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI素材库 - BLOG自动化</title>
+  <link rel="icon" type="image/png" href="/icons/icon-192.png?v=2026-05-24b">
+  <link rel="stylesheet" href="/light-theme.css">
+  <script src="/_shared/theme.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+      line-height: 1.6;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .page-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .btn-back {
+      padding: 8px 16px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text);
+      transition: all 0.2s;
+    }
+    .btn-back:hover {
+      background: var(--hover);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-left {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .filter-btn {
+      padding: 8px 16px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .filter-btn:hover {
+      background: var(--hover);
+    }
+    .filter-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .btn-primary {
+      padding: 10px 20px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-primary:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .materials-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .material-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.2s;
+    }
+    .material-card:hover {
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .material-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 12px;
+    }
+
+    .material-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .material-meta {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .material-badge {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .badge-type {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .badge-status {
+      background: var(--muted-light);
+      color: var(--muted);
+    }
+
+    .badge-status.used {
+      background: var(--success-light);
+      color: var(--success);
+    }
+
+    .material-content {
+      margin: 12px 0;
+      padding: 12px;
+      background: var(--bg);
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      max-height: 80px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .material-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin: 12px 0;
+    }
+
+    .tag {
+      padding: 4px 10px;
+      background: var(--hover);
+      border-radius: 12px;
+      font-size: 11px;
+      color: var(--text);
+    }
+
+    .material-images {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 12px 0;
+      padding: 10px;
+      background: var(--bg);
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .material-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-action {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--panel);
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-action:hover {
+      background: var(--hover);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .btn-action.primary {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .btn-action.primary:hover {
+      opacity: 0.9;
+    }
+
+    /* 模态框 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--panel);
+      border-radius: 16px;
+      max-width: 800px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: var(--hover);
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .modal-close:hover {
+      background: var(--border);
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .form-input,
+    .form-textarea,
+    .form-select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .form-input:focus,
+    .form-textarea:focus,
+    .form-select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .form-textarea {
+      min-height: 200px;
+      resize: vertical;
+      font-family: 'Courier New', monospace;
+      line-height: 1.6;
+    }
+
+    .priority-selector {
+      display: flex;
+      gap: 8px;
+    }
+
+    .priority-star {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: var(--hover);
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .priority-star:hover,
+    .priority-star.active {
+      background: var(--warning);
+      color: white;
+    }
+
+    .image-requirements {
+      margin-top: 20px;
+      padding: 16px;
+      background: var(--bg);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .image-req-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .image-req-item {
+      padding: 16px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .image-req-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .btn-icon {
+      padding: 6px;
+      border: none;
+      background: var(--hover);
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .btn-icon:hover {
+      background: var(--border);
+    }
+    .btn-icon.danger:hover {
+      background: var(--error);
+      color: white;
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .btn-secondary {
+      padding: 10px 20px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover {
+      background: var(--hover);
+    }
+
+    .lucide {
+      width: 18px;
+      height: 18px;
+      stroke-width: 2;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+
+    .empty-state .lucide {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 16px;
+      opacity: 0.3;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <div class="page-title">
+      <i data-lucide="brain-circuit"></i>
+      AI素材库
+    </div>
+    <button class="btn-back" onclick="window.location.href='/blog-automation.html'">
+      <i data-lucide="arrow-left"></i>
+      返回BLOG自动化
+    </button>
+  </div>
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <div class="filter-group">
+        <button class="filter-btn active" data-filter="all" onclick="filterMaterials('all')">
+          全部
+        </button>
+        <button class="filter-btn" data-filter="pending" onclick="filterMaterials('pending')">
+          未使用
+        </button>
+        <button class="filter-btn" data-filter="used" onclick="filterMaterials('used')">
+          已使用
+        </button>
+        <button class="filter-btn" data-filter="archived" onclick="filterMaterials('archived')">
+          已归档
+        </button>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="openMaterialModal()">
+      <i data-lucide="plus"></i>
+      新增素材
+    </button>
+  </div>
+
+  <div id="materialsContainer" class="materials-grid">
+    <div class="loading">
+      <i data-lucide="loader" class="spin"></i>
+      <div>加载中...</div>
+    </div>
+  </div>
+
+  <!-- 新增/编辑素材模态框 -->
+  <div id="materialModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i data-lucide="file-plus"></i>
+          <span id="modalTitle">新增AI素材</span>
+        </div>
+        <button class="modal-close" onclick="closeMaterialModal()">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="materialForm">
+          <input type="hidden" id="materialId">
+
+          <div class="form-group">
+            <label class="form-label">素材标题</label>
+            <input type="text" id="materialTitle" class="form-input" placeholder="例如: AC MCB选型指南">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">AI对话内容/原始素材 <span style="color: var(--muted); font-weight: normal;">(支持粘贴大段文本和Markdown格式)</span></label>
+            <textarea id="materialContent" class="form-textarea" placeholder="粘贴AI对话内容或素材原文..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">文章类型</label>
+            <select id="articleType" class="form-select">
+              <option value="">AI自动识别</option>
+              <option value="product">产品知识 (Product)</option>
+              <option value="buying">选购指南 (Buying Guide)</option>
+              <option value="comparison">对比分析 (Comparison)</option>
+              <option value="application">应用场景 (Application)</option>
+              <option value="faq">常见问题 (FAQ)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">标签 <span style="color: var(--muted); font-weight: normal;">(多个标签用逗号分隔)</span></label>
+            <input type="text" id="materialTags" class="form-input" placeholder="例如: product, selection, mcb">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">优先级</label>
+            <div class="priority-selector">
+              <button type="button" class="priority-star" data-priority="1" onclick="setPriority(1)">
+                <i data-lucide="star"></i>
+              </button>
+              <button type="button" class="priority-star" data-priority="2" onclick="setPriority(2)">
+                <i data-lucide="star"></i>
+              </button>
+              <button type="button" class="priority-star" data-priority="3" onclick="setPriority(3)">
+                <i data-lucide="star"></i>
+              </button>
+              <button type="button" class="priority-star" data-priority="4" onclick="setPriority(4)">
+                <i data-lucide="star"></i>
+              </button>
+              <button type="button" class="priority-star" data-priority="5" onclick="setPriority(5)">
+                <i data-lucide="star"></i>
+              </button>
+            </div>
+            <input type="hidden" id="materialPriority" value="0">
+          </div>
+
+          <div class="image-requirements">
+            <div class="image-req-header">
+              <label class="form-label" style="margin: 0;">插图需求配置</label>
+              <button type="button" class="btn-icon" onclick="addImageRequirement()">
+                <i data-lucide="plus"></i>
+              </button>
+            </div>
+            <div id="imageRequirementsList"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">备注</label>
+            <textarea id="materialNotes" class="form-input" rows="3" placeholder="其他说明..."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeMaterialModal()">取消</button>
+        <button class="btn-primary" onclick="analyzeMaterial()">
+          <i data-lucide="sparkles"></i>
+          AI自动分析
+        </button>
+        <button class="btn-primary" onclick="saveMaterial()">
+          <i data-lucide="save"></i>
+          保存
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '/api/blog';
+    let materials = [];
+    let currentFilter = 'all';
+    let currentMaterial = null;
+
+    // 初始化
+    async function init() {
+      await loadMaterials();
+      lucide.createIcons();
+    }
+
+    // 加载素材列表
+    async function loadMaterials() {
+      try {
+        const response = await fetch(`${API_BASE}/materials`);
+        const data = await response.json();
+        materials = data.materials || [];
+        renderMaterials();
+      } catch (error) {
+        console.error('加载素材失败:', error);
+        document.getElementById('materialsContainer').innerHTML = `
+          <div class="empty-state">
+            <i data-lucide="alert-circle"></i>
+            <div>加载失败，请刷新重试</div>
+          </div>
+        `;
+        lucide.createIcons();
+      }
+    }
+
+    // 渲染素材列表
+    function renderMaterials() {
+      const container = document.getElementById('materialsContainer');
+
+      let filtered = materials;
+      if (currentFilter !== 'all') {
+        filtered = materials.filter(m => m.status === currentFilter);
+      }
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i data-lucide="inbox"></i>
+            <div style="font-size: 16px; margin-bottom: 8px;">暂无素材</div>
+            <div style="font-size: 13px;">点击右上角"新增素材"开始添加</div>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = filtered.map(material => {
+        const statusLabel = {
+          'pending': '未使用',
+          'analyzed': '已分析',
+          'used': '已使用',
+          'archived': '已归档'
+        }[material.status] || material.status;
+
+        const typeLabel = {
+          'product': '产品知识',
+          'buying': '选购指南',
+          'comparison': '对比分析',
+          'application': '应用场景',
+          'faq': '常见问题'
+        }[material.article_type] || '未分类';
+
+        const imageCount = material.image_requirements?.count || 0;
+
+        return `
+          <div class="material-card">
+            <div class="material-header">
+              <div>
+                <div class="material-title">${escapeHtml(material.title || '无标题')}</div>
+                <div class="material-meta">
+                  <span class="material-badge badge-type">${typeLabel}</span>
+                  <span class="material-badge badge-status ${material.status}">${statusLabel}</span>
+                  ${material.used_count > 0 ? `<span>已使用 ${material.used_count} 次</span>` : ''}
+                  <span>${new Date(material.created_at).toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
+
+            ${material.tags && material.tags.length > 0 ? `
+              <div class="material-tags">
+                ${material.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
+              </div>
+            ` : ''}
+
+            <div class="material-content">
+              ${escapeHtml(material.content?.substring(0, 200) || '')}...
+            </div>
+
+            ${imageCount > 0 ? `
+              <div class="material-images">
+                <i data-lucide="image"></i>
+                <span>需要插图: ${imageCount} 张</span>
+              </div>
+            ` : ''}
+
+            <div class="material-actions">
+              <button class="btn-action" onclick="viewMaterial(${material.id})">
+                <i data-lucide="eye"></i>
+                查看详情
+              </button>
+              <button class="btn-action" onclick="editMaterial(${material.id})">
+                <i data-lucide="edit"></i>
+                编辑
+              </button>
+              <button class="btn-action primary" onclick="generateFromMaterial(${material.id})">
+                <i data-lucide="sparkles"></i>
+                生成文章
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    // 筛选素材
+    function filterMaterials(filter) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === filter);
+      });
+      renderMaterials();
+    }
+
+    // 打开素材模态框
+    function openMaterialModal(material = null) {
+      currentMaterial = material;
+      const modal = document.getElementById('materialModal');
+      const title = document.getElementById('modalTitle');
+
+      if (material) {
+        title.textContent = '编辑素材';
+        document.getElementById('materialId').value = material.id;
+        document.getElementById('materialTitle').value = material.title || '';
+        document.getElementById('materialContent').value = material.content || '';
+        document.getElementById('articleType').value = material.article_type || '';
+        document.getElementById('materialTags').value = (material.tags || []).join(', ');
+        document.getElementById('materialPriority').value = material.priority || 0;
+        document.getElementById('materialNotes').value = material.notes || '';
+
+        // 设置优先级星级
+        setPriority(material.priority || 0);
+
+        // 加载插图需求
+        if (material.image_requirements && material.image_requirements.suggestions) {
+          material.image_requirements.suggestions.forEach(req => {
+            addImageRequirement(req);
+          });
+        }
+      } else {
+        title.textContent = '新增AI素材';
+        document.getElementById('materialForm').reset();
+        document.getElementById('materialId').value = '';
+        document.getElementById('imageRequirementsList').innerHTML = '';
+        setPriority(0);
+      }
+
+      modal.classList.add('active');
+      lucide.createIcons();
+    }
+
+    // 关闭模态框
+    function closeMaterialModal() {
+      document.getElementById('materialModal').classList.remove('active');
+      currentMaterial = null;
+    }
+
+    // 设置优先级
+    function setPriority(level) {
+      document.getElementById('materialPriority').value = level;
+      document.querySelectorAll('.priority-star').forEach((star, index) => {
+        star.classList.toggle('active', index < level);
+      });
+    }
+
+    // 添加插图需求
+    function addImageRequirement(data = null) {
+      const container = document.getElementById('imageRequirementsList');
+      const index = container.children.length;
+
+      const html = `
+        <div class="image-req-item" data-index="${index}">
+          <div class="image-req-item-header">
+            <strong>📷 插图 ${index + 1}</strong>
+            <button type="button" class="btn-icon danger" onclick="removeImageRequirement(${index})">
+              <i data-lucide="trash-2"></i>
+            </button>
+          </div>
+          <div class="form-group">
+            <label class="form-label">位置</label>
+            <select class="form-select img-position">
+              <option value="intro" ${data?.position === 'intro' ? 'selected' : ''}>文章开头</option>
+              <option value="section1" ${data?.position === 'section1' ? 'selected' : ''}>第一节</option>
+              <option value="section2" ${data?.position === 'section2' ? 'selected' : ''}>第二节</option>
+              <option value="section3" ${data?.position === 'section3' ? 'selected' : ''}>第三节</option>
+              <option value="conclusion" ${data?.position === 'conclusion' ? 'selected' : ''}>结尾</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">类型</label>
+            <select class="form-select img-type">
+              <option value="product" ${data?.type === 'product' ? 'selected' : ''}>产品图</option>
+              <option value="diagram" ${data?.type === 'diagram' ? 'selected' : ''}>示意图</option>
+              <option value="comparison" ${data?.type === 'comparison' ? 'selected' : ''}>对比图</option>
+              <option value="infographic" ${data?.type === 'infographic' ? 'selected' : ''}>信息图</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">描述</label>
+            <input type="text" class="form-input img-description" placeholder="例如: AC MCB 1P-4P产品外观图" value="${data?.description || ''}">
+          </div>
+        </div>
+      `;
+
+      container.insertAdjacentHTML('beforeend', html);
+      lucide.createIcons();
+    }
+
+    // 移除插图需求
+    function removeImageRequirement(index) {
+      const item = document.querySelector(`.image-req-item[data-index="${index}"]`);
+      if (item) item.remove();
+    }
+
+    // 收集插图需求数据
+    function collectImageRequirements() {
+      const items = document.querySelectorAll('.image-req-item');
+      if (items.length === 0) return null;
+
+      const suggestions = Array.from(items).map(item => ({
+        position: item.querySelector('.img-position').value,
+        type: item.querySelector('.img-type').value,
+        description: item.querySelector('.img-description').value,
+        alt_text: item.querySelector('.img-description').value // 默认使用描述作为alt
+      }));
+
+      return {
+        count: suggestions.length,
+        suggestions
+      };
+    }
+
+    // AI分析素材
+    async function analyzeMaterial() {
+      const content = document.getElementById('materialContent').value.trim();
+      if (!content) {
+        alert('请先输入素材内容');
+        return;
+      }
+
+      const btn = event.target;
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader" class="spin"></i> 分析中...';
+      lucide.createIcons();
+
+      try {
+        const response = await fetch(`${API_BASE}/analyze-material`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // 填充AI分析结果
+          if (data.analysis.suggested_title && !document.getElementById('materialTitle').value) {
+            document.getElementById('materialTitle').value = data.analysis.suggested_title;
+          }
+          if (data.analysis.article_type) {
+            document.getElementById('articleType').value = data.analysis.article_type;
+          }
+          if (data.analysis.main_keywords && data.analysis.main_keywords.length > 0) {
+            const currentTags = document.getElementById('materialTags').value;
+            if (!currentTags) {
+              document.getElementById('materialTags').value = data.analysis.main_keywords.join(', ');
+            }
+          }
+
+          // 填充插图需求
+          if (data.analysis.image_requirements && data.analysis.image_requirements.length > 0) {
+            document.getElementById('imageRequirementsList').innerHTML = '';
+            data.analysis.image_requirements.forEach(req => {
+              addImageRequirement(req);
+            });
+          }
+
+          alert('AI分析完成！已自动填充相关信息');
+        } else {
+          alert('分析失败: ' + data.error);
+        }
+      } catch (error) {
+        console.error('AI分析失败:', error);
+        alert('分析失败，请重试');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        lucide.createIcons();
+      }
+    }
+
+    // 保存素材
+    async function saveMaterial() {
+      const id = document.getElementById('materialId').value;
+      const title = document.getElementById('materialTitle').value.trim();
+      const content = document.getElementById('materialContent').value.trim();
+
+      if (!content) {
+        alert('请输入素材内容');
+        return;
+      }
+
+      const tags = document.getElementById('materialTags').value
+        .split(',')
+        .map(t => t.trim())
+        .filter(Boolean);
+
+      const materialData = {
+        title: title || '无标题',
+        content,
+        article_type: document.getElementById('articleType').value,
+        tags,
+        priority: parseInt(document.getElementById('materialPriority').value),
+        notes: document.getElementById('materialNotes').value.trim(),
+        image_requirements: collectImageRequirements()
+      };
+
+      try {
+        const url = id ? `${API_BASE}/materials/${id}` : `${API_BASE}/materials`;
+        const method = id ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(materialData)
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert(id ? '素材已更新' : '素材已保存');
+          closeMaterialModal();
+          loadMaterials();
+        } else {
+          alert('保存失败: ' + data.error);
+        }
+      } catch (error) {
+        console.error('保存失败:', error);
+        alert('保存失败，请重试');
+      }
+    }
+
+    // 查看素材详情
+    function viewMaterial(id) {
+      const material = materials.find(m => m.id === id);
+      if (!material) return;
+
+      // TODO: 实现详情查看（可以用模态框或跳转到详情页）
+      alert('查看详情功能开发中...\n\n素材ID: ' + id);
+    }
+
+    // 编辑素材
+    function editMaterial(id) {
+      const material = materials.find(m => m.id === id);
+      if (material) {
+        openMaterialModal(material);
+      }
+    }
+
+    // 从素材生成文章
+    async function generateFromMaterial(id) {
+      if (!confirm('确定要从这个素材生成文章吗？')) return;
+
+      try {
+        const response = await fetch(`${API_BASE}/generate-from-material`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            materialId: id,
+            modelType: 'deepseek'
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert('文章生成成功！即将跳转到审核页面...');
+          window.location.href = `/blog-review.html?id=${data.postId}`;
+        } else {
+          alert('生成失败: ' + data.error);
+        }
+      } catch (error) {
+        console.error('生成失败:', error);
+        alert('生成失败，请重试');
+      }
+    }
+
+    // 工具函数
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // 页面加载完成后初始化
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

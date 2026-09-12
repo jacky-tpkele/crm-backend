@@ -120,7 +120,9 @@ async function sb(path, opts = {}) {
 }
 
 function buildBlogUrl(slug) {
-  return `${BLOG_SITE_BASE_URL}/blog/${encodeURIComponent(String(slug || '').replace(/^\/+/, ''))}`;
+  // 新文章使用扁平路由：www.tpkele.com/slug
+  // 旧文章的 /blog/ 路由通过前端 301 重定向到新路由
+  return `${BLOG_SITE_BASE_URL}/${encodeURIComponent(String(slug || '').replace(/^\/+/, ''))}`;
 }
 
 // 通知 Bing / Yandex 立即抓取新发布的文章（失败不影响发布主流程）
@@ -186,10 +188,10 @@ function buildLocalSitePagesFallback(blogs) {
 
   return {
     blogs: (blogs || []).map(b => ({
-      url: `/blog/${b.slug_url}`,
+      url: `/${b.slug_url}`,
       title: b.title,
       articleType: b.article_type,
-    })).filter(b => b.url && b.url !== '/blog/null'),
+    })).filter(b => b.url && b.url !== '/null' && b.slug_url),
     products: staticPages.products.map(p => ({
       url: `/products/${p.slug}`,
       title: p.name,
@@ -921,7 +923,8 @@ async function matchInternalUrl(urlHint, allBlogs) {
   }
 
   // 4. 匹配已发布的博客文章（模糊匹配标题关键词）
-  if (hint.includes('/blog/') && allBlogs && allBlogs.length > 0) {
+  // 支持新旧两种路由格式：/blog/xxx (旧) 和 /xxx (新)
+  if ((hint.includes('/blog/') || hint.includes('blog') || hint.includes('article')) && allBlogs && allBlogs.length > 0) {
     // 提取 hint 中的关键词
     const hintWords = hint.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length > 3);
 
@@ -931,7 +934,8 @@ async function matchInternalUrl(urlHint, allBlogs) {
 
       // 如果匹配到2个以上关键词，认为是相关文章
       if (matched.length >= 2 && blog.slug_url) {
-        const blogUrl = `/blog/${blog.slug_url}`;
+        // 使用新的扁平路由格式
+        const blogUrl = `/${blog.slug_url}`;
         const isValid = await validateUrl(blogUrl);
         if (isValid) return blogUrl;
         console.warn(`⚠️ Invalid blog URL skipped: ${blogUrl}`);
@@ -1793,7 +1797,7 @@ router.post('/publish', async (req, res) => {
       success: true,
       slug,
       publishedAt: updates.published_at,
-      url: `https://www.tpkele.com/blog/${slug}`,
+      url: buildBlogUrl(slug),
     });
   } catch (error) {
     console.error('Error publishing post:', error);
@@ -2705,7 +2709,7 @@ router.post('/approve', async (req, res) => {
       postId,
       slug,
       status: 'published',
-      url: `https://www.tpkele.com/blog/${slug}`,
+      url: buildBlogUrl(slug),
     });
   } catch (error) {
     console.error('Error approving+publishing post:', error);
@@ -4231,7 +4235,7 @@ router.post('/post/:postId/republish', async (req, res) => {
       success: true,
       postId,
       status: 'published',
-      url: `https://www.tpkele.com/blog/${posts[0].slug}`,
+      url: buildBlogUrl(posts[0].slug),
     });
   } catch (error) {
     console.error('Error republishing post:', error);
@@ -4662,7 +4666,7 @@ router.get('/site-pages-cache', async (req, res) => {
     const blogs = await sb('blog_posts?status=eq.published&select=id,title,slug_url');
     const blogPages = (blogs || []).map(b => ({
       title: b.title || '(无标题)',
-      url: `/blog/${b.slug_url || b.id}`,
+      url: `/${b.slug_url || b.id}`,
       type: 'blog'
     }));
 
@@ -4737,6 +4741,525 @@ router.get('/site-pages-cache', async (req, res) => {
     });
   } catch (error) {
     console.error('Error building site pages cache:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ──────────────────────────────────────────
+// Phase 10: AI素材库管理 + 多插图支持
+// ──────────────────────────────────────────
+
+// 1. 获取AI素材列表
+router.get('/materials', async (req, res) => {
+  try {
+    const { status, article_type } = req.query;
+
+    let query = 'blog_ai_materials?select=*&order=created_at.desc';
+
+    if (status) {
+      query += `&status=eq.${encodeURIComponent(status)}`;
+    }
+    if (article_type) {
+      query += `&article_type=eq.${encodeURIComponent(article_type)}`;
+    }
+
+    const materials = await sb(query);
+
+    res.json({
+      success: true,
+      materials: materials || []
+    });
+  } catch (error) {
+    console.error('Error fetching materials:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 2. 获取单个AI素材详情
+router.get('/materials/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const materials = await sb(`blog_ai_materials?id=eq.${encodeURIComponent(id)}`);
+
+    if (!materials || materials.length === 0) {
+      return res.status(404).json({ error: 'Material not found' });
+    }
+
+    res.json({
+      success: true,
+      material: materials[0]
+    });
+  } catch (error) {
+    console.error('Error fetching material:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 3. 创建AI素材
+router.post('/materials', async (req, res) => {
+  try {
+    const {
+      title,
+      content,
+      source_type = 'manual',
+      article_type,
+      tags,
+      priority = 0,
+      notes,
+      image_requirements
+    } = req.body;
+
+    if (!content) {
+      return res.status(400).json({ error: 'Content is required' });
+    }
+
+    const material = {
+      title: title || '无标题',
+      content,
+      source_type,
+      article_type,
+      tags: Array.isArray(tags) ? tags : [],
+      priority,
+      notes,
+      image_requirements,
+      status: 'pending',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    const result = await sb('blog_ai_materials', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify(material)
+    });
+
+    res.json({
+      success: true,
+      material: result[0]
+    });
+  } catch (error) {
+    console.error('Error creating material:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 4. 更新AI素材
+router.put('/materials/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      title,
+      content,
+      article_type,
+      tags,
+      priority,
+      notes,
+      image_requirements,
+      status
+    } = req.body;
+
+    const updates = {
+      updated_at: new Date().toISOString()
+    };
+
+    if (title !== undefined) updates.title = title;
+    if (content !== undefined) updates.content = content;
+    if (article_type !== undefined) updates.article_type = article_type;
+    if (tags !== undefined) updates.tags = tags;
+    if (priority !== undefined) updates.priority = priority;
+    if (notes !== undefined) updates.notes = notes;
+    if (image_requirements !== undefined) updates.image_requirements = image_requirements;
+    if (status !== undefined) updates.status = status;
+
+    const result = await sb(`blog_ai_materials?id=eq.${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify(updates)
+    });
+
+    res.json({
+      success: true,
+      material: result[0]
+    });
+  } catch (error) {
+    console.error('Error updating material:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 5. 删除AI素材
+router.delete('/materials/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await sb(`blog_ai_materials?id=eq.${encodeURIComponent(id)}`, {
+      method: 'DELETE'
+    });
+
+    res.json({
+      success: true,
+      message: 'Material deleted'
+    });
+  } catch (error) {
+    console.error('Error deleting material:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 6. AI分析素材
+router.post('/analyze-material', async (req, res) => {
+  try {
+    const { content, modelType = 'deepseek' } = req.body;
+
+    if (!content) {
+      return res.status(400).json({ error: 'Content is required' });
+    }
+
+    const model = AI_MODELS[modelType];
+    if (!model || !model.apiKey) {
+      return res.status(400).json({ error: `Model ${modelType} not configured` });
+    }
+
+    // AI分析Prompt
+    const prompt = `You are a content analyst for a B2B technical blog about electrical products.
+Analyze the following material and extract structured information.
+
+Material content:
+${content.substring(0, 2000)}
+
+Return ONLY valid JSON (no markdown, no code fences):
+{
+  "suggested_title": "Article title in English",
+  "article_type": "product|buying|comparison|application|faq",
+  "main_keywords": ["keyword1", "keyword2", "keyword3"],
+  "topics": ["topic1", "topic2"],
+  "image_requirements": [
+    {
+      "position": "intro|section1|section2|conclusion",
+      "type": "product|diagram|comparison|infographic",
+      "description": "What the image should show",
+      "alt_text": "SEO-friendly alt text"
+    }
+  ]
+}`;
+
+    let analysisData;
+    if (modelType === 'deepseek' || modelType === 'gpt') {
+      const response = await fetch(model.endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${model.apiKey}`
+        },
+        body: JSON.stringify({
+          model: model.model,
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.7
+        })
+      });
+      const result = await response.json();
+      if (!result.choices || !result.choices[0]) {
+        throw new Error(`API error: ${JSON.stringify(result)}`);
+      }
+      analysisData = parseAIJson(result.choices[0].message.content);
+    } else if (modelType === 'claude') {
+      const response = await fetch(model.endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': model.apiKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: model.model,
+          max_tokens: 1000,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+      const result = await response.json();
+      analysisData = parseAIJson(result.content[0].text);
+    }
+
+    res.json({
+      success: true,
+      analysis: analysisData
+    });
+  } catch (error) {
+    console.error('Error analyzing material:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 7. 从AI素材生成文章
+router.post('/generate-from-material', async (req, res) => {
+  try {
+    const { materialId, modelType = 'deepseek' } = req.body;
+
+    if (!materialId) {
+      return res.status(400).json({ error: 'materialId is required' });
+    }
+
+    // 1. 获取素材
+    const materials = await sb(`blog_ai_materials?id=eq.${encodeURIComponent(materialId)}`);
+    if (!materials || materials.length === 0) {
+      return res.status(404).json({ error: 'Material not found' });
+    }
+
+    const material = materials[0];
+
+    // 2. 如果还没有分析过，先进行AI分析
+    if (!material.image_requirements || !material.article_type) {
+      const analyzeResponse = await fetch(`${process.env.API_BASE || ''}/api/blog/analyze-material`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: material.content,
+          modelType
+        })
+      });
+
+      const analyzeData = await analyzeResponse.json();
+
+      if (analyzeData.success) {
+        // 更新素材的分析结果
+        await sb(`blog_ai_materials?id=eq.${materialId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            extracted_keywords: analyzeData.analysis.main_keywords,
+            extracted_topics: analyzeData.analysis.topics,
+            suggested_title: analyzeData.analysis.suggested_title,
+            article_type: analyzeData.analysis.article_type,
+            image_requirements: {
+              count: analyzeData.analysis.image_requirements?.length || 0,
+              suggestions: analyzeData.analysis.image_requirements || []
+            },
+            status: 'analyzed'
+          })
+        });
+
+        // 更新本地material对象
+        material.extracted_keywords = analyzeData.analysis.main_keywords;
+        material.article_type = analyzeData.analysis.article_type;
+        material.suggested_title = analyzeData.analysis.suggested_title;
+        material.image_requirements = {
+          count: analyzeData.analysis.image_requirements?.length || 0,
+          suggestions: analyzeData.analysis.image_requirements || []
+        };
+      }
+    }
+
+    // 3. 生成文章
+    const articleType = material.article_type || 'product';
+    const keyword = material.extracted_keywords?.[0] || 'electrical protection';
+    const title = material.suggested_title || material.title;
+
+    const structured = await generateStructuredArticle({
+      keyword,
+      title,
+      articleType,
+      modelType,
+      sourceContent: material.content // 把素材内容传给AI作为参考
+    });
+
+    const postRow = await structuredToPostRow(structured, { keyword, articleType });
+
+    // 4. 创建文章记录
+    const post = {
+      ...postRow,
+      material_id: materialId,
+      status: 'pending_review'
+    };
+
+    const postResult = await sb('blog_posts', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify(post)
+    });
+
+    const postId = postResult[0]?.id;
+
+    // 5. 创建插图占位记录
+    if (material.image_requirements?.suggestions) {
+      for (let i = 0; i < material.image_requirements.suggestions.length; i++) {
+        const imgReq = material.image_requirements.suggestions[i];
+        await sb('blog_post_images', {
+          method: 'POST',
+          body: JSON.stringify({
+            post_id: postId,
+            position: imgReq.position,
+            image_type: imgReq.type,
+            alt_text: imgReq.alt_text || imgReq.description,
+            caption: imgReq.description,
+            sort_order: i,
+            image_url: '', // 等待用户上传
+            created_at: new Date().toISOString()
+          })
+        });
+      }
+    }
+
+    // 6. 更新素材使用状态
+    await sb(`blog_ai_materials?id=eq.${materialId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        status: 'used',
+        used_count: (material.used_count || 0) + 1,
+        last_used_at: new Date().toISOString()
+      })
+    });
+
+    res.json({
+      success: true,
+      postId,
+      title: structured.title,
+      imageRequirements: material.image_requirements
+    });
+  } catch (error) {
+    console.error('Error generating from material:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 8. 获取文章的所有插图
+router.get('/posts/:postId/images', async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    const images = await sb(`blog_post_images?post_id=eq.${encodeURIComponent(postId)}&order=sort_order.asc`);
+
+    res.json({
+      success: true,
+      images: images || []
+    });
+  } catch (error) {
+    console.error('Error fetching post images:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 9. 上传文章插图
+router.post('/posts/:postId/images', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const {
+      imageBase64,
+      position,
+      imageType,
+      altText,
+      caption,
+      sortOrder = 0
+    } = req.body;
+
+    if (!imageBase64) {
+      return res.status(400).json({ error: 'imageBase64 is required' });
+    }
+
+    // 压缩图片
+    const originalSize = Buffer.byteLength(imageBase64, 'base64');
+    const compressedBuffer = await compressImage(imageBase64);
+    const compressedSize = compressedBuffer.length;
+
+    // 上传到Cloudinary
+    const cloudinaryResult = await uploadToCloudinary(compressedBuffer, `blog-${postId}-${Date.now()}`);
+
+    // 保存到数据库
+    const imageData = {
+      post_id: postId,
+      image_url: cloudinaryResult.secure_url,
+      cloudinary_id: cloudinaryResult.public_id,
+      position: position || 'content',
+      image_type: imageType || 'general',
+      alt_text: altText || '',
+      caption: caption || '',
+      width: cloudinaryResult.width,
+      height: cloudinaryResult.height,
+      original_size: originalSize,
+      compressed_size: compressedSize,
+      format: 'webp',
+      sort_order: sortOrder,
+      created_at: new Date().toISOString()
+    };
+
+    const result = await sb('blog_post_images', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify(imageData)
+    });
+
+    const compressionRate = ((1 - compressedSize / originalSize) * 100).toFixed(1);
+
+    res.json({
+      success: true,
+      image: result[0],
+      compressionRate: `${compressionRate}%`
+    });
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 10. 更新插图信息
+router.put('/posts/:postId/images/:imageId', async (req, res) => {
+  try {
+    const { imageId } = req.params;
+    const {
+      position,
+      altText,
+      caption,
+      imageType,
+      sortOrder
+    } = req.body;
+
+    const updates = {
+      updated_at: new Date().toISOString()
+    };
+
+    if (position !== undefined) updates.position = position;
+    if (altText !== undefined) updates.alt_text = altText;
+    if (caption !== undefined) updates.caption = caption;
+    if (imageType !== undefined) updates.image_type = imageType;
+    if (sortOrder !== undefined) updates.sort_order = sortOrder;
+
+    const result = await sb(`blog_post_images?id=eq.${encodeURIComponent(imageId)}`, {
+      method: 'PATCH',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify(updates)
+    });
+
+    res.json({
+      success: true,
+      image: result[0]
+    });
+  } catch (error) {
+    console.error('Error updating image:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 11. 删除插图
+router.delete('/posts/:postId/images/:imageId', async (req, res) => {
+  try {
+    const { imageId } = req.params;
+
+    // 获取图片信息
+    const images = await sb(`blog_post_images?id=eq.${encodeURIComponent(imageId)}`);
+    if (images && images[0] && images[0].cloudinary_id) {
+      // 从Cloudinary删除
+      await deleteFromCloudinary(images[0].cloudinary_id);
+    }
+
+    // 从数据库删除
+    await sb(`blog_post_images?id=eq.${encodeURIComponent(imageId)}`, {
+      method: 'DELETE'
+    });
+
+    res.json({
+      success: true,
+      message: 'Image deleted'
+    });
+  } catch (error) {
+    console.error('Error deleting image:', error);
     res.status(500).json({ error: error.message });
   }
 });
