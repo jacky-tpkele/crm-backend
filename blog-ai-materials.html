@@ -459,28 +459,16 @@
 
   <div class="toolbar">
     <div class="toolbar-left">
-      <div class="filter-group">
-        <button class="filter-btn active" data-filter="all" onclick="filterMaterials('all')">
-          全部
-        </button>
-        <button class="filter-btn" data-filter="pending" onclick="filterMaterials('pending')">
-          未使用
-        </button>
-        <button class="filter-btn" data-filter="used" onclick="filterMaterials('used')">
-          已使用
-        </button>
-        <button class="filter-btn" data-filter="archived" onclick="filterMaterials('archived')">
-          已归档
-        </button>
-      </div>
+      <h1 style="font-size: 24px; margin: 0;">AI素材库</h1>
+      <p style="font-size: 13px; color: var(--text-light); margin: 4px 0 0 0;">从其他AI工具粘贴内容，AI分析后直接进入文章审核</p>
     </div>
     <button class="btn-primary" onclick="openMaterialModal()">
       <i data-lucide="plus"></i>
-      新增素材
+      新增内容
     </button>
   </div>
 
-  <div id="materialsContainer" class="materials-grid">
+  <div id="materialsContainer" class="materials-grid" style="display: none;">
     <div class="loading">
       <i data-lucide="loader" class="spin"></i>
       <div>加载中...</div>
@@ -506,23 +494,18 @@
           <!-- 左侧：主要内容 -->
           <div class="form-main">
             <div class="form-group">
-              <label class="form-label">素材标题</label>
-              <input type="text" id="materialTitle" class="form-input" placeholder="例如: AC MCB选型指南">
+              <label class="form-label">文章标题</label>
+              <input type="text" id="materialTitle" class="form-input" placeholder="例如: AC MCB断路器选型指南">
             </div>
 
             <div class="form-group">
               <label class="form-label">
-                AI对话内容/原始素材
+                文章内容
                 <span style="color: var(--muted); font-weight: normal; font-size: 12px;">
-                  (支持粘贴大段文本和Markdown格式，可滚动查看)
+                  (粘贴AI工具生成的完整文章内容)
                 </span>
               </label>
-              <textarea id="materialContent" class="form-textarea" placeholder="粘贴AI对话内容或素材原文..." required></textarea>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">备注</label>
-              <textarea id="materialNotes" class="form-input" rows="3" placeholder="其他说明..."></textarea>
+              <textarea id="materialContent" class="form-textarea" placeholder="粘贴ChatGPT或其他AI工具生成的完整文章..." required></textarea>
             </div>
           </div>
 
@@ -542,23 +525,18 @@
 
             <div class="form-group">
               <label class="form-label">标签 <span style="color: var(--muted); font-weight: normal; font-size: 11px;">(多个标签用逗号分隔)</span></label>
-              <input type="text" id="materialTags" class="form-input" placeholder="例如: product, selection, mcb">
+              <input type="text" id="materialTags" class="form-input" placeholder="例如: circuit breaker, mcb, selection">
             </div>
 
             <div class="form-group">
-              <label class="form-label">优先级</label>
-              <div class="priority-selector">
-                <button type="button" class="priority-star" data-priority="1" onclick="setPriority(1)">
-                  <i data-lucide="star"></i>
-                </button>
-                <button type="button" class="priority-star" data-priority="2" onclick="setPriority(2)">
-                  <i data-lucide="star"></i>
-                </button>
-                <button type="button" class="priority-star" data-priority="3" onclick="setPriority(3)">
-                  <i data-lucide="star"></i>
-                </button>
-                <button type="button" class="priority-star" data-priority="4" onclick="setPriority(4)">
-                  <i data-lucide="star"></i>
+              <div style="padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 3px solid var(--primary);">
+                💡 <strong>工作流程</strong><br>
+                1. 粘贴AI生成的文章内容<br>
+                2. 点击"AI自动分析"自动填充信息<br>
+                3. 点击"保存"直接进入文章审核<br>
+                4. 在审核页面上传图片、编辑、发布
+              </div>
+            </div>
                 </button>
                 <button type="button" class="priority-star" data-priority="5" onclick="setPriority(5)">
                   <i data-lucide="star"></i>
@@ -587,7 +565,7 @@
         </button>
         <button class="btn-primary" onclick="saveMaterial()">
           <i data-lucide="save"></i>
-          保存
+          保存并进入审核
         </button>
       </div>
     </div>
@@ -828,14 +806,18 @@
       }
     }
 
-    // 保存素材
+    // 保存并创建文章（直接进入审核）
     async function saveMaterial() {
-      const id = document.getElementById('materialId').value;
       const title = document.getElementById('materialTitle').value.trim();
       const content = document.getElementById('materialContent').value.trim();
 
       if (!content) {
-        alert('请输入素材内容');
+        alert('请输入文章内容');
+        return;
+      }
+
+      if (!title) {
+        alert('请输入文章标题（或点击"AI自动分析"自动生成）');
         return;
       }
 
@@ -844,37 +826,43 @@
         .map(t => t.trim())
         .filter(Boolean);
 
-      const materialData = {
-        title: title || '无标题',
+      const btn = event.target;
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader" class="spin"></i> 创建中...';
+      lucide.createIcons();
+
+      // 准备文章数据
+      const articleData = {
+        title,
         content,
         article_type: document.getElementById('articleType').value,
-        tags,
-        priority: parseInt(document.getElementById('materialPriority').value),
-        notes: document.getElementById('materialNotes').value.trim()
+        keywords: tags
       };
 
       try {
-        const url = id ? `${API_BASE}/materials/${id}` : `${API_BASE}/materials`;
-        const method = id ? 'PUT' : 'POST';
-
-        const response = await fetch(url, {
-          method,
+        // 直接创建文章（不保存为素材）
+        const response = await fetch(`${API_BASE}/create-from-content`, {
+          method: 'POST',
           headers: getAuthHeaders(),
-          body: JSON.stringify(materialData)
+          body: JSON.stringify(articleData)
         });
 
         const data = await response.json();
 
-        if (data.success) {
-          alert(id ? '素材已更新' : '素材已保存');
-          closeMaterialModal();
-          loadMaterials();
+        if (data.success && data.postId) {
+          // 跳转到审核页面
+          window.location.href = `/blog-review.html?id=${data.postId}`;
         } else {
-          alert('保存失败: ' + data.error);
+          alert('创建文章失败: ' + (data.error || '未知错误'));
+          btn.disabled = false;
+          btn.innerHTML = originalText;
         }
       } catch (error) {
-        console.error('保存失败:', error);
-        alert('保存失败，请重试');
+        console.error('创建文章失败:', error);
+        alert('创建文章失败，请重试');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
       }
     }
 
