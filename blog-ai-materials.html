@@ -179,9 +179,11 @@
       border-radius: 8px;
       font-size: 13px;
       color: var(--muted);
-      max-height: 80px;
-      overflow: hidden;
+      max-height: 120px;
+      overflow: auto;
       position: relative;
+      white-space: pre-wrap;
+      word-wrap: break-word;
     }
 
     .material-tags {
@@ -267,8 +269,8 @@
     .modal-content {
       background: var(--panel);
       border-radius: 16px;
-      max-width: 800px;
-      width: 100%;
+      max-width: 1200px;
+      width: 95%;
       max-height: 90vh;
       overflow-y: auto;
       box-shadow: 0 20px 60px rgba(0,0,0,0.3);
@@ -308,6 +310,21 @@
 
     .modal-body {
       padding: 24px;
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      gap: 24px;
+    }
+
+    .form-main {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .form-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
 
     .form-group {
@@ -342,10 +359,11 @@
     }
 
     .form-textarea {
-      min-height: 200px;
+      min-height: 400px;
       resize: vertical;
       font-family: 'Courier New', monospace;
-      line-height: 1.6;
+      line-height: 1.8;
+      font-size: 14px;
     }
 
     .priority-selector {
@@ -372,7 +390,6 @@
     }
 
     .image-requirements {
-      margin-top: 20px;
       padding: 16px;
       background: var(--bg);
       border-radius: 8px;
@@ -384,10 +401,12 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
     }
 
     .image-req-item {
-      padding: 16px;
+      padding: 12px;
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 8px;
@@ -399,6 +418,8 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 12px;
+      font-weight: 600;
+      color: var(--text);
     }
 
     .btn-icon {
@@ -526,68 +547,82 @@
         <form id="materialForm">
           <input type="hidden" id="materialId">
 
-          <div class="form-group">
-            <label class="form-label">素材标题</label>
-            <input type="text" id="materialTitle" class="form-input" placeholder="例如: AC MCB选型指南">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">AI对话内容/原始素材 <span style="color: var(--muted); font-weight: normal;">(支持粘贴大段文本和Markdown格式)</span></label>
-            <textarea id="materialContent" class="form-textarea" placeholder="粘贴AI对话内容或素材原文..." required></textarea>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">文章类型</label>
-            <select id="articleType" class="form-select">
-              <option value="">AI自动识别</option>
-              <option value="product">产品知识 (Product)</option>
-              <option value="buying">选购指南 (Buying Guide)</option>
-              <option value="comparison">对比分析 (Comparison)</option>
-              <option value="application">应用场景 (Application)</option>
-              <option value="faq">常见问题 (FAQ)</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">标签 <span style="color: var(--muted); font-weight: normal;">(多个标签用逗号分隔)</span></label>
-            <input type="text" id="materialTags" class="form-input" placeholder="例如: product, selection, mcb">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">优先级</label>
-            <div class="priority-selector">
-              <button type="button" class="priority-star" data-priority="1" onclick="setPriority(1)">
-                <i data-lucide="star"></i>
-              </button>
-              <button type="button" class="priority-star" data-priority="2" onclick="setPriority(2)">
-                <i data-lucide="star"></i>
-              </button>
-              <button type="button" class="priority-star" data-priority="3" onclick="setPriority(3)">
-                <i data-lucide="star"></i>
-              </button>
-              <button type="button" class="priority-star" data-priority="4" onclick="setPriority(4)">
-                <i data-lucide="star"></i>
-              </button>
-              <button type="button" class="priority-star" data-priority="5" onclick="setPriority(5)">
-                <i data-lucide="star"></i>
-              </button>
+          <!-- 左侧：主要内容 -->
+          <div class="form-main">
+            <div class="form-group">
+              <label class="form-label">素材标题</label>
+              <input type="text" id="materialTitle" class="form-input" placeholder="例如: AC MCB选型指南">
             </div>
-            <input type="hidden" id="materialPriority" value="0">
-          </div>
 
-          <div class="image-requirements">
-            <div class="image-req-header">
-              <label class="form-label" style="margin: 0;">插图需求配置</label>
-              <button type="button" class="btn-icon" onclick="addImageRequirement()">
-                <i data-lucide="plus"></i>
-              </button>
+            <div class="form-group">
+              <label class="form-label">
+                AI对话内容/原始素材
+                <span style="color: var(--muted); font-weight: normal; font-size: 12px;">
+                  (支持粘贴大段文本和Markdown格式，可滚动查看)
+                </span>
+              </label>
+              <textarea id="materialContent" class="form-textarea" placeholder="粘贴AI对话内容或素材原文..." required></textarea>
             </div>
-            <div id="imageRequirementsList"></div>
+
+            <div class="form-group">
+              <label class="form-label">备注</label>
+              <textarea id="materialNotes" class="form-input" rows="3" placeholder="其他说明..."></textarea>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">备注</label>
-            <textarea id="materialNotes" class="form-input" rows="3" placeholder="其他说明..."></textarea>
+          <!-- 右侧：元数据和配置 -->
+          <div class="form-sidebar">
+            <div class="form-group">
+              <label class="form-label">文章类型</label>
+              <select id="articleType" class="form-select">
+                <option value="">AI自动识别</option>
+                <option value="product">产品知识 (Product)</option>
+                <option value="buying">选购指南 (Buying Guide)</option>
+                <option value="comparison">对比分析 (Comparison)</option>
+                <option value="application">应用场景 (Application)</option>
+                <option value="faq">常见问题 (FAQ)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">标签 <span style="color: var(--muted); font-weight: normal; font-size: 11px;">(多个标签用逗号分隔)</span></label>
+              <input type="text" id="materialTags" class="form-input" placeholder="例如: product, selection, mcb">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">优先级</label>
+              <div class="priority-selector">
+                <button type="button" class="priority-star" data-priority="1" onclick="setPriority(1)">
+                  <i data-lucide="star"></i>
+                </button>
+                <button type="button" class="priority-star" data-priority="2" onclick="setPriority(2)">
+                  <i data-lucide="star"></i>
+                </button>
+                <button type="button" class="priority-star" data-priority="3" onclick="setPriority(3)">
+                  <i data-lucide="star"></i>
+                </button>
+                <button type="button" class="priority-star" data-priority="4" onclick="setPriority(4)">
+                  <i data-lucide="star"></i>
+                </button>
+                <button type="button" class="priority-star" data-priority="5" onclick="setPriority(5)">
+                  <i data-lucide="star"></i>
+                </button>
+              </div>
+              <input type="hidden" id="materialPriority" value="0">
+            </div>
+
+            <div class="image-requirements">
+              <div class="image-req-header">
+                <label class="form-label" style="margin: 0;">📷 插图需求配置</label>
+                <button type="button" class="btn-icon" onclick="addImageRequirement()">
+                  <i data-lucide="plus"></i>
+                </button>
+              </div>
+              <div id="imageRequirementsList"></div>
+              <div style="margin-top: 8px; font-size: 11px; color: var(--muted);">
+                💡 配置文章需要的插图位置和类型
+              </div>
+            </div>
           </div>
         </form>
       </div>
@@ -713,14 +748,14 @@
               </div>
             ` : ''}
 
-            <div class="material-content">
-              ${escapeHtml(material.content?.substring(0, 200) || '')}...
+            <div class="material-content" title="点击查看完整内容">
+              ${escapeHtml(material.content?.substring(0, 300) || '')}${material.content?.length > 300 ? '...' : ''}
             </div>
 
             ${imageCount > 0 ? `
               <div class="material-images">
                 <i data-lucide="image"></i>
-                <span>需要插图: ${imageCount} 张</span>
+                <span>配置了 ${imageCount} 张插图</span>
               </div>
             ` : ''}
 
