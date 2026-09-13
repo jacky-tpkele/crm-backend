@@ -201,17 +201,6 @@
       color: var(--text);
     }
 
-    .material-images {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin: 12px 0;
-      padding: 10px;
-      background: var(--bg);
-      border-radius: 8px;
-      font-size: 13px;
-    }
-
     .material-actions {
       display: flex;
       gap: 8px;
@@ -387,39 +376,6 @@
     .priority-star.active {
       background: var(--warning);
       color: white;
-    }
-
-    .image-requirements {
-      padding: 16px;
-      background: var(--bg);
-      border-radius: 8px;
-      border: 1px solid var(--border);
-    }
-
-    .image-req-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .image-req-item {
-      padding: 12px;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      margin-bottom: 12px;
-    }
-
-    .image-req-item-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-      font-weight: 600;
-      color: var(--text);
     }
 
     .btn-icon {
@@ -611,16 +567,13 @@
               <input type="hidden" id="materialPriority" value="0">
             </div>
 
-            <div class="image-requirements">
-              <div class="image-req-header">
-                <label class="form-label" style="margin: 0;">📷 插图需求配置</label>
-                <button type="button" class="btn-icon" onclick="addImageRequirement()">
-                  <i data-lucide="plus"></i>
-                </button>
-              </div>
-              <div id="imageRequirementsList"></div>
-              <div style="margin-top: 8px; font-size: 11px; color: var(--muted);">
-                💡 配置文章需要的插图位置和类型
+            <div class="info-tip" style="padding: 12px; background: var(--hover); border-radius: 8px; border-left: 3px solid var(--primary);">
+              <div style="display: flex; gap: 10px; align-items: start;">
+                <i data-lucide="info" style="width: 20px; height: 20px; color: var(--primary); flex-shrink: 0; margin-top: 2px;"></i>
+                <div style="font-size: 13px; line-height: 1.6;">
+                  <strong style="display: block; margin-bottom: 4px; color: var(--text);">💡 关于文章图片</strong>
+                  <p style="margin: 0; color: var(--muted);">文章生成后，您可以在审核编辑页面上传特色图片。AI会根据素材内容生成完整的文章结构和SEO优化内容。</p>
+                </div>
               </div>
             </div>
           </div>
@@ -726,8 +679,6 @@
           'faq': '常见问题'
         }[material.article_type] || '未分类';
 
-        const imageCount = material.image_requirements?.count || 0;
-
         return `
           <div class="material-card">
             <div class="material-header">
@@ -751,13 +702,6 @@
             <div class="material-content" title="点击查看完整内容">
               ${escapeHtml(material.content?.substring(0, 300) || '')}${material.content?.length > 300 ? '...' : ''}
             </div>
-
-            ${imageCount > 0 ? `
-              <div class="material-images">
-                <i data-lucide="image"></i>
-                <span>配置了 ${imageCount} 张插图</span>
-              </div>
-            ` : ''}
 
             <div class="material-actions">
               <button class="btn-action" onclick="viewMaterial(${material.id})">
@@ -807,18 +751,10 @@
 
         // 设置优先级星级
         setPriority(material.priority || 0);
-
-        // 加载插图需求
-        if (material.image_requirements && material.image_requirements.suggestions) {
-          material.image_requirements.suggestions.forEach(req => {
-            addImageRequirement(req);
-          });
-        }
       } else {
         title.textContent = '新增AI素材';
         document.getElementById('materialForm').reset();
         document.getElementById('materialId').value = '';
-        document.getElementById('imageRequirementsList').innerHTML = '';
         setPriority(0);
       }
 
@@ -838,73 +774,6 @@
       document.querySelectorAll('.priority-star').forEach((star, index) => {
         star.classList.toggle('active', index < level);
       });
-    }
-
-    // 添加插图需求
-    function addImageRequirement(data = null) {
-      const container = document.getElementById('imageRequirementsList');
-      const index = container.children.length;
-
-      const html = `
-        <div class="image-req-item" data-index="${index}">
-          <div class="image-req-item-header">
-            <strong>📷 插图 ${index + 1}</strong>
-            <button type="button" class="btn-icon danger" onclick="removeImageRequirement(${index})">
-              <i data-lucide="trash-2"></i>
-            </button>
-          </div>
-          <div class="form-group">
-            <label class="form-label">位置</label>
-            <select class="form-select img-position">
-              <option value="intro" ${data?.position === 'intro' ? 'selected' : ''}>文章开头</option>
-              <option value="section1" ${data?.position === 'section1' ? 'selected' : ''}>第一节</option>
-              <option value="section2" ${data?.position === 'section2' ? 'selected' : ''}>第二节</option>
-              <option value="section3" ${data?.position === 'section3' ? 'selected' : ''}>第三节</option>
-              <option value="conclusion" ${data?.position === 'conclusion' ? 'selected' : ''}>结尾</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">类型</label>
-            <select class="form-select img-type">
-              <option value="product" ${data?.type === 'product' ? 'selected' : ''}>产品图</option>
-              <option value="diagram" ${data?.type === 'diagram' ? 'selected' : ''}>示意图</option>
-              <option value="comparison" ${data?.type === 'comparison' ? 'selected' : ''}>对比图</option>
-              <option value="infographic" ${data?.type === 'infographic' ? 'selected' : ''}>信息图</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">描述</label>
-            <input type="text" class="form-input img-description" placeholder="例如: AC MCB 1P-4P产品外观图" value="${data?.description || ''}">
-          </div>
-        </div>
-      `;
-
-      container.insertAdjacentHTML('beforeend', html);
-      lucide.createIcons();
-    }
-
-    // 移除插图需求
-    function removeImageRequirement(index) {
-      const item = document.querySelector(`.image-req-item[data-index="${index}"]`);
-      if (item) item.remove();
-    }
-
-    // 收集插图需求数据
-    function collectImageRequirements() {
-      const items = document.querySelectorAll('.image-req-item');
-      if (items.length === 0) return null;
-
-      const suggestions = Array.from(items).map(item => ({
-        position: item.querySelector('.img-position').value,
-        type: item.querySelector('.img-type').value,
-        description: item.querySelector('.img-description').value,
-        alt_text: item.querySelector('.img-description').value // 默认使用描述作为alt
-      }));
-
-      return {
-        count: suggestions.length,
-        suggestions
-      };
     }
 
     // AI分析素材
@@ -945,15 +814,7 @@
             }
           }
 
-          // 填充插图需求
-          if (data.analysis.image_requirements && data.analysis.image_requirements.length > 0) {
-            document.getElementById('imageRequirementsList').innerHTML = '';
-            data.analysis.image_requirements.forEach(req => {
-              addImageRequirement(req);
-            });
-          }
-
-          alert('AI分析完成！已自动填充相关信息');
+          alert('AI分析完成！已自动填充标题、类型和标签');
         } else {
           alert('分析失败: ' + data.error);
         }
@@ -989,8 +850,7 @@
         article_type: document.getElementById('articleType').value,
         tags,
         priority: parseInt(document.getElementById('materialPriority').value),
-        notes: document.getElementById('materialNotes').value.trim(),
-        image_requirements: collectImageRequirements()
+        notes: document.getElementById('materialNotes').value.trim()
       };
 
       try {
