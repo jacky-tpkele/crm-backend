@@ -611,8 +611,24 @@
     let currentFilter = 'all';
     let currentMaterial = null;
 
+    // 获取认证token
+    function getAuthHeaders() {
+      const token = localStorage.getItem('token');
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+    }
+
     // 初始化
     async function init() {
+      // 检查是否登录
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('请先登录');
+        window.location.href = '/login.html';
+        return;
+      }
       await loadMaterials();
       lucide.createIcons();
     }
@@ -620,7 +636,9 @@
     // 加载素材列表
     async function loadMaterials() {
       try {
-        const response = await fetch(`${API_BASE}/materials`);
+        const response = await fetch(`${API_BASE}/materials`, {
+          headers: getAuthHeaders()
+        });
         const data = await response.json();
         materials = data.materials || [];
         renderMaterials();
@@ -871,7 +889,7 @@
       try {
         const response = await fetch(`${API_BASE}/analyze-material`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ content })
         });
 
@@ -946,7 +964,7 @@
 
         const response = await fetch(url, {
           method,
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           body: JSON.stringify(materialData)
         });
 
@@ -989,7 +1007,7 @@
       try {
         const response = await fetch(`${API_BASE}/generate-from-material`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           body: JSON.stringify({
             materialId: id,
             modelType: 'deepseek'
