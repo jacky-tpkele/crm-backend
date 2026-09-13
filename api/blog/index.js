@@ -4804,18 +4804,16 @@ router.get('/materials/:id', async (req, res) => {
   }
 });
 
-// 3. 创建AI素材
+// 3. 创建AI素材（简化版）
 router.post('/materials', async (req, res) => {
   try {
     const {
       title,
       content,
-      source_type = 'manual',
       article_type,
       tags,
       priority = 0,
-      notes,
-      image_requirements
+      notes
     } = req.body;
 
     if (!content) {
@@ -4825,12 +4823,10 @@ router.post('/materials', async (req, res) => {
     const material = {
       title: title || '无标题',
       content,
-      source_type,
       article_type,
       tags: Array.isArray(tags) ? tags : [],
       priority,
       notes,
-      image_requirements,
       status: 'pending',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
@@ -4852,7 +4848,7 @@ router.post('/materials', async (req, res) => {
   }
 });
 
-// 4. 更新AI素材
+// 4. 更新AI素材（简化版）
 router.put('/materials/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -4863,7 +4859,6 @@ router.put('/materials/:id', async (req, res) => {
       tags,
       priority,
       notes,
-      image_requirements,
       status
     } = req.body;
 
@@ -4877,7 +4872,6 @@ router.put('/materials/:id', async (req, res) => {
     if (tags !== undefined) updates.tags = tags;
     if (priority !== undefined) updates.priority = priority;
     if (notes !== undefined) updates.notes = notes;
-    if (image_requirements !== undefined) updates.image_requirements = image_requirements;
     if (status !== undefined) updates.status = status;
 
     const result = await sb(`blog_ai_materials?id=eq.${encodeURIComponent(id)}`, {
