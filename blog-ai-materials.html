@@ -613,7 +613,7 @@
 
     // 获取认证token
     function getAuthHeaders() {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('crm_token') || localStorage.getItem('token') || '';
       return {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
@@ -623,7 +623,7 @@
     // 初始化
     async function init() {
       // 检查是否登录
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('crm_token') || localStorage.getItem('token');
       if (!token) {
         alert('请先登录');
         window.location.href = '/login.html';
