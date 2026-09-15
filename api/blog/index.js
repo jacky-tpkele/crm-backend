@@ -795,14 +795,42 @@ async function generateWithGemini(prompt, model) {
 // 结构化生成：调用对应 article_type 的 Prompt，返回 JSON 对象
 // 包含 content + meta_title + meta_description + faq + 内/外链建议等
 // ──────────────────────────────────────────
-async function generateStructuredArticle({ keyword, title, articleType, subKeywords, modelType }) {
+function buildSourceContentBlock(sourceContent) {
+  const text = String(sourceContent || '').trim();
+  if (!text) return '';
+  const clipped = text.length > 12000 ? text.slice(0, 12000) : text;
+  return `
+
+SOURCE MATERIAL MODE:
+The user has pasted an existing AI-written draft or source material below.
+Use it as the primary factual source, but rewrite and normalize it into the required TPKELE BLOG structure above.
+
+Rules for the source material:
+- Preserve useful technical facts, product context, examples, and terminology from the source.
+- Do NOT copy the source verbatim when it is rough, conversational, duplicated, or poorly structured.
+- Remove any chat transcript artifacts, greetings, irrelevant notes, prompt text, and meta commentary.
+- Fill all required JSON fields: SEO metadata, main keyword, sub keywords, FAQ, internal link suggestions, external link suggestions, and CTA.
+- If the source lacks SEO structure, infer it from the title, keyword, article type, and content.
+- If the source conflicts with TPKELE brand, product-family, link, safety, or CTA rules, follow the TPKELE rules.
+
+SOURCE MATERIAL:
+"""
+${clipped}
+"""
+
+Now return ONLY the required JSON object. No markdown fences, no explanation, no extra text.
+`;
+}
+
+async function generateStructuredArticle({ keyword, title, articleType, subKeywords, modelType, sourceContent }) {
   if (!VALID_TYPES.includes(articleType)) articleType = 'product';
   const model = AI_MODELS[modelType];
   if (!model || !model.apiKey) {
     throw new Error(`Model ${modelType} not configured or API key missing`);
   }
 
-  const prompt = buildPromptByType(articleType, { keyword, title, subKeywords });
+  let prompt = buildPromptByType(articleType, { keyword, title, subKeywords });
+  prompt += buildSourceContentBlock(sourceContent);
 
   let raw;
   if (modelType === 'claude') raw = await generateWithClaude(prompt, model);
@@ -4999,7 +5027,70 @@ Return ONLY valid JSON (no markdown, no code fences):
   }
 });
 
-// 7. 从AI素材生成文章
+// 7. 从粘贴内容生成标准 BLOG 文章（用于AI素材库）
+router.post('/create-from-content', async (req, res) => {
+  try {
+    const { title, content, article_type, keywords = [], modelType = 'deepseek' } = req.body;
+
+    if (!content) {
+      return res.status(400).json({ error: 'content is required' });
+    }
+
+    const seedTitle = String(title || '')
+      .trim() || String(content).split(/\r?\n/).map(s => s.trim()).find(Boolean) || 'Electrical Protection Guide';
+    const articleType = VALID_TYPES.includes(article_type) ? article_type : 'product';
+    const cleanKeywords = Array.isArray(keywords)
+      ? keywords.map(k => String(k || '').trim()).filter(Boolean)
+      : [];
+    const keyword = cleanKeywords[0] || seedTitle;
+    const subKeywords = cleanKeywords.slice(1);
+
+    const structured = await generateStructuredArticle({
+      keyword,
+      title: seedTitle,
+      articleType,
+      subKeywords,
+      modelType,
+      sourceContent: content,
+    });
+
+    const postRow = await structuredToPostRow(structured, { keyword, articleType });
+    const postData = {
+      ...postRow,
+      plan_id: null,
+      status: 'pending_review',
+      review_notes: 'Created from AI materials pasted content.',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    const result = await sb('blog_posts', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=representation' },
+      body: JSON.stringify(postData)
+    });
+
+    const postId = result[0]?.id;
+
+    res.json({
+      success: true,
+      postId,
+      title: structured.title,
+      articleType,
+      stats: {
+        wordCount: postRow.word_count,
+        faqCount: structured.faq.length,
+        internalLinkCount: postRow.internal_links.length,
+        externalLinkCount: postRow.external_links.length,
+      },
+    });
+  } catch (error) {
+    console.error('Error creating from content:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 8. 从AI素材生成文章（保留旧接口）
 router.post('/generate-from-material', async (req, res) => {
   try {
     const { materialId, modelType = 'deepseek' } = req.body;
@@ -5016,56 +5107,19 @@ router.post('/generate-from-material', async (req, res) => {
 
     const material = materials[0];
 
-    // 2. 如果还没有分析过，先进行AI分析
-    if (!material.image_requirements || !material.article_type) {
-      const analyzeResponse = await fetch(`${process.env.API_BASE || ''}/api/blog/analyze-material`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: material.content,
-          modelType
-        })
-      });
-
-      const analyzeData = await analyzeResponse.json();
-
-      if (analyzeData.success) {
-        // 更新素材的分析结果
-        await sb(`blog_ai_materials?id=eq.${materialId}`, {
-          method: 'PATCH',
-          body: JSON.stringify({
-            extracted_keywords: analyzeData.analysis.main_keywords,
-            extracted_topics: analyzeData.analysis.topics,
-            suggested_title: analyzeData.analysis.suggested_title,
-            article_type: analyzeData.analysis.article_type,
-            image_requirements: {
-              count: analyzeData.analysis.image_requirements?.length || 0,
-              suggestions: analyzeData.analysis.image_requirements || []
-            },
-            status: 'analyzed'
-          })
-        });
-
-        // 更新本地material对象
-        material.extracted_keywords = analyzeData.analysis.main_keywords;
-        material.article_type = analyzeData.analysis.article_type;
-        material.suggested_title = analyzeData.analysis.suggested_title;
-        material.image_requirements = {
-          count: analyzeData.analysis.image_requirements?.length || 0,
-          suggestions: analyzeData.analysis.image_requirements || []
-        };
-      }
-    }
-
-    // 3. 生成文章
-    const articleType = material.article_type || 'product';
-    const keyword = material.extracted_keywords?.[0] || 'electrical protection';
-    const title = material.suggested_title || material.title;
+    // 2. 生成文章。兼容简化版素材表：只依赖 title/content/article_type/tags/status/used_count。
+    const tagList = Array.isArray(material.tags)
+      ? material.tags.map(t => String(t || '').trim()).filter(Boolean)
+      : [];
+    const articleType = VALID_TYPES.includes(material.article_type) ? material.article_type : 'product';
+    const keyword = tagList[0] || material.extracted_keywords?.[0] || material.title || 'electrical protection';
+    const title = material.suggested_title || material.title || autoTitleByType(articleType, keyword);
 
     const structured = await generateStructuredArticle({
       keyword,
       title,
       articleType,
+      subKeywords: tagList.slice(1),
       modelType,
       sourceContent: material.content // 把素材内容传给AI作为参考
     });
@@ -5113,7 +5167,7 @@ router.post('/generate-from-material', async (req, res) => {
       body: JSON.stringify({
         status: 'used',
         used_count: (material.used_count || 0) + 1,
-        last_used_at: new Date().toISOString()
+        updated_at: new Date().toISOString()
       })
     });
 
@@ -5129,7 +5183,7 @@ router.post('/generate-from-material', async (req, res) => {
   }
 });
 
-// 8. 获取文章的所有插图
+// 9. 获取文章的所有插图
 router.get('/posts/:postId/images', async (req, res) => {
   try {
     const { postId } = req.params;
@@ -5146,7 +5200,7 @@ router.get('/posts/:postId/images', async (req, res) => {
   }
 });
 
-// 9. 上传文章插图
+// 10. 上传文章插图
 router.post('/posts/:postId/images', async (req, res) => {
   try {
     const { postId } = req.params;
@@ -5208,7 +5262,7 @@ router.post('/posts/:postId/images', async (req, res) => {
   }
 });
 
-// 10. 更新插图信息
+// 11. 更新插图信息
 router.put('/posts/:postId/images/:imageId', async (req, res) => {
   try {
     const { imageId } = req.params;

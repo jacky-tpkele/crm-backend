@@ -261,7 +261,8 @@
       max-width: 1200px;
       width: 95%;
       max-height: 90vh;
-      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
       box-shadow: 0 20px 60px rgba(0,0,0,0.3);
     }
 
@@ -302,6 +303,8 @@
       display: grid;
       grid-template-columns: 1fr 400px;
       gap: 24px;
+      overflow-y: auto;
+      flex: 1;
     }
 
     .form-main {
@@ -532,8 +535,8 @@
               <div style="padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 3px solid var(--primary);">
                 💡 <strong>工作流程</strong><br>
                 1. 粘贴AI生成的文章内容<br>
-                2. 点击"AI自动分析"自动填充信息<br>
-                3. 点击"保存"直接进入文章审核<br>
+                2. 点击"AI自动分析"自动填充标题、类型和关键词<br>
+                3. 点击"AI整理并进入审核"，系统会按BLOG自动化架构生成待审核文章<br>
                 4. 在审核页面上传图片、编辑、发布
               </div>
             </div>
@@ -565,7 +568,7 @@
         </button>
         <button class="btn-primary" onclick="saveMaterial()">
           <i data-lucide="save"></i>
-          保存并进入审核
+          AI整理并进入审核
         </button>
       </div>
     </div>
@@ -806,7 +809,7 @@
       }
     }
 
-    // 保存并创建文章（直接进入审核）
+    // 按 BLOG 自动化结构生成文章并进入审核
     async function saveMaterial() {
       const title = document.getElementById('materialTitle').value.trim();
       const content = document.getElementById('materialContent').value.trim();
@@ -816,10 +819,7 @@
         return;
       }
 
-      if (!title) {
-        alert('请输入文章标题（或点击"AI自动分析"自动生成）');
-        return;
-      }
+      const seedTitle = title || content.split(/\r?\n/).map(line => line.trim()).find(Boolean) || 'Electrical Protection Guide';
 
       const tags = document.getElementById('materialTags').value
         .split(',')
@@ -829,19 +829,20 @@
       const btn = event.target;
       const originalText = btn.innerHTML;
       btn.disabled = true;
-      btn.innerHTML = '<i data-lucide="loader" class="spin"></i> 创建中...';
+      btn.innerHTML = '<i data-lucide="loader" class="spin"></i> AI整理中...';
       lucide.createIcons();
 
       // 准备文章数据
       const articleData = {
-        title,
+        title: seedTitle,
         content,
         article_type: document.getElementById('articleType').value,
-        keywords: tags
+        keywords: tags,
+        modelType: 'deepseek'
       };
 
       try {
-        // 直接创建文章（不保存为素材）
+        // 由后端按现有 BLOG 自动化结构生成 pending_review 文章
         const response = await fetch(`${API_BASE}/create-from-content`, {
           method: 'POST',
           headers: getAuthHeaders(),
@@ -852,7 +853,7 @@
 
         if (data.success && data.postId) {
           // 跳转到审核页面
-          window.location.href = `/blog-review.html?id=${data.postId}`;
+          window.location.href = `/blog-review.html?postId=${data.postId}`;
         } else {
           alert('创建文章失败: ' + (data.error || '未知错误'));
           btn.disabled = false;
@@ -871,8 +872,7 @@
       const material = materials.find(m => m.id === id);
       if (!material) return;
 
-      // TODO: 实现详情查看（可以用模态框或跳转到详情页）
-      alert('查看详情功能开发中...\n\n素材ID: ' + id);
+      openMaterialModal(material);
     }
 
     // 编辑素材
@@ -901,7 +901,7 @@
 
         if (data.success) {
           alert('文章生成成功！即将跳转到审核页面...');
-          window.location.href = `/blog-review.html?id=${data.postId}`;
+          window.location.href = `/blog-review.html?postId=${data.postId}`;
         } else {
           alert('生成失败: ' + data.error);
         }
