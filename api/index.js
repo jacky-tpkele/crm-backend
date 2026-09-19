@@ -9,7 +9,7 @@ const webpush = require('web-push');
 const blogRouter = require('./blog/index.js');
 
 const app = express();
-app.use(express.json({ limit: '20mb' }));
+app.use(express.json({ limit: '50mb' }));
 
 const SB_URL  = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SB_KEY  = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
