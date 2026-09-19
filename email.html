@@ -1539,6 +1539,25 @@ async function sendEmail() {
 
   try {
     const res  = await apiFetch('/api/emails/send', { method:'POST', body: JSON.stringify({ to, cc, subject, body_html, body_text, attachments, account_id: currentAccountId, draft_id: editingDraftId }) });
+
+    // 先检查响应是否成功
+    if (!res.ok) {
+      // 尝试解析错误响应
+      let errorMsg = '发送失败';
+      try {
+        const errorData = await res.json();
+        errorMsg = errorData.message || errorMsg;
+      } catch {
+        // 如果 JSON 解析失败，尝试读取纯文本
+        const text = await res.text();
+        errorMsg = text || `HTTP ${res.status}`;
+      }
+      statusEl.textContent = errorMsg;
+      statusEl.className='send-status err';
+      btn.disabled=false;
+      return;
+    }
+
     const data = await res.json();
     if (data.success) {
       statusEl.textContent='✓ 发送成功'; statusEl.className='send-status ok';

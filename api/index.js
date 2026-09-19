@@ -1266,7 +1266,14 @@ app.post('/api/emails/send', auth, async (req, res) => {
     }
 
     res.json({ success: true, messageId: info.messageId });
-  } catch (e) { res.status(500).json({ message: e.message }); }
+  } catch (e) {
+    console.error('[email/send] Error:', e);
+    res.status(500).json({
+      success: false,
+      message: e.message || 'Failed to send email',
+      error: e.code || 'UNKNOWN_ERROR'
+    });
+  }
 });
 
 // 鑾峰彇鏈鏁伴噺
