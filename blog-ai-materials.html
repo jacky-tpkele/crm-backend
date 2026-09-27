@@ -562,7 +562,7 @@
         </button>
         <button class="btn-primary" onclick="importArticle(event)">
           <i data-lucide="save"></i>
-          AI整理并进入审核
+          保留原文并进入审核
         </button>
       </div>
     </div>
@@ -675,7 +675,7 @@
       const btn = event.currentTarget;
       const originalText = btn.innerHTML;
       btn.disabled = true;
-      btn.innerHTML = '<i data-lucide="loader" class="spin"></i> AI整理中...';
+      btn.innerHTML = '<i data-lucide="loader" class="spin"></i> 导入分析中...';
       lucide.createIcons();
 
       // 准备文章数据
@@ -688,8 +688,8 @@
       };
 
       try {
-        // 原始内容只用于本次导入，不写入素材表
-        const response = await fetch(`${API_BASE}/create-from-content`, {
+        // 使用独立的 AI 文章导入接口：保留原文，不调用 BLOG 固定模板重写。
+        const response = await fetch(`${API_BASE}/import-ai-article`, {
           method: 'POST',
           headers: getAuthHeaders(),
           body: JSON.stringify(articleData)
