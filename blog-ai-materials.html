@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI素材库 - BLOG自动化</title>
+  <title>AI文章导入 - BLOG自动化</title>
   <link rel="icon" type="image/png" href="/icons/icon-192.png?v=2026-05-24b">
   <link rel="stylesheet" href="/light-theme.css">
   <script src="/_shared/theme.js"></script>
@@ -452,7 +452,7 @@
   <div class="page-header">
     <div class="page-title">
       <i data-lucide="brain-circuit"></i>
-      AI素材库
+      AI文章导入
     </div>
     <button class="btn-back" onclick="window.location.href='/blog-automation.html'">
       <i data-lucide="arrow-left"></i>
@@ -462,8 +462,8 @@
 
   <div class="toolbar">
     <div class="toolbar-left">
-      <h1 style="font-size: 24px; margin: 0;">AI素材库</h1>
-      <p style="font-size: 13px; color: var(--text-light); margin: 4px 0 0 0;">从其他AI工具粘贴内容，AI分析后直接进入文章审核</p>
+        <h1 style="font-size: 24px; margin: 0;">AI文章导入</h1>
+        <p style="font-size: 13px; color: var(--text-light); margin: 4px 0 0 0;">粘贴其他AI工具生成的内容，按 BLOG 架构整理后进入待审核</p>
     </div>
     <button class="btn-primary" onclick="openMaterialModal()">
       <i data-lucide="plus"></i>
@@ -471,20 +471,24 @@
     </button>
   </div>
 
-  <div id="materialsContainer" class="materials-grid" style="display: none;">
-    <div class="loading">
-      <i data-lucide="loader" class="spin"></i>
-      <div>加载中...</div>
+  <div class="info-tip" style="padding: 16px 18px; margin-bottom: 20px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px;">
+    <div style="display: flex; gap: 10px; align-items: flex-start;">
+      <i data-lucide="workflow" style="width: 20px; height: 20px; color: var(--primary); flex-shrink: 0; margin-top: 2px;"></i>
+      <div style="font-size: 13px; line-height: 1.7;">
+        <strong style="display: block; margin-bottom: 3px;">一次性导入流程</strong>
+        粘贴 AI 文章 → AI 按 BLOG 文章架构重组 → 进入待审核 → 添加图片、编辑并发布。
+        原始粘贴内容不会保存到素材库。
+      </div>
     </div>
   </div>
 
-  <!-- 新增/编辑素材模态框 -->
+  <!-- AI文章导入弹窗 -->
   <div id="materialModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
         <div class="modal-title">
           <i data-lucide="file-plus"></i>
-          <span id="modalTitle">新增AI素材</span>
+          <span id="modalTitle">导入AI文章</span>
         </div>
         <button class="modal-close" onclick="closeMaterialModal()">
           <i data-lucide="x"></i>
@@ -492,8 +496,6 @@
       </div>
       <div class="modal-body">
         <form id="materialForm">
-          <input type="hidden" id="materialId">
-
           <!-- 左侧：主要内容 -->
           <div class="form-main">
             <div class="form-group">
@@ -512,7 +514,7 @@
             </div>
           </div>
 
-          <!-- 右侧：元数据和配置 -->
+          <!-- 右侧：文章生成配置 -->
           <div class="form-sidebar">
             <div class="form-group">
               <label class="form-label">文章类型</label>
@@ -533,19 +535,11 @@
 
             <div class="form-group">
               <div style="padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 3px solid var(--primary);">
-                💡 <strong>工作流程</strong><br>
-                1. 粘贴AI生成的文章内容<br>
-                2. 点击"AI自动分析"自动填充标题、类型和关键词<br>
-                3. 点击"AI整理并进入审核"，系统会按BLOG自动化架构生成待审核文章<br>
-                4. 在审核页面上传图片、编辑、发布
+                💡 <strong>导入说明</strong><br>
+                1. 标题、文章类型和标签都可以留空<br>
+                2. AI会自动识别缺失的信息<br>
+                3. 生成后直接进入待审核文章
               </div>
-            </div>
-                </button>
-                <button type="button" class="priority-star" data-priority="5" onclick="setPriority(5)">
-                  <i data-lucide="star"></i>
-                </button>
-              </div>
-              <input type="hidden" id="materialPriority" value="0">
             </div>
 
             <div class="info-tip" style="padding: 12px; background: var(--hover); border-radius: 8px; border-left: 3px solid var(--primary);">
@@ -553,7 +547,7 @@
                 <i data-lucide="info" style="width: 20px; height: 20px; color: var(--primary); flex-shrink: 0; margin-top: 2px;"></i>
                 <div style="font-size: 13px; line-height: 1.6;">
                   <strong style="display: block; margin-bottom: 4px; color: var(--text);">💡 关于文章图片</strong>
-                  <p style="margin: 0; color: var(--muted);">文章生成后，您可以在审核编辑页面上传特色图片。AI会根据素材内容生成完整的文章结构和SEO优化内容。</p>
+                  <p style="margin: 0; color: var(--muted);">文章生成后，请在审核页面上传特色图片，并继续编辑 SEO 信息后发布。</p>
                 </div>
               </div>
             </div>
@@ -562,11 +556,11 @@
       </div>
       <div class="modal-footer">
         <button class="btn-secondary" onclick="closeMaterialModal()">取消</button>
-        <button class="btn-primary" onclick="analyzeMaterial()">
+        <button class="btn-primary" onclick="analyzeMaterial(event)">
           <i data-lucide="sparkles"></i>
           AI自动分析
         </button>
-        <button class="btn-primary" onclick="saveMaterial()">
+        <button class="btn-primary" onclick="importArticle(event)">
           <i data-lucide="save"></i>
           AI整理并进入审核
         </button>
@@ -576,9 +570,6 @@
 
   <script>
     const API_BASE = '/api/blog';
-    let materials = [];
-    let currentFilter = 'all';
-    let currentMaterial = null;
 
     // 获取认证token
     function getAuthHeaders() {
@@ -590,155 +581,21 @@
     }
 
     // 初始化
-    async function init() {
-      // 检查是否登录
+    function init() {
       const token = localStorage.getItem('crm_token') || localStorage.getItem('token');
       if (!token) {
         alert('请先登录');
         window.location.href = '/login.html';
         return;
       }
-      await loadMaterials();
       lucide.createIcons();
     }
 
-    // 加载素材列表
-    async function loadMaterials() {
-      try {
-        const response = await fetch(`${API_BASE}/materials`, {
-          headers: getAuthHeaders()
-        });
-        const data = await response.json();
-        materials = data.materials || [];
-        renderMaterials();
-      } catch (error) {
-        console.error('加载素材失败:', error);
-        document.getElementById('materialsContainer').innerHTML = `
-          <div class="empty-state">
-            <i data-lucide="alert-circle"></i>
-            <div>加载失败，请刷新重试</div>
-          </div>
-        `;
-        lucide.createIcons();
-      }
-    }
-
-    // 渲染素材列表
-    function renderMaterials() {
-      const container = document.getElementById('materialsContainer');
-
-      let filtered = materials;
-      if (currentFilter !== 'all') {
-        filtered = materials.filter(m => m.status === currentFilter);
-      }
-
-      if (filtered.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <i data-lucide="inbox"></i>
-            <div style="font-size: 16px; margin-bottom: 8px;">暂无素材</div>
-            <div style="font-size: 13px;">点击右上角"新增素材"开始添加</div>
-          </div>
-        `;
-        lucide.createIcons();
-        return;
-      }
-
-      container.innerHTML = filtered.map(material => {
-        const statusLabel = {
-          'pending': '未使用',
-          'analyzed': '已分析',
-          'used': '已使用',
-          'archived': '已归档'
-        }[material.status] || material.status;
-
-        const typeLabel = {
-          'product': '产品知识',
-          'buying': '选购指南',
-          'comparison': '对比分析',
-          'application': '应用场景',
-          'faq': '常见问题'
-        }[material.article_type] || '未分类';
-
-        return `
-          <div class="material-card">
-            <div class="material-header">
-              <div>
-                <div class="material-title">${escapeHtml(material.title || '无标题')}</div>
-                <div class="material-meta">
-                  <span class="material-badge badge-type">${typeLabel}</span>
-                  <span class="material-badge badge-status ${material.status}">${statusLabel}</span>
-                  ${material.used_count > 0 ? `<span>已使用 ${material.used_count} 次</span>` : ''}
-                  <span>${new Date(material.created_at).toLocaleDateString()}</span>
-                </div>
-              </div>
-            </div>
-
-            ${material.tags && material.tags.length > 0 ? `
-              <div class="material-tags">
-                ${material.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
-              </div>
-            ` : ''}
-
-            <div class="material-content" title="点击查看完整内容">
-              ${escapeHtml(material.content?.substring(0, 300) || '')}${material.content?.length > 300 ? '...' : ''}
-            </div>
-
-            <div class="material-actions">
-              <button class="btn-action" onclick="viewMaterial(${material.id})">
-                <i data-lucide="eye"></i>
-                查看详情
-              </button>
-              <button class="btn-action" onclick="editMaterial(${material.id})">
-                <i data-lucide="edit"></i>
-                编辑
-              </button>
-              <button class="btn-action primary" onclick="generateFromMaterial(${material.id})">
-                <i data-lucide="sparkles"></i>
-                生成文章
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      lucide.createIcons();
-    }
-
-    // 筛选素材
-    function filterMaterials(filter) {
-      currentFilter = filter;
-      document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.filter === filter);
-      });
-      renderMaterials();
-    }
-
-    // 打开素材模态框
-    function openMaterialModal(material = null) {
-      currentMaterial = material;
+    // 打开一次性导入弹窗
+    function openMaterialModal() {
       const modal = document.getElementById('materialModal');
-      const title = document.getElementById('modalTitle');
-
-      if (material) {
-        title.textContent = '编辑素材';
-        document.getElementById('materialId').value = material.id;
-        document.getElementById('materialTitle').value = material.title || '';
-        document.getElementById('materialContent').value = material.content || '';
-        document.getElementById('articleType').value = material.article_type || '';
-        document.getElementById('materialTags').value = (material.tags || []).join(', ');
-        document.getElementById('materialPriority').value = material.priority || 0;
-        document.getElementById('materialNotes').value = material.notes || '';
-
-        // 设置优先级星级
-        setPriority(material.priority || 0);
-      } else {
-        title.textContent = '新增AI素材';
-        document.getElementById('materialForm').reset();
-        document.getElementById('materialId').value = '';
-        setPriority(0);
-      }
-
+      document.getElementById('modalTitle').textContent = '导入AI文章';
+      document.getElementById('materialForm').reset();
       modal.classList.add('active');
       lucide.createIcons();
     }
@@ -746,26 +603,17 @@
     // 关闭模态框
     function closeMaterialModal() {
       document.getElementById('materialModal').classList.remove('active');
-      currentMaterial = null;
     }
 
-    // 设置优先级
-    function setPriority(level) {
-      document.getElementById('materialPriority').value = level;
-      document.querySelectorAll('.priority-star').forEach((star, index) => {
-        star.classList.toggle('active', index < level);
-      });
-    }
-
-    // AI分析素材
-    async function analyzeMaterial() {
+    // AI分析导入内容，结果只回填当前表单，不保存原始素材
+    async function analyzeMaterial(event) {
       const content = document.getElementById('materialContent').value.trim();
       if (!content) {
         alert('请先输入素材内容');
         return;
       }
 
-      const btn = event.target;
+      const btn = event.currentTarget;
       const originalText = btn.innerHTML;
       btn.disabled = true;
       btn.innerHTML = '<i data-lucide="loader" class="spin"></i> 分析中...';
@@ -810,7 +658,7 @@
     }
 
     // 按 BLOG 自动化结构生成文章并进入审核
-    async function saveMaterial() {
+    async function importArticle(event) {
       const title = document.getElementById('materialTitle').value.trim();
       const content = document.getElementById('materialContent').value.trim();
 
@@ -819,14 +667,12 @@
         return;
       }
 
-      const seedTitle = title || content.split(/\r?\n/).map(line => line.trim()).find(Boolean) || 'Electrical Protection Guide';
-
       const tags = document.getElementById('materialTags').value
         .split(',')
         .map(t => t.trim())
         .filter(Boolean);
 
-      const btn = event.target;
+      const btn = event.currentTarget;
       const originalText = btn.innerHTML;
       btn.disabled = true;
       btn.innerHTML = '<i data-lucide="loader" class="spin"></i> AI整理中...';
@@ -834,7 +680,7 @@
 
       // 准备文章数据
       const articleData = {
-        title: seedTitle,
+        title,
         content,
         article_type: document.getElementById('articleType').value,
         keywords: tags,
@@ -842,7 +688,7 @@
       };
 
       try {
-        // 由后端按现有 BLOG 自动化结构生成 pending_review 文章
+        // 原始内容只用于本次导入，不写入素材表
         const response = await fetch(`${API_BASE}/create-from-content`, {
           method: 'POST',
           headers: getAuthHeaders(),
@@ -865,57 +711,6 @@
         btn.disabled = false;
         btn.innerHTML = originalText;
       }
-    }
-
-    // 查看素材详情
-    function viewMaterial(id) {
-      const material = materials.find(m => m.id === id);
-      if (!material) return;
-
-      openMaterialModal(material);
-    }
-
-    // 编辑素材
-    function editMaterial(id) {
-      const material = materials.find(m => m.id === id);
-      if (material) {
-        openMaterialModal(material);
-      }
-    }
-
-    // 从素材生成文章
-    async function generateFromMaterial(id) {
-      if (!confirm('确定要从这个素材生成文章吗？')) return;
-
-      try {
-        const response = await fetch(`${API_BASE}/generate-from-material`, {
-          method: 'POST',
-          headers: getAuthHeaders(),
-          body: JSON.stringify({
-            materialId: id,
-            modelType: 'deepseek'
-          })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-          alert('文章生成成功！即将跳转到审核页面...');
-          window.location.href = `/blog-review.html?postId=${data.postId}`;
-        } else {
-          alert('生成失败: ' + data.error);
-        }
-      } catch (error) {
-        console.error('生成失败:', error);
-        alert('生成失败，请重试');
-      }
-    }
-
-    // 工具函数
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
     }
 
     // 页面加载完成后初始化
